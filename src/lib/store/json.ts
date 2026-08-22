@@ -96,6 +96,7 @@ export const jsonStore: Store = {
         slug,
         title: input.title,
         clientName: input.clientName,
+        message: null,
         driveFolderId: input.driveFolderId,
         allowDownload: input.allowDownload,
         createdAt: new Date().toISOString(),
@@ -201,6 +202,16 @@ export const jsonStore: Store = {
       const g = db.galleries.find((x) => x.id === galleryId);
       if (!g) return;
       g.accessCode = code;
+      await writeToDisk(db);
+    });
+  },
+
+  setMessage(galleryId: string, message: string | null) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const g = db.galleries.find((x) => x.id === galleryId);
+      if (!g) return;
+      g.message = message;
       await writeToDisk(db);
     });
   },

@@ -7,6 +7,7 @@ import { deleteGalleryAction, refreshGalleryAction } from "./actions";
 import { AccessControl } from "./AccessControl";
 import { CopyLink } from "./CopyLink";
 import { CoverPicker } from "./CoverPicker";
+import { LoiNhan } from "./LoiNhan";
 
 function Stat({
   icon,
@@ -132,6 +133,8 @@ export function GalleryCard({
         )}
 
         <AccessControl galleryId={gallery.id} code={gallery.accessCode} />
+
+        <LoiNhan galleryId={gallery.id} message={gallery.message} />
 
         <p className="mt-2 truncate text-xs text-fg-faint">
           /g/{gallery.slug} · {new Date(gallery.createdAt).toLocaleDateString("vi-VN")}

@@ -18,6 +18,7 @@ type GalleryRow = {
   slug: string;
   title: string;
   clientName: string | null;
+  message: string | null;
   driveFolderId: string;
   allowDownload: boolean;
   createdAt: Date;
@@ -174,6 +175,13 @@ export const prismaStore: Store = {
     await getPrisma().gallery.update({
       where: { id: galleryId },
       data: { accessCode: code },
+    });
+  },
+
+  async setMessage(galleryId: string, message: string | null) {
+    await getPrisma().gallery.update({
+      where: { id: galleryId },
+      data: { message },
     });
   },
 

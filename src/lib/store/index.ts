@@ -42,3 +42,5 @@ export const updateGalleryMeta: Store["updateGalleryMeta"] = (id, meta) =>
 export const listCounts: Store["listCounts"] = () => store.listCounts();
 export const setCover: Store["setCover"] = (id, fileId) => store.setCover(id, fileId);
 export const setAccess: Store["setAccess"] = (id, code) => store.setAccess(id, code);
+export const setMessage: Store["setMessage"] = (id, message) =>
+  store.setMessage(id, message);

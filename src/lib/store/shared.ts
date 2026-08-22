@@ -3,6 +3,8 @@ export type Gallery = {
   slug: string;
   title: string;
   clientName: string | null;
+  /** Loi nhan rieng cho khach nay. null = dung loi chuc chung. */
+  message: string | null;
   driveFolderId: string;
   allowDownload: boolean;
   createdAt: string;
@@ -81,6 +83,8 @@ export type Store = {
   setCover(galleryId: string, fileId: string | null): Promise<void>;
   /** Doi ma chon anh cua album. */
   setAccess(galleryId: string, code: string): Promise<void>;
+
+  setMessage(galleryId: string, message: string | null): Promise<void>;
   listCounts(): Promise<ListCount[]>;
   toggleSelection(input: ToggleSelectionInput): Promise<{ selected: boolean }>;
 };

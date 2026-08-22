@@ -15,7 +15,13 @@ import {
   recordFailure,
   remainingAttempts,
 } from "@/lib/rateLimit";
-import { createGallery, deleteGallery, setAccess, setCover } from "@/lib/store";
+import {
+  createGallery,
+  deleteGallery,
+  setAccess,
+  setCover,
+  setMessage,
+} from "@/lib/store";
 import { syncAndWarm } from "@/lib/warm";
 
 export type ActionState = { error?: string; ok?: string };
@@ -154,6 +160,26 @@ export async function setAccessAction(
   if (ma.length < 4) return { error: "Mã phải có ít nhất 4 ký tự." };
 
   await setAccess(galleryId, ma);
+  revalidatePath("/admin");
+  return {};
+}
+
+/**
+ * Loi nhan hien o dau album cua khach nay.
+ *
+ * De trong thi khach thay loi chuc chung — phan lon album khong can viet gi
+ * rieng, nen bo trong la trang thai binh thuong chu khong phai thieu sot.
+ */
+export async function setMessageAction(
+  galleryId: string,
+  message: string
+): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+
+  const noiDung = message.trim();
+  if (noiDung.length > 500) return { error: "Lời nhắn dài quá 500 ký tự." };
+
+  await setMessage(galleryId, noiDung || null);
   revalidatePath("/admin");
   return {};
 }

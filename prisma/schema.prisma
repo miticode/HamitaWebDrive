@@ -12,6 +12,8 @@ model Gallery {
   slug          String   @unique
   title         String
   clientName    String?
+  /// Loi nhan studio gui rieng cho khach nay. Bo trong thi dung loi chuc chung.
+  message       String?
   driveFolderId String
   allowDownload Boolean  @default(true)
   createdAt     DateTime @default(now())

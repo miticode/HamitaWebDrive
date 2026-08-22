@@ -3,6 +3,7 @@ import { STUDIO_NAME } from "@/lib/constants";
 import type { Gallery, SelectionList } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { GalleryHeader } from "./GalleryHeader";
+import { LoiChuc } from "@/components/LoiChuc";
 import { PhotoGrid } from "./PhotoGrid";
 import { CodeDialog } from "./CodeDialog";
 import { SelectionProvider } from "./Selection";
@@ -58,6 +59,14 @@ export function AlbumView({
             {backHref ? album.name : galleryTitle}
           </h1>
           <p className="eyebrow mt-5">{photos.length} tấm ảnh</p>
+
+          {/* Chi hien o trang goc cua album. Vao tung thu muc con roi ma van
+              lap lai loi chuc thi thanh ra sao rong. */}
+          {!backHref && (
+            <div className="mt-9">
+              <LoiChuc noiDung={gallery.message} />
+            </div>
+          )}
           <p className="mx-auto mt-6 max-w-md px-4 text-sm leading-relaxed text-fg-muted">
             Bấm vào ảnh để xem lớn. Dùng{" "}
             <span className="inline-block size-2 translate-y-px rounded-full bg-rose-500" />{" "}

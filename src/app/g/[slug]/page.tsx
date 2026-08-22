@@ -7,6 +7,7 @@ import { getGalleryBySlug, getLists } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { daMoKhoa } from "@/lib/access";
 import { AlbumView } from "./AlbumView";
+import { LoiChuc } from "@/components/LoiChuc";
 import { NutTaiFolder } from "./NutTaiFolder";
 
 export const dynamic = "force-dynamic";
@@ -121,6 +122,10 @@ export default async function GalleryPage({ params }: Props) {
       </header>
 
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-24">
+        <LoiChuc noiDung={gallery.message} />
+
+        <div className="h-14 sm:h-20" />
+
         {tree.albums.length === 0 && (
           <p className="text-center text-sm text-fg-muted">Thư mục này chưa có ảnh nào.</p>
         )}
