@@ -1,0 +1,9 @@
+# Kho du lieu JSON chi dung khi chay o may — tren Vercel dung Postgres.
+/data
+
+# Khong bao gio day file bi mat len
+.env
+.env.*
+
+node_modules
+.next

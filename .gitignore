@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+!.env.example
+
+# kho du lieu tam thoi khi chay o may
+/data
+
+# Prisma Client sinh tu schema — chay "npx prisma generate" de tao lai
+/src/generated
+
+.vercel
+.env*

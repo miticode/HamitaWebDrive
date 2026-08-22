@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Gallery {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  clientName    String?
+  driveFolderId String
+  allowDownload Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  /// KHONG CON DUNG. Truoc day co ba che do truy cap; gio chi con mot cach duy
+  /// nhat la "xem tu do, can ma de chon anh". Giu lai cot de khong phai xoa du
+  /// lieu trong database — xoa cot khong loi gi ma lai la thao tac khong lui duoc.
+  accessMode    String   @default("SELECT")
+
+  /// Ma khach nhap de chon anh. Luu dang doc duoc vi trang quan tri phai hien
+  /// cho anh doc lai cho khach — day la ma chon anh, khong phai mat khau tai khoan.
+  accessCode    String?
+
+  /// So lieu chup lai tu Drive luc tao link va moi lan bam "Lam moi".
+  /// Luu san de trang quan tri khong phai duyet cay thu muc cua tung album —
+  /// 9 album la khoang 70 lan goi Drive, cham 8-10 giay moi lan mo trang.
+  coverFileId   String?
+  /// true khi anh tu chon anh bia — luc do lan dong bo sau khong duoc ghi de.
+  coverPinned   Boolean  @default(false)
+  photoCount    Int      @default(0)
+  albumCount    Int      @default(0)
+  subfolders    String[]
+  syncedAt      DateTime?
+
+  lists SelectionList[]
+
+  @@index([driveFolderId])
+}
+
+/// Moi gallery co nhieu danh sach chon (mac dinh: "Anh in" va "Anh chon").
+/// Tach thanh bang rieng de sau nay them loai moi ma khong phai sua schema.
+model SelectionList {
+  id        String @id @default(cuid())
+  galleryId String
+  name      String
+  icon      String @default("heart")
+  position  Int    @default(0)
+
+  gallery    Gallery     @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  selections Selection[]
+
+  @@index([galleryId, position])
+}
+
+/// Anh khong duoc luu vao database — danh sach anh doc thang tu Drive moi lan
+/// xem, de anh tha them folder moi vao Drive la khach thay ngay. O day chi luu
+/// ID va ten file, kem ten album, de xuat danh sach duoc ngay ca khi anh bi go
+/// khoi Drive.
+model Selection {
+  id          String   @id @default(cuid())
+  listId      String
+  driveFileId String
+  fileName    String
+  albumName   String
+  /// Ma an danh sinh o trinh duyet khach, khong can dang nhap.
+  visitorId   String
+  note        String?
+  createdAt   DateTime @default(now())
+
+  list SelectionList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, driveFileId, visitorId])
+  @@index([listId])
+}
+
+/// Ghi lai cac lan dang nhap sai de chan do mat khau.
+/// Phai luu o database chu khong phai trong bo nho: tren Vercel moi request co
+/// the roi vao mot may khac nhau, dem trong bo nho se bi reset lien tuc.
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@index([ip, createdAt])
+}
+
+/// Ket noi Google Drive bang chinh tai khoan chu studio.
+/// Co ban ghi nay thi web doc Drive duoi danh nghia chu tai khoan (khong can
+/// share folder cho ai); khong co thi quay ve dung service account.
+/// Chi giu mot ban ghi duy nhat — id luon la "default".
+model GoogleAccount {
+  id           String   @id @default("default")
+  email        String
+  refreshToken String
+  connectedAt  DateTime @default(now())
+}
+
