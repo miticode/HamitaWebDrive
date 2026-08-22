@@ -125,7 +125,13 @@ trình duyệt thật thì bình thường. Bản in dùng Be Vietnam Pro đậm
 - **Thao tác phá huỷ dữ liệu phải hỏi trước** — xoá cột, xoá bảng, xoá album.
   Cột `accessMode` hiện không dùng nhưng vẫn giữ, vì xoá là không lùi được.
 - **Không thêm tính năng không được yêu cầu.** Người dùng đã gỡ nhiều thứ dư.
-- Deploy bằng `npx vercel deploy --prod` — dự án không nối GitHub.
+- Deploy bằng `npx vercel deploy --prod`. Vercel đẩy lên rồi build trên máy
+  của họ, không nối tự động với GitHub.
+- **Tài khoản Vercel phải nối với tài khoản GitHub** (Settings → Authentication →
+  Login Connections). Từ khi kho có remote GitHub, Vercel đối chiếu email người
+  tạo commit với tài khoản GitHub đã nối; chưa nối thì mọi bản deploy đều bị
+  chặn ở trạng thái BLOCKED, không có log build nào để lần ra. Email git của kho
+  này đặt là địa chỉ noreply của GitHub nên chắc chắn khớp.
 
 ---
 
