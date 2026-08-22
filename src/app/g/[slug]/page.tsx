@@ -7,6 +7,7 @@ import { getGalleryBySlug, getLists } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { daMoKhoa } from "@/lib/access";
 import { AlbumView } from "./AlbumView";
+import { NutTaiFolder } from "./NutTaiFolder";
 
 export const dynamic = "force-dynamic";
 
@@ -126,25 +127,39 @@ export default async function GalleryPage({ params }: Props) {
 
         <div className="grid grid-cols-1 gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
           {tree.albums.map((album) => (
-            <Link
-              key={album.id || ROOT_ALBUM}
-              href={`/g/${slug}/${album.id || ROOT_ALBUM}`}
-              className="group block text-center"
-            >
-              <div className="skeleton aspect-[3/4] overflow-hidden rounded-sm">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/api/img/${album.photos[0].id}?w=960`}
-                  alt={album.name}
-                  loading="lazy"
-                  className="size-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.04]"
-                />
-              </div>
-              <h2 className="mt-5 font-display text-2xl font-normal transition group-hover:text-accent sm:text-3xl">
-                {album.name}
-              </h2>
+            <div key={album.id || ROOT_ALBUM} className="text-center">
+              {/* Nút tải nằm NGOÀI thẻ Link: để bên trong thì bấm tải sẽ nhảy
+                  luôn sang trang xem ảnh. */}
+              <Link
+                href={`/g/${slug}/${album.id || ROOT_ALBUM}`}
+                className="group block"
+              >
+                <div className="skeleton aspect-[3/4] overflow-hidden rounded-sm">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/api/img/${album.photos[0].id}?w=960`}
+                    alt={album.name}
+                    loading="lazy"
+                    className="size-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.04]"
+                  />
+                </div>
+                <h2 className="mt-5 font-display text-2xl font-normal transition group-hover:text-accent sm:text-3xl">
+                  {album.name}
+                </h2>
+              </Link>
               <p className="eyebrow mt-2">{album.photos.length} tấm</p>
-            </Link>
+              {gallery.allowDownload && (
+                <NutTaiFolder
+                  ten={album.name}
+                  anh={album.photos.map((p) => ({
+                    id: p.id,
+                    name: p.name,
+                    section: p.section,
+                  }))}
+                  tongByte={album.photos.reduce((tong, p) => tong + p.size, 0)}
+                />
+              )}
+            </div>
           ))}
         </div>
       </div>

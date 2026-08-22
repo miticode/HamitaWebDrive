@@ -1,0 +1,198 @@
+"use client";
+
+import { useCallback, useRef, useState } from "react";
+import { downloadZip } from "client-zip";
+import { luuQuaThe } from "./taiAnh";
+
+export type AnhTrongFolder = {
+  id: string;
+  name: string;
+  /** Ten thu muc con chua anh — dung lam thu muc trong file nen. */
+  section: string | null;
+};
+
+type TrangThai = "san-sang" | "dang-tai" | "loi";
+
+/*
+  So anh tai truoc mot luc.
+
+  Tai tuan tu thi moi tam phai doi tam truoc xong han, 100 tam thanh vai phut
+  chet. Tai het cung luc thi vua nang may chu vua phinh bo nho. Ba tam la muc
+  vua: nhanh gap ba lan ma chi giu toi da ba tam trong bo nho.
+*/
+const SONG_SONG = 3;
+
+/** Ky tu Windows khong cho dat ten tep — thay bang gach ngang. */
+function tenAnToan(ten: string): string {
+  return ten.replace(/[\/:*?"<>|]/g, "-").trim() || "anh";
+}
+
+/**
+ * Ten tam anh ben trong file nen. Giu nguyen cach chia thu muc con tren Drive
+ * de khach mo ra thay dung nhu luc studio sap xep.
+ */
+function duongDanTrongZip(anh: AnhTrongFolder, daDung: Set<string>): string {
+  const goc = anh.section
+    ? `${tenAnToan(anh.section)}/${tenAnToan(anh.name)}`
+    : tenAnToan(anh.name);
+
+  let ten = goc;
+  let lan = 2;
+  // Hai thu muc con co the co tam anh trung ten; file nen khong chua noi hai
+  // duong dan giong het nhau nen phai danh so.
+  while (daDung.has(ten)) {
+    const cham = goc.lastIndexOf(".");
+    ten =
+      cham > 0
+        ? `${goc.slice(0, cham)} (${lan})${goc.slice(cham)}`
+        : `${goc} (${lan})`;
+    lan++;
+  }
+  daDung.add(ten);
+  return ten;
+}
+
+function dungLuong(byte: number): string {
+  if (byte >= 1024 ** 3) return `${(byte / 1024 ** 3).toFixed(1).replace(".", ",")} GB`;
+  return `${Math.round(byte / 1024 ** 2)} MB`;
+}
+
+type LuuTep = (tuyChon: {
+  suggestedName?: string;
+  types?: { description: string; accept: Record<string, string[]> }[];
+}) => Promise<{ createWritable: () => Promise<WritableStream<unknown>> }>;
+
+export function NutTaiFolder({
+  ten,
+  anh,
+  tongByte,
+}: {
+  ten: string;
+  anh: AnhTrongFolder[];
+  tongByte: number;
+}) {
+  const [trangThai, setTrangThai] = useState<TrangThai>("san-sang");
+  const [xong, setXong] = useState(0);
+  const huy = useRef<AbortController | null>(null);
+
+  const batDau = useCallback(async () => {
+    if (trangThai === "dang-tai") return;
+
+    /*
+      Hoi cho luu TRUOC khi lam bat cu viec gi khac: trinh duyet chi cho mo hop
+      thoai nay ngay sau cu bam cua khach, cham mot nhip la no tu choi.
+    */
+    const moHopThoai = (window as unknown as { showSaveFilePicker?: LuuTep })
+      .showSaveFilePicker;
+    const tenTep = `${tenAnToan(ten)}.zip`;
+    let noiLuu: Awaited<ReturnType<LuuTep>> | null = null;
+
+    if (typeof moHopThoai === "function") {
+      try {
+        noiLuu = await moHopThoai({
+          suggestedName: tenTep,
+          types: [{ description: "File nén", accept: { "application/zip": [".zip"] } }],
+        });
+      } catch {
+        // Khach bam Huy o hop thoai, hoac trinh duyet tu choi — im lang di tiep.
+        return;
+      }
+    }
+
+    const boHuy = new AbortController();
+    huy.current = boHuy;
+    setXong(0);
+    setTrangThai("dang-tai");
+
+    async function* nguon() {
+      const hangDoi: Promise<Response>[] = [];
+      let ke = 0;
+      const themVaoHang = () => {
+        if (ke >= anh.length) return;
+        const a = anh[ke++];
+        hangDoi.push(fetch(`/api/download/${a.id}`, { signal: boHuy.signal }));
+      };
+      for (let i = 0; i < SONG_SONG; i++) themVaoHang();
+
+      const daDung = new Set<string>();
+      for (let i = 0; i < anh.length; i++) {
+        const res = await hangDoi[i];
+        // fetch khong nem loi khi may chu tra ve 4xx/5xx — phai tu kiem tra,
+        // bo qua la file nen co mot tam anh rong ma khach khong hay biet.
+        if (!res.ok) throw new Error(`Máy chủ trả về ${res.status}`);
+        themVaoHang();
+        yield { name: duongDanTrongZip(anh[i], daDung), input: res };
+        setXong(i + 1);
+      }
+    }
+
+    try {
+      const goi = downloadZip(nguon());
+
+      if (noiLuu) {
+        // Ghi thang xuong o dia theo dong chay, khong bao gio giu ca goi trong
+        // bo nho — nho vay thu muc vai GB van tai duoc.
+        const ghi = await noiLuu.createWritable();
+        await goi.body!.pipeTo(ghi as WritableStream<Uint8Array>);
+      } else {
+        const blob = await goi.blob();
+        luuQuaThe(new File([blob], tenTep, { type: "application/zip" }));
+      }
+      setTrangThai("san-sang");
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError") {
+        setTrangThai("san-sang");
+        return;
+      }
+      setTrangThai("loi");
+    } finally {
+      huy.current = null;
+    }
+  }, [trangThai, ten, anh]);
+
+  if (trangThai === "dang-tai") {
+    return (
+      <div className="mt-3 flex flex-col items-center gap-1.5">
+        <button
+          onClick={() => huy.current?.abort()}
+          className="btn"
+          title="Dừng tải"
+        >
+          Đang tải {xong}/{anh.length} — bấm để dừng
+        </button>
+        <span
+          aria-hidden
+          className="h-[2px] w-32 overflow-hidden rounded-full bg-line"
+        >
+          <span
+            className="block h-full bg-accent transition-[width] duration-300"
+            style={{ width: `${Math.round((xong / anh.length) * 100)}%` }}
+          />
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <button onClick={batDau} className="btn mt-3">
+      {trangThai === "loi" ? (
+        <span className="text-red-600">Tải lỗi — bấm để thử lại</span>
+      ) : (
+        <>
+          <svg
+            viewBox="0 0 24 24"
+            className="size-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16" />
+          </svg>
+          Tải tất cả · {dungLuong(tongByte)}
+        </>
+      )}
+    </button>
+  );
+}
