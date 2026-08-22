@@ -45,18 +45,31 @@ export function SelectionProvider({
   lists,
   allowDownload,
   unlocked: unlockedBanDau,
+  anhTrongMuc,
   children,
 }: {
   slug: string;
   lists: ClientList[];
   allowDownload: boolean;
   unlocked: boolean;
+  /** Anh cua muc dang mo — dung de dem cho dung pham vi. */
+  anhTrongMuc: { id: string }[];
   children: ReactNode;
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [failed, setFailed] = useState(false);
   const [filter, setFilter] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState(unlockedBanDau);
+
+  /*
+    Con so tren the loc phai dem DUNG nhung tam bo loc se hien ra.
+    Truoc day dem ca album nen mo mot thu muc chua chon tam nao van thay
+    "Anh in 3", bam vao loc thi trong tron — ba tam do nam o thu muc khac.
+  */
+  const idTrongMuc = useMemo(
+    () => new Set(anhTrongMuc.map((a) => a.id)),
+    [anhTrongMuc]
+  );
   const [askingCode, setAsking] = useState(false);
 
   /*
@@ -181,13 +194,28 @@ export function SelectionProvider({
       },
       isSelected: (listId, fileId) => selected.has(`${listId}:${fileId}`),
       countFor: (listId) => {
+        const prefix = `${listId}:`;
         let n = 0;
-        for (const key of selected) if (key.startsWith(`${listId}:`)) n++;
+        for (const key of selected) {
+          if (!key.startsWith(prefix)) continue;
+          if (idTrongMuc.has(key.slice(prefix.length))) n++;
+        }
         return n;
       },
       toggle,
     }),
-    [lists, allowDownload, slug, selected, toggle, failed, filter, unlocked, askingCode]
+    [
+      lists,
+      allowDownload,
+      slug,
+      selected,
+      toggle,
+      failed,
+      filter,
+      unlocked,
+      askingCode,
+      idTrongMuc,
+    ]
   );
 
   return <SelectionContext.Provider value={value}>{children}</SelectionContext.Provider>;

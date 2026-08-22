@@ -42,6 +42,7 @@ export function AlbumView({
       allowDownload={gallery.allowDownload}
       unlocked={unlocked}
       lists={lists.map((l) => ({ id: l.id, name: l.name, icon: l.icon }))}
+      anhTrongMuc={photos}
     >
       <GalleryHeader
         title={backHref ? album.name : galleryTitle}
