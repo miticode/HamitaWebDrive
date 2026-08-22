@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { downloadZip } from "client-zip";
-import { luuQuaThe } from "./taiAnh";
+import { coKhayChiaSe, giaoTepChoKhach, laIOS } from "./taiAnh";
 
 export type AnhTrongFolder = {
   id: string;
@@ -11,7 +11,7 @@ export type AnhTrongFolder = {
   section: string | null;
 };
 
-type TrangThai = "san-sang" | "dang-tai" | "loi";
+type TrangThai = "san-sang" | "dang-tai" | "cho-cham" | "khong-ho-tro" | "loi";
 
 /*
   So anh tai truoc mot luc.
@@ -74,6 +74,7 @@ export function NutTaiFolder({
   const [trangThai, setTrangThai] = useState<TrangThai>("san-sang");
   const [xong, setXong] = useState(0);
   const huy = useRef<AbortController | null>(null);
+  const tepSan = useRef<File | null>(null);
 
   const batDau = useCallback(async () => {
     if (trangThai === "dang-tai") return;
@@ -95,6 +96,17 @@ export function NutTaiFolder({
         });
       } catch {
         // Khach bam Huy o hop thoai, hoac trinh duyet tu choi — im lang di tiep.
+        return;
+      }
+    } else if (laIOS()) {
+      /*
+        Tren iOS the tai xuong khong chay, chi con duong khay chia se. Thu truoc
+        bang mot tep gia: khong mo duoc thi bao ngay, khong bat khach doi vai
+        phut tai xong roi moi vo mong.
+      */
+      const thu = new File([new Uint8Array(1)], "thu.zip", { type: "application/zip" });
+      if (!coKhayChiaSe(thu)) {
+        setTrangThai("khong-ho-tro");
         return;
       }
     }
@@ -136,7 +148,13 @@ export function NutTaiFolder({
         await goi.body!.pipeTo(ghi as WritableStream<Uint8Array>);
       } else {
         const blob = await goi.blob();
-        luuQuaThe(new File([blob], tenTep, { type: "application/zip" }));
+        const tep = new File([blob], tenTep, { type: "application/zip" });
+        tepSan.current = tep;
+        const cach = await giaoTepChoKhach(tep);
+        if (cach !== "xong") {
+          setTrangThai(cach === "cho-cham" ? "cho-cham" : "khong-ho-tro");
+          return;
+        }
       }
       setTrangThai("san-sang");
     } catch (err) {
@@ -149,6 +167,36 @@ export function NutTaiFolder({
       huy.current = null;
     }
   }, [trangThai, ten, anh]);
+
+  /*
+    Goi da nam san trong bo nho, chi con doi mot cu cham de mo khay chia se.
+    Phai goi thang trong su kien bam, khong duoc chen await nao truoc do.
+  */
+  const luuLai = async () => {
+    const tep = tepSan.current;
+    if (!tep) return;
+    const cach = await giaoTepChoKhach(tep);
+    if (cach === "xong") setTrangThai("san-sang");
+    else if (cach === "khong-ho-tro") setTrangThai("khong-ho-tro");
+  };
+
+  if (trangThai === "cho-cham") {
+    return (
+      <button onClick={luuLai} className="btn mt-3 animate-pulse">
+        Lưu bộ ảnh · {dungLuong(tongByte)}
+      </button>
+    );
+  }
+
+  if (trangThai === "khong-ho-tro") {
+    return (
+      <p className="mt-3 text-xs leading-relaxed text-fg-muted">
+        Trình duyệt này không lưu được cả bộ ảnh.
+        <br />
+        Bấm ••• ở góc trên rồi chọn mở bằng Safari, sau đó tải lại giúp em nhé.
+      </p>
+    );
+  }
 
   if (trangThai === "dang-tai") {
     return (

@@ -73,3 +73,37 @@ export function luuQuaThe(file: File): void {
   // Thu hồi trễ một nhịp, thu hồi ngay thì trình duyệt chưa kịp đọc xong tệp.
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
+
+/** Máy iPhone/iPad — nơi thẻ tải xuống không có tác dụng. */
+export function laIOS(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    // iPad đời mới tự khai là máy Mac, phải nhìn thêm số điểm chạm.
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
+
+/**
+ * Giao tệp cho khách bằng cách tốt nhất máy đó làm được.
+ *
+ * Trả về "cho-cham" khi khay chia sẻ bị từ chối vì quá hạn cú chạm — tệp vẫn
+ * nằm sẵn trong bộ nhớ, người gọi chỉ cần hiện một nút để khách chạm lần nữa.
+ * Trả về "khong-ho-tro" khi máy không có cách nào nhận tệp.
+ */
+export async function giaoTepChoKhach(
+  file: File
+): Promise<"xong" | "cho-cham" | "khong-ho-tro"> {
+  if (coKhayChiaSe(file)) {
+    const kq = await moKhayChiaSe(file);
+    if (kq === "het-han-cham") return "cho-cham";
+    if (kq !== "khong-ho-tro") return "xong";
+  }
+
+  // Tren iOS the tai xuong khong chay: trinh duyet mo thang tep ra xem, file
+  // nen thanh mot man hinh ky tu rac. Tha bao that con hon.
+  if (laIOS()) return "khong-ho-tro";
+
+  luuQuaThe(file);
+  return "xong";
+}
