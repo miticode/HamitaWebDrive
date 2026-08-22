@@ -2,6 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelection, type ClientList } from "./Selection";
+import { coKhayChiaSe, luuQuaThe, moKhayChiaSe, taiTep } from "./taiAnh";
 
 export type ClientPhoto = {
   id: string;
@@ -414,19 +415,111 @@ function Lightbox({
 
       <footer className="flex items-center justify-center gap-4 px-4 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <SelectButtons photo={photo} album={album} size="lg" />
-        {allowDownload && (
-          <a
-            href={`/api/download/${photo.id}`}
-            className="grid size-14 place-items-center rounded-full bg-white/10 text-white/90 transition hover:bg-white/20 hover:text-white active:scale-90"
-            title="Tải ảnh này"
-            aria-label="Tải ảnh này"
-          >
-            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16" />
-            </svg>
-          </a>
-        )}
+        {allowDownload && <NutTai key={photo.id} photo={photo} />}
       </footer>
     </div>
+  );
+}
+
+type TrangThaiTai = "san-sang" | "dang-tai" | "cho-cham" | "loi";
+
+/**
+ * Nút tải ảnh.
+ *
+ * Trên iPhone, trang web không có quyền ghi thẳng vào app Ảnh. Thứ gần nhất là
+ * mở khay chia sẻ của máy để khách bấm "Lưu vào Ảnh" — một chạm, thay vì phải
+ * mở ảnh ra rồi nhấn giữ như trước.
+ *
+ * Máy tính và Android không dùng khay chia sẻ thì rơi xuống cách tải thường,
+ * ảnh vào thẳng thư mục Tải xuống.
+ */
+function NutTai({ photo }: { photo: ClientPhoto }) {
+  const [trangThai, setTrangThai] = useState<TrangThaiTai>("san-sang");
+  const tepSan = useRef<File | null>(null);
+
+  const giaoTep = useCallback(async (file: File) => {
+    if (coKhayChiaSe(file)) {
+      const kq = await moKhayChiaSe(file);
+      if (kq === "het-han-cham") {
+        setTrangThai("cho-cham");
+        return;
+      }
+      if (kq !== "khong-ho-tro") {
+        setTrangThai("san-sang");
+        return;
+      }
+    }
+    luuQuaThe(file);
+    setTrangThai("san-sang");
+  }, []);
+
+  const xuLy = useCallback(async () => {
+    if (trangThai === "dang-tai") return;
+
+    /*
+      Tệp đã tải rồi thì mở khay ngay trong cú chạm này, không chèn thêm await
+      nào ở giữa — Safari chỉ chấp nhận khay chia sẻ khi nó mở liền sau cú chạm.
+    */
+    if (tepSan.current) {
+      await giaoTep(tepSan.current);
+      return;
+    }
+
+    setTrangThai("dang-tai");
+    try {
+      const file = await taiTep(photo.id, photo.name);
+      tepSan.current = file;
+      await giaoTep(file);
+    } catch {
+      setTrangThai("loi");
+      setTimeout(() => setTrangThai("san-sang"), 3000);
+    }
+  }, [trangThai, photo.id, photo.name, giaoTep]);
+
+  if (trangThai === "cho-cham") {
+    return (
+      <button
+        onClick={xuLy}
+        className="flex h-14 animate-pulse items-center gap-2 rounded-full bg-white px-5 text-sm font-medium text-neutral-900 transition active:scale-95"
+      >
+        <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16" />
+        </svg>
+        Lưu ảnh
+      </button>
+    );
+  }
+
+  if (trangThai === "loi") {
+    return (
+      <button
+        onClick={xuLy}
+        className="flex h-14 items-center gap-2 rounded-full bg-red-500/20 px-5 text-sm font-medium text-red-200 transition active:scale-95"
+      >
+        Tải lỗi — thử lại
+      </button>
+    );
+  }
+
+  const dangTai = trangThai === "dang-tai";
+
+  return (
+    <button
+      onClick={xuLy}
+      disabled={dangTai}
+      title="Tải ảnh này"
+      aria-label="Tải ảnh này"
+      className="grid size-14 place-items-center rounded-full bg-white/10 text-white/90 transition hover:bg-white/20 hover:text-white active:scale-90 disabled:active:scale-100"
+    >
+      {dangTai ? (
+        <svg viewBox="0 0 24 24" className="size-5 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="M12 3a9 9 0 1 0 9 9" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16" />
+        </svg>
+      )}
+    </button>
   );
 }
