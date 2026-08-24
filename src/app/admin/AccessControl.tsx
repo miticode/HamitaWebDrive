@@ -50,8 +50,8 @@ export function AccessControl({
 
   if (!mo) {
     return (
-      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-        <span className="text-fg-muted">Mã chọn ảnh</span>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 py-2 text-xs">
+        <span className="w-24 shrink-0 text-fg-muted">Mã chọn ảnh</span>
         <button
           type="button"
           onClick={async () => {

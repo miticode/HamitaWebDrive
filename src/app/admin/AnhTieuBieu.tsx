@@ -31,7 +31,7 @@ export function AnhTieuBieu({
 
   return (
     <label
-      className={`mt-2 flex items-center gap-2 text-xs ${
+      className={`flex items-center gap-2 py-2 text-xs ${
         coTheHien ? "" : "opacity-50"
       }`}
       title={
@@ -40,6 +40,7 @@ export function AnhTieuBieu({
           : "Album chưa có ảnh bìa nên chưa hiện được"
       }
     >
+      <span className="w-24 shrink-0 text-fg-muted">Trang giới thiệu</span>
       <input
         type="checkbox"
         checked={featured}

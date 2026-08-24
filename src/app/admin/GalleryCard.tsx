@@ -110,12 +110,31 @@ export function GalleryCard({
       </button>
 
       <div className="flex flex-1 flex-col p-4">
-        <Link
-          href={`/g/${gallery.slug}`}
-          className="font-display text-xl leading-snug transition group-hover:text-accent"
-        >
-          {title}
-        </Link>
+        <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
+          <Link
+            href={`/g/${gallery.slug}`}
+            className="font-display text-xl leading-snug transition group-hover:text-accent"
+          >
+            {title}
+          </Link>
+
+          {gallery.selectionsDoneAt && (
+            <span
+              title={`Khách báo đã chọn xong lúc ${new Date(
+                gallery.selectionsDoneAt
+              ).toLocaleString("vi-VN", {
+                hour: "2-digit",
+                minute: "2-digit",
+                day: "2-digit",
+                month: "2-digit",
+              })}`}
+              className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700"
+            >
+              <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />
+              Đã chọn xong
+            </span>
+          )}
+        </div>
 
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-fg-muted">
           <Stat icon="photo" value={gallery.photoCount} label="Số ảnh" />
@@ -136,36 +155,28 @@ export function GalleryCard({
           </p>
         )}
 
-        <AccessControl galleryId={gallery.id} code={gallery.accessCode} />
+        {/*
+          Bon dong cai dat gop vao mot khung, cung do rong nhan (w-24 o tung
+          component con) de thang cot — truoc day moi thu tu them mot dong
+          rieng voi mt-2 cua rieng no, xep chong len nhau khong thang hang,
+          nhin nhu mot danh sach roi rac thay vi mot bang cai dat.
+        */}
+        <div className="mt-3 divide-y divide-line rounded-md border border-line px-3">
+          <AccessControl galleryId={gallery.id} code={gallery.accessCode} />
+          <LoiNhan galleryId={gallery.id} message={gallery.message} />
+          <ThoiHan
+            galleryId={gallery.id}
+            createdAt={gallery.createdAt}
+            expiresAt={gallery.expiresAt}
+          />
+          <AnhTieuBieu
+            galleryId={gallery.id}
+            featured={gallery.featured}
+            coTheHien={gallery.coverFileId !== null}
+          />
+        </div>
 
-        <LoiNhan galleryId={gallery.id} message={gallery.message} />
-
-        <AnhTieuBieu
-          galleryId={gallery.id}
-          featured={gallery.featured}
-          coTheHien={gallery.coverFileId !== null}
-        />
-
-        <ThoiHan
-          galleryId={gallery.id}
-          createdAt={gallery.createdAt}
-          expiresAt={gallery.expiresAt}
-        />
-
-        {gallery.selectionsDoneAt && (
-          <p className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700">
-            <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />
-            Khách báo đã chọn xong lúc{" "}
-            {new Date(gallery.selectionsDoneAt).toLocaleString("vi-VN", {
-              hour: "2-digit",
-              minute: "2-digit",
-              day: "2-digit",
-              month: "2-digit",
-            })}
-          </p>
-        )}
-
-        <p className="mt-2 truncate text-xs text-fg-faint">
+        <p className="mt-3 truncate text-xs text-fg-faint">
           /g/{gallery.slug} · {new Date(gallery.createdAt).toLocaleDateString("vi-VN")}
         </p>
 

@@ -64,8 +64,8 @@ export function ThoiHan({
 
   if (!mo) {
     return (
-      <div className="mt-2 flex items-baseline gap-2 text-xs">
-        <span className="shrink-0 text-fg-muted">Hạn giữ ảnh</span>
+      <div className="flex items-baseline gap-2 py-2 text-xs">
+        <span className="w-24 shrink-0 text-fg-muted">Hạn giữ ảnh</span>
         <span className="min-w-0 flex-1 truncate">
           {expiresAt ? (
             <>
