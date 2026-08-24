@@ -25,6 +25,30 @@ function pickSize(raw: string | null): number {
 }
 
 /**
+ * Chan nhung, khong chan truy cap that.
+ *
+ * Chi tu choi khi CO bang chung ro rang request den tu mot trang KHAC —
+ * moi truong hop con lai (khong co header, hoac cung nguon) deu cho qua. Ba
+ * nguoi dung hop le khong duoc co header nay: he thong "dung anh san" cua
+ * chinh minh goi tu may chu (warm.ts, khong gui Referer/Sec-Fetch-Site), bot
+ * xem truoc lien ket cua Facebook/Zalo khi khach gui link cho nhau, va khach
+ * mo thang URL anh (vd "Mo anh trong tab moi").
+ */
+function laNhungTuNoiKhac(req: NextRequest): boolean {
+  // Trinh duyet hien dai tu gui header nay, dang tin hon Referer vi kho gia mao.
+  const secFetchSite = req.headers.get("sec-fetch-site");
+  if (secFetchSite) return secFetchSite === "cross-site";
+
+  const referer = req.headers.get("referer");
+  if (!referer) return false;
+  try {
+    return new URL(referer).host !== req.nextUrl.host;
+  } catch {
+    return false; // Referer sai dang thi khong du can cu de chan.
+  }
+}
+
+/**
  * Uu tien ban dung san cua Google o moi kich thuoc.
  * Ban goc o day co the nang 6MB; tai ve chi de thu nho lai vua cham vua ton
  * bang thong. Chi tai ban goc khi Drive chua sinh ban dung san.
@@ -39,6 +63,10 @@ export async function GET(
   req: NextRequest,
   ctx: { params: Promise<{ fileId: string }> }
 ) {
+  if (laNhungTuNoiKhac(req)) {
+    return Response.json({ error: "Ảnh này không phục vụ nơi khác." }, { status: 403 });
+  }
+
   const { fileId } = await ctx.params;
   const size = pickSize(req.nextUrl.searchParams.get("w"));
   const blur = req.nextUrl.searchParams.get("blur") === "1";
