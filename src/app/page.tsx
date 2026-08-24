@@ -277,6 +277,35 @@ export default async function Home() {
               </div>
             </dl>
 
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <p className="eyebrow">{STUDIO.ten} · cưới hỏi</p>
+                <div className="skeleton mt-2 aspect-[4/3] overflow-hidden rounded-sm border border-line-strong">
+                  <iframe
+                    src={STUDIO.mapEmbed}
+                    title={`Bản đồ ${STUDIO.ten}`}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    className="size-full border-0"
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="eyebrow">{HAMI_BABY.ten} · bé và gia đình</p>
+                <div className="skeleton mt-2 aspect-[4/3] overflow-hidden rounded-sm border border-line-strong">
+                  <iframe
+                    src={HAMI_BABY.mapEmbed}
+                    title={`Bản đồ ${HAMI_BABY.ten}`}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    className="size-full border-0"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="mt-14 flex flex-wrap justify-center gap-3">
               <a href={STUDIO.facebook} target="_blank" rel="noreferrer" className="btn-primary">
                 Nhắn tin Facebook

@@ -30,6 +30,9 @@ export const STUDIO = {
   /** So lieu tin cay tu trang Facebook, chi de hien thi — khong tinh toan gi. */
   soNguoiTheoDoi: "28K",
   soDanhGia: 289,
+  /** Link nhung Google Maps, lay tu dung ho so doanh nghiep da xac minh cua studio. */
+  mapEmbed:
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3923.804160937801!2d106.4736751768222!3d10.437109765357222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310ab39117b32b6b%3A0xc73f3ea590e38789!2sHamita%20Wedding%20House!5e0!3m2!1svi!2s!4v1787558664314!5m2!1svi!2s",
 } as const;
 
 /**
@@ -72,4 +75,6 @@ export const HAMI_BABY = {
   dienThoaiSo: "0797722972",
   facebook: "https://www.facebook.com/hamibabylongan",
   soNguoiTheoDoi: "3,1K",
+  mapEmbed:
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3923.7852423002405!2d106.47000407682195!3d10.438609365330311!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310ab3af09b27cd3%3A0xb5f7fc7310688edd!2sHami%20Baby%20Studio!5e0!3m2!1svi!2s!4v1787558693834!5m2!1svi!2s",
 } as const;
