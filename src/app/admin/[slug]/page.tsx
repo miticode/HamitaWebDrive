@@ -19,6 +19,19 @@ function gomTheoAlbum(anh: Selection[]) {
   return [...groups.entries()];
 }
 
+/**
+ * Bo tien to chu va duoi file, chi giu lai ma so — dung dinh dang doi Media
+ * quen dung de do tim anh trong thu muc goc tren may.
+ *
+ * "HMT06704.jpg" -> "06704", "DD_08601.jpg" -> "08601". Nhung ten khong co
+ * tien to chu o dau (vi du "001-002.jpg") giu nguyen — khong doan bua, tranh
+ * cat mat mot nua ma so cua file ghep nhieu tam.
+ */
+function maSoFile(tenFile: string): string {
+  const khongDuoi = tenFile.replace(/\.[a-z0-9]+$/i, "");
+  return khongDuoi.replace(/^[^\d]+/, "") || khongDuoi;
+}
+
 export default async function ResultsPage({ params }: Props) {
   if (!(await isAdmin())) return <LoginForm />;
 
@@ -81,6 +94,7 @@ export default async function ResultsPage({ params }: Props) {
                   ...rows.map((r) => r.fileName),
                   "",
                 ])}
+                maSo={anh.map((r) => maSoFile(r.fileName)).join(" ")}
               />
             </div>
 
