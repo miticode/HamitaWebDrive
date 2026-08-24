@@ -11,7 +11,13 @@ export type AnhTrongFolder = {
   section: string | null;
 };
 
-type TrangThai = "san-sang" | "dang-tai" | "cho-cham" | "khong-ho-tro" | "loi";
+type TrangThai =
+  | "san-sang"
+  | "hoi-tai-lon"
+  | "dang-tai"
+  | "cho-cham"
+  | "khong-ho-tro"
+  | "loi";
 
 /*
   So anh tai truoc mot luc.
@@ -21,6 +27,16 @@ type TrangThai = "san-sang" | "dang-tai" | "cho-cham" | "khong-ho-tro" | "loi";
   vua: nhanh gap ba lan ma chi giu toi da ba tam trong bo nho.
 */
 const SONG_SONG = 3;
+
+/*
+  Nguong canh bao truoc khi tai thu muc qua nang.
+
+  Do that tren du lieu dang chay: album nang nhat co thu muc toi 1,6 GB. May
+  khong ho tro ghi thang xuong dia (Safari, hau het dien thoai) phai gom het
+  vao bo nho truoc khi luu — de treo may hoac trinh duyet tu dong. 400 MB la
+  muc con nhe nhang tren dien thoai yeu, qua muc do moi dang canh bao.
+*/
+const NGUONG_CANH_BAO_BYTE = 400 * 1024 ** 2;
 
 /** Ky tu Windows khong cho dat ten tep — thay bang gach ngang. */
 function tenAnToan(ten: string): string {
@@ -78,7 +94,7 @@ export function NutTaiFolder({
   const huy = useRef<AbortController | null>(null);
   const tepSan = useRef<File | null>(null);
 
-  const batDau = useCallback(async () => {
+  const batDau = useCallback(async (boQuaCanhBao = false) => {
     if (trangThai === "dang-tai") return;
 
     /*
@@ -87,6 +103,20 @@ export function NutTaiFolder({
     */
     const moHopThoai = (window as unknown as { showSaveFilePicker?: LuuTep })
       .showSaveFilePicker;
+
+    /*
+      May co the ghi thang xuong dia thi khong sao dau kich thuoc — khong bao
+      gio giu ca goi trong bo nho. Chi may KHONG co API do (Safari, hau het
+      dien thoai) moi that su rui ro, va chi hoi mot lan cho moi lan bam.
+    */
+    if (
+      typeof moHopThoai !== "function" &&
+      tongByte > NGUONG_CANH_BAO_BYTE &&
+      !boQuaCanhBao
+    ) {
+      setTrangThai("hoi-tai-lon");
+      return;
+    }
     const tenTep = `${tenAnToan(ten)}.zip`;
     let noiLuu: Awaited<ReturnType<LuuTep>> | null = null;
 
@@ -172,7 +202,7 @@ export function NutTaiFolder({
     } finally {
       huy.current = null;
     }
-  }, [trangThai, ten, anh, slug]);
+  }, [trangThai, ten, anh, slug, tongByte]);
 
   /*
     Goi da nam san trong bo nho, chi con doi mot cu cham de mo khay chia se.
@@ -185,6 +215,32 @@ export function NutTaiFolder({
     if (cach === "xong") setTrangThai("san-sang");
     else if (cach === "khong-ho-tro") setTrangThai("khong-ho-tro");
   };
+
+  if (trangThai === "hoi-tai-lon") {
+    return (
+      <div className="mt-3 max-w-[15rem] rounded-md border border-amber-300 bg-amber-50 p-3 text-left">
+        <p className="text-[0.8125rem] font-medium text-amber-900">
+          Bộ này nặng {dungLuong(tongByte)}
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-amber-800">
+          Trên máy này, trình duyệt phải gom hết ảnh vào bộ nhớ trước khi lưu
+          được — có thể chậm hoặc treo máy. Mở bằng Chrome/Edge trên máy tính
+          sẽ tải thẳng xuống ổ đĩa, không giới hạn dung lượng.
+        </p>
+        <div className="mt-3 flex gap-2">
+          <button onClick={() => setTrangThai("san-sang")} className="btn flex-1">
+            Huỷ
+          </button>
+          <button
+            onClick={() => batDau(true)}
+            className="btn flex-1 border-amber-400 bg-amber-100 text-amber-900 hover:bg-amber-200"
+          >
+            Vẫn tải
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (trangThai === "cho-cham") {
     return (
@@ -228,7 +284,7 @@ export function NutTaiFolder({
   }
 
   return (
-    <button onClick={batDau} className="btn mt-3">
+    <button onClick={() => batDau()} className="btn mt-3">
       {trangThai === "loi" ? (
         <span className="text-red-600">Tải lỗi — bấm để thử lại</span>
       ) : (
