@@ -76,6 +76,16 @@ của `.input` sẽ nuốt mất `pl-10`. Lỗi này âm thầm, không báo lú
 khách là bộ mặt studio nên phải giống nhau trên mọi máy. Riêng khung xem ảnh to
 vẫn nền đen.
 
+**13. `/api/download/[fileId]` bắt buộc kèm `?slug=`.**
+Máy chủ tra ngược slug → gallery → kiểm `allowDownload` và ảnh có thật sự nằm
+trong album đó không. Thiếu slug hoặc ảnh không thuộc album là 400/403/404.
+Từng có lỗ hổng: route cũ nhận bất kỳ mã ảnh nào, không kiểm tra gì — ai xem
+trang album cũng ghép được link tải bản gốc dù studio đã tắt quyền tải.
+
+**14. Ô nhập mã album dùng chung `rateLimit.ts` với khoá tiền tố `code:`.**
+Mã chỉ có 33.856 tổ hợp (2 chữ + 2 số) — không khoá thì máy dò hết trong vài
+phút. Sai 8 lần/15 phút thì khoá, giống hệt trang đăng nhập admin.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại
@@ -125,6 +135,9 @@ trình duyệt thật thì bình thường. Bản in dùng Be Vietnam Pro đậm
 - **Thao tác phá huỷ dữ liệu phải hỏi trước** — xoá cột, xoá bảng, xoá album.
   Cột `accessMode` hiện không dùng nhưng vẫn giữ, vì xoá là không lùi được.
 - **Không thêm tính năng không được yêu cầu.** Người dùng đã gỡ nhiều thứ dư.
+
+---
+
 - Deploy bằng `npx vercel deploy --prod`. Vercel đẩy lên rồi build trên máy
   của họ, không nối tự động với GitHub.
 - **Tài khoản Vercel phải nối với tài khoản GitHub** (Settings → Authentication →

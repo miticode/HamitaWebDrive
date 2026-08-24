@@ -63,10 +63,12 @@ type LuuTep = (tuyChon: {
 }) => Promise<{ createWritable: () => Promise<WritableStream<unknown>> }>;
 
 export function NutTaiFolder({
+  slug,
   ten,
   anh,
   tongByte,
 }: {
+  slug: string;
   ten: string;
   anh: AnhTrongFolder[];
   tongByte: number;
@@ -122,7 +124,11 @@ export function NutTaiFolder({
       const themVaoHang = () => {
         if (ke >= anh.length) return;
         const a = anh[ke++];
-        hangDoi.push(fetch(`/api/download/${a.id}`, { signal: boHuy.signal }));
+        hangDoi.push(
+          fetch(`/api/download/${a.id}?slug=${encodeURIComponent(slug)}`, {
+            signal: boHuy.signal,
+          })
+        );
       };
       for (let i = 0; i < SONG_SONG; i++) themVaoHang();
 
@@ -166,7 +172,7 @@ export function NutTaiFolder({
     } finally {
       huy.current = null;
     }
-  }, [trangThai, ten, anh]);
+  }, [trangThai, ten, anh, slug]);
 
   /*
     Goi da nam san trong bo nho, chi con doi mot cu cham de mo khay chia se.

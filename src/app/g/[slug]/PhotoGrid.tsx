@@ -434,6 +434,7 @@ type TrangThaiTai = "san-sang" | "dang-tai" | "cho-cham" | "loi";
  * ảnh vào thẳng thư mục Tải xuống.
  */
 function NutTai({ photo }: { photo: ClientPhoto }) {
+  const { slug } = useSelection();
   const [trangThai, setTrangThai] = useState<TrangThaiTai>("san-sang");
   const tepSan = useRef<File | null>(null);
 
@@ -467,14 +468,14 @@ function NutTai({ photo }: { photo: ClientPhoto }) {
 
     setTrangThai("dang-tai");
     try {
-      const file = await taiTep(photo.id, photo.name);
+      const file = await taiTep(photo.id, photo.name, slug);
       tepSan.current = file;
       await giaoTep(file);
     } catch {
       setTrangThai("loi");
       setTimeout(() => setTrangThai("san-sang"), 3000);
     }
-  }, [trangThai, photo.id, photo.name, giaoTep]);
+  }, [trangThai, photo.id, photo.name, slug, giaoTep]);
 
   if (trangThai === "cho-cham") {
     return (

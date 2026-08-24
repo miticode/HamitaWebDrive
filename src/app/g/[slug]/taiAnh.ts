@@ -22,8 +22,8 @@ function tenAnh(ten: string, mime: string): string {
   return ten + (DUOI_THEO_MIME[mime] ?? ".jpg");
 }
 
-export async function taiTep(fileId: string, ten: string): Promise<File> {
-  const res = await fetch(`/api/download/${fileId}`);
+export async function taiTep(fileId: string, ten: string, slug: string): Promise<File> {
+  const res = await fetch(`/api/download/${fileId}?slug=${encodeURIComponent(slug)}`);
   // fetch không ném lỗi khi máy chủ trả về 4xx/5xx — phải tự kiểm tra res.ok,
   // bỏ qua là nút báo tải xong trong khi khách không nhận được gì.
   if (!res.ok) throw new Error(`Máy chủ trả về ${res.status}`);

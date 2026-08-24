@@ -163,6 +163,7 @@ export default async function GalleryPage({ params }: Props) {
               <p className="eyebrow mt-2">{album.photos.length} tấm</p>
               {gallery.allowDownload && (
                 <NutTaiFolder
+                  slug={slug}
                   ten={album.name}
                   anh={album.photos.map((p) => ({
                     id: p.id,

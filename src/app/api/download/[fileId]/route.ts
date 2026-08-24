@@ -1,16 +1,47 @@
+import { NextRequest } from "next/server";
 import sharp from "sharp";
 import { downloadFile, getFileMeta } from "@/lib/drive";
 import { boMetadataJpeg } from "@/lib/jpeg";
+import { loadTree } from "@/lib/gallery";
+import { getGalleryBySlug } from "@/lib/store";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-/** Tai anh ve may khach. Luon di qua day de khong lo link Drive goc. */
+/**
+ * Tai anh ve may khach. Luon di qua day de khong lo link Drive goc.
+ *
+ * Truoc day route nay nhan bat ky ma anh nao va tra thang file goc, khong
+ * kiem tra gi ca — ai xem duoc trang album cung ghep duoc link tai anh goc, ke
+ * ca khi studio da tat "Cho khach tai anh ve". Gio bat buoc phai keo theo
+ * ?slug=, va phai kiem tra CA HAI: album do co cho tai khong, VA anh do co
+ * that su nam trong album do khong (khong thi mot nguoi co quyen tai o album A
+ * se tai duoc anh cua album B da tat quyen tai, chi can biet ma anh).
+ */
 export async function GET(
-  _req: Request,
+  req: NextRequest,
   ctx: { params: Promise<{ fileId: string }> }
 ) {
   const { fileId } = await ctx.params;
+  const slug = req.nextUrl.searchParams.get("slug");
+
+  if (!slug) {
+    return Response.json({ error: "Thiếu thông tin album." }, { status: 400 });
+  }
+
+  const gallery = await getGalleryBySlug(slug);
+  if (!gallery) {
+    return Response.json({ error: "Không tìm thấy album." }, { status: 404 });
+  }
+  if (!gallery.allowDownload) {
+    return Response.json({ error: "Album này không cho tải ảnh." }, { status: 403 });
+  }
+
+  const tree = await loadTree(gallery.driveFolderId);
+  const thuocAlbum = tree.albums.some((a) => a.photos.some((p) => p.id === fileId));
+  if (!thuocAlbum) {
+    return Response.json({ error: "Ảnh không thuộc album này." }, { status: 404 });
+  }
 
   try {
     const [meta, original] = await Promise.all([
