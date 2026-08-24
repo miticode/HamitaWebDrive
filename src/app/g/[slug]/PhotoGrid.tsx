@@ -66,6 +66,64 @@ function Icon({ kind, filled }: { kind: ClientList["icon"]; filled: boolean }) {
   );
 }
 
+/**
+ * O ghi chu rieng cho mot tam anh trong mot danh sach da chon, vi du
+ * "in cỡ 40x60". Chi hien khi anh dang nam trong danh sach do — ghi chu la
+ * mot phan cua lua chon, khong co lua chon thi khong co gi de ghi chu vao.
+ *
+ * Luu luc roi khoi o nhap (blur) hoac bam Enter, khong luu tren tung phim go
+ * — tranh goi may chu lien tuc trong luc khach dang go.
+ */
+function OGhiChu({
+  photo,
+  album,
+  list,
+}: {
+  photo: ClientPhoto;
+  album: string;
+  list: ClientList;
+}) {
+  const { noteOf, guiGhiChu } = useSelection();
+  const [nhap, setNhap] = useState(() => noteOf(list.id, photo.id) ?? "");
+
+  const luu = () => guiGhiChu(list.id, { id: photo.id, name: photo.name, album }, nhap);
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-14 shrink-0 truncate text-[11px] text-white/45">{list.name}</span>
+      <input
+        value={nhap}
+        onChange={(e) => setNhap(e.target.value)}
+        onBlur={luu}
+        onKeyDown={(e) => {
+          if (e.key !== "Enter") return;
+          luu();
+          (e.target as HTMLInputElement).blur();
+        }}
+        onClick={(e) => e.stopPropagation()}
+        placeholder="Ghi chú, ví dụ: in cỡ 40x60"
+        maxLength={300}
+        className="min-w-0 flex-1 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white outline-none transition placeholder:text-white/40 focus:border-white/45 focus:bg-white/15"
+      />
+    </div>
+  );
+}
+
+function GhiChuAnh({ photo, album }: { photo: ClientPhoto; album: string }) {
+  const { lists, isSelected } = useSelection();
+  const coChon = lists.filter((l) => isSelected(l.id, photo.id));
+
+  if (coChon.length === 0) return null;
+
+  return (
+    <div className="mb-3 flex w-full max-w-xs flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
+      {coChon.map((list) => (
+        <OGhiChu key={`${photo.id}:${list.id}`} photo={photo} album={album} list={list} />
+      ))}
+    </div>
+  );
+}
+
 function SelectButtons({
   photo,
   album,
@@ -413,9 +471,12 @@ function Lightbox({
         )}
       </div>
 
-      <footer className="flex items-center justify-center gap-4 px-4 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        <SelectButtons photo={photo} album={album} size="lg" />
-        {allowDownload && <NutTai key={photo.id} photo={photo} />}
+      <footer className="flex flex-col items-center px-4 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <GhiChuAnh photo={photo} album={album} />
+        <div className="flex items-center justify-center gap-4">
+          <SelectButtons photo={photo} album={album} size="lg" />
+          {allowDownload && <NutTai key={photo.id} photo={photo} />}
+        </div>
       </footer>
     </div>
   );

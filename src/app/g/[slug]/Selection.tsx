@@ -29,6 +29,11 @@ type Ctx = {
   setFilter: (listId: string | null) => void;
   selectedIdsOf: (listId: string) => Set<string>;
 
+  /** Ghi chu rieng cho anh nay trong danh sach nay, vi du "in co 40x60". */
+  noteOf: (listId: string, fileId: string) => string | null;
+  /** Ghi lai ghi chu — chi co tac dung khi anh da nam trong danh sach do. */
+  guiGhiChu: (listId: string, photo: Photo, note: string) => void;
+
   /** Da nhap dung ma chua. */
   unlocked: boolean;
   askingCode: boolean;
@@ -39,6 +44,10 @@ type Ctx = {
 };
 
 const SelectionContext = createContext<Ctx | null>(null);
+
+function key(listId: string, fileId: string): string {
+  return `${listId}:${fileId}`;
+}
 
 export function SelectionProvider({
   slug,
@@ -56,7 +65,12 @@ export function SelectionProvider({
   anhTrongMuc: { id: string }[];
   children: ReactNode;
 }) {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  /*
+    key la "listId:fileId", gia tri la ghi chu (hoac null neu chua ghi gi).
+    Dung Map thay vi Set de mang theo ca ghi chu ma khong can them mot bang
+    trang thai rieng.
+  */
+  const [selected, setSelected] = useState<Map<string, string | null>>(new Map());
   const [failed, setFailed] = useState(false);
   const [filter, setFilter] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState(unlockedBanDau);
@@ -86,23 +100,33 @@ export function SelectionProvider({
   useEffect(() => {
     fetch(`/api/selections?slug=${encodeURIComponent(slug)}`)
       .then((r) => r.json())
-      .then((data: { selections?: { listId: string; driveFileId: string }[] }) => {
-        setSelected(
-          new Set((data.selections ?? []).map((s) => `${s.listId}:${s.driveFileId}`))
-        );
-      })
+      .then(
+        (data: {
+          selections?: { listId: string; driveFileId: string; note: string | null }[];
+        }) => {
+          setSelected(
+            new Map(
+              (data.selections ?? []).map((s) => [
+                key(s.listId, s.driveFileId),
+                s.note,
+              ])
+            )
+          );
+        }
+      )
       .catch(() => {});
   }, [slug]);
 
   const guiToggle = useCallback(
     (listId: string, photo: Photo) => {
-      const key = `${listId}:${photo.id}`;
+      const k = key(listId, photo.id);
+      const ghiChuCu = selected.get(k) ?? null;
 
       const flip = () =>
         setSelected((prev) => {
-          const next = new Set(prev);
-          if (next.has(key)) next.delete(key);
-          else next.add(key);
+          const next = new Map(prev);
+          if (next.has(k)) next.delete(k);
+          else next.set(k, null);
           return next;
         });
 
@@ -145,9 +169,49 @@ export function SelectionProvider({
         .catch(() => {
           setFailed(true);
           flip();
+          // Khoi phuc dung ghi chu cu neu vua bo chon (flip lai thanh da chon).
+          setSelected((prev) => {
+            if (!prev.has(k)) return prev;
+            const next = new Map(prev);
+            next.set(k, ghiChuCu);
+            return next;
+          });
         });
     },
-    [slug]
+    [slug, selected]
+  );
+
+  const guiGhiChuThat = useCallback(
+    (listId: string, photo: Photo, note: string) => {
+      const k = key(listId, photo.id);
+      if (!selected.has(k)) return; // Chi ghi chu duoc khi anh da nam trong danh sach.
+
+      const sach = note.trim();
+      const truoc = selected.get(k) ?? null;
+      setSelected((prev) => {
+        const next = new Map(prev);
+        next.set(k, sach || null);
+        return next;
+      });
+
+      fetch("/api/selections", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, listId, driveFileId: photo.id, note: sach }),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error(`Máy chủ trả về ${res.status}`);
+        })
+        .catch(() => {
+          setFailed(true);
+          setSelected((prev) => {
+            const next = new Map(prev);
+            next.set(k, truoc);
+            return next;
+          });
+        });
+    },
+    [slug, selected]
   );
 
   const toggle = useCallback(
@@ -160,6 +224,18 @@ export function SelectionProvider({
       guiToggle(listId, photo);
     },
     [unlocked, guiToggle]
+  );
+
+  const guiGhiChu = useCallback(
+    (listId: string, photo: Photo, note: string) => {
+      if (!unlocked) {
+        dangCho.current = () => guiGhiChuThat(listId, photo, note);
+        setAsking(true);
+        return;
+      }
+      guiGhiChuThat(listId, photo, note);
+    },
+    [unlocked, guiGhiChuThat]
   );
 
   const value = useMemo<Ctx>(
@@ -187,22 +263,24 @@ export function SelectionProvider({
       selectedIdsOf: (listId) => {
         const ids = new Set<string>();
         const prefix = `${listId}:`;
-        for (const key of selected) {
-          if (key.startsWith(prefix)) ids.add(key.slice(prefix.length));
+        for (const k of selected.keys()) {
+          if (k.startsWith(prefix)) ids.add(k.slice(prefix.length));
         }
         return ids;
       },
-      isSelected: (listId, fileId) => selected.has(`${listId}:${fileId}`),
+      isSelected: (listId, fileId) => selected.has(key(listId, fileId)),
+      noteOf: (listId, fileId) => selected.get(key(listId, fileId)) ?? null,
       countFor: (listId) => {
         const prefix = `${listId}:`;
         let n = 0;
-        for (const key of selected) {
-          if (!key.startsWith(prefix)) continue;
-          if (idTrongMuc.has(key.slice(prefix.length))) n++;
+        for (const k of selected.keys()) {
+          if (!k.startsWith(prefix)) continue;
+          if (idTrongMuc.has(k.slice(prefix.length))) n++;
         }
         return n;
       },
       toggle,
+      guiGhiChu,
     }),
     [
       lists,
@@ -210,6 +288,7 @@ export function SelectionProvider({
       slug,
       selected,
       toggle,
+      guiGhiChu,
       failed,
       filter,
       unlocked,

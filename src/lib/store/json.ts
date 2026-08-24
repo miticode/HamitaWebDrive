@@ -266,4 +266,24 @@ export const jsonStore: Store = {
       return { selected: true };
     });
   },
+
+  setSelectionNote(
+    listId: string,
+    driveFileId: string,
+    visitorId: string,
+    note: string | null
+  ) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const sel = db.selections.find(
+        (s) =>
+          s.listId === listId &&
+          s.driveFileId === driveFileId &&
+          s.visitorId === visitorId
+      );
+      if (!sel) return;
+      sel.note = note;
+      await writeToDisk(db);
+    });
+  },
 };

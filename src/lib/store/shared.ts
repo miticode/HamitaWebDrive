@@ -95,6 +95,13 @@ export type Store = {
   setExpiry(galleryId: string, expiresAt: string | null): Promise<void>;
   listCounts(): Promise<ListCount[]>;
   toggleSelection(input: ToggleSelectionInput): Promise<{ selected: boolean }>;
+  /** Ghi chu rieng cho mot anh da chon, vi du "in co 40x60". null = xoa ghi chu. */
+  setSelectionNote(
+    listId: string,
+    driveFileId: string,
+    visitorId: string,
+    note: string | null
+  ): Promise<void>;
 };
 
 /** Hai danh sach mac dinh tao kem moi gallery. */

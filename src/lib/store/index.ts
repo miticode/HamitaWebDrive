@@ -37,6 +37,8 @@ export const getSelections: Store["getSelections"] = (galleryId) =>
   store.getSelections(galleryId);
 export const toggleSelection: Store["toggleSelection"] = (input) =>
   store.toggleSelection(input);
+export const setSelectionNote: Store["setSelectionNote"] = (listId, driveFileId, visitorId, note) =>
+  store.setSelectionNote(listId, driveFileId, visitorId, note);
 export const updateGalleryMeta: Store["updateGalleryMeta"] = (id, meta) =>
   store.updateGalleryMeta(id, meta);
 export const listCounts: Store["listCounts"] = () => store.listCounts();

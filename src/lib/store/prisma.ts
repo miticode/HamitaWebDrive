@@ -229,4 +229,18 @@ export const prismaStore: Store = {
     }
     return { selected: true };
   },
+
+  async setSelectionNote(
+    listId: string,
+    driveFileId: string,
+    visitorId: string,
+    note: string | null
+  ) {
+    // updateMany thay vi update: khong nem loi neu chua ton tai dong nay (vi
+    // du khach go ghi chu dung luc phieu chon bi bo — im lang bo qua la du).
+    await getPrisma().selection.updateMany({
+      where: { listId, driveFileId, visitorId },
+      data: { note },
+    });
+  },
 };
