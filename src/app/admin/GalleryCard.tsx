@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Gallery, ListCount } from "@/lib/store";
 import { deleteGalleryAction, refreshGalleryAction } from "./actions";
 import { AccessControl } from "./AccessControl";
@@ -62,6 +62,20 @@ export function GalleryCard({
   const title = gallery.clientName ?? gallery.title;
   const chuaDongBo = gallery.syncedAt === null;
   const [moChonBia, setMoChonBia] = useState(false);
+
+  /*
+    Xoa album truoc day chi mot cu bam, khong hoi lai, khong co gi cuu lai —
+    bam nham la mat album kem toan bo anh khach da chon. Gio phai bam hai lan:
+    lan dau doi chu nut sang canh bao, qua 4 giay khong bam tiep thi tu huy.
+  */
+  const [hoiXoa, setHoiXoa] = useState(false);
+  const boDemHoiXoa = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (boDemHoiXoa.current) clearTimeout(boDemHoiXoa.current);
+    };
+  }, []);
 
   return (
     <article className="card group relative flex flex-col overflow-hidden">
@@ -172,9 +186,27 @@ export function GalleryCard({
             </button>
           </form>
 
-          <form action={deleteGalleryAction} className="ml-auto">
+          <form
+            action={deleteGalleryAction}
+            className="ml-auto"
+            onSubmit={(e) => {
+              if (hoiXoa) return; // Bam lan hai — cho gui that.
+              e.preventDefault();
+              setHoiXoa(true);
+              boDemHoiXoa.current = setTimeout(() => setHoiXoa(false), 4000);
+            }}
+          >
             <input type="hidden" name="id" value={gallery.id} />
-            <button className="btn btn-danger">Xoá</button>
+            <button
+              className="btn btn-danger"
+              title={
+                hoiXoa
+                  ? `Bấm lần nữa để xoá hẳn "${title}" — không lấy lại được`
+                  : `Xoá album "${title}"`
+              }
+            >
+              {hoiXoa ? "Bấm lần nữa để xoá hẳn" : "Xoá"}
+            </button>
           </form>
         </div>
       </div>
