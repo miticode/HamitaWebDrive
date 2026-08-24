@@ -27,6 +27,12 @@ export const STUDIO = {
   gioMoCua: "Mở cửa tất cả các ngày",
   facebook: "https://www.facebook.com/hamitaweddinghouse",
   tiktok: "https://www.tiktok.com/@hamitawedding",
+  /*
+    Giai ma truc tiep tu ma QR Zalo that cua studio (anh gui), khong tu doan
+    dinh dang so dien thoai — thu qua zalo.me/{so} khong cho ket qua ro rang
+    de phan biet dung/sai.
+  */
+  zalo: "https://zaloapp.com/qr/p/c3fjjs1rqlmy",
   /** So lieu tin cay tu trang Facebook, chi de hien thi — khong tinh toan gi. */
   soNguoiTheoDoi: "28K",
   soDanhGia: 289,

@@ -307,8 +307,11 @@ export default async function Home() {
             </div>
 
             <div className="mt-14 flex flex-wrap justify-center gap-3">
-              <a href={STUDIO.facebook} target="_blank" rel="noreferrer" className="btn-primary">
-                Nhắn tin Facebook
+              <a href={STUDIO.zalo} target="_blank" rel="noreferrer" className="btn-primary">
+                Nhắn tin Zalo
+              </a>
+              <a href={STUDIO.facebook} target="_blank" rel="noreferrer" className="btn">
+                Facebook
               </a>
               <a href={STUDIO.tiktok} target="_blank" rel="noreferrer" className="btn">
                 TikTok
