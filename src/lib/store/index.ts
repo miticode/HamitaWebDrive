@@ -44,3 +44,5 @@ export const setCover: Store["setCover"] = (id, fileId) => store.setCover(id, fi
 export const setAccess: Store["setAccess"] = (id, code) => store.setAccess(id, code);
 export const setMessage: Store["setMessage"] = (id, message) =>
   store.setMessage(id, message);
+export const setFeatured: Store["setFeatured"] = (id, featured) =>
+  store.setFeatured(id, featured);

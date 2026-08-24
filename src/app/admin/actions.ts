@@ -20,6 +20,7 @@ import {
   deleteGallery,
   setAccess,
   setCover,
+  setFeatured,
   setMessage,
 } from "@/lib/store";
 import { syncAndWarm } from "@/lib/warm";
@@ -181,6 +182,23 @@ export async function setMessageAction(
 
   await setMessage(galleryId, noiDung || null);
   revalidatePath("/admin");
+  return {};
+}
+
+/**
+ * Cho phep dua anh bia album nay len trang gioi thieu cong khai.
+ *
+ * Mac dinh TAT. Anh cuoi la anh cua khach, phai do studio chu dong chon tung
+ * album mot moi dua ra ngoai — khong tu dong lay het.
+ */
+export async function setFeaturedAction(
+  galleryId: string,
+  featured: boolean
+): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  await setFeatured(galleryId, featured);
+  revalidatePath("/admin");
+  revalidatePath("/");
   return {};
 }
 

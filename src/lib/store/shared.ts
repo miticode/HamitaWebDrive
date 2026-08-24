@@ -5,6 +5,8 @@ export type Gallery = {
   clientName: string | null;
   /** Loi nhan rieng cho khach nay. null = dung loi chuc chung. */
   message: string | null;
+  /** Cho phep dua anh bia len trang gioi thieu cong khai. */
+  featured: boolean;
   driveFolderId: string;
   allowDownload: boolean;
   createdAt: string;
@@ -85,6 +87,8 @@ export type Store = {
   setAccess(galleryId: string, code: string): Promise<void>;
 
   setMessage(galleryId: string, message: string | null): Promise<void>;
+
+  setFeatured(galleryId: string, featured: boolean): Promise<void>;
   listCounts(): Promise<ListCount[]>;
   toggleSelection(input: ToggleSelectionInput): Promise<{ selected: boolean }>;
 };
