@@ -43,6 +43,7 @@ export function AlbumView({
       slug={slug}
       allowDownload={gallery.allowDownload}
       unlocked={unlocked}
+      selectionsDoneAt={gallery.selectionsDoneAt}
       lists={lists.map((l) => ({ id: l.id, name: l.name, icon: l.icon }))}
       anhTrongMuc={photos}
     >

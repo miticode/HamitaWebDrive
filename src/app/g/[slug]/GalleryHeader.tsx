@@ -22,8 +22,19 @@ export function GalleryHeader({
   backLabel: string;
   total: number;
 }) {
-  const { lists, countFor, filter, setFilter, failed, unlocked, openCode } =
-    useSelection();
+  const {
+    lists,
+    countFor,
+    filter,
+    setFilter,
+    failed,
+    unlocked,
+    openCode,
+    tongSoDaChon,
+    daBaoXong,
+    baoXongLuc,
+    baoDaXong,
+  } = useSelection();
   const [dinh, setDinh] = useState(false);
 
   // Chỉ đổ bóng khi đã cuộn — lúc ở đầu trang để thanh chìm vào nền cho nhẹ mắt.
@@ -115,6 +126,43 @@ export function GalleryHeader({
             className="underline underline-offset-2 hover:text-accent"
           >
             xem lại tất cả {total} ảnh
+          </button>
+        </div>
+      )}
+
+      {/*
+        Chi moc noi khi da chon it nhat mot anh — bao "xong" luc chua chon gi
+        thi chang co y nghia. Ap dung cho ca gallery, khong rieng thu muc dang
+        xem, vi cac thu muc con dung chung mot danh sach chon.
+      */}
+      {unlocked && tongSoDaChon > 0 && !daBaoXong && (
+        <div className="border-t border-line bg-bg-soft px-4 py-2 text-center text-xs sm:px-6">
+          Đã chọn xong {tongSoDaChon} ảnh?{" "}
+          <button
+            onClick={() => baoDaXong(true)}
+            className="font-medium text-accent underline underline-offset-2 hover:text-fg"
+          >
+            Báo cho studio
+          </button>
+        </div>
+      )}
+
+      {daBaoXong && (
+        <div className="border-t border-emerald-200 bg-emerald-50 px-4 py-2 text-center text-xs text-emerald-800 sm:px-6">
+          Đã báo studio{" "}
+          {baoXongLuc &&
+            `lúc ${new Date(baoXongLuc).toLocaleString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+              day: "2-digit",
+              month: "2-digit",
+            })}`}{" "}
+          ·{" "}
+          <button
+            onClick={() => baoDaXong(false)}
+            className="underline underline-offset-2 hover:text-emerald-950"
+          >
+            chọn thêm ảnh
           </button>
         </div>
       )}

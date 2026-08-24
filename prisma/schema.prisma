@@ -44,6 +44,11 @@ model Gallery {
   /// tai ve. Chi la loi nhac — het han khong tu chan link, vi anh nam tren Drive.
   expiresAt     DateTime?
 
+  /// Khach tu bao "da chon xong anh" luc nao — null nghia la chua bao. Ap dung
+  /// cho ca gallery (moi thu muc con dung chung mot danh sach chon) nen khong
+  /// gan vao tung thu muc rieng.
+  selectionsDoneAt DateTime?
+
   lists SelectionList[]
 
   @@index([driveFolderId])

@@ -109,6 +109,7 @@ export const jsonStore: Store = {
         subfolders: [],
         syncedAt: null,
         expiresAt: hanMacDinh().toISOString(),
+        selectionsDoneAt: null,
         accessCode: null,
       };
 
@@ -235,6 +236,16 @@ export const jsonStore: Store = {
       const g = db.galleries.find((x) => x.id === galleryId);
       if (!g) return;
       g.expiresAt = expiresAt;
+      await writeToDisk(db);
+    });
+  },
+
+  setSelectionsDone(galleryId: string, xong: boolean) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const g = db.galleries.find((x) => x.id === galleryId);
+      if (!g) return;
+      g.selectionsDoneAt = xong ? new Date().toISOString() : null;
       await writeToDisk(db);
     });
   },

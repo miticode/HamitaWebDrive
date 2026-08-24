@@ -9,6 +9,8 @@ export type Gallery = {
   featured: boolean;
   /** Moc studio du dinh xoa anh (ISO). null = khong dat han. */
   expiresAt: string | null;
+  /** Khach tu bao da chon xong luc nao (ISO). null = chua bao. */
+  selectionsDoneAt: string | null;
   driveFolderId: string;
   allowDownload: boolean;
   createdAt: string;
@@ -93,6 +95,9 @@ export type Store = {
   setFeatured(galleryId: string, featured: boolean): Promise<void>;
 
   setExpiry(galleryId: string, expiresAt: string | null): Promise<void>;
+
+  /** Khach bao da chon xong hay chua. */
+  setSelectionsDone(galleryId: string, xong: boolean): Promise<void>;
   listCounts(): Promise<ListCount[]>;
   toggleSelection(input: ToggleSelectionInput): Promise<{ selected: boolean }>;
   /** Ghi chu rieng cho mot anh da chon, vi du "in co 40x60". null = xoa ghi chu. */

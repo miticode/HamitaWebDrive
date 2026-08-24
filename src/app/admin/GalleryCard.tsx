@@ -152,6 +152,19 @@ export function GalleryCard({
           expiresAt={gallery.expiresAt}
         />
 
+        {gallery.selectionsDoneAt && (
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700">
+            <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />
+            Khách báo đã chọn xong lúc{" "}
+            {new Date(gallery.selectionsDoneAt).toLocaleString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+              day: "2-digit",
+              month: "2-digit",
+            })}
+          </p>
+        )}
+
         <p className="mt-2 truncate text-xs text-fg-faint">
           /g/{gallery.slug} · {new Date(gallery.createdAt).toLocaleDateString("vi-VN")}
         </p>

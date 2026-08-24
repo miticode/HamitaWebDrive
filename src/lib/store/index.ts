@@ -50,3 +50,5 @@ export const setFeatured: Store["setFeatured"] = (id, featured) =>
   store.setFeatured(id, featured);
 export const setExpiry: Store["setExpiry"] = (id, expiresAt) =>
   store.setExpiry(id, expiresAt);
+export const setSelectionsDone: Store["setSelectionsDone"] = (id, xong) =>
+  store.setSelectionsDone(id, xong);

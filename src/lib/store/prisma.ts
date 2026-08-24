@@ -31,6 +31,7 @@ type GalleryRow = {
   subfolders: string[];
   syncedAt: Date | null;
   expiresAt: Date | null;
+  selectionsDoneAt: Date | null;
   accessCode: string | null;
 };
 
@@ -40,6 +41,7 @@ function toGallery(row: GalleryRow): Gallery {
     createdAt: row.createdAt.toISOString(),
     syncedAt: row.syncedAt?.toISOString() ?? null,
     expiresAt: row.expiresAt?.toISOString() ?? null,
+    selectionsDoneAt: row.selectionsDoneAt?.toISOString() ?? null,
   };
 }
 
@@ -201,6 +203,13 @@ export const prismaStore: Store = {
     await getPrisma().gallery.update({
       where: { id: galleryId },
       data: { expiresAt: expiresAt ? new Date(expiresAt) : null },
+    });
+  },
+
+  async setSelectionsDone(galleryId: string, xong: boolean) {
+    await getPrisma().gallery.update({
+      where: { id: galleryId },
+      data: { selectionsDoneAt: xong ? new Date() : null },
     });
   },
 

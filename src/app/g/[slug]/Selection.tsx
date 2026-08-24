@@ -34,6 +34,15 @@ type Ctx = {
   /** Ghi lai ghi chu — chi co tac dung khi anh da nam trong danh sach do. */
   guiGhiChu: (listId: string, photo: Photo, note: string) => void;
 
+  /** Tong so anh da chon, gop ca gallery — khong rieng thu muc dang xem. */
+  tongSoDaChon: number;
+  /** Khach da bao "chon xong" chua. */
+  daBaoXong: boolean;
+  /** Luc bao, dang ISO — null neu chua bao. */
+  baoXongLuc: string | null;
+  /** Bao hoac huy bao da chon xong. */
+  baoDaXong: (xong: boolean) => void;
+
   /** Da nhap dung ma chua. */
   unlocked: boolean;
   askingCode: boolean;
@@ -54,6 +63,7 @@ export function SelectionProvider({
   lists,
   allowDownload,
   unlocked: unlockedBanDau,
+  selectionsDoneAt,
   anhTrongMuc,
   children,
 }: {
@@ -61,6 +71,8 @@ export function SelectionProvider({
   lists: ClientList[];
   allowDownload: boolean;
   unlocked: boolean;
+  /** Khach da bao "chon xong" luc nao — null neu chua bao. */
+  selectionsDoneAt: string | null;
   /** Anh cua muc dang mo — dung de dem cho dung pham vi. */
   anhTrongMuc: { id: string }[];
   children: ReactNode;
@@ -74,6 +86,7 @@ export function SelectionProvider({
   const [failed, setFailed] = useState(false);
   const [filter, setFilter] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState(unlockedBanDau);
+  const [baoXongLuc, setBaoXongLuc] = useState(selectionsDoneAt);
 
   /*
     Con so tren the loc phai dem DUNG nhung tam bo loc se hien ra.
@@ -226,6 +239,39 @@ export function SelectionProvider({
     [unlocked, guiToggle]
   );
 
+  const baoDaXongThat = useCallback(
+    (xong: boolean) => {
+      const truoc = baoXongLuc;
+      setBaoXongLuc(xong ? new Date().toISOString() : null);
+
+      fetch("/api/gallery-done", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, xong }),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error(`Máy chủ trả về ${res.status}`);
+        })
+        .catch(() => {
+          setFailed(true);
+          setBaoXongLuc(truoc);
+        });
+    },
+    [slug, baoXongLuc]
+  );
+
+  const baoDaXong = useCallback(
+    (xong: boolean) => {
+      if (!unlocked) {
+        dangCho.current = () => baoDaXongThat(xong);
+        setAsking(true);
+        return;
+      }
+      baoDaXongThat(xong);
+    },
+    [unlocked, baoDaXongThat]
+  );
+
   const guiGhiChu = useCallback(
     (listId: string, photo: Photo, note: string) => {
       if (!unlocked) {
@@ -281,6 +327,10 @@ export function SelectionProvider({
       },
       toggle,
       guiGhiChu,
+      tongSoDaChon: selected.size,
+      daBaoXong: baoXongLuc !== null,
+      baoXongLuc,
+      baoDaXong,
     }),
     [
       lists,
@@ -294,6 +344,8 @@ export function SelectionProvider({
       unlocked,
       askingCode,
       idTrongMuc,
+      baoXongLuc,
+      baoDaXong,
     ]
   );
 
