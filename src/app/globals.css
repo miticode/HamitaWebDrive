@@ -196,3 +196,22 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Ảnh nền hero phóng to rất chậm — cảm giác chuyển động sống, không tĩnh cứng. */
+@keyframes phong-cham {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+.anh-nen-hero {
+  animation: phong-cham 20s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anh-nen-hero {
+    animation: none;
+  }
+}
