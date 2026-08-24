@@ -36,9 +36,21 @@ export default async function ResultsPage({ params }: Props) {
       <Link href="/admin" className="eyebrow transition hover:text-accent">
         ← Tất cả album
       </Link>
-      <h1 className="mt-2 border-b border-line pb-6 font-display text-2xl font-light sm:text-3xl">
-        Ảnh khách chọn — {gallery.clientName ?? gallery.title}
-      </h1>
+
+      <div className="mt-2 flex flex-wrap items-end justify-between gap-3 border-b border-line pb-6">
+        <h1 className="font-display text-2xl font-light sm:text-3xl">
+          Ảnh khách chọn — {gallery.clientName ?? gallery.title}
+        </h1>
+        {selections.length > 0 && (
+          <a
+            href={`/api/admin/export?slug=${encodeURIComponent(gallery.slug)}`}
+            className="btn-primary"
+            title="Tải file Excel liệt kê danh sách, thư mục, tên ảnh và ghi chú của mọi ảnh đã chọn"
+          >
+            Xuất Excel
+          </a>
+        )}
+      </div>
 
       {selections.length === 0 && (
         <p className="mt-10 text-sm text-fg-muted">Khách chưa chọn ảnh nào.</p>
