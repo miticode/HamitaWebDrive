@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useSelection } from "./Selection";
 
 /**
@@ -44,6 +44,75 @@ export function GalleryHeader({
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  /*
+    Truoc day moi trang thai (khoa, loc, hoi xong, da bao, loi) la mot dai mau
+    rieng, co the xep chong toi 3 dai cung luc — nang ne voi mot web anh cuoi
+    can su nhe nhang. Gio gop lai thanh TOI DA MOT dong phu duy nhat: cac muc
+    khong phai loi noi voi nhau bang dau cham giua, rieng loi that su van
+    duoc tach mau do de con nguoi con chu y ngay.
+  */
+  const muc: ReactNode[] = [];
+
+  if (!unlocked) {
+    muc.push(
+      <span key="khoa">
+        Cần mã của studio để chọn ảnh{" "}
+        <button
+          onClick={openCode}
+          className="underline underline-offset-2 hover:text-accent"
+        >
+          nhập mã
+        </button>
+      </span>
+    );
+  } else if (daBaoXong) {
+    muc.push(
+      <span key="xong" className="inline-flex items-center gap-1.5">
+        <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
+        Đã báo studio
+        {baoXongLuc &&
+          ` lúc ${new Date(baoXongLuc).toLocaleString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            day: "2-digit",
+            month: "2-digit",
+          })}`}{" "}
+        <button
+          onClick={() => baoDaXong(false)}
+          className="underline underline-offset-2 hover:text-accent"
+        >
+          chọn thêm ảnh
+        </button>
+      </span>
+    );
+  } else if (tongSoDaChon > 0) {
+    muc.push(
+      <span key="hoi">
+        Đã chọn xong {tongSoDaChon} ảnh?{" "}
+        <button
+          onClick={() => baoDaXong(true)}
+          className="font-medium text-accent underline underline-offset-2 hover:text-fg"
+        >
+          Báo cho studio
+        </button>
+      </span>
+    );
+  }
+
+  if (filter) {
+    muc.push(
+      <span key="loc">
+        Đang chỉ hiện ảnh đã chọn{" "}
+        <button
+          onClick={() => setFilter(null)}
+          className="underline underline-offset-2 hover:text-accent"
+        >
+          xem lại tất cả {total} ảnh
+        </button>
+      </span>
+    );
+  }
 
   return (
     <header
@@ -106,71 +175,21 @@ export function GalleryHeader({
         </div>
       </div>
 
-      {!unlocked && (
-        <div className="border-t border-line bg-bg-soft px-4 py-1.5 text-center text-xs text-fg-muted sm:px-6">
-          Cần mã của studio để chọn ảnh ·{" "}
-          <button
-            onClick={openCode}
-            className="underline underline-offset-2 hover:text-accent"
-          >
-            nhập mã
-          </button>
-        </div>
-      )}
-
-      {filter && (
-        <div className="border-t border-line bg-accent-soft px-4 py-2 text-center text-xs sm:px-6">
-          Đang chỉ hiện ảnh đã chọn ·{" "}
-          <button
-            onClick={() => setFilter(null)}
-            className="underline underline-offset-2 hover:text-accent"
-          >
-            xem lại tất cả {total} ảnh
-          </button>
-        </div>
-      )}
-
-      {/*
-        Chi moc noi khi da chon it nhat mot anh — bao "xong" luc chua chon gi
-        thi chang co y nghia. Ap dung cho ca gallery, khong rieng thu muc dang
-        xem, vi cac thu muc con dung chung mot danh sach chon.
-      */}
-      {unlocked && tongSoDaChon > 0 && !daBaoXong && (
-        <div className="border-t border-line bg-bg-soft px-4 py-2 text-center text-xs sm:px-6">
-          Đã chọn xong {tongSoDaChon} ảnh?{" "}
-          <button
-            onClick={() => baoDaXong(true)}
-            className="font-medium text-accent underline underline-offset-2 hover:text-fg"
-          >
-            Báo cho studio
-          </button>
-        </div>
-      )}
-
-      {daBaoXong && (
-        <div className="border-t border-emerald-200 bg-emerald-50 px-4 py-2 text-center text-xs text-emerald-800 sm:px-6">
-          Đã báo studio{" "}
-          {baoXongLuc &&
-            `lúc ${new Date(baoXongLuc).toLocaleString("vi-VN", {
-              hour: "2-digit",
-              minute: "2-digit",
-              day: "2-digit",
-              month: "2-digit",
-            })}`}{" "}
-          ·{" "}
-          <button
-            onClick={() => baoDaXong(false)}
-            className="underline underline-offset-2 hover:text-emerald-950"
-          >
-            chọn thêm ảnh
-          </button>
-        </div>
-      )}
-
-      {failed && (
+      {failed ? (
         <div className="border-t border-red-200 bg-red-50 px-4 py-2 text-center text-xs text-red-700 sm:px-6">
           Có lựa chọn chưa lưu được — kiểm tra mạng rồi bấm lại giúp em
         </div>
+      ) : (
+        muc.length > 0 && (
+          <div className="border-t border-line bg-bg-soft px-4 py-2 text-center text-xs text-fg-muted sm:px-6">
+            {muc.map((m, i) => (
+              <span key={i}>
+                {i > 0 && <span className="mx-2.5 text-fg-faint">·</span>}
+                {m}
+              </span>
+            ))}
+          </div>
+        )
       )}
     </header>
   );
