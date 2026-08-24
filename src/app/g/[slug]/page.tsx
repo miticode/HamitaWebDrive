@@ -122,60 +122,63 @@ export default async function GalleryPage({ params }: Props) {
         )}
       </header>
 
-      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-24">
+      {/*
+        space-y thay vi div rong co dinh lam khoang cach: DemNguoc va LoiChuc
+        co the tu tra ve null (chua/khong dat han, chua tinh xong gio o phia
+        khach) — div rong co dinh se de lai mot khoang trong vo nghia truoc
+        khoi ke tiep. space-y chi ap margin giua NHUNG PHAN TU THAT SU CO MAT
+        trong DOM, tu dong dung neu mot khoi phia truoc khong render gi.
+      */}
+      <div className="mx-auto max-w-6xl space-y-14 px-5 py-16 sm:space-y-20 sm:px-6 sm:py-24">
         <DemNguoc
           expiresAt={gallery.expiresAt}
           allowDownload={gallery.allowDownload}
         />
 
-        <div className="h-10" />
-
         <LoiChuc noiDung={gallery.message} />
 
-        <div className="h-14 sm:h-20" />
-
-        {tree.albums.length === 0 && (
+        {tree.albums.length === 0 ? (
           <p className="text-center text-sm text-fg-muted">Thư mục này chưa có ảnh nào.</p>
-        )}
-
-        <div className="grid grid-cols-1 gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {tree.albums.map((album) => (
-            <div key={album.id || ROOT_ALBUM} className="text-center">
-              {/* Nút tải nằm NGOÀI thẻ Link: để bên trong thì bấm tải sẽ nhảy
-                  luôn sang trang xem ảnh. */}
-              <Link
-                href={`/g/${slug}/${album.id || ROOT_ALBUM}`}
-                className="group block"
-              >
-                <div className="skeleton aspect-[3/4] overflow-hidden rounded-sm">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/api/img/${album.photos[0].id}?w=960`}
-                    alt={album.name}
-                    loading="lazy"
-                    className="size-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.04]"
+        ) : (
+          <div className="grid grid-cols-1 gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {tree.albums.map((album) => (
+              <div key={album.id || ROOT_ALBUM} className="text-center">
+                {/* Nút tải nằm NGOÀI thẻ Link: để bên trong thì bấm tải sẽ nhảy
+                    luôn sang trang xem ảnh. */}
+                <Link
+                  href={`/g/${slug}/${album.id || ROOT_ALBUM}`}
+                  className="group block"
+                >
+                  <div className="skeleton aspect-[3/4] overflow-hidden rounded-sm">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/img/${album.photos[0].id}?w=960`}
+                      alt={album.name}
+                      loading="lazy"
+                      className="size-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.04]"
+                    />
+                  </div>
+                  <h2 className="mt-5 font-display text-2xl font-normal transition group-hover:text-accent sm:text-3xl">
+                    {album.name}
+                  </h2>
+                </Link>
+                <p className="eyebrow mt-2">{album.photos.length} tấm</p>
+                {gallery.allowDownload && (
+                  <NutTaiFolder
+                    slug={slug}
+                    ten={album.name}
+                    anh={album.photos.map((p) => ({
+                      id: p.id,
+                      name: p.name,
+                      section: p.section,
+                    }))}
+                    tongByte={album.photos.reduce((tong, p) => tong + p.size, 0)}
                   />
-                </div>
-                <h2 className="mt-5 font-display text-2xl font-normal transition group-hover:text-accent sm:text-3xl">
-                  {album.name}
-                </h2>
-              </Link>
-              <p className="eyebrow mt-2">{album.photos.length} tấm</p>
-              {gallery.allowDownload && (
-                <NutTaiFolder
-                  slug={slug}
-                  ten={album.name}
-                  anh={album.photos.map((p) => ({
-                    id: p.id,
-                    name: p.name,
-                    section: p.section,
-                  }))}
-                  tongByte={album.photos.reduce((tong, p) => tong + p.size, 0)}
-                />
-              )}
-            </div>
-          ))}
-        </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <footer className="border-t border-line py-12 text-center">
