@@ -30,3 +30,16 @@ export function siteUrl(): URL {
 
   return new URL("http://localhost:3000");
 }
+
+/**
+ * So ngay giu anh mac dinh — sau moc nay studio du dinh xoa anh khoi Drive.
+ * Chi la loi nhac de khach tranh thu tai; het han khong tu chan link.
+ */
+export const SO_NGAY_GIU_ANH_MAC_DINH = 90;
+
+/** Moc het han mac dinh cho album vua tao: hom nay cong so ngay giu anh. */
+export function hanMacDinh(): Date {
+  const d = new Date();
+  d.setDate(d.getDate() + SO_NGAY_GIU_ANH_MAC_DINH);
+  return d;
+}

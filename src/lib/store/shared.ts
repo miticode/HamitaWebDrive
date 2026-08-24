@@ -7,6 +7,8 @@ export type Gallery = {
   message: string | null;
   /** Cho phep dua anh bia len trang gioi thieu cong khai. */
   featured: boolean;
+  /** Moc studio du dinh xoa anh (ISO). null = khong dat han. */
+  expiresAt: string | null;
   driveFolderId: string;
   allowDownload: boolean;
   createdAt: string;
@@ -89,6 +91,8 @@ export type Store = {
   setMessage(galleryId: string, message: string | null): Promise<void>;
 
   setFeatured(galleryId: string, featured: boolean): Promise<void>;
+
+  setExpiry(galleryId: string, expiresAt: string | null): Promise<void>;
   listCounts(): Promise<ListCount[]>;
   toggleSelection(input: ToggleSelectionInput): Promise<{ selected: boolean }>;
 };

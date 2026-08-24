@@ -12,6 +12,7 @@ import {
   type Store,
   type ToggleSelectionInput,
 } from "./shared";
+import { hanMacDinh } from "@/lib/constants";
 
 /**
  * Kho du lieu bang file JSON — chi dung khi chay o may.
@@ -107,6 +108,7 @@ export const jsonStore: Store = {
         albumCount: 0,
         subfolders: [],
         syncedAt: null,
+        expiresAt: hanMacDinh().toISOString(),
         accessCode: null,
       };
 
@@ -223,6 +225,16 @@ export const jsonStore: Store = {
       const g = db.galleries.find((x) => x.id === galleryId);
       if (!g) return;
       g.featured = featured;
+      await writeToDisk(db);
+    });
+  },
+
+  setExpiry(galleryId: string, expiresAt: string | null) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const g = db.galleries.find((x) => x.id === galleryId);
+      if (!g) return;
+      g.expiresAt = expiresAt;
       await writeToDisk(db);
     });
   },

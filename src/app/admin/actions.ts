@@ -20,6 +20,7 @@ import {
   deleteGallery,
   setAccess,
   setCover,
+  setExpiry,
   setFeatured,
   setMessage,
 } from "@/lib/store";
@@ -199,6 +200,31 @@ export async function setFeaturedAction(
   await setFeatured(galleryId, featured);
   revalidatePath("/admin");
   revalidatePath("/");
+  return {};
+}
+
+/**
+ * Dat moc het han cho album — thoi diem studio du dinh xoa anh khoi Drive.
+ *
+ * Khach thay dem nguoc de tranh thu tai ve. Day chi la loi nhac: het han khong
+ * tu chan link, vi anh nam tren Drive, xoa hay khong la do studio.
+ *
+ * Nhan ISO string (do trang quan ly tinh tu ngay tao + so ngay) hoac null de bo
+ * moc han.
+ */
+export async function setExpiryAction(
+  galleryId: string,
+  expiresAt: string | null
+): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+
+  if (expiresAt !== null) {
+    const t = Date.parse(expiresAt);
+    if (Number.isNaN(t)) return { error: "Ngày không hợp lệ." };
+  }
+
+  await setExpiry(galleryId, expiresAt);
+  revalidatePath("/admin");
   return {};
 }
 

@@ -10,6 +10,7 @@ import {
   type Store,
   type ToggleSelectionInput,
 } from "./shared";
+import { hanMacDinh } from "@/lib/constants";
 
 /** Kho du lieu tren Postgres (Neon) — dung khi da dat DATABASE_URL. */
 
@@ -29,6 +30,7 @@ type GalleryRow = {
   albumCount: number;
   subfolders: string[];
   syncedAt: Date | null;
+  expiresAt: Date | null;
   accessCode: string | null;
 };
 
@@ -37,6 +39,7 @@ function toGallery(row: GalleryRow): Gallery {
     ...row,
     createdAt: row.createdAt.toISOString(),
     syncedAt: row.syncedAt?.toISOString() ?? null,
+    expiresAt: row.expiresAt?.toISOString() ?? null,
   };
 }
 
@@ -91,6 +94,7 @@ export const prismaStore: Store = {
           data: {
             ...input,
             slug,
+            expiresAt: hanMacDinh(),
             lists: { create: DEFAULT_LISTS },
           },
         });
@@ -190,6 +194,13 @@ export const prismaStore: Store = {
     await getPrisma().gallery.update({
       where: { id: galleryId },
       data: { featured },
+    });
+  },
+
+  async setExpiry(galleryId: string, expiresAt: string | null) {
+    await getPrisma().gallery.update({
+      where: { id: galleryId },
+      data: { expiresAt: expiresAt ? new Date(expiresAt) : null },
     });
   },
 

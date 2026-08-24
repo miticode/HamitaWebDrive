@@ -46,3 +46,5 @@ export const setMessage: Store["setMessage"] = (id, message) =>
   store.setMessage(id, message);
 export const setFeatured: Store["setFeatured"] = (id, featured) =>
   store.setFeatured(id, featured);
+export const setExpiry: Store["setExpiry"] = (id, expiresAt) =>
+  store.setExpiry(id, expiresAt);

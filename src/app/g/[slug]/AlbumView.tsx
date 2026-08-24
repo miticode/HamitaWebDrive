@@ -4,6 +4,7 @@ import type { Gallery, SelectionList } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { GalleryHeader } from "./GalleryHeader";
 import { LoiChuc } from "@/components/LoiChuc";
+import { DemNguoc } from "./DemNguoc";
 import { PhotoGrid } from "./PhotoGrid";
 import { CodeDialog } from "./CodeDialog";
 import { SelectionProvider } from "./Selection";
@@ -53,6 +54,15 @@ export function AlbumView({
       />
 
       <main className="mx-auto w-full max-w-[1700px] px-2 pb-24 sm:px-6">
+        {!backHref && (
+          <div className="pt-5">
+            <DemNguoc
+              expiresAt={gallery.expiresAt}
+              allowDownload={gallery.allowDownload}
+            />
+          </div>
+        )}
+
         <div className="py-10 text-center sm:py-14">
           <Logo size="md" className="mx-auto" />
           <h1 className="rule mt-5 font-display text-3xl leading-tight font-light sm:text-5xl">

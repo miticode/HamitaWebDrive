@@ -9,6 +9,7 @@ import { CopyLink } from "./CopyLink";
 import { CoverPicker } from "./CoverPicker";
 import { LoiNhan } from "./LoiNhan";
 import { AnhTieuBieu } from "./AnhTieuBieu";
+import { ThoiHan } from "./ThoiHan";
 
 function Stat({
   icon,
@@ -141,6 +142,12 @@ export function GalleryCard({
           galleryId={gallery.id}
           featured={gallery.featured}
           coTheHien={gallery.coverFileId !== null}
+        />
+
+        <ThoiHan
+          galleryId={gallery.id}
+          createdAt={gallery.createdAt}
+          expiresAt={gallery.expiresAt}
         />
 
         <p className="mt-2 truncate text-xs text-fg-faint">

@@ -8,6 +8,7 @@ import { Logo } from "@/components/Logo";
 import { daMoKhoa } from "@/lib/access";
 import { AlbumView } from "./AlbumView";
 import { LoiChuc } from "@/components/LoiChuc";
+import { DemNguoc } from "./DemNguoc";
 import { NutTaiFolder } from "./NutTaiFolder";
 
 export const dynamic = "force-dynamic";
@@ -122,6 +123,13 @@ export default async function GalleryPage({ params }: Props) {
       </header>
 
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-24">
+        <DemNguoc
+          expiresAt={gallery.expiresAt}
+          allowDownload={gallery.allowDownload}
+        />
+
+        <div className="h-10" />
+
         <LoiChuc noiDung={gallery.message} />
 
         <div className="h-14 sm:h-20" />

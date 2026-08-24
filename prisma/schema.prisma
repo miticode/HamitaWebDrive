@@ -40,6 +40,10 @@ model Gallery {
   subfolders    String[]
   syncedAt      DateTime?
 
+  /// Moc studio du dinh xoa anh khoi Drive. Khach thay dem nguoc de tranh thu
+  /// tai ve. Chi la loi nhac — het han khong tu chan link, vi anh nam tren Drive.
+  expiresAt     DateTime?
+
   lists SelectionList[]
 
   @@index([driveFolderId])
