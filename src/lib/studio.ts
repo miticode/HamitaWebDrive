@@ -6,10 +6,19 @@
   Sửa ở đây là đổi trên toàn trang, không phải đi tìm từng chỗ.
 */
 
+import { STUDIO_NAME } from "./constants";
+
 export const STUDIO = {
-  ten: "Hamita Wedding House",
+  /*
+    Lay chung ten voi cac trang xem anh (constants.ts) thay vi tu dinh nghia
+    rieng — truoc day hai noi ghi hai ten khac nhau ("Hamita Studio" vs "Hamita
+    Wedding House"), khach thay ten khac nhau tuy trang. Studio co nhieu mang
+    (cuoi, be, gia dinh...) nen ten chung phai la ten chung, khong rieng cho
+    mang cuoi.
+  */
+  ten: STUDIO_NAME,
   khauHieu: "Sang trọng từ tâm — tận tình như nhà",
-  moTa: "Cưới hỏi trọn gói tại Tầm Vu, Long An",
+  moTa: "Chụp ảnh cưới, gia đình & bé yêu tại Tầm Vu, Long An",
   dienThoai: "098 234 1989",
   /** Dang dung cho the <a href="tel:"> — khong dau cach. */
   dienThoaiSo: "0982341989",
@@ -58,7 +67,7 @@ export const DICH_VU = [
 /** Thuong hieu thu hai cua studio — chup be va gia dinh. */
 export const HAMI_BABY = {
   ten: "Hami Baby Studio",
-  moTa: "Chụp ảnh thôi nôi, bé yêu, ảnh bầu, sơ sinh và gia đình tại Long An.",
+  moTa: "Mảng chụp bé yêu và gia đình của Hamita Studio — thôi nôi, bầu, sơ sinh tại Long An.",
   dienThoai: "079 772 2972",
   dienThoaiSo: "0797722972",
   facebook: "https://www.facebook.com/hamibabylongan",

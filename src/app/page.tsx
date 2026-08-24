@@ -143,8 +143,8 @@ export default async function Home() {
               Lo trọn ngày cưới, từ ý tưởng tới khoảnh khắc cuối cùng
             </h2>
             <p className="mt-7 text-[15px] leading-[1.85] text-fg-muted">
-              Hamita Wedding House là nơi lo trọn gói ngày cưới tại Tầm Vu, Long
-              An — từ lễ hỏi, ảnh cưới, trang điểm cho tới chiếc váy cô dâu mặc
+              Hamita Studio là nơi lo trọn gói ngày cưới tại Tầm Vu, Long An —
+              từ lễ hỏi, ảnh cưới, trang điểm cho tới chiếc váy cô dâu mặc
               trong ngày trọng đại. Mỗi cặp đôi một câu chuyện riêng, chúng tôi
               lắng nghe trước khi bấm máy.
             </p>
@@ -209,7 +209,7 @@ export default async function Home() {
       <section className="border-t border-line">
         <div className="mx-auto max-w-3xl px-5 py-24 text-center sm:px-6 sm:py-28">
           <FadeIn>
-            <p className="eyebrow">Thương hiệu cùng nhà</p>
+            <p className="eyebrow">Mảng dịch vụ khác</p>
             <h2 className="mt-5 font-display text-3xl font-light sm:text-4xl">
               {HAMI_BABY.ten}
             </h2>
