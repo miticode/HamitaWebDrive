@@ -38,62 +38,51 @@ export default async function Home() {
     .map((g) => g.coverFileId as string)
     .slice(0, 8);
 
-  const anhNen = anhTieuBieu[0] ?? null;
-  const anhBenCanh = anhTieuBieu[1] ?? anhTieuBieu[0] ?? null;
+  const anhBenCanh = anhTieuBieu[0] ?? null;
 
   return (
     <main>
-      <NavGioiThieu coAnhNen={anhNen !== null} />
+      <NavGioiThieu coAnhNen />
 
-      <header className="relative flex min-h-[100svh] items-center justify-center overflow-hidden">
-        {anhNen && (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/img/${anhNen}?w=2048`}
-              alt=""
-              aria-hidden
-              className="anh-nen-hero absolute inset-0 size-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/40 to-black/70" />
-          </>
-        )}
+      {/*
+        Ảnh bìa cố định do studio cung cấp (public/gioi-thieu-bia.jpg) — khác
+        với ảnh bìa album, đây là ảnh quảng bá riêng, không lấy từ Drive khách.
+        Ảnh đã kín chữ (logo HAMITA, tên đội, khẩu hiệu) nên KHÔNG chồng thêm
+        chữ của trang lên — dễ rối. Tên studio dời xuống dải tiêu đề ngay dưới,
+        như cách đặt caption dưới ảnh bìa tạp chí.
+      */}
+      <header className="relative flex min-h-[78svh] items-center justify-center overflow-hidden sm:min-h-[92svh]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/gioi-thieu-bia.jpg"
+          alt={`Ảnh quảng bá ${STUDIO.ten}`}
+          className="anh-nen-hero absolute inset-0 size-full object-cover object-top"
+        />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/55 to-transparent" />
 
-        <div className="relative w-full px-6 py-24 text-center">
+        <span
+          aria-hidden
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-2xl text-white/60"
+        >
+          ↓
+        </span>
+      </header>
+
+      <section className="border-b border-line">
+        <div className="mx-auto max-w-3xl px-6 py-14 text-center sm:py-16">
           <FadeIn>
-            <Logo size="lg" on={anhNen ? "dark" : "page"} className="mx-auto" />
-          </FadeIn>
-
-          <FadeIn cham={120}>
-            <h1
-              className="mt-8 font-display text-[2.75rem] leading-[1.05] font-light sm:text-6xl lg:text-7xl"
-              style={anhNen ? { color: "#fff" } : undefined}
-            >
+            <h1 className="font-display text-3xl leading-tight font-light sm:text-5xl">
               {STUDIO.ten}
             </h1>
-          </FadeIn>
-
-          <FadeIn cham={220}>
-            <p
-              className="mx-auto mt-6 max-w-xl font-display text-xl font-light text-balance sm:text-2xl"
-              style={{ color: anhNen ? "rgba(255,255,255,0.9)" : "var(--fg-muted)" }}
-            >
+            <p className="mx-auto mt-4 max-w-xl font-display text-lg font-light text-fg-muted text-balance sm:text-xl">
               {STUDIO.khauHieu}
             </p>
-          </FadeIn>
+            <p className="eyebrow mt-4">{STUDIO.moTa}</p>
 
-          <FadeIn cham={300}>
-            <p
-              className="mt-7 text-xs tracking-[0.28em] uppercase"
-              style={{ color: anhNen ? "rgba(255,255,255,0.65)" : "var(--fg-faint)" }}
-            >
-              {STUDIO.moTa}
-            </p>
-
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <a
                 href={`tel:${STUDIO.dienThoaiSo}`}
-                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-7 text-sm font-medium tracking-wide text-[#1f1c1a] transition hover:opacity-90 active:scale-95"
+                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-fg px-7 text-sm font-medium tracking-wide text-bg transition hover:opacity-88 active:scale-95"
               >
                 <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 5c0 8.3 6.7 15 15 15l2-3-4-2-2 2a15 15 0 0 1-6-6l2-2-2-4Z" />
@@ -103,26 +92,14 @@ export default async function Home() {
               <a
                 href="#dich-vu"
                 className="inline-flex min-h-12 items-center rounded-full border px-7 text-sm tracking-wide transition active:scale-95"
-                style={
-                  anhNen
-                    ? { borderColor: "rgba(255,255,255,0.45)", color: "#fff" }
-                    : { borderColor: "var(--line-strong)", color: "var(--fg)" }
-                }
+                style={{ borderColor: "var(--line-strong)", color: "var(--fg)" }}
               >
                 Xem dịch vụ
               </a>
             </div>
           </FadeIn>
         </div>
-
-        <span
-          aria-hidden
-          className="absolute bottom-7 left-1/2 -translate-x-1/2 text-2xl"
-          style={{ color: anhNen ? "rgba(255,255,255,0.5)" : "var(--fg-faint)" }}
-        >
-          ↓
-        </span>
-      </header>
+      </section>
 
       {/* Tin cậy bằng số thật từ Facebook — không tự bịa số liệu. */}
       <section className="border-b border-line bg-bg-soft">
