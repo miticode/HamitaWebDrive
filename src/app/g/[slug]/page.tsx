@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ROOT_ALBUM, STUDIO_NAME } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
+import type { GalleryTree } from "@/lib/drive";
 import { getGalleryBySlug, getLists } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { DriveLoi } from "@/components/DriveLoi";
@@ -15,6 +16,24 @@ import { NutTaiFolder } from "./NutTaiFolder";
 export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ slug: string }> };
+
+/**
+ * Chọn tấm làm ảnh bìa cho trang khách xem.
+ *
+ * Ưu tiên tấm studio đã chọn ở trang quản lý (`coverFileId`). Trước đây trang
+ * này lấy cứng tấm đầu tiên của thư mục đầu tiên, nên anh đổi bìa trong trang
+ * quản lý thì thẻ album ở đó đổi mà trang khách mở ra vẫn y nguyên tấm cũ.
+ *
+ * Vẫn phải đối chiếu tấm đó có thật trong thư mục hay không rồi mới dùng:
+ * ảnh nằm trên Drive, studio có thể đã xoá hoặc dời tấm đó đi mà số liệu lưu
+ * trong database chưa kịp cập nhật — lúc đó lùi về tấm đầu tiên còn hơn để
+ * khách mở ra thấy một ô ảnh vỡ ngay đầu trang.
+ */
+function chonAnhBia(coverFileId: string | null, tree: GalleryTree) {
+  const tatCa = tree.albums.flatMap((a) => a.photos);
+  const daChon = coverFileId ? tatCa.find((p) => p.id === coverFileId) : undefined;
+  return daChon ?? tree.albums[0]?.photos[0];
+}
 
 /**
  * Thẻ xem trước khi gửi link qua Zalo/Facebook: lấy luôn tấm ảnh đầu tiên của
@@ -31,7 +50,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   let total = 0;
   try {
     const tree = await loadTree(gallery.driveFolderId);
-    cover = tree.albums[0]?.photos[0]?.id ?? null;
+    // Cùng tấm bìa với trang album, để thẻ xem trước lúc khách gửi link qua
+    // Zalo/Facebook khớp với thứ họ thấy khi bấm vào.
+    cover = chonAnhBia(gallery.coverFileId, tree)?.id ?? null;
     total = tree.totalPhotos;
   } catch {
     // Drive lỗi thì vẫn trả về thẻ xem trước dạng chữ, không để trang chết theo.
@@ -92,7 +113,7 @@ export default async function GalleryPage({ params }: Props) {
     );
   }
 
-  const cover = tree.albums[0]?.photos[0];
+  const cover = chonAnhBia(gallery.coverFileId, tree);
 
   return (
     <main>
