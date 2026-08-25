@@ -57,7 +57,7 @@ export function GalleryHeader({
   if (!unlocked) {
     muc.push(
       <span key="khoa">
-        Cần mã của studio để chọn ảnh{" "}
+        Anh chị xin Hamita mã để chọn ảnh nhé{" "}
         <button
           onClick={openCode}
           className="underline underline-offset-2 hover:text-accent"
@@ -70,7 +70,7 @@ export function GalleryHeader({
     muc.push(
       <span key="xong" className="inline-flex items-center gap-1.5">
         <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
-        Đã báo studio
+        Hamita đã nhận được rồi ạ
         {baoXongLuc &&
           ` lúc ${new Date(baoXongLuc).toLocaleString("vi-VN", {
             hour: "2-digit",
@@ -82,19 +82,19 @@ export function GalleryHeader({
           onClick={() => baoDaXong(false)}
           className="underline underline-offset-2 hover:text-accent"
         >
-          chọn thêm ảnh
+          chọn thêm nữa
         </button>
       </span>
     );
   } else if (tongSoDaChon > 0) {
     muc.push(
       <span key="hoi">
-        Đã chọn xong {tongSoDaChon} ảnh?{" "}
+        Anh chị chọn xong {tongSoDaChon} tấm rồi phải không ạ?{" "}
         <button
           onClick={() => baoDaXong(true)}
           className="font-medium text-accent underline underline-offset-2 hover:text-fg"
         >
-          Báo cho studio
+          Báo cho Hamita
         </button>
       </span>
     );
@@ -103,7 +103,7 @@ export function GalleryHeader({
   if (filter) {
     muc.push(
       <span key="loc">
-        Đang chỉ hiện ảnh đã chọn{" "}
+        Đang xem riêng những tấm anh chị đã chọn{" "}
         <button
           onClick={() => setFilter(null)}
           className="underline underline-offset-2 hover:text-accent"
@@ -177,7 +177,7 @@ export function GalleryHeader({
 
       {failed ? (
         <div className="border-t border-red-200 bg-red-50 px-4 py-2 text-center text-xs text-red-700 sm:px-6">
-          Có lựa chọn chưa lưu được — kiểm tra mạng rồi bấm lại giúp em
+          Có tấm chưa lưu kịp — anh chị xem lại mạng rồi bấm giúp Hamita nhé
         </div>
       ) : (
         muc.length > 0 && (

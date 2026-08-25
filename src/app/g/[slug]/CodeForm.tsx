@@ -29,13 +29,13 @@ export function CodeForm({
       try {
         const kq = await moKhoaAction(slug, ma);
         if (!kq.ok) {
-          setLoi(kq.error ?? "Không mở được album.");
+          setLoi(kq.error ?? "Hamita chưa mở được album này ạ.");
           return;
         }
         onDone();
         router.refresh();
       } catch {
-        setLoi("Mạng trục trặc, anh chị thử lại giúp em.");
+        setLoi("Mạng đang trục trặc, anh chị thử lại giúp Hamita nhé.");
       }
     });
   };

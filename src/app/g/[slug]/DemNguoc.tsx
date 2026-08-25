@@ -53,10 +53,10 @@ export function DemNguoc({
   if (conLaiMs <= 0) {
     return (
       <Khung mau="het">
-        <b>Link ảnh đã quá hạn lưu giữ ({ngayHan}).</b>{" "}
+        <b>Bộ ảnh đã quá hạn Hamita giữ giúp ({ngayHan}) rồi ạ.</b>{" "}
         {allowDownload
-          ? "Nếu ảnh vẫn còn xem được, anh chị tải ngay giúp studio nhé — ảnh có thể bị dọn bất cứ lúc nào."
-          : "Anh chị liên hệ studio nếu cần lấy lại ảnh nhé."}
+          ? "Nếu vẫn còn xem được thì anh chị tải ngay về máy giúp Hamita nhé, ảnh có thể được dọn bất cứ lúc nào."
+          : "Anh chị nhắn Hamita một tiếng nếu cần lấy lại bộ ảnh nhé."}
       </Khung>
     );
   }
@@ -78,11 +78,11 @@ export function DemNguoc({
 
   return (
     <Khung mau={gap ? "gap" : "thuong"}>
-      Link xem ảnh {conLai} nữa sẽ hết hạn{" "}
-      <span className="whitespace-nowrap">(ngày {ngayHan})</span>.{" "}
+      Hamita giữ giúp anh chị bộ ảnh này thêm {conLai} nữa thôi{" "}
+      <span className="whitespace-nowrap">(tới ngày {ngayHan})</span>.{" "}
       {allowDownload
-        ? "Anh chị nhớ tải hết ảnh về máy trước ngày này nhé."
-        : "Anh chị lưu ý thời gian để không lỡ mất bộ ảnh nhé."}
+        ? "Anh chị tranh thủ tải hết về máy trước ngày đó nhé, để dành xem lâu dài ạ."
+        : "Anh chị để ý giúp Hamita mốc này để không lỡ mất bộ ảnh nhé."}
     </Khung>
   );
 }

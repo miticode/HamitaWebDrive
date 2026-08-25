@@ -28,12 +28,12 @@ export function DriveLoi({
 
       <p className="eyebrow mt-8">{tenKhach}</p>
       <h1 className="rule mt-4 font-display text-3xl leading-tight font-light sm:text-4xl">
-        Ảnh đang tạm thời chưa tải được
+        Ảnh chưa chịu hiện ra anh chị ạ
       </h1>
       <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-fg-muted">
-        Kho ảnh của studio đang trục trặc một chút nên trang chưa lấy được ảnh
-        về. <b className="font-medium text-fg">Ảnh của anh chị vẫn còn nguyên</b> —
-        anh chị thử tải lại sau vài phút giúp em nhé.
+        Kho ảnh của Hamita đang trục trặc một chút nên trang chưa lấy ảnh về
+        được. <b className="font-medium text-fg">Ảnh của anh chị vẫn còn nguyên
+        vẹn</b> — anh chị chờ vài phút rồi thử lại giúp Hamita nhé.
       </p>
 
       <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
@@ -41,7 +41,7 @@ export function DriveLoi({
           Thử lại
         </Link>
         <a href={`tel:${STUDIO.dienThoaiSo}`} className="btn">
-          Gọi studio · {STUDIO.dienThoai}
+          Gọi Hamita · {STUDIO.dienThoai}
         </a>
       </div>
     </main>

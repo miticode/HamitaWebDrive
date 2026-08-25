@@ -29,11 +29,11 @@ export default function CoLoi({
 
       <p className="eyebrow mt-8">Có lỗi xảy ra</p>
       <h1 className="rule mt-4 font-display text-4xl leading-tight font-light sm:text-5xl">
-        Trang gặp trục trặc
+        Trang đang hơi trục trặc
       </h1>
       <p className="mx-auto mt-6 max-w-sm text-sm leading-relaxed text-fg-muted">
-        Có gì đó không ổn phía máy chủ. Anh chị thử tải lại giúp em, hoặc liên
-        hệ studio nếu vẫn còn lỗi.
+        Có gì đó chưa ổn phía Hamita. Anh chị thử tải lại trang giúp Hamita nhé,
+        vẫn không được thì gọi cho Hamita một tiếng ạ.
       </p>
 
       <div className="mt-9 flex flex-wrap items-center justify-center gap-3">

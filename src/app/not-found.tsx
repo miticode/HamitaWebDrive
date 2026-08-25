@@ -16,11 +16,11 @@ export default function KhongTimThay() {
 
       <p className="eyebrow mt-8">Lỗi 404</p>
       <h1 className="rule mt-4 font-display text-4xl leading-tight font-light sm:text-5xl">
-        Không tìm thấy trang này
+        Hamita tìm mãi không thấy trang này
       </h1>
       <p className="mx-auto mt-6 max-w-sm text-sm leading-relaxed text-fg-muted">
-        Đường dẫn có thể đã gõ sai, hoặc album không còn tồn tại. Anh chị kiểm
-        tra lại link studio đã gửi, hoặc liên hệ để được gửi lại.
+        Có thể đường dẫn gõ thiếu một chữ, hoặc album đã được dọn rồi ạ. Anh chị
+        xem lại link Hamita gửi giúp, hoặc nhắn một tiếng để Hamita gửi lại nhé.
       </p>
 
       <div className="mt-9 flex flex-wrap items-center justify-center gap-3">

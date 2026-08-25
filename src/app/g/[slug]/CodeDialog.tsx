@@ -37,10 +37,10 @@ export function CodeDialog() {
       >
         <p className="eyebrow">Chọn ảnh</p>
         <h2 className="mt-1.5 font-display text-2xl leading-snug font-light">
-          Anh chị nhập mã studio đã gửi
+          Anh chị nhập mã Hamita đã gửi nhé
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-fg-muted">
-          Nhập một lần là chọn ảnh thoải mái, không phải nhập lại.
+          Chỉ cần nhập một lần thôi ạ, sau đó anh chị cứ thoải mái chọn.
         </p>
 
         <div className="mt-5">

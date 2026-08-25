@@ -101,7 +101,7 @@ function OGhiChu({
           (e.target as HTMLInputElement).blur();
         }}
         onClick={(e) => e.stopPropagation()}
-        placeholder="Ghi chú, ví dụ: in cỡ 40x60"
+        placeholder="Dặn Hamita điều gì không ạ? Ví dụ: in cỡ 40x60"
         maxLength={300}
         className="min-w-0 flex-1 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white outline-none transition placeholder:text-white/40 focus:border-white/45 focus:bg-white/15"
       />
@@ -270,9 +270,11 @@ export function PhotoGrid({ photos, album }: { photos: ClientPhoto[]; album: str
   if (visible.length === 0) {
     return (
       <div className="py-24 text-center">
-        <p className="font-display text-2xl">Chưa có ảnh nào ở đây</p>
+        <p className="font-display text-2xl">Ở đây chưa có tấm nào ạ</p>
         <p className="mt-2 text-sm text-fg-muted">
-          {filter ? "Bỏ bộ lọc ở trên để xem lại toàn bộ ảnh." : "Thư mục này đang trống."}
+          {filter
+            ? "Anh chị bỏ bộ lọc ở trên để xem lại trọn bộ nhé."
+            : "Hamita sẽ thả ảnh vào đây sớm thôi ạ."}
         </p>
       </div>
     );
@@ -575,7 +577,7 @@ function NutTai({ photo }: { photo: ClientPhoto }) {
         onClick={xuLy}
         className="flex h-14 items-center gap-2 rounded-full bg-red-500/20 px-5 text-sm font-medium text-red-200 transition active:scale-95"
       >
-        Tải lỗi — thử lại
+        Chưa tải được — bấm thử lại nhé
       </button>
     );
   }

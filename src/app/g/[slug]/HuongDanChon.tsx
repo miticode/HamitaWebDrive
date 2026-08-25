@@ -28,8 +28,8 @@ export function HuongDanChon({
   const buoc = [
     {
       so: "01",
-      ten: "Xem ảnh",
-      mo: "Chạm vào từng tấm để xem lớn. Anh chị cứ xem thong thả rồi hãy chọn, lúc nào quay lại xem tiếp cũng được.",
+      ten: "Ngắm ảnh thật kỹ",
+      mo: "Chạm vào từng tấm để xem thật lớn. Anh chị cứ thong thả ngắm, hôm nay chưa xong thì mai mở lại xem tiếp cũng được ạ.",
       them: null as string | null,
       icon: (
         <>
@@ -41,25 +41,25 @@ export function HuongDanChon({
     },
     {
       so: "02",
-      ten: "Thả tim ảnh muốn in",
-      mo: "Bấm dấu tim trên tấm nào anh chị muốn studio in ra. Dấu tick dành cho ảnh anh chị muốn giữ riêng.",
+      ten: "Thả tim tấm mình thương",
+      mo: "Thấy tấm nào ưng, anh chị bấm trái tim để Hamita in ra nhé. Còn dấu tick dành cho những tấm anh chị muốn giữ riêng cho mình.",
       them: soAnhTrongGoi
-        ? `Gói của anh chị gồm ${soAnhTrongGoi} ảnh in. Thích thêm tấm nào ngoài gói vẫn chọn thoải mái — mỗi tấm ${tien(giaAnhThem)}đ, đã gồm chỉnh sửa và in.`
+        ? `Gói của anh chị có ${soAnhTrongGoi} tấm in. Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái, mỗi tấm ${tien(giaAnhThem)}đ đã gồm cả chỉnh sửa và in ạ.`
         : null,
       icon: <path d="M12 20s-7-4.6-7-9.5A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.5c0 4.9-7 9.5-7 9.5Z" />,
     },
     {
       so: "03",
-      ten: "Ghi chú điều mong muốn",
-      mo: "Muốn ảnh sáng hơn, muốn chỉnh chi tiết nào — anh chị ghi ngay dưới tấm ảnh đó.",
-      them: "Studio đọc kỹ từng ghi chú trước khi bắt tay chỉnh sửa.",
+      ten: "Dặn dò Hamita",
+      mo: "Muốn ảnh sáng hơn, muốn chỉnh chỗ nào — anh chị cứ ghi ngay dưới tấm đó, đừng ngại nhé.",
+      them: "Hamita đọc kỹ từng dòng anh chị dặn trước khi bắt tay chỉnh sửa.",
       icon: <path d="M20 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z" />,
     },
     {
       so: "04",
-      ten: "Báo studio khi xong",
-      mo: 'Chọn xong, anh chị bấm "Báo cho studio" ở thanh trên cùng để studio biết mà bắt đầu làm.',
-      them: "Chọn thiếu hay muốn đổi ý sau đó vẫn sửa lại được.",
+      ten: "Nhắn Hamita một tiếng",
+      mo: 'Chọn xong, anh chị bấm "Báo cho Hamita" ở thanh trên cùng là Hamita nhận được ngay và bắt tay vào làm liền.',
+      them: "Lỡ quên tấm nào hay đổi ý sau đó, anh chị vẫn chọn lại được bình thường ạ.",
       icon: (
         <>
           <circle cx="12" cy="12" r="9" />
@@ -126,9 +126,9 @@ export function HuongDanChon({
       */}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-bg-soft px-5 py-4">
         <div className="min-w-0">
-          <p className="text-sm font-medium">Chưa biết chọn tấm nào?</p>
+          <p className="text-sm font-medium">Phân vân quá, chọn tấm nào bây giờ?</p>
           <p className="mt-0.5 text-[13px] text-fg-muted">
-            Anh chị cứ nhắn, studio xem cùng và gợi ý giúp.
+            Anh chị cứ nhắn, Hamita ngồi xem cùng và gợi ý giúp anh chị ạ.
           </p>
         </div>
         <a
@@ -137,7 +137,7 @@ export function HuongDanChon({
           rel="noreferrer"
           className="btn shrink-0"
         >
-          Nhắn studio · {STUDIO.dienThoai}
+          Nhắn Hamita · {STUDIO.dienThoai}
         </a>
       </div>
     </section>

@@ -13,9 +13,9 @@ export const STUDIO_NAME =
  * cac buoi chup.
  */
 export const LOI_CHUC_MAC_DINH =
-  "Cảm ơn anh chị đã tin tưởng và đồng hành cùng chúng tôi. " +
-  "Chúc anh chị trăm năm hạnh phúc — mong bộ ảnh này giữ trọn " +
-  "những khoảnh khắc đẹp nhất của anh chị.";
+  "Cảm ơn anh chị đã tin tưởng và để Hamita được đồng hành. " +
+  "Hamita gửi anh chị trọn bộ ảnh ở đây — mong mỗi lần mở ra, " +
+  "anh chị lại thấy nguyên vẹn niềm vui của ngày hôm ấy.";
 
 /**
  * Dia chi goc cua web, dung cho anh xem truoc khi gui link qua Zalo/Facebook.

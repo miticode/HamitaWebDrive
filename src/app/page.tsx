@@ -50,7 +50,7 @@ export default async function Home() {
     .map((g) => g.coverFileId as string)
     .slice(0, 8);
 
-  // Ảnh minh hoạ cạnh phần "Về chúng tôi" — đoạn đó nói về cưới nên lấy ảnh cưới.
+  // Ảnh minh hoạ cạnh phần "Về Hamita" — đoạn đó nói về cưới nên lấy ảnh cưới.
   const anhBenCanh = anhTieuBieu[0] ?? null;
 
   return (
@@ -141,15 +141,15 @@ export default async function Home() {
           </FadeIn>
 
           <FadeIn cham={140}>
-            <p className="eyebrow">Về chúng tôi</p>
+            <p className="eyebrow">Về Hamita</p>
             <h2 className="rule mt-5 font-display text-3xl leading-[1.3] font-light text-balance sm:text-4xl">
               Lo trọn ngày cưới, từ ý tưởng tới khoảnh khắc cuối cùng
             </h2>
             <p className="mt-7 text-[15px] leading-[1.85] text-fg-muted">
-              Hamita Studio là nơi lo trọn gói ngày cưới tại Tầm Vu, Long An —
-              từ lễ hỏi, ảnh cưới, trang điểm cho tới chiếc váy cô dâu mặc
-              trong ngày trọng đại. Mỗi cặp đôi một câu chuyện riêng, chúng tôi
-              lắng nghe trước khi bấm máy.
+              Hamita là nơi lo trọn gói ngày cưới tại Tầm Vu, Long An — từ lễ
+              hỏi, ảnh cưới, trang điểm cho tới chiếc váy cô dâu mặc trong ngày
+              trọng đại. Mỗi cặp đôi một câu chuyện riêng, nên Hamita ngồi nghe
+              anh chị kể trước đã, rồi mới bấm máy.
             </p>
           </FadeIn>
         </div>
@@ -188,7 +188,7 @@ export default async function Home() {
                   nhãn chung chung không còn phân biệt được hai mảng. */}
               <p className="eyebrow text-center">Ảnh cưới</p>
               <h2 className="rule mx-auto mt-5 max-w-lg text-center font-display text-3xl font-light sm:text-4xl">
-                Khoảnh khắc chúng tôi ghi lại
+                Những khoảnh khắc Hamita giữ lại
               </h2>
             </FadeIn>
 

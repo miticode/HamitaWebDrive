@@ -220,12 +220,12 @@ export function NutTaiFolder({
     return (
       <div className="mt-3 max-w-[15rem] rounded-md border border-amber-300 bg-amber-50 p-3 text-left">
         <p className="text-[0.8125rem] font-medium text-amber-900">
-          Bộ này nặng {dungLuong(tongByte)}
+          Bộ này nặng những {dungLuong(tongByte)} lận
         </p>
         <p className="mt-1 text-xs leading-relaxed text-amber-800">
-          Trên máy này, trình duyệt phải gom hết ảnh vào bộ nhớ trước khi lưu
-          được — có thể chậm hoặc treo máy. Mở bằng Chrome/Edge trên máy tính
-          sẽ tải thẳng xuống ổ đĩa, không giới hạn dung lượng.
+          Máy này phải gom hết ảnh vào bộ nhớ rồi mới lưu được, nên có thể chậm
+          hoặc đơ máy anh chị ạ. Nếu tiện, anh chị mở bằng Chrome hoặc Edge trên
+          máy tính thì ảnh tải thẳng xuống ổ đĩa, nặng bao nhiêu cũng được.
         </p>
         <div className="mt-3 flex gap-2">
           <button onClick={() => setTrangThai("san-sang")} className="btn flex-1">
@@ -259,9 +259,9 @@ export function NutTaiFolder({
   if (trangThai === "khong-ho-tro") {
     return (
       <p className="mt-3 text-xs leading-relaxed text-fg-muted">
-        Trình duyệt này không lưu được cả bộ ảnh.
+        Trình duyệt này chưa lưu được cả bộ ảnh anh chị ạ.
         <br />
-        Bấm ••• ở góc trên rồi chọn mở bằng Safari, sau đó tải lại giúp em nhé.
+        Anh chị bấm ••• ở góc trên, chọn mở bằng Safari rồi tải lại giúp Hamita nhé.
       </p>
     );
   }
@@ -292,7 +292,7 @@ export function NutTaiFolder({
   return (
     <button onClick={() => batDau()} className="btn mt-3">
       {trangThai === "loi" ? (
-        <span className="text-red-600">Tải lỗi — bấm để thử lại</span>
+        <span className="text-red-600">Chưa tải được — bấm thử lại nhé</span>
       ) : (
         <>
           <svg
