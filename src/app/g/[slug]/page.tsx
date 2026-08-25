@@ -9,6 +9,7 @@ import { Logo } from "@/components/Logo";
 import { DriveLoi } from "@/components/DriveLoi";
 import { LoiChuc } from "@/components/LoiChuc";
 import { DemNguoc } from "./DemNguoc";
+import { NutLuuApp } from "./NutLuuApp";
 import { NutTaiFolder } from "./NutTaiFolder";
 
 export const dynamic = "force-dynamic";
@@ -69,6 +70,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     // Khách hay gửi link cho nhau, không cần Google lập chỉ mục album riêng tư.
     robots: { index: false, follow: false },
+
+    /*
+      Bản khai báo để khách đặt album lên màn hình chính, mở ra như một app.
+      Mỗi album một bản riêng (xem manifest.webmanifest/route.ts) — có vậy lối
+      tắt mới vào thẳng ảnh nhà khách chứ không rơi về trang giới thiệu.
+    */
+    manifest: `/g/${slug}/manifest.webmanifest`,
+
+    /*
+      iPhone không đọc "icons" trong bản khai báo, phải khai riêng bằng thẻ
+      apple-touch-icon; thiếu nó thì lối tắt trên iPhone hiện ra một ô xám chụp
+      màn hình trang, rất xấu.
+    */
+    icons: { apple: [{ url: `/g/${slug}/icon/192`, sizes: "192x192" }] },
+
+    appleWebApp: {
+      capable: true,
+      title,
+      // Thanh trạng thái hoà vào nền kem của trang thay vì một dải đen.
+      statusBarStyle: "default",
+    },
+
+    /*
+      Next chỉ sinh thẻ chuẩn mới `mobile-web-app-capable`. iPhone từ iOS 16.4
+      (2023) đọc được bản khai báo nên không sao, nhưng máy cũ hơn vẫn chỉ hiểu
+      thẻ `apple-mobile-web-app-capable` — thiếu nó thì lối tắt mở ra trong
+      Safari kèm thanh địa chỉ, không thành app. Khai thêm tay cho chắc; hai thẻ
+      cùng tồn tại không xung đột.
+    */
+    other: { "apple-mobile-web-app-capable": "yes" },
   };
 }
 
@@ -160,6 +191,13 @@ export default async function GalleryPage({ params }: Props) {
         />
 
         <LoiChuc noiDung={gallery.message} />
+
+        {/*
+          Nút đặt album lên màn hình chính. Đặt ở trang bìa chứ không phải trong
+          từng thư mục: lối tắt luôn mở về trang bìa, nên mời khách lưu ngay ở
+          chính trang mà lối tắt sẽ dẫn tới là đúng chỗ nhất.
+        */}
+        <NutLuuApp tenKhach={title} />
 
         {/*
           Ít mục thì thu hẹp lưới lại và đặt giữa, thay vì để một thẻ đơn độc
