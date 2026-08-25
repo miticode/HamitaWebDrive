@@ -5,6 +5,7 @@ import {
   slugify,
   type CreateGalleryInput,
   type Gallery,
+  type MucXong,
   type Selection,
   type SelectionList,
   type GalleryMeta,
@@ -71,6 +72,15 @@ type SelectionRow = {
   note: string | null;
   createdAt: Date;
 };
+
+function toMucXong(row: {
+  galleryId: string;
+  albumId: string;
+  tenMuc: string;
+  xongLuc: Date;
+}): MucXong {
+  return { ...row, xongLuc: row.xongLuc.toISOString() };
+}
 
 function toSelection(row: SelectionRow): Selection {
   return { ...row, createdAt: row.createdAt.toISOString() };
@@ -254,6 +264,45 @@ export const prismaStore: Store = {
       where: { id: galleryId },
       data: { selectionsDoneAt: xong ? new Date() : null },
     });
+  },
+
+  async setMucXong(
+    galleryId: string,
+    albumId: string,
+    tenMuc: string,
+    xong: boolean
+  ) {
+    const prisma = getPrisma();
+    const khoa = { galleryId_albumId: { galleryId, albumId } };
+
+    if (!xong) {
+      // deleteMany chu khong delete: khach bam "chon them" khi chua tung bao
+      // xong thi khong co dong nao, va do khong phai loi.
+      await prisma.mucXong.deleteMany({ where: { galleryId, albumId } });
+      return;
+    }
+
+    await prisma.mucXong.upsert({
+      where: khoa,
+      create: { galleryId, albumId, tenMuc },
+      // Bao lai thi cap nhat gio, va cap nhat luon ten neu thu muc da doi ten.
+      update: { tenMuc, xongLuc: new Date() },
+    });
+  },
+
+  async getMucXong(galleryId: string) {
+    const rows = await getPrisma().mucXong.findMany({
+      where: { galleryId },
+      orderBy: { xongLuc: "desc" },
+    });
+    return rows.map(toMucXong);
+  },
+
+  async listMucXong() {
+    const rows = await getPrisma().mucXong.findMany({
+      orderBy: { xongLuc: "desc" },
+    });
+    return rows.map(toMucXong);
   },
 
   async toggleSelection(input: ToggleSelectionInput) {

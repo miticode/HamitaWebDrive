@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Gallery, ListCount } from "@/lib/store";
+import type { Gallery, ListCount, MucXong } from "@/lib/store";
 import { refreshGalleryAction } from "./actions";
 import { AccessControl } from "./AccessControl";
 import { CopyLink } from "./CopyLink";
@@ -59,9 +59,12 @@ function Stat({
 export function GalleryCard({
   gallery,
   counts,
+  mucXong,
 }: {
   gallery: Gallery;
   counts: ListCount[];
+  /** Các thư mục khách đã báo chọn xong của album này. */
+  mucXong: MucXong[];
 }) {
   const title = gallery.clientName ?? gallery.title;
   const chuaDongBo = gallery.syncedAt === null;
@@ -121,21 +124,32 @@ export function GalleryCard({
             tenThuMuc={gallery.title}
           />
 
-          {gallery.selectionsDoneAt && (
-            <span
-              title={`Khách báo đã chọn xong lúc ${new Date(
-                gallery.selectionsDoneAt
-              ).toLocaleString("vi-VN", {
-                hour: "2-digit",
-                minute: "2-digit",
-                day: "2-digit",
-                month: "2-digit",
-              })}`}
-              className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700"
-            >
-              <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />
-              Đã chọn xong
-            </span>
+          {/*
+            Mỗi thư mục khách báo xong là một nhãn riêng. Trước đây chỉ có một
+            nhãn "Đã chọn xong" cho cả album, nên album năm sáu thư mục thì
+            studio không biết khách mới xong cái nào — mà đó lại chính là thứ
+            cần biết để bắt tay làm.
+          */}
+          {mucXong.length > 0 && (
+            <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+              {mucXong.map((m) => (
+                <span
+                  key={m.albumId}
+                  title={`Khách báo xong thư mục "${m.tenMuc}" lúc ${new Date(
+                    m.xongLuc
+                  ).toLocaleString("vi-VN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    day: "2-digit",
+                    month: "2-digit",
+                  })}`}
+                  className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700"
+                >
+                  <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />
+                  <span className="max-w-[10rem] truncate">{m.tenMuc}</span>
+                </span>
+              ))}
+            </div>
           )}
         </div>
 

@@ -8,6 +8,7 @@ export type {
   GalleryMeta,
   ListCount,
   Gallery,
+  MucXong,
   Selection,
   SelectionList,
   ToggleSelectionInput,
@@ -63,3 +64,10 @@ export const setExpiry: Store["setExpiry"] = (id, expiresAt) =>
   store.setExpiry(id, expiresAt);
 export const setSelectionsDone: Store["setSelectionsDone"] = (id, xong) =>
   store.setSelectionsDone(id, xong);
+
+export const setMucXong: Store["setMucXong"] = (id, albumId, ten, xong) =>
+  store.setMucXong(id, albumId, ten, xong);
+
+export const getMucXong: Store["getMucXong"] = (id) => store.getMucXong(id);
+
+export const listMucXong: Store["listMucXong"] = () => store.listMucXong();

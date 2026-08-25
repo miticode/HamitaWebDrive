@@ -63,7 +63,8 @@ export function SelectionProvider({
   lists,
   allowDownload,
   unlocked: unlockedBanDau,
-  selectionsDoneAt,
+  mucDangXem,
+  mucXongLuc,
   anhTrongMuc,
   children,
 }: {
@@ -72,7 +73,13 @@ export function SelectionProvider({
   allowDownload: boolean;
   unlocked: boolean;
   /** Khach da bao "chon xong" luc nao — null neu chua bao. */
-  selectionsDoneAt: string | null;
+  /**
+   * Thu muc dang mo. Trang thai "da chon xong" tinh rieng cho tung thu muc,
+   * nen moi thao tac bao xong deu phai kem theo no.
+   */
+  mucDangXem: { id: string; ten: string };
+  /** Khach da bao xong THU MUC NAY luc nao — null neu chua bao. */
+  mucXongLuc: string | null;
   /** Anh cua muc dang mo — dung de dem cho dung pham vi. */
   anhTrongMuc: { id: string }[];
   children: ReactNode;
@@ -86,7 +93,7 @@ export function SelectionProvider({
   const [failed, setFailed] = useState(false);
   const [filter, setFilter] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState(unlockedBanDau);
-  const [baoXongLuc, setBaoXongLuc] = useState(selectionsDoneAt);
+  const [baoXongLuc, setBaoXongLuc] = useState(mucXongLuc);
 
   /*
     Con so tren the loc phai dem DUNG nhung tam bo loc se hien ra.
@@ -244,10 +251,16 @@ export function SelectionProvider({
       const truoc = baoXongLuc;
       setBaoXongLuc(xong ? new Date().toISOString() : null);
 
+      // Kèm thư mục đang mở: trạng thái xong tính riêng cho từng thư mục.
       fetch("/api/gallery-done", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, xong }),
+        body: JSON.stringify({
+          slug,
+          albumId: mucDangXem.id,
+          tenMuc: mucDangXem.ten,
+          xong,
+        }),
       })
         .then((res) => {
           if (!res.ok) throw new Error(`Máy chủ trả về ${res.status}`);
@@ -257,7 +270,7 @@ export function SelectionProvider({
           setBaoXongLuc(truoc);
         });
     },
-    [slug, baoXongLuc]
+    [slug, baoXongLuc, mucDangXem]
   );
 
   const baoDaXong = useCallback(
@@ -327,7 +340,23 @@ export function SelectionProvider({
       },
       toggle,
       guiGhiChu,
-      tongSoDaChon: selected.size,
+      /*
+        Đếm số TẤM riêng biệt khách đã chọn TRONG THƯ MỤC ĐANG MỞ.
+
+        Trước đây lấy thẳng selected.size, tức là đếm cả album và đếm cả những
+        dòng trùng — một tấm vừa thả tim vừa tick sẽ tính thành hai. Từ khi
+        trạng thái "chọn xong" tính riêng từng thư mục, con số hỏi khách
+        ("chọn xong N tấm rồi phải không ạ?") cũng phải là của đúng thư mục họ
+        đang xem, không thì hỏi một đằng làm một nẻo.
+      */
+      tongSoDaChon: (() => {
+        const anh = new Set<string>();
+        for (const k of selected.keys()) {
+          const fileId = k.slice(k.indexOf(":") + 1);
+          if (idTrongMuc.has(fileId)) anh.add(fileId);
+        }
+        return anh.size;
+      })(),
       daBaoXong: baoXongLuc !== null,
       baoXongLuc,
       baoDaXong,

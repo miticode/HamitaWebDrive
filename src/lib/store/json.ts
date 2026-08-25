@@ -7,6 +7,7 @@ import {
   slugify,
   type CreateGalleryInput,
   type Gallery,
+  type MucXong,
   type Selection,
   type SelectionList,
   type GalleryMeta,
@@ -25,10 +26,12 @@ type Db = {
   galleries: Gallery[];
   lists: SelectionList[];
   selections: Selection[];
+  /** Them sau nen co the thieu o tep cu — luon doc bang `?? []`. */
+  mucXong?: MucXong[];
 };
 
 const FILE = join(process.cwd(), "data", "db.json");
-const EMPTY: Db = { galleries: [], lists: [], selections: [] };
+const EMPTY: Db = { galleries: [], lists: [], selections: [], mucXong: [] };
 
 async function readFromDisk(): Promise<Db> {
   try {
@@ -295,6 +298,36 @@ export const jsonStore: Store = {
       if (!g) return;
       g.selectionsDoneAt = xong ? new Date().toISOString() : null;
       await writeToDisk(db);
+    });
+  },
+
+  setMucXong(galleryId: string, albumId: string, tenMuc: string, xong: boolean) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const ds = db.mucXong ?? [];
+      const conLai = ds.filter(
+        (m) => !(m.galleryId === galleryId && m.albumId === albumId)
+      );
+
+      db.mucXong = xong
+        ? [...conLai, { galleryId, albumId, tenMuc, xongLuc: new Date().toISOString() }]
+        : conLai;
+
+      await writeToDisk(db);
+    });
+  },
+
+  getMucXong(galleryId: string) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      return (db.mucXong ?? []).filter((m) => m.galleryId === galleryId);
+    });
+  },
+
+  listMucXong() {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      return db.mucXong ?? [];
     });
   },
 

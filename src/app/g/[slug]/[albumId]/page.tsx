@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ROOT_ALBUM } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
-import { getGalleryBySlug, getLists } from "@/lib/store";
+import { getGalleryBySlug, getLists, getMucXong } from "@/lib/store";
 import { daMoKhoa } from "@/lib/access";
 import { DriveLoi } from "@/components/DriveLoi";
 import { AlbumView } from "../AlbumView";
@@ -42,6 +42,14 @@ export default async function AlbumPage({ params }: Props) {
   const album = tree.albums.find((a) => a.id === wanted);
   if (!album) notFound();
 
+  /*
+    Trạng thái "đã chọn xong" của RIÊNG thư mục này. Khách chọn xong thư mục
+    đầu rồi sang thư mục thứ hai thì ở đây phải hiện lại lời mời chọn, chứ
+    không phải "đã báo xong" của thư mục trước.
+  */
+  const dsXong = await getMucXong(gallery.id);
+  const mucXongLuc = dsXong.find((m) => m.albumId === wanted)?.xongLuc ?? null;
+
   return (
     <AlbumView
       slug={slug}
@@ -50,6 +58,7 @@ export default async function AlbumPage({ params }: Props) {
       album={album}
       backHref={`/g/${slug}`}
       unlocked={unlocked}
+      mucXongLuc={mucXongLuc}
     />
   );
 }

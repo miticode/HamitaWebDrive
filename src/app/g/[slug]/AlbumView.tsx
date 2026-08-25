@@ -23,6 +23,7 @@ export function AlbumView({
   album,
   backHref,
   unlocked,
+  mucXongLuc,
 }: {
   slug: string;
   gallery: Gallery;
@@ -30,6 +31,8 @@ export function AlbumView({
   album: Album;
   backHref: string | null;
   unlocked: boolean;
+  /** Khách đã báo chọn xong THƯ MỤC NÀY lúc nào — null nếu chưa báo. */
+  mucXongLuc: string | null;
 }) {
   const photos = album.photos.map((p) => ({
     id: p.id,
@@ -45,9 +48,10 @@ export function AlbumView({
       slug={slug}
       allowDownload={gallery.allowDownload}
       unlocked={unlocked}
-      selectionsDoneAt={gallery.selectionsDoneAt}
       lists={lists.map((l) => ({ id: l.id, name: l.name, icon: l.icon }))}
       anhTrongMuc={photos}
+      mucDangXem={{ id: album.id, ten: album.name }}
+      mucXongLuc={mucXongLuc}
     >
       {/*
         Cũng cần ở đây, không chỉ trang bìa: thông báo "có ảnh mới" dẫn khách

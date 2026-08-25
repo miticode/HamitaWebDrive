@@ -74,6 +74,16 @@ export type Selection = {
   createdAt: string;
 };
 
+/** Mot thu muc con khach da bao chon xong. */
+export type MucXong = {
+  galleryId: string;
+  /** Chuoi rong = anh nam ngay thu muc goc. */
+  albumId: string;
+  tenMuc: string;
+  /** Luc bao, dang ISO. */
+  xongLuc: string;
+};
+
 export type CreateGalleryInput = {
   title: string;
   clientName: string | null;
@@ -132,6 +142,23 @@ export type Store = {
 
   /** Khach bao da chon xong hay chua. */
   setSelectionsDone(galleryId: string, xong: boolean): Promise<void>;
+
+  /**
+   * Khach bao da chon xong cho MOT thu muc con (hoac bo bao de chon them).
+   * Tinh rieng tung thu muc — xem model MucXong trong schema.
+   */
+  setMucXong(
+    galleryId: string,
+    albumId: string,
+    tenMuc: string,
+    xong: boolean
+  ): Promise<void>;
+
+  /** Cac thu muc khach da bao xong cua mot album. */
+  getMucXong(galleryId: string): Promise<MucXong[]>;
+
+  /** Cac thu muc da bao xong cua MOI album — trang quan ly doc mot lan. */
+  listMucXong(): Promise<MucXong[]>;
   listCounts(): Promise<ListCount[]>;
   toggleSelection(input: ToggleSelectionInput): Promise<{ selected: boolean }>;
   /** Ghi chu rieng cho mot anh da chon, vi du "in co 40x60". null = xoa ghi chu. */

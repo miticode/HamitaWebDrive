@@ -66,8 +66,33 @@ model Gallery {
 
   lists SelectionList[]
   pushSubs PushSub[]
+  mucXong  MucXong[]
 
   @@index([driveFolderId])
+}
+
+/// Khach da bao "chon xong" cho MOT thu muc con.
+///
+/// Truoc day trang thai nay la mot cot tren Gallery, tuc la chung ca album:
+/// khach chon xong thu muc dau roi sang thu muc thu hai thi cho nao cung hien
+/// "da bao xong", trong khi thu muc thu hai ho chua dong vao. Moi thu muc mot
+/// dong o day thi tinh rieng duoc.
+///
+/// Giu ca ten thu muc luc bao, de thong bao ve studio noi ro duoc khach vua
+/// chon xong o dau — va van doc duoc ke ca khi sau do thu muc bi doi ten tren
+/// Drive.
+model MucXong {
+  id        String   @id @default(cuid())
+  galleryId String
+  /// Ma thu muc con. Chuoi rong nghia la anh nam ngay thu muc goc.
+  albumId   String
+  tenMuc    String
+  xongLuc   DateTime @default(now())
+
+  gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  @@unique([galleryId, albumId])
+  @@index([galleryId])
 }
 
 /// Mot may khach da dong y nhan thong bao day ve cho album nay.

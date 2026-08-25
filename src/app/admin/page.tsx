@@ -5,7 +5,7 @@ import { NutDoiTong } from "./NutDoiTong";
 import { TheoDoiKhach } from "./TheoDoiKhach";
 import { serviceAccountEmail } from "@/lib/drive";
 import { getConnectedAccount, oauthIsConfigured } from "@/lib/googleAuth";
-import { listCounts, listGalleries, storageKind } from "@/lib/store";
+import { listCounts, listGalleries, listMucXong, storageKind } from "@/lib/store";
 import { logoutAction } from "./actions";
 import { DriveConnection } from "./DriveConnection";
 import { AlbumList } from "./AlbumList";
@@ -26,7 +26,11 @@ export default async function AdminPage() {
     luc tao link va moi lan bam "Lam moi" — neu doc thang tu Drive thi 9 album
     la khoang 70 lan goi, cham 8-10 giay moi lan mo trang.
   */
-  const [galleries, counts] = await Promise.all([listGalleries(), listCounts()]);
+  const [galleries, counts, mucXong] = await Promise.all([
+    listGalleries(),
+    listCounts(),
+    listMucXong(),
+  ]);
 
   const driveAccount = await getConnectedAccount().catch(() => null);
   let serviceAccount: string | null = null;
@@ -102,7 +106,7 @@ export default async function AdminPage() {
               <p className="mt-4 text-sm text-fg-muted">Chưa có album nào.</p>
             </>
           ) : (
-            <AlbumList galleries={galleries} counts={counts} />
+            <AlbumList galleries={galleries} counts={counts} mucXong={mucXong} />
           )}
         </div>
       </div>

@@ -7,15 +7,24 @@ import Link from "next/link";
 /** Bao lâu hỏi lại một lần. Đủ nhanh để thấy gần như ngay, đủ thưa để không phiền máy chủ. */
 const NHIP_HOI = 20_000;
 
+type MucXong = { albumId: string; tenMuc: string; xongLuc: string };
+
 type Album = {
   id: string;
   ten: string;
   slug: string;
-  baoXongLuc: string | null;
   daChon: number;
+  mucXong: MucXong[];
 };
 
-type Tin = { id: string; ten: string; slug: string; soAnh: number };
+type Tin = {
+  /** Ghép từ album và thư mục, để hai tin của cùng một nhà không đè nhau. */
+  khoa: string;
+  ten: string;
+  slug: string;
+  tenMuc: string;
+  soAnh: number;
+};
 
 /**
  * Theo dõi khách chọn ảnh trong lúc studio đang mở trang quản lý.
@@ -65,9 +74,23 @@ export function TheoDoiKhach() {
           const b = cu.get(id);
           if (!b) continue; // Album vừa được tạo, không phải khách vừa báo.
 
-          // Chỉ tính lúc khách CHUYỂN từ chưa báo sang đã báo.
-          if (a.baoXongLuc && a.baoXongLuc !== b.baoXongLuc) {
-            moi.push({ id, ten: a.ten, slug: a.slug, soAnh: a.daChon });
+          /*
+            So từng THƯ MỤC chứ không so cả album: khách chọn xong lần lượt
+            từng thư mục, mỗi lần là một tin riêng nói rõ vừa xong ở đâu.
+
+            So theo mốc thời gian, không chỉ theo "có mặt trong danh sách":
+            khách bấm "chọn thêm" rồi báo xong lại cũng phải ra tin mới.
+          */
+          const cuTheoMuc = new Map(b.mucXong.map((m) => [m.albumId, m.xongLuc]));
+          for (const m of a.mucXong) {
+            if (cuTheoMuc.get(m.albumId) === m.xongLuc) continue;
+            moi.push({
+              khoa: `${id}:${m.albumId}:${m.xongLuc}`,
+              ten: a.ten,
+              slug: a.slug,
+              tenMuc: m.tenMuc,
+              soAnh: a.daChon,
+            });
           }
         }
 
@@ -95,14 +118,18 @@ export function TheoDoiKhach() {
     <div className="fixed right-4 bottom-4 z-50 flex w-[min(22rem,calc(100vw-2rem))] flex-col gap-2">
       {tin.map((t) => (
         <div
-          key={t.id + t.soAnh}
+          key={t.khoa}
           className="card flex items-start gap-3 p-3.5 shadow-[var(--shadow-lift)]"
         >
           <span className="mt-1 inline-block size-2 shrink-0 rounded-full bg-emerald-500" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{t.ten}</p>
-            <p className="mt-0.5 text-xs text-fg-muted">
-              vừa báo đã chọn xong · {t.soAnh} ảnh
+            {/* Nói rõ THƯ MỤC nào — studio khỏi phải mở ra dò xem khách vừa
+                xong ở đâu, nhất là album có năm sáu thư mục. */}
+            <p className="mt-0.5 text-xs leading-relaxed text-fg-muted">
+              vừa chọn xong thư mục <b className="text-fg">{t.tenMuc}</b>
+              <br />
+              cả album đang có {t.soAnh} ảnh được chọn
             </p>
             <Link
               href={`/admin/${t.slug}`}
@@ -113,7 +140,7 @@ export function TheoDoiKhach() {
           </div>
           <button
             type="button"
-            onClick={() => setTin((ds) => ds.filter((x) => x.id !== t.id))}
+            onClick={() => setTin((ds) => ds.filter((x) => x.khoa !== t.khoa))}
             aria-label="Đóng thông báo"
             className="shrink-0 text-fg-faint transition hover:text-fg"
           >

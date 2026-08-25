@@ -1,7 +1,7 @@
 "use client";
 
 import { useDeferredValue, useMemo, useState } from "react";
-import type { Gallery, ListCount } from "@/lib/store";
+import type { Gallery, ListCount, MucXong } from "@/lib/store";
 import { GalleryCard } from "./GalleryCard";
 
 /** Bo ma nhan hay dung o dau ten album — bam mot cai la loc ngay. */
@@ -46,9 +46,12 @@ function cac_tu(g: Gallery): string[] {
 export function AlbumList({
   galleries,
   counts,
+  mucXong,
 }: {
   galleries: Gallery[];
   counts: ListCount[];
+  /** Các thư mục khách đã báo chọn xong, của mọi album. */
+  mucXong: MucXong[];
 }) {
   const [tuKhoa, setTuKhoa] = useState("");
   const [nhan, setNhan] = useState<string | null>(null);
@@ -186,7 +189,12 @@ export function AlbumList({
         <>
           <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {ketQua.slice(0, hienBaoNhieu).map((g) => (
-              <GalleryCard key={g.id} gallery={g} counts={countsOf(g.id)} />
+              <GalleryCard
+                key={g.id}
+                gallery={g}
+                counts={countsOf(g.id)}
+                mucXong={mucXong.filter((m) => m.galleryId === g.id)}
+              />
             ))}
           </div>
 
