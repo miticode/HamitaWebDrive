@@ -69,6 +69,9 @@ self.addEventListener("notificationclick", (e) => {
   e.notification.close();
   const duongDan = (e.notification.data && e.notification.data.duongDan) || "/";
 
+  /* "/g/le-han-abc/thu-muc" -> "/g/le-han-abc": phần gốc của album. */
+  const gocAlbum = duongDan.split("/").slice(0, 3).join("/");
+
   e.waitUntil(
     (async () => {
       const dsTab = await self.clients.matchAll({
@@ -77,12 +80,32 @@ self.addEventListener("notificationclick", (e) => {
       });
 
       /*
-        Đang mở sẵn album đó thì đưa cửa sổ cũ lên, đừng mở thêm cái mới —
+        Đang mở sẵn album này thì dùng lại cửa sổ đó, đừng mở thêm cái mới —
         khách bấm mấy lần sẽ có mấy cửa sổ chồng nhau.
+
+        Nhưng phải CHUYỂN nó tới đúng thư mục mới, không chỉ đưa lên trước.
+        Bản đầu chỉ gọi focus(), nên khách đang để app ở trang bìa mà bấm thông
+        báo thì app hiện lên vẫn nguyên trang bìa cũ — đúng lỗi studio gặp khi
+        thử: "ấn vào nó chưa cập nhật, phải khởi động lại mới có".
+
+        So theo GỐC album chứ không so cả đường dẫn: tab đang ở trang bìa
+        (/g/slug) không thể khớp với đường dẫn thư mục (/g/slug/xyz), mà đó lại
+        chính là trường hợp hay gặp nhất.
       */
       for (const tab of dsTab) {
-        if (tab.url.includes(duongDan) && "focus" in tab) return tab.focus();
+        if (!tab.url.includes(gocAlbum)) continue;
+
+        // Đã đứng đúng chỗ rồi thì chỉ cần đưa lên trước.
+        if (tab.url.endsWith(duongDan)) return tab.focus();
+
+        if ("navigate" in tab) {
+          const moi = await tab.navigate(duongDan).catch(() => null);
+          if (moi) return moi.focus();
+        }
+        // Không chuyển được thì thà mở cửa sổ mới còn hơn hiện sai trang.
+        break;
       }
+
       if (self.clients.openWindow) return self.clients.openWindow(duongDan);
     })()
   );

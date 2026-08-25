@@ -1,4 +1,4 @@
-import { siteUrl } from "@/lib/constants";
+import { ROOT_ALBUM, siteUrl } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
 import { mapLimit } from "@/lib/drive";
 import { getGalleryById, updateGalleryMeta } from "@/lib/store";
@@ -27,6 +27,28 @@ type Job = { fileId: string; size: number };
  * Chup lai so lieu cua album vao database: anh bia, so anh, ten cac thu muc con.
  * Trang quan tri doc thang tu day nen khong phai goi Drive lan nao.
  */
+/**
+ * Bấm vào thông báo "có ảnh mới" thì mở tới đâu.
+ *
+ * Chỉ MỘT thư mục mới thì dẫn thẳng vào đó — khách bấm là thấy ảnh ngay, không
+ * phải về trang bìa rồi tự dò xem cái nào mới.
+ *
+ * Nhiều thư mục cùng lúc thì đưa về trang bìa, vì không có cơ sở nào để chọn
+ * giúp khách cái nào; ở trang bìa chúng đều mang chấm "Mới" nên vẫn nhận ra
+ * ngay.
+ *
+ * Tách riêng khỏi syncAndWarm để kiểm chứng được mà không phải chạy cả một
+ * lượt đọc Drive.
+ */
+export function duongDanBaoAnhMoi(
+  slug: string,
+  mucMoi: { id: string }[]
+): string {
+  if (mucMoi.length !== 1) return `/g/${slug}`;
+  // id rỗng nghĩa là ảnh nằm ngay thư mục gốc, có mã riêng thay thế trên URL.
+  return `/g/${slug}/${mucMoi[0].id || ROOT_ALBUM}`;
+}
+
 export async function syncAndWarm(
   galleryId: string,
   folderId: string
@@ -40,7 +62,14 @@ export async function syncAndWarm(
     đối chiếu.
   */
   const truoc = await getGalleryById(galleryId);
-  const muMoi = truoc ? tenMuc.filter((t) => !truoc.subfolders.includes(t)) : [];
+  /*
+    Giữ cả thư mục chứ không chỉ tên: thông báo cần MÃ thư mục để dẫn khách
+    vào thẳng chỗ ảnh mới, chứ thả họ ở trang bìa rồi bắt tự dò xem cái nào
+    mới thì mất hết ý nghĩa của việc báo.
+  */
+  const mucMoi = truoc
+    ? tree.albums.filter((a) => !truoc.subfolders.includes(a.name))
+    : [];
 
   await updateGalleryMeta(galleryId, {
     coverFileId: tree.albums[0]?.photos[0]?.id ?? null,
@@ -59,10 +88,16 @@ export async function syncAndWarm(
 
     Nuốt lỗi: gửi tin hỏng thì cũng không được làm hỏng việc đồng bộ số liệu.
   */
-  if (muMoi.length > 0 && truoc && truoc.subfolders.length > 0) {
-    await guiChoAlbum(galleryId, tinCoAnhMoi(muMoi, `/g/${truoc.slug}`)).catch(
-      () => ({ daGui: 0, daXoa: 0 })
-    );
+  if (mucMoi.length > 0 && truoc && truoc.subfolders.length > 0) {
+    const duongDan = duongDanBaoAnhMoi(truoc.slug, mucMoi);
+
+    await guiChoAlbum(
+      galleryId,
+      tinCoAnhMoi(
+        mucMoi.map((a) => a.name),
+        duongDan
+      )
+    ).catch(() => ({ daGui: 0, daXoa: 0 }));
   }
 
   await warmGallery(folderId);

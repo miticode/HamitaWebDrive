@@ -7,6 +7,7 @@ import { LoiChuc } from "@/components/LoiChuc";
 import { DemNguoc } from "./DemNguoc";
 import { PhotoGrid } from "./PhotoGrid";
 import { HuongDanChon } from "./HuongDanChon";
+import { TuLamMoi } from "./TuLamMoi";
 import { CodeDialog } from "./CodeDialog";
 import { SelectionProvider } from "./Selection";
 
@@ -48,6 +49,12 @@ export function AlbumView({
       lists={lists.map((l) => ({ id: l.id, name: l.name, icon: l.icon }))}
       anhTrongMuc={photos}
     >
+      {/*
+        Cũng cần ở đây, không chỉ trang bìa: thông báo "có ảnh mới" dẫn khách
+        vào thẳng thư mục, nên đây mới là trang họ mở lại nhiều nhất.
+      */}
+      <TuLamMoi />
+
       <GalleryHeader
         title={backHref ? album.name : galleryTitle}
         backHref={backHref}

@@ -11,6 +11,7 @@ import { LoiChuc } from "@/components/LoiChuc";
 import { DemNguoc } from "./DemNguoc";
 import { NutLuuApp } from "./NutLuuApp";
 import { NutThongBao } from "./NutThongBao";
+import { TuLamMoi } from "./TuLamMoi";
 import { DauMoi, GhiNhoDaXem } from "./DauMoi";
 import { NutTaiFolder } from "./NutTaiFolder";
 
@@ -139,6 +140,12 @@ export default async function GalleryPage({ params }: Props) {
 
   return (
     <main>
+      {/*
+        Lấy lại nội dung mới khi khách quay lại app. Không có nó thì lối tắt mở
+        ra vẫn là bộ ảnh của lần xem trước — xem TuLamMoi.tsx.
+      */}
+      <TuLamMoi />
+
       <header className="relative flex min-h-[70svh] items-center justify-center overflow-hidden">
         {cover && (
           <>
