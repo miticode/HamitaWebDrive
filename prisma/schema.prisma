@@ -16,6 +16,12 @@ model Gallery {
   message       String?
   /// Cho phep hien anh bia cua album nay tren trang gioi thieu cong khai.
   featured      Boolean  @default(false)
+
+  /// Album nay thuoc mang chup be (Hami Baby) chu khong phai mang cuoi.
+  /// Chi co y nghia khi featured bat: quyet dinh anh bia roi vao khu "Mot vai
+  /// bo anh" (cuoi) hay khu Hami Baby tren trang gioi thieu. Mac dinh false vi
+  /// phan lon album cua studio la anh cuoi.
+  laBaby        Boolean  @default(false)
   driveFolderId String
   allowDownload Boolean  @default(true)
   createdAt     DateTime @default(now())

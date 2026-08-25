@@ -4,10 +4,16 @@ import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { STUDIO } from "@/lib/studio";
 
+/*
+  Hai mang tach rieng tren thanh dieu huong: khach di tim chup cuoi va khach di
+  tim chup thoi noi la hai nguoi khac nhau, gop chung mot muc "Album anh" thi
+  ai cung phai cuon do.
+*/
 const MUC = [
   { href: "#gioi-thieu", nhan: "Giới thiệu" },
   { href: "#dich-vu", nhan: "Dịch vụ" },
-  { href: "#anh", nhan: "Album ảnh" },
+  { href: "#anh", nhan: "Ảnh cưới" },
+  { href: "#baby", nhan: "Chụp bé" },
   { href: "#lien-he", nhan: "Liên hệ" },
 ];
 

@@ -7,6 +7,12 @@ export type Gallery = {
   message: string | null;
   /** Cho phep dua anh bia len trang gioi thieu cong khai. */
   featured: boolean;
+  /**
+   * Album thuoc mang chup be (Hami Baby) chu khong phai mang cuoi.
+   * Chi co y nghia khi featured bat — quyet dinh anh bia roi vao khu nao tren
+   * trang gioi thieu.
+   */
+  laBaby: boolean;
   /** Moc studio du dinh xoa anh (ISO). null = khong dat han. */
   expiresAt: string | null;
   /** Khach tu bao da chon xong luc nao (ISO). null = chua bao. */
@@ -93,6 +99,9 @@ export type Store = {
   setMessage(galleryId: string, message: string | null): Promise<void>;
 
   setFeatured(galleryId: string, featured: boolean): Promise<void>;
+
+  /** Xep album vao mang chup be (true) hay mang cuoi (false). */
+  setBaby(galleryId: string, laBaby: boolean): Promise<void>;
 
   setExpiry(galleryId: string, expiresAt: string | null): Promise<void>;
 

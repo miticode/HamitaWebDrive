@@ -48,6 +48,8 @@ export const setMessage: Store["setMessage"] = (id, message) =>
   store.setMessage(id, message);
 export const setFeatured: Store["setFeatured"] = (id, featured) =>
   store.setFeatured(id, featured);
+
+export const setBaby: Store["setBaby"] = (id, laBaby) => store.setBaby(id, laBaby);
 export const setExpiry: Store["setExpiry"] = (id, expiresAt) =>
   store.setExpiry(id, expiresAt);
 export const setSelectionsDone: Store["setSelectionsDone"] = (id, xong) =>

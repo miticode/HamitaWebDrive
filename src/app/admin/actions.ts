@@ -19,6 +19,7 @@ import {
   createGallery,
   deleteGallery,
   setAccess,
+  setBaby,
   setCover,
   setExpiry,
   setFeatured,
@@ -198,6 +199,26 @@ export async function setFeaturedAction(
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
   await setFeatured(galleryId, featured);
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return {};
+}
+
+/**
+ * Xep album vao mang chup be (Hami Baby) hay mang cuoi.
+ *
+ * Studio co hai mang tach bach, khach cung khac han nhau: nguoi tim chup cuoi
+ * khong tim chup thoi noi. Tren trang gioi thieu, anh bia cua album danh dau
+ * la be se hien o khu Hami Baby thay vi khu "Mot vai bo anh" cua mang cuoi.
+ *
+ * Chi co y nghia khi album da bat "dua anh bia len trang gioi thieu".
+ */
+export async function setBabyAction(
+  galleryId: string,
+  laBaby: boolean
+): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  await setBaby(galleryId, laBaby);
   revalidatePath("/admin");
   revalidatePath("/");
   return {};

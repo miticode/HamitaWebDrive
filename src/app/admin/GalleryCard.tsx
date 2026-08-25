@@ -172,6 +172,7 @@ export function GalleryCard({
           <AnhTieuBieu
             galleryId={gallery.id}
             featured={gallery.featured}
+            laBaby={gallery.laBaby}
             coTheHien={gallery.coverFileId !== null}
           />
         </div>

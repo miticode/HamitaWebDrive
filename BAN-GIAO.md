@@ -118,6 +118,16 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 Tóm tắt theo nhóm, mới nhất trước — chi tiết kỹ thuật nằm trong lịch sử commit
 Git (mỗi commit đều giải thích lý do dài, có số liệu đo thật).
 
+**Chia hai mảng cưới / bé trên trang giới thiệu (25/08):**
+Trang giới thiệu trước đây gom mọi ảnh vào một khu "Một vài bộ ảnh", còn phần
+Hami Baby chỉ có chữ không một tấm ảnh nào — người đi tìm chỗ chụp thôi nôi
+đọc xong vẫn không biết studio chụp bé ra sao. Giờ mỗi album có thêm ô tích
+**"Là ảnh bé — xếp vào khu Hami Baby"** (chỉ hiện sau khi đã bật đưa lên trang
+giới thiệu). Ảnh tích thì vào khu Hami Baby, không tích thì vào khu ảnh cưới.
+Thanh điều hướng tách thành hai mục riêng: *Ảnh cưới* và *Chụp bé*.
+Cột mới trong database: `laBaby`, mặc định `false` nên mọi album cũ giữ nguyên
+ở mảng cưới.
+
 **Rà soát lần hai, ngày 25/08 (soi cả mã nguồn lẫn bản đang chạy thật):**
 - **Link album đoán được** — slug lấy thẳng tên khách, thử thật thì `/g/le-han`
   và `/g/vu-phuong-kim-tien` đều mở ra. Từ nay mọi album mới có đuôi ngẫu nhiên

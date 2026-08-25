@@ -33,11 +33,23 @@ export default async function Home() {
     không tự động bung hết lên trang công khai.
   */
   const galleries = await listGalleries();
-  const anhTieuBieu = galleries
-    .filter((g) => g.featured && g.coverFileId)
+
+  /*
+    Studio có hai mảng tách bạch và khách của hai mảng cũng khác hẳn nhau:
+    người tìm chụp cưới không đi tìm chụp thôi nôi. Nên ảnh cũng chia đôi —
+    ảnh cưới ở khu "Một vài bộ ảnh", ảnh bé ở khu Hami Baby ngay bên dưới.
+  */
+  const daChon = galleries.filter((g) => g.featured && g.coverFileId);
+  const anhTieuBieu = daChon
+    .filter((g) => !g.laBaby)
+    .map((g) => g.coverFileId as string)
+    .slice(0, 8);
+  const anhBaby = daChon
+    .filter((g) => g.laBaby)
     .map((g) => g.coverFileId as string)
     .slice(0, 8);
 
+  // Ảnh minh hoạ cạnh phần "Về chúng tôi" — đoạn đó nói về cưới nên lấy ảnh cưới.
   const anhBenCanh = anhTieuBieu[0] ?? null;
 
   return (
@@ -181,7 +193,9 @@ export default async function Home() {
         <section id="anh" className="scroll-mt-16">
           <div className="mx-auto max-w-[1700px] px-2 py-24 sm:px-6 sm:py-32">
             <FadeIn>
-              <p className="eyebrow text-center">Một vài bộ ảnh</p>
+              {/* Nói rõ "ảnh cưới": từ khi tách khu chụp bé xuống dưới, một
+                  nhãn chung chung không còn phân biệt được hai mảng. */}
+              <p className="eyebrow text-center">Ảnh cưới</p>
               <h2 className="rule mx-auto mt-5 max-w-lg text-center font-display text-3xl font-light sm:text-4xl">
                 Khoảnh khắc chúng tôi ghi lại
               </h2>
@@ -206,18 +220,48 @@ export default async function Home() {
         </section>
       )}
 
-      <section className="border-t border-line">
-        <div className="mx-auto max-w-3xl px-5 py-24 text-center sm:px-6 sm:py-28">
+      {/*
+        Khu Hami Baby — mảng chụp bé và gia đình.
+
+        Trước đây chỉ có chữ, không một tấm ảnh nào: người đang tìm chỗ chụp
+        thôi nôi đọc xong vẫn không biết studio chụp bé ra sao. Giờ ảnh của
+        mảng này nằm ngay đây, tách hẳn khỏi ảnh cưới phía trên.
+      */}
+      <section id="baby" className="scroll-mt-16 border-t border-line bg-bg-soft">
+        <div className="mx-auto max-w-[1700px] px-5 py-24 sm:px-6 sm:py-28">
           <FadeIn>
-            <p className="eyebrow">Mảng dịch vụ khác</p>
-            <h2 className="mt-5 font-display text-3xl font-light sm:text-4xl">
-              {HAMI_BABY.ten}
-            </h2>
-            <p className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-balance text-fg-muted">
-              {HAMI_BABY.moTa}
-            </p>
-            <p className="eyebrow mt-4">{HAMI_BABY.soNguoiTheoDoi} người theo dõi</p>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="eyebrow">Mảng dịch vụ khác</p>
+              <h2 className="mt-5 font-display text-3xl font-light sm:text-4xl">
+                {HAMI_BABY.ten}
+              </h2>
+              <p className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-balance text-fg-muted">
+                {HAMI_BABY.moTa}
+              </p>
+              <p className="eyebrow mt-4">{HAMI_BABY.soNguoiTheoDoi} người theo dõi</p>
+            </div>
+          </FadeIn>
+
+          {anhBaby.length > 0 && (
+            <div className="mt-14 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+              {anhBaby.map((fileId, i) => (
+                <FadeIn key={fileId} cham={i * 60}>
+                  <div className="group skeleton aspect-[3/4] overflow-hidden rounded-sm">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/img/${fileId}?w=640`}
+                      alt=""
+                      loading="lazy"
+                      className="size-full object-cover transition duration-700 ease-out group-hover:scale-105"
+                    />
+                  </div>
+                </FadeIn>
+              ))}
+            </div>
+          )}
+
+          <FadeIn>
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
               <a href={`tel:${HAMI_BABY.dienThoaiSo}`} className="btn">
                 {HAMI_BABY.dienThoai}
               </a>
