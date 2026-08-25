@@ -1,6 +1,7 @@
 import { OAuth2Client } from "google-auth-library";
 import { databaseIsConfigured, getPrisma } from "@/lib/db";
 import { siteUrl } from "@/lib/constants";
+import { coKhoaMaHoa, daMaHoa, giaiMa, maHoa } from "@/lib/maHoa";
 
 /**
  * Ket noi Google Drive bang chinh tai khoan chu studio.
@@ -90,7 +91,15 @@ export async function saveConnection(code: string): Promise<ConnectedAccount> {
   });
   const email = info.data.email ?? "không rõ";
 
-  const data = { email, refreshToken: tokens.refresh_token, connectedAt: new Date() };
+  /*
+    Ma hoa truoc khi ghi: phieu nay khong het han va mo duoc TOAN BO Drive cua
+    studio, nen khong de nguyen van trong database. Xem src/lib/maHoa.ts.
+  */
+  const data = {
+    email,
+    refreshToken: maHoa(tokens.refresh_token),
+    connectedAt: new Date(),
+  };
   await getPrisma().googleAccount.upsert({
     where: { id: ROW_ID },
     create: { id: ROW_ID, ...data },
@@ -115,8 +124,28 @@ export async function getUserAccessToken(): Promise<string | null> {
   const row = await getPrisma().googleAccount.findUnique({ where: { id: ROW_ID } });
   if (!row) return null;
 
+  const refreshToken = giaiMa(row.refreshToken);
+
+  /*
+    Nang cap am tham ban cu.
+
+    Phieu luu truoc khi co lop ma hoa nam nguyen van trong database. Lan dau
+    chay lai sau khi anh khai bao TOKEN_KEY, ghi de bang ban da ma hoa — chi mot
+    lan, va khong bat anh phai ket noi lai Google.
+
+    Chay ngam: co hong thi cung khong duoc lam gay viec doc anh dang can.
+  */
+  if (!daMaHoa(row.refreshToken) && coKhoaMaHoa()) {
+    getPrisma()
+      .googleAccount.update({
+        where: { id: ROW_ID },
+        data: { refreshToken: maHoa(refreshToken) },
+      })
+      .catch(() => {});
+  }
+
   const client = createClient();
-  client.setCredentials({ refresh_token: row.refreshToken });
+  client.setCredentials({ refresh_token: refreshToken });
 
   const { token } = await client.getAccessToken();
   return token ?? null;
