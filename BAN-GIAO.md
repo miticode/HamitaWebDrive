@@ -255,9 +255,20 @@ only."* Studio thu tiền khách nên thuộc diện thương mại → có th�
 tài khoản, mọi link chết cùng lúc. Phương án: nâng Pro (20 USD/tháng) hoặc
 VPS riêng. **Anh chưa quyết — treo từ đầu dự án tới giờ.**
 
-**🔴 Chưa xác nhận đã bấm "Publish App" bên Google.**
-Nếu ứng dụng còn ở trạng thái *Testing*, Google huỷ phiếu đăng nhập sau 7
-ngày → mọi album ngừng hiện ảnh. Kiểm tra ở Google Auth Platform → Audience.
+**✅ Google đã Publish App — đã xác nhận tận mắt ngày 25/08/2026.**
+Google Auth Platform → Audience của project **`trihamita`** ghi *Publishing
+status: **In production***, User type *External*, dùng 1/100 suất người dùng.
+Nghĩa là phiếu đăng nhập **không còn bị huỷ sau 7 ngày** — mối lo lớn nhất
+trong bản bàn giao trước hoá ra đã được xử lý từ trước, chỉ chưa ai xác nhận.
+
+⚠️ Ngay dưới dòng trạng thái có nút **"Back to testing"** — bấm nhầm là quay
+lại đúng cái bẫy 7 ngày. Đừng đụng vào.
+
+App chưa qua xác minh của Google (Verification Center) nhưng **không cần
+làm gì**: chỉ mình anh đăng nhập bằng chính tài khoản chủ Drive. Chưa xác
+minh chỉ khiến màn hình đăng nhập hiện cảnh báo "Google hasn't verified this
+app" (bấm *Advanced → Go to…* là qua), hoàn toàn không ảnh hưởng độ bền của
+phiếu.
 
 **🟡 Nút Zalo trên trang giới thiệu chưa hoạt động đúng.**
 Link hiện tại giải mã từ ảnh QR anh gửi, chỉ chạy khi mở trong app Zalo. Cần
