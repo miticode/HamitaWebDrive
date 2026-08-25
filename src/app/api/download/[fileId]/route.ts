@@ -4,6 +4,7 @@ import { downloadFile, getFileMeta } from "@/lib/drive";
 import { boMetadataJpeg } from "@/lib/jpeg";
 import { loadTree } from "@/lib/gallery";
 import { getGalleryBySlug } from "@/lib/store";
+import { TRAN_DIEM_ANH } from "@/lib/constants";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -73,13 +74,23 @@ export async function GET(
  * cach do moi phai giai nen lai bang sharp.
  */
 async function donDep(goc: Buffer, mimeType: string): Promise<Buffer> {
+  /*
+    Noi tran diem anh o MOI lan goi sharp trong ham nay.
+
+    Anh in kho lon (mica 60x120cm do duoc 18000x36000 = 648 trieu diem anh)
+    vuot muc mac dinh 268 trieu cua sharp. Bo sot mot cho la khach bam tai
+    dung tam do se nhan ve loi thay vi file. Xem TRAN_DIEM_ANH trong
+    constants.ts.
+  */
+  const tuyChon = { failOn: "none" as const, limitInputPixels: TRAN_DIEM_ANH };
+
   if (mimeType === "image/jpeg") {
     /*
       Chi cat bo duoc khi anh khong dua vao the huong de xoay. Anh co the huong
       khac 1 ma bi cat mat EXIF thi se hien ra nam ngang — luc do phai nho sharp
       xoay san vao pixel.
     */
-    const { orientation } = await sharp(goc).metadata();
+    const { orientation } = await sharp(goc, tuyChon).metadata();
     if (!orientation || orientation === 1) {
       const sach = boMetadataJpeg(goc);
       if (sach) return sach;
@@ -87,12 +98,12 @@ async function donDep(goc: Buffer, mimeType: string): Promise<Buffer> {
 
     // Duong lui cho JPEG: nen lai o muc cao nhat, khong giam mau, de phan chenh
     // lech so voi ban goc nho toi muc mat thuong khong thay.
-    return sharp(goc, { failOn: "none" })
+    return sharp(goc, tuyChon)
       .rotate()
       .jpeg({ quality: 100, chromaSubsampling: "4:4:4" })
       .toBuffer();
   }
 
   // PNG va cac dinh dang khong mat du lieu: nen lai khong lam giam chat luong.
-  return sharp(goc, { failOn: "none" }).rotate().toBuffer();
+  return sharp(goc, tuyChon).rotate().toBuffer();
 }

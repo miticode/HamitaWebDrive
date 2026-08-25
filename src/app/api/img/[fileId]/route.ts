@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import sharp from "sharp";
 import { downloadFile, fetchThumbnail } from "@/lib/drive";
 import { readCache, writeCache } from "@/lib/imageCache";
+import { TRAN_DIEM_ANH } from "@/lib/constants";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -77,7 +78,9 @@ export async function GET(
 
     if (!output) {
       const source = await loadSource(fileId, size);
-      let pipeline = sharp(source, { failOn: "none" })
+      // Noi tran diem anh: anh in kho lon vuot xa muc mac dinh cua sharp.
+      // Xem giai thich day du o TRAN_DIEM_ANH trong constants.ts.
+      let pipeline = sharp(source, { failOn: "none", limitInputPixels: TRAN_DIEM_ANH })
         .rotate() // tu xoay theo EXIF
         // fit "inside" = gioi han ca hai chieu, tuc la chan theo canh dai
         .resize({ width: size, height: size, fit: "inside", withoutEnlargement: true });
