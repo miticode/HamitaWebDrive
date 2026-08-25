@@ -3,6 +3,7 @@ import { ROOT_ALBUM } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
 import { getGalleryBySlug, getLists } from "@/lib/store";
 import { daMoKhoa } from "@/lib/access";
+import { DriveLoi } from "@/components/DriveLoi";
 import { AlbumView } from "../AlbumView";
 
 export const dynamic = "force-dynamic";
@@ -17,10 +18,25 @@ export default async function AlbumPage({ params }: Props) {
 
   const unlocked = await daMoKhoa(gallery.id, gallery.accessCode);
 
-  const [tree, lists] = await Promise.all([
-    loadTree(gallery.driveFolderId),
-    getLists(gallery.id),
-  ]);
+  /*
+    Drive tro chung thi hien man hinh giai thich thay vi de trang nem loi —
+    giong het trang danh sach muc, xem chu thich o DriveLoi.tsx.
+  */
+  let tree;
+  let lists;
+  try {
+    [tree, lists] = await Promise.all([
+      loadTree(gallery.driveFolderId),
+      getLists(gallery.id),
+    ]);
+  } catch {
+    return (
+      <DriveLoi
+        tenKhach={gallery.clientName ?? gallery.title}
+        thuLaiHref={`/g/${slug}/${albumId}`}
+      />
+    );
+  }
 
   const wanted = albumId === ROOT_ALBUM ? "" : albumId;
   const album = tree.albums.find((a) => a.id === wanted);

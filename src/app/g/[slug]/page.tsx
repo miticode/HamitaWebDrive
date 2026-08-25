@@ -5,6 +5,7 @@ import { ROOT_ALBUM, STUDIO_NAME } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
 import { getGalleryBySlug, getLists } from "@/lib/store";
 import { Logo } from "@/components/Logo";
+import { DriveLoi } from "@/components/DriveLoi";
 import { daMoKhoa } from "@/lib/access";
 import { AlbumView } from "./AlbumView";
 import { LoiChuc } from "@/components/LoiChuc";
@@ -60,7 +61,20 @@ export default async function GalleryPage({ params }: Props) {
   const title = gallery.clientName ?? gallery.title;
 
   const unlocked = await daMoKhoa(gallery.id, gallery.accessCode);
-  const tree = await loadTree(gallery.driveFolderId);
+
+  /*
+    Drive tro chung thi hien man hinh giai thich, khong de trang nem loi.
+    Truoc day mot nhip Drive khong phan hoi la khach thay trang "Trang gap truc
+    trac" mau do — vua kho hieu vua de tuong studio da xoa mat anh cua ho.
+
+    Chi bat loi cua rieng loadTree; cac buoc khac van de nem nhu cu.
+  */
+  let tree;
+  try {
+    tree = await loadTree(gallery.driveFolderId);
+  } catch {
+    return <DriveLoi tenKhach={title} thuLaiHref={`/g/${slug}`} />;
+  }
 
   // Chi co mot muc thi hien thang luoi anh — bat khach bam qua mot tam bia
   // duy nhat chang de lam gi.
