@@ -10,6 +10,7 @@ import { DriveLoi } from "@/components/DriveLoi";
 import { LoiChuc } from "@/components/LoiChuc";
 import { DemNguoc } from "./DemNguoc";
 import { NutLuuApp } from "./NutLuuApp";
+import { DauMoi, GhiNhoDaXem } from "./DauMoi";
 import { NutTaiFolder } from "./NutTaiFolder";
 
 export const dynamic = "force-dynamic";
@@ -204,6 +205,15 @@ export default async function GalleryPage({ params }: Props) {
           nằm dạt về góc trái với hai phần ba trang bỏ trống bên phải. Album một
           thư mục là chuyện thường gặp — phần lớn buổi chụp chỉ có một bộ.
         */}
+        {/*
+          Ghi nhớ khách đã thấy những thư mục nào, để lần sau chỉ thư mục thật
+          sự mới mới mang chấm. Ghi trong máy khách, không đụng database.
+        */}
+        <GhiNhoDaXem
+          slug={slug}
+          albumIds={tree.albums.map((a) => a.id || ROOT_ALBUM)}
+        />
+
         {tree.albums.length === 0 ? (
           <p className="text-center text-sm text-fg-muted">Thư mục này chưa có ảnh nào.</p>
         ) : (
@@ -235,6 +245,8 @@ export default async function GalleryPage({ params }: Props) {
                   </div>
                   <h2 className="mt-5 font-display text-2xl font-normal transition group-hover:text-accent sm:text-3xl">
                     {album.name}
+                    {/* Chấm "Mới" cho thư mục khách chưa từng thấy — xem DauMoi.tsx. */}
+                    <DauMoi slug={slug} albumId={album.id || ROOT_ALBUM} />
                   </h2>
                 </Link>
                 <p className="eyebrow mt-2">{album.photos.length} tấm</p>

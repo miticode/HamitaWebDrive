@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { adminPasswordIsSet, isAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
 import { NutDoiTong } from "./NutDoiTong";
+import { TheoDoiKhach } from "./TheoDoiKhach";
 import { serviceAccountEmail } from "@/lib/drive";
 import { getConnectedAccount, oauthIsConfigured } from "@/lib/googleAuth";
 import { listCounts, listGalleries, storageKind } from "@/lib/store";
@@ -48,6 +49,12 @@ export default async function AdminPage() {
           <Logo size="sm" />
           <h1 className="font-display text-2xl font-light sm:text-3xl">Quản lý album</h1>
         </div>
+        {/*
+          Theo dõi khách chọn ảnh trong lúc trang đang mở. Không vẽ ra gì cho
+          tới khi có khách vừa báo xong — lúc đó mới hiện thẻ nổi ở góc.
+        */}
+        <TheoDoiKhach />
+
         <div className="flex items-center gap-5">
           <NutDoiTong toiBanDau={tongToi} />
           {adminPasswordIsSet() && (
