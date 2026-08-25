@@ -21,6 +21,7 @@ import {
   setAccess,
   setBaby,
   setClientName,
+  setGoiAnh,
   setCover,
   setExpiry,
   setFeatured,
@@ -185,6 +186,41 @@ export async function setMessageAction(
 
   await setMessage(galleryId, noiDung || null);
   revalidatePath("/admin");
+  return {};
+}
+
+/**
+ * Dat so anh trong goi va gia moi tam vuot goi cho album nay.
+ *
+ * Hai so nay hien o phan huong dan chon anh phia khach, buoc "tha tim anh muon
+ * in". Moi goi moi khac nen phai dat rieng tung album — de trong so anh thi
+ * phan huong dan bo qua han doan gia ca, chi noi cach chon.
+ */
+export async function setGoiAnhAction(
+  galleryId: string,
+  soAnh: string,
+  gia: string
+): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+
+  const soSach = soAnh.trim();
+  let so: number | null = null;
+  if (soSach) {
+    so = Number(soSach);
+    if (!Number.isInteger(so) || so < 1) {
+      return { error: "Số ảnh trong gói phải là số nguyên từ 1 trở lên." };
+    }
+  }
+
+  const giaSo = Number(gia.trim());
+  if (!Number.isInteger(giaSo) || giaSo < 0) {
+    return { error: "Giá phải là số nguyên, không âm." };
+  }
+
+  await setGoiAnh(galleryId, so, giaSo);
+  revalidatePath("/admin");
+  // So nay hien o trang khach xem nen phai lam moi ca duong do.
+  revalidatePath("/", "layout");
   return {};
 }
 

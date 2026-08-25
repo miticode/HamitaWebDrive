@@ -55,6 +55,15 @@ model Gallery {
   /// gan vao tung thu muc rieng.
   selectionsDoneAt DateTime?
 
+  /// So anh in da bao gom trong goi khach da mua. null = khong noi toi goi
+  /// (phan huong dan se bo qua doan gia ca). Moi goi moi khac nen phai dat
+  /// rieng cho tung album.
+  soAnhTrongGoi    Int?
+
+  /// Gia moi tam vuot goi, tinh bang dong, da gom ca chinh sua lan in.
+  /// Chi co y nghia khi soAnhTrongGoi co gia tri.
+  giaAnhThem       Int      @default(12000)
+
   lists SelectionList[]
 
   @@index([driveFolderId])

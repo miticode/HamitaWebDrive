@@ -13,7 +13,7 @@ import {
   type Store,
   type ToggleSelectionInput,
 } from "./shared";
-import { hanMacDinh } from "@/lib/constants";
+import { GIA_ANH_THEM_MAC_DINH, hanMacDinh } from "@/lib/constants";
 
 /**
  * Kho du lieu bang file JSON — chi dung khi chay o may.
@@ -106,6 +106,8 @@ export const jsonStore: Store = {
         message: null,
         featured: false,
         laBaby: false,
+        soAnhTrongGoi: null,
+        giaAnhThem: GIA_ANH_THEM_MAC_DINH,
         driveFolderId: input.driveFolderId,
         allowDownload: input.allowDownload,
         createdAt: new Date().toISOString(),
@@ -254,6 +256,17 @@ export const jsonStore: Store = {
       const g = db.galleries.find((x) => x.id === galleryId);
       if (!g) return;
       g.laBaby = laBaby;
+      await writeToDisk(db);
+    });
+  },
+
+  setGoiAnh(galleryId: string, soAnhTrongGoi: number | null, giaAnhThem: number) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const g = db.galleries.find((x) => x.id === galleryId);
+      if (!g) return;
+      g.soAnhTrongGoi = soAnhTrongGoi;
+      g.giaAnhThem = giaAnhThem;
       await writeToDisk(db);
     });
   },

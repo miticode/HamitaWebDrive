@@ -35,6 +35,8 @@ type GalleryRow = {
   expiresAt: Date | null;
   selectionsDoneAt: Date | null;
   accessCode: string | null;
+  soAnhTrongGoi: number | null;
+  giaAnhThem: number;
 };
 
 function toGallery(row: GalleryRow): Gallery {
@@ -221,6 +223,17 @@ export const prismaStore: Store = {
     await getPrisma().gallery.update({
       where: { id: galleryId },
       data: { laBaby },
+    });
+  },
+
+  async setGoiAnh(
+    galleryId: string,
+    soAnhTrongGoi: number | null,
+    giaAnhThem: number
+  ) {
+    await getPrisma().gallery.update({
+      where: { id: galleryId },
+      data: { soAnhTrongGoi, giaAnhThem },
     });
   },
 

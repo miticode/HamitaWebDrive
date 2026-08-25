@@ -50,6 +50,12 @@ export function siteUrl(): URL {
 export const TRAN_DIEM_ANH = 2_000_000_000;
 
 /**
+ * Gia mac dinh cho moi tam anh vuot goi, tinh bang dong.
+ * Da gom ca chinh sua lan in. Sua duoc cho tung album o trang quan ly.
+ */
+export const GIA_ANH_THEM_MAC_DINH = 12_000;
+
+/**
  * So ngay giu anh mac dinh — sau moc nay studio du dinh xoa anh khoi Drive.
  * Chi la loi nhac de khach tranh thu tai; het han khong tu chan link.
  */

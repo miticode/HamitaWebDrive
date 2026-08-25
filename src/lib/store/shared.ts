@@ -17,6 +17,13 @@ export type Gallery = {
   expiresAt: string | null;
   /** Khach tu bao da chon xong luc nao (ISO). null = chua bao. */
   selectionsDoneAt: string | null;
+  /**
+   * So anh in da bao gom trong goi khach mua. null = khong noi toi goi, phan
+   * huong dan o trang khach se bo qua doan gia ca.
+   */
+  soAnhTrongGoi: number | null;
+  /** Gia moi tam vuot goi (dong), da gom chinh sua lan in. */
+  giaAnhThem: number;
   driveFolderId: string;
   allowDownload: boolean;
   createdAt: string;
@@ -108,6 +115,16 @@ export type Store = {
 
   /** Xep album vao mang chup be (true) hay mang cuoi (false). */
   setBaby(galleryId: string, laBaby: boolean): Promise<void>;
+
+  /**
+   * Dat so anh trong goi va gia moi tam vuot goi.
+   * soAnhTrongGoi = null nghia la khong noi toi goi o trang khach.
+   */
+  setGoiAnh(
+    galleryId: string,
+    soAnhTrongGoi: number | null,
+    giaAnhThem: number
+  ): Promise<void>;
 
   setExpiry(galleryId: string, expiresAt: string | null): Promise<void>;
 

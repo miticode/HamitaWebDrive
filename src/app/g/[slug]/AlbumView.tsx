@@ -78,6 +78,11 @@ export function AlbumView({
               <LoiChuc noiDung={gallery.message} />
             </div>
           )}
+          {/*
+            Nhắc gọn thôi. Bốn bước hướng dẫn đầy đủ nằm ở trang bìa — khách
+            luôn đi qua đó trước khi vào đây, nên lặp lại nguyên khối ở mỗi thư
+            mục con chỉ choán chỗ của chính bộ ảnh.
+          */}
           <p className="mx-auto mt-6 max-w-md px-4 text-sm leading-relaxed text-fg-muted">
             Bấm vào ảnh để xem lớn. Dùng{" "}
             <span className="inline-block size-2 translate-y-px rounded-full bg-rose-500" />{" "}

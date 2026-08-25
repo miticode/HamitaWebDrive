@@ -9,6 +9,7 @@ import { CopyLink } from "./CopyLink";
 import { CoverPicker } from "./CoverPicker";
 import { LoiNhan } from "./LoiNhan";
 import { TenAlbum } from "./TenAlbum";
+import { GoiAnh } from "./GoiAnh";
 import { AnhTieuBieu } from "./AnhTieuBieu";
 import { ThoiHan } from "./ThoiHan";
 import { XoaAlbumDialog } from "./XoaAlbumDialog";
@@ -169,6 +170,11 @@ export function GalleryCard({
             galleryId={gallery.id}
             createdAt={gallery.createdAt}
             expiresAt={gallery.expiresAt}
+          />
+          <GoiAnh
+            galleryId={gallery.id}
+            soAnhTrongGoi={gallery.soAnhTrongGoi}
+            giaAnhThem={gallery.giaAnhThem}
           />
           <AnhTieuBieu
             galleryId={gallery.id}

@@ -9,6 +9,7 @@ import { Logo } from "@/components/Logo";
 import { DriveLoi } from "@/components/DriveLoi";
 import { LoiChuc } from "@/components/LoiChuc";
 import { DemNguoc } from "./DemNguoc";
+import { HuongDanChon } from "./HuongDanChon";
 import { NutTaiFolder } from "./NutTaiFolder";
 
 export const dynamic = "force-dynamic";
@@ -160,6 +161,16 @@ export default async function GalleryPage({ params }: Props) {
         />
 
         <LoiChuc noiDung={gallery.message} />
+
+        {/*
+          Bốn bước hướng dẫn chọn ảnh. Đặt ở trang bìa vì khách luôn đi qua đây
+          trước khi vào từng thư mục — đọc xong rồi mới bắt đầu chọn là đúng
+          thứ tự, và không choán chỗ của lưới ảnh bên trong.
+        */}
+        <HuongDanChon
+          soAnhTrongGoi={gallery.soAnhTrongGoi}
+          giaAnhThem={gallery.giaAnhThem}
+        />
 
         {/*
           Ít mục thì thu hẹp lưới lại và đặt giữa, thay vì để một thẻ đơn độc

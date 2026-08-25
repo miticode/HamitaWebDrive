@@ -53,6 +53,9 @@ export const setFeatured: Store["setFeatured"] = (id, featured) =>
   store.setFeatured(id, featured);
 
 export const setBaby: Store["setBaby"] = (id, laBaby) => store.setBaby(id, laBaby);
+
+export const setGoiAnh: Store["setGoiAnh"] = (id, so, gia) =>
+  store.setGoiAnh(id, so, gia);
 export const setExpiry: Store["setExpiry"] = (id, expiresAt) =>
   store.setExpiry(id, expiresAt);
 export const setSelectionsDone: Store["setSelectionsDone"] = (id, xong) =>
