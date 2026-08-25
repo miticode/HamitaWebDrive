@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { NutDoiTong } from "./NutDoiTong";
 
 /**
  * Chi de khai bao robots cho toan bo /admin/* — ap dung cho ca /admin va
@@ -35,7 +34,6 @@ export default async function AdminLayout({
   return (
     <div data-admin-theme={toi ? "dark" : "light"} className="min-h-svh bg-bg text-fg">
       {children}
-      <NutDoiTong toiBanDau={toi} />
     </div>
   );
 }

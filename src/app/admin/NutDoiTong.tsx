@@ -5,6 +5,12 @@ import { useState } from "react";
 /**
  * Nút đổi giữa tông sáng và tông tối cho trang quản lý.
  *
+ * Đặt cạnh "Đăng xuất" ở đầu trang, kèm chữ "Nền tối" / "Nền sáng". Bản đầu
+ * làm nút tròn chỉ có biểu tượng, nổi ở góc dưới phải — người dùng tìm không
+ * ra, vì chỗ người ta nhìn khi kiếm một tuỳ chọn là đầu trang chứ không phải
+ * góc màn hình, và một biểu tượng mờ không có chữ thì không tự giới thiệu
+ * được nó làm gì.
+ *
  * Lựa chọn lưu vào cookie chứ không phải localStorage, vì máy chủ cần đọc được
  * nó để dựng sẵn đúng tông ngay từ dòng HTML đầu tiên. Dùng localStorage thì
  * trang luôn hiện ra sáng trước rồi mới nháy sang tối — chói mắt mỗi lần mở.
@@ -33,12 +39,12 @@ export function NutDoiTong({ toiBanDau }: { toiBanDau: boolean }) {
       onClick={doi}
       aria-pressed={toi}
       title={toi ? "Chuyển về nền sáng" : "Chuyển sang nền tối"}
-      className="fixed right-4 bottom-4 z-40 grid size-11 place-items-center rounded-full border border-line-strong bg-bg-raised text-fg-muted shadow-[var(--shadow-soft)] transition hover:border-accent hover:text-accent"
+      /*
+        py-2 -my-2: noi vung bam theo chieu doc len ~34px cho de trung ngon tay,
+        nhung -my-2 keo lai dung bang cu nen bo cuc khong xe dich chut nao.
+      */
+      className="eyebrow -my-2 inline-flex items-center gap-1.5 py-2 transition hover:text-accent"
     >
-      <span className="sr-only">
-        {toi ? "Chuyển về nền sáng" : "Chuyển sang nền tối"}
-      </span>
-
       {toi ? (
         // Mặt trời — bấm để quay về nền sáng.
         <svg
@@ -68,6 +74,7 @@ export function NutDoiTong({ toiBanDau }: { toiBanDau: boolean }) {
           <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
         </svg>
       )}
+      {toi ? "Nền sáng" : "Nền tối"}
     </button>
   );
 }

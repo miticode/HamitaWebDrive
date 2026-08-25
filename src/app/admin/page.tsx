@@ -1,5 +1,7 @@
+import { cookies } from "next/headers";
 import { adminPasswordIsSet, isAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
+import { NutDoiTong } from "./NutDoiTong";
 import { serviceAccountEmail } from "@/lib/drive";
 import { getConnectedAccount, oauthIsConfigured } from "@/lib/googleAuth";
 import { listCounts, listGalleries, storageKind } from "@/lib/store";
@@ -35,6 +37,10 @@ export default async function AdminPage() {
 
   const onJsonStore = storageKind() === "json";
 
+  // Cung mot cookie voi layout — doc lai o day de nut hien dung bieu tuong ngay
+  // tu luot ve dau, khong nhay tu "Nen toi" sang "Nen sang" sau khi trang chay.
+  const tongToi = (await cookies()).get("admin-tong")?.value === "toi";
+
   return (
     <main className="mx-auto w-full max-w-[90rem] px-5 py-10 sm:px-6 sm:py-12">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-6">
@@ -42,11 +48,14 @@ export default async function AdminPage() {
           <Logo size="sm" />
           <h1 className="font-display text-2xl font-light sm:text-3xl">Quản lý album</h1>
         </div>
-        {adminPasswordIsSet() && (
-          <form action={logoutAction}>
-            <button className="eyebrow transition hover:text-accent">Đăng xuất</button>
-          </form>
-        )}
+        <div className="flex items-center gap-5">
+          <NutDoiTong toiBanDau={tongToi} />
+          {adminPasswordIsSet() && (
+            <form action={logoutAction}>
+              <button className="eyebrow transition hover:text-accent">Đăng xuất</button>
+            </form>
+          )}
+        </div>
       </div>
 
       <div className="mt-6">

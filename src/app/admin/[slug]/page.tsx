@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
 import { getGalleryBySlug, getLists, getSelections, type Selection } from "@/lib/store";
 import { LoginForm } from "../LoginForm";
+import { NutDoiTong } from "../NutDoiTong";
 import { ExportButton } from "./ExportButton";
 
 export const dynamic = "force-dynamic";
@@ -44,11 +46,17 @@ export default async function ResultsPage({ params }: Props) {
     getSelections(gallery.id),
   ]);
 
+  // Cung mot cookie voi layout — doc lai de nut hien dung bieu tuong ngay luot dau.
+  const tongToi = (await cookies()).get("admin-tong")?.value === "toi";
+
   return (
     <main className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-6 sm:py-12">
-      <Link href="/admin" className="eyebrow transition hover:text-accent">
-        ← Tất cả album
-      </Link>
+      <div className="flex items-center justify-between gap-4">
+        <Link href="/admin" className="eyebrow transition hover:text-accent">
+          ← Tất cả album
+        </Link>
+        <NutDoiTong toiBanDau={tongToi} />
+      </div>
 
       <div className="mt-2 flex flex-wrap items-end justify-between gap-3 border-b border-line pb-6">
         <h1 className="font-display text-2xl font-light sm:text-3xl">
