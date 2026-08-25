@@ -72,9 +72,31 @@ chậm 8–10 giây mỗi lần mở trang.
 Viết ngoài layer thì CSS thường luôn thắng lớp tiện ích của Tailwind — `padding`
 của `.input` sẽ nuốt mất `pl-10`. Lỗi này âm thầm, không báo lúc build.
 
+*Ngoại lệ có chủ đích:* khối chỉnh màu cứng cho chế độ tối ở cuối
+`globals.css` (`[data-admin-theme="dark"] .text-red-700 {…}`) **cố ý viết
+ngoài mọi layer**, vì ở đó cần **thắng** lớp tiện ích chứ không phải nhường
+nó — trang quản lý có vài chỗ viết màu thẳng bằng `bg-amber-100`,
+`text-red-700`… và trên nền tối chúng thành mảng chói hoặc chữ không đọc nổi.
+Selector có thêm thuộc tính nên chỉ đè đúng trong trang quản lý ở chế độ tối.
+
 **12. Giao diện cố định tông sáng**, không đổi theo cài đặt máy khách. Album gửi
 khách là bộ mặt studio nên phải giống nhau trên mọi máy. Riêng khung xem ảnh to
 vẫn nền đen.
+
+*Ngoại lệ duy nhất, thêm ngày 25/08/2026:* **trang quản lý `/admin` có nút đổi
+tông sáng/tối.** Điều khoản trên nói về album gửi khách; trang quản lý chỉ mình
+studio dùng và thường mở lâu để dò số liệu, nên để tự chọn là đúng. Phạm vi
+được khoá bằng chính cách gắn: `data-admin-theme` nằm trên một **thẻ bọc bên
+trong `/admin`** (`src/app/admin/layout.tsx`), **không phải trên `<html>`** —
+rời khỏi trang quản lý là thẻ đó biến mất nên trang khách không có đường nào
+dính tông tối. Đừng chuyển thuộc tính này lên `<html>`.
+Lựa chọn lưu bằng **cookie** (`admin-tong`) chứ không phải localStorage, để máy
+chủ dựng sẵn đúng tông ngay dòng HTML đầu — dùng localStorage thì trang luôn
+hiện ra sáng rồi mới nháy sang tối.
+Đã đo thật: ở tông tối, số liệu trên thẻ album đạt tỉ lệ tương phản 6,15 (bản
+sáng 5,48) và dòng đường dẫn nhỏ đạt 4,73 (bản sáng chỉ 2,77) — tức là tối
+đọc số **rõ hơn** sáng, đúng mục đích khi làm. Trang khách đã kiểm chứng vẫn
+sáng nguyên (#fdfcfa) kể cả khi cookie đang bật chế độ tối.
 
 **13. `/api/download/[fileId]` bắt buộc kèm `?slug=`.**
 Máy chủ tra ngược slug → gallery → kiểm `allowDownload` và ảnh có thật sự nằm

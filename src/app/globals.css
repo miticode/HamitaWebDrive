@@ -30,6 +30,50 @@
   --shadow-lift: 0 2px 6px rgba(31, 28, 26, 0.06), 0 18px 40px rgba(31, 28, 26, 0.1);
 }
 
+/*
+  Chế độ tối — CHỈ dùng cho trang quản lý, không bao giờ cho trang khách xem.
+
+  Nguyên tắc 12 của dự án (giao diện cố định tông sáng) nói về album gửi khách:
+  đó là bộ mặt studio nên phải giống nhau trên mọi máy. Trang quản lý thì khác
+  hẳn — chỉ mình studio dùng, thường mở lâu để dò số liệu, nên để người dùng tự
+  chọn tông là đúng.
+
+  Phạm vi được khoá bằng chính cách gắn: thuộc tính này nằm trên một thẻ bọc
+  BÊN TRONG /admin (xem src/app/admin/layout.tsx), không phải trên <html>. Rời
+  khỏi trang quản lý là thẻ đó biến mất, nên trang khách không có đường nào
+  dính tông tối — kể cả khi chuyển trang mà không tải lại.
+
+  Tông giữ nguyên chất ấm của studio: nền nâu đen chứ không phải xám xanh, điểm
+  nhấn vẫn màu đồng nhưng sáng hơn bản ngày để nổi trên nền tối.
+*/
+[data-admin-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #181614;
+  --bg-soft: #211e1b;
+  --bg-raised: #24211d;
+
+  --fg: #f1ebe3;
+  --fg-muted: #a89f95;
+  /*
+    Sáng hơn bản ngày hẳn một bậc: chữ mờ trên nền tối rất nhanh thành không
+    đọc nổi. Đã đo trên nền thẻ (#24211d): mức này cho tỉ lệ tương phản 4,7 —
+    vừa qua chuẩn đọc được 4,5, trong khi bản ngày chỉ đạt 2,8. Vẫn tối hơn
+    --fg-muted đủ nhiều để giữ được thứ bậc giữa hai loại chữ phụ.
+  */
+  --fg-faint: #948a7f;
+
+  --line: #2c2824;
+  --line-strong: #443d35;
+
+  --accent: #c9a46c;
+  --accent-soft: #2f2718;
+
+  /* Trên nền tối, bóng đổ đen gần như vô hình — phải đậm hơn hẳn mới thấy khối. */
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.34);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-bg-soft: var(--bg-soft);
@@ -171,6 +215,56 @@ body {
     border-radius: 4px;
     box-shadow: var(--shadow-soft);
   }
+}
+
+/*
+  Chỉnh lại các màu cứng của trang quản lý khi ở chế độ tối.
+
+  Vài chỗ trong trang quản lý viết màu thẳng bằng lớp tiện ích của Tailwind
+  (vàng cảnh báo, đỏ báo lỗi, xanh báo xong) thay vì dùng biến — hợp lý, vì
+  đó là màu mang ý nghĩa cố định chứ không phải màu nền chung. Nhưng trên nền
+  tối chúng thành mảng sáng chói (bg-amber-100, bg-emerald-50) hoặc chữ tối
+  không đọc nổi (text-red-700).
+
+  Khối này CỐ Ý viết NGOÀI mọi @layer — ngược với nguyên tắc 11 của dự án.
+  Lý do: ở đây cần THẮNG lớp tiện ích chứ không phải nhường nó. Selector
+  [data-admin-theme="dark"] .text-red-700 có độ ưu tiên cao hơn .text-red-700
+  nên đè được, và chỉ đè đúng trong trang quản lý khi đang ở chế độ tối.
+
+  Những chấm màu đặc (bg-emerald-500, bg-rose-500) giữ nguyên: chúng nổi tốt
+  trên cả nền sáng lẫn nền tối.
+*/
+[data-admin-theme="dark"] .text-red-700 {
+  color: #fca5a5;
+}
+[data-admin-theme="dark"] .bg-red-50 {
+  background-color: #2c1a1a;
+}
+[data-admin-theme="dark"] .text-emerald-700 {
+  color: #6ee7b7;
+}
+[data-admin-theme="dark"] .bg-emerald-50 {
+  background-color: #15251f;
+}
+[data-admin-theme="dark"] .text-amber-700,
+[data-admin-theme="dark"] .text-amber-900 {
+  color: #fcd34d;
+}
+[data-admin-theme="dark"] .bg-amber-100 {
+  background-color: #33280f;
+}
+/* Nút xoá: nền đỏ đậm vốn đã hợp nền tối, chỉ hạ bớt độ gắt. */
+[data-admin-theme="dark"] .bg-red-700 {
+  background-color: #b91c1c;
+}
+[data-admin-theme="dark"] .bg-red-800 {
+  background-color: #991b1b;
+}
+/* Nền hover đỏ nhạt của .btn-danger cũng phải đảo, không thì chói cả mảng. */
+[data-admin-theme="dark"] .btn-danger:hover {
+  background: #2c1a1a;
+  border-color: #7f1d1d;
+  color: #fca5a5;
 }
 
 /* Ô ảnh chưa tải xong — nhấp nháy nhẹ để biết là đang chờ, không phải hỏng. */

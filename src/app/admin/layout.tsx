@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { NutDoiTong } from "./NutDoiTong";
 
 /**
  * Chi de khai bao robots cho toan bo /admin/* — ap dung cho ca /admin va
@@ -10,10 +12,30 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  /*
+    Doc lua chon tong mau o PHIA MAY CHU roi dung san dung tong ngay trong dong
+    HTML dau tien. Neu doc o phia khach (localStorage) thi trang luon hien ra
+    sang truoc roi moi nhay sang toi — choi mat moi lan mo.
+  */
+  const toi = (await cookies()).get("admin-tong")?.value === "toi";
+
+  /*
+    Thuoc tinh nam o day chu KHONG phai tren <html>: rieng vung nay moi doi
+    tong. Trang khach xem anh phai giu tong sang co dinh (nguyen tac 12), va
+    dat o day thi khong co duong nao dinh sang do — chuyen sang trang khach la
+    the boc nay bien mat.
+
+    min-h-svh de khi noi dung ngan, phan con lai khong lo ra nen sang cua body.
+  */
+  return (
+    <div data-admin-theme={toi ? "dark" : "light"} className="min-h-svh bg-bg text-fg">
+      {children}
+      <NutDoiTong toiBanDau={toi} />
+    </div>
+  );
 }
