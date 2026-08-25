@@ -242,9 +242,15 @@ export function NutTaiFolder({
     );
   }
 
+  /*
+    Nút này trước đây nhấp nháy để khách chú ý (gói ảnh đã tải xong, chỉ còn
+    chờ một cú chạm nữa là mở được khay chia sẻ). Bỏ nhấp nháy theo yêu cầu,
+    đổi sang kiểu nút chính: nền đậm nổi hẳn giữa các nút viền mảnh xung
+    quanh, bắt mắt mà không phải nhúc nhích.
+  */
   if (trangThai === "cho-cham") {
     return (
-      <button onClick={luuLai} className="btn mt-3 animate-pulse">
+      <button onClick={luuLai} className="btn-primary mt-3">
         Lưu bộ ảnh · {dungLuong(tongByte)}
       </button>
     );

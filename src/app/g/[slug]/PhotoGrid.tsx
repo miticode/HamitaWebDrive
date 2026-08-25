@@ -553,7 +553,13 @@ function NutTai({ photo }: { photo: ClientPhoto }) {
     return (
       <button
         onClick={xuLy}
-        className="flex h-14 animate-pulse items-center gap-2 rounded-full bg-white px-5 text-sm font-medium text-neutral-900 transition active:scale-95"
+        /*
+          Truoc day nut nay nhap nhay de goi chu y (anh da tai xong, chi cho
+          them mot cu cham de mo khay chia se). Bo nhap nhay theo yeu cau —
+          nut trang giua khung xem anh nen den von da noi san, khong can
+          nhuc nhich; them vong sang mong cho chac.
+        */
+        className="flex h-14 items-center gap-2 rounded-full bg-white px-5 text-sm font-medium text-neutral-900 ring-2 ring-white/40 transition active:scale-95"
       >
         <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16" />
