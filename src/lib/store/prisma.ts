@@ -87,6 +87,11 @@ export const prismaStore: Store = {
     return row ? toGallery(row) : null;
   },
 
+  async getGalleryById(id: string) {
+    const row = await getPrisma().gallery.findUnique({ where: { id } });
+    return row ? toGallery(row) : null;
+  },
+
   async createGallery(input: CreateGalleryInput) {
     const prisma = getPrisma();
     const base = slugify(input.clientName || input.title) || "gallery";

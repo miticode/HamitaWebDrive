@@ -65,8 +65,32 @@ model Gallery {
   giaAnhThem       Int      @default(12000)
 
   lists SelectionList[]
+  pushSubs PushSub[]
 
   @@index([driveFolderId])
+}
+
+/// Mot may khach da dong y nhan thong bao day ve cho album nay.
+///
+/// Moi may mot dong: co dau chu re moi nguoi mot dien thoai, va cung mot nguoi
+/// co the vua cai tren dien thoai vua cai tren may tinh. Xoa album thi xoa
+/// theo (onDelete: Cascade) — khong con anh thi khong con gi de bao.
+model PushSub {
+  id        String   @id @default(cuid())
+  galleryId String
+
+  /// Dia chi rieng cua may khach do ben dich vu day tin cua trinh duyet.
+  /// Unique de mot may dang ky lai nhieu lan khong sinh ra nhieu dong.
+  endpoint  String   @unique
+  /// Hai khoa de ma hoa noi dung, dich vu day tin khong doc duoc tin nhan.
+  p256dh    String
+  auth      String
+
+  createdAt DateTime @default(now())
+
+  gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  @@index([galleryId])
 }
 
 /// Moi gallery co nhieu danh sach chon (mac dinh: "Anh in" va "Anh chon").

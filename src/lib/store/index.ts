@@ -30,6 +30,9 @@ export function storageKind(): "postgres" | "json" {
 export const listGalleries: Store["listGalleries"] = () => store.listGalleries();
 export const getGalleryBySlug: Store["getGalleryBySlug"] = (slug) =>
   store.getGalleryBySlug(slug);
+
+export const getGalleryById: Store["getGalleryById"] = (id) =>
+  store.getGalleryById(id);
 export const createGallery: Store["createGallery"] = (input) => store.createGallery(input);
 export const deleteGallery: Store["deleteGallery"] = (id) => store.deleteGallery(id);
 export const getLists: Store["getLists"] = (galleryId) => store.getLists(galleryId);

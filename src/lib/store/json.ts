@@ -82,6 +82,13 @@ export const jsonStore: Store = {
     });
   },
 
+  getGalleryById(id: string) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      return db.galleries.find((g) => g.id === id) ?? null;
+    });
+  },
+
   createGallery(input: CreateGalleryInput) {
     return withLock(async () => {
       const db = await readFromDisk();

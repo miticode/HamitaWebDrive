@@ -10,6 +10,7 @@ import { DriveLoi } from "@/components/DriveLoi";
 import { LoiChuc } from "@/components/LoiChuc";
 import { DemNguoc } from "./DemNguoc";
 import { NutLuuApp } from "./NutLuuApp";
+import { NutThongBao } from "./NutThongBao";
 import { DauMoi, GhiNhoDaXem } from "./DauMoi";
 import { NutTaiFolder } from "./NutTaiFolder";
 
@@ -199,6 +200,14 @@ export default async function GalleryPage({ params }: Props) {
           chính trang mà lối tắt sẽ dẫn tới là đúng chỗ nhất.
         */}
         <NutLuuApp tenKhach={title} />
+
+        {/*
+          Nút nhận thông báo khi có ảnh mới. Đặt ngay dưới nút lưu app vì trên
+          iPhone hai việc này nối nhau: phải cài app ra màn hình chính trước thì
+          Apple mới cho xin quyền thông báo. Máy nào chưa làm được thì nút tự
+          giấu đi, không hiện một nút bấm mãi không ăn thua.
+        */}
+        <NutThongBao slug={slug} />
 
         {/*
           Ít mục thì thu hẹp lưới lại và đặt giữa, thay vì để một thẻ đơn độc

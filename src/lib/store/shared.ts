@@ -93,6 +93,8 @@ export type ToggleSelectionInput = {
 export type Store = {
   listGalleries(): Promise<Gallery[]>;
   getGalleryBySlug(slug: string): Promise<Gallery | null>;
+  /** Lay theo ma noi bo — dung o nhung cho chi cam ma, nhu luc dong bo Drive. */
+  getGalleryById(id: string): Promise<Gallery | null>;
   createGallery(input: CreateGalleryInput): Promise<Gallery>;
   deleteGallery(id: string): Promise<void>;
   getLists(galleryId: string): Promise<SelectionList[]>;

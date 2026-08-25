@@ -1,7 +1,8 @@
 import { siteUrl } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
 import { mapLimit } from "@/lib/drive";
-import { updateGalleryMeta } from "@/lib/store";
+import { getGalleryById, updateGalleryMeta } from "@/lib/store";
+import { guiChoAlbum, tinCoAnhMoi } from "@/lib/push";
 
 /**
  * Dung san nhung tam anh khach nhin thay dau tien.
@@ -31,12 +32,39 @@ export async function syncAndWarm(
   folderId: string
 ): Promise<void> {
   const tree = await loadTree(folderId);
+  const tenMuc = tree.albums.map((a) => a.name);
+
+  /*
+    Đọc số liệu CŨ trước khi ghi đè, để biết lần này có thư mục nào vừa xuất
+    hiện. So sánh phải làm ở đây — sau khi ghi thì bản cũ mất, không còn gì để
+    đối chiếu.
+  */
+  const truoc = await getGalleryById(galleryId);
+  const muMoi = truoc ? tenMuc.filter((t) => !truoc.subfolders.includes(t)) : [];
+
   await updateGalleryMeta(galleryId, {
     coverFileId: tree.albums[0]?.photos[0]?.id ?? null,
     photoCount: tree.totalPhotos,
     albumCount: tree.albums.length,
-    subfolders: tree.albums.map((a) => a.name),
+    subfolders: tenMuc,
   });
+
+  /*
+    Có thư mục mới thì báo cho những khách đã đăng ký nhận tin. Chỉ báo khi
+    THẬT SỰ có cái mới: studio bấm "Làm mới" mà không thêm gì thì im lặng, chứ
+    không làm phiền khách mỗi lần studio kiểm tra lại.
+
+    Lần đồng bộ đầu tiên (truoc.subfolders rỗng vì album vừa tạo) cũng không
+    báo — lúc đó chưa ai kịp đăng ký, và cả album đều là mới.
+
+    Nuốt lỗi: gửi tin hỏng thì cũng không được làm hỏng việc đồng bộ số liệu.
+  */
+  if (muMoi.length > 0 && truoc && truoc.subfolders.length > 0) {
+    await guiChoAlbum(galleryId, tinCoAnhMoi(muMoi, `/g/${truoc.slug}`)).catch(
+      () => ({ daGui: 0, daXoa: 0 })
+    );
+  }
+
   await warmGallery(folderId);
 }
 
