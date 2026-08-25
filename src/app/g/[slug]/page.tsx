@@ -83,9 +83,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     /*
       iPhone không đọc "icons" trong bản khai báo, phải khai riêng bằng thẻ
       apple-touch-icon; thiếu nó thì lối tắt trên iPhone hiện ra một ô xám chụp
-      màn hình trang, rất xấu.
+      màn hình trang, rất xấu. Cũng là logo studio như trong bản khai báo.
     */
-    icons: { apple: [{ url: `/g/${slug}/icon/192`, sizes: "192x192" }] },
+    icons: { apple: [{ url: "/icon-app-192.png", sizes: "192x192" }] },
 
     appleWebApp: {
       capable: true,

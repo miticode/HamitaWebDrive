@@ -77,26 +77,30 @@ export async function GET(
       background_color: "#fdfcfa",
       theme_color: "#fdfcfa",
       lang: "vi",
+      /*
+        Biểu tượng là LOGO STUDIO, không phải ảnh trong album khách.
+
+        Bản đầu lấy ảnh bìa album để khách lưu nhiều nhà thì phân biệt được,
+        nhưng studio muốn giữ nhận diện thương hiệu — mở màn hình điện thoại ra
+        là thấy logo Hamita. Tên khách vẫn nằm ngay dưới biểu tượng nên không
+        lẫn được.
+
+        Dùng tệp tĩnh dựng sẵn trong public/ chứ không sinh theo yêu cầu: logo
+        giống nhau ở mọi album, không việc gì phải gọi Drive và cắt ảnh lại cho
+        từng album.
+
+        Nền kem đặc chứ không để trong suốt: logo gốc trong suốt, mà iOS lấp
+        khoảng trong suốt bằng màu đen — icon sẽ thành một ô đen xấu.
+      */
       icons: [
-        {
-          src: `/g/${slug}/icon/192`,
-          sizes: "192x192",
-          type: "image/png",
-          purpose: "any",
-        },
-        {
-          src: `/g/${slug}/icon/512`,
-          sizes: "512x512",
-          type: "image/png",
-          purpose: "any",
-        },
+        { src: "/icon-app-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+        { src: "/icon-app-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
         /*
-          Bản "maskable" cho Android: hệ điều hành tự bo tròn hoặc cắt theo hình
-          của máy. Dùng lại đúng tấm ảnh — ảnh cưới chủ thể nằm giữa nên cắt
-          viền không mất mặt người.
+          Bản riêng cho Android: hệ điều hành tự cắt theo hình của máy (bo tròn,
+          giọt nước…), nên bản này để logo nhỏ hơn hẳn cho khỏi bị xén mép.
         */
         {
-          src: `/g/${slug}/icon/512`,
+          src: "/icon-app-maskable-512.png",
           sizes: "512x512",
           type: "image/png",
           purpose: "maskable",

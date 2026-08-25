@@ -10,6 +10,7 @@ import { CoverPicker } from "./CoverPicker";
 import { LoiNhan } from "./LoiNhan";
 import { TenAlbum } from "./TenAlbum";
 import { GoiAnh } from "./GoiAnh";
+import { NutLamMoi } from "./NutLamMoi";
 import { AnhTieuBieu } from "./AnhTieuBieu";
 import { ThoiHan } from "./ThoiHan";
 import { XoaAlbumDialog } from "./XoaAlbumDialog";
@@ -198,12 +199,8 @@ export function GalleryCard({
           <form action={refreshGalleryAction}>
             <input type="hidden" name="folderId" value={gallery.driveFolderId} />
             <input type="hidden" name="galleryId" value={gallery.id} />
-            <button
-              className="btn"
-              title="Đọc lại thư mục trên Drive và dựng sẵn những tấm ảnh đầu tiên"
-            >
-              Làm mới
-            </button>
+            {/* Nút nằm trong component riêng để đọc được trạng thái của form. */}
+            <NutLamMoi />
           </form>
 
           <button
