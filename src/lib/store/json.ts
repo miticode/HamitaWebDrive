@@ -3,6 +3,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
   DEFAULT_LISTS,
+  duoiSlug,
   slugify,
   type CreateGalleryInput,
   type Gallery,
@@ -86,10 +87,15 @@ export const jsonStore: Store = {
       const db = await readFromDisk();
 
       const base = slugify(input.clientName || input.title) || "gallery";
-      let slug = base;
-      // Them duoi ngau nhien neu trung, cung de nguoi ngoai kho doan link.
-      if (db.galleries.some((g) => g.slug === slug)) {
-        slug = `${base}-${randomUUID().slice(0, 6)}`;
+
+      /*
+        MOI slug deu co duoi ngau nhien, khong phai chi khi trung ten — neu chi
+        la ten bo dau thi ai biet ten khach cung doan ra link album rieng tu cua
+        ho. Giong het ban Postgres, xem duoiSlug() trong shared.ts.
+      */
+      let slug = `${base}-${duoiSlug()}`;
+      while (db.galleries.some((g) => g.slug === slug)) {
+        slug = `${base}-${duoiSlug()}`;
       }
 
       const gallery: Gallery = {

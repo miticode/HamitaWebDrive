@@ -1,6 +1,7 @@
 import { getPrisma } from "@/lib/db";
 import {
   DEFAULT_LISTS,
+  duoiSlug,
   slugify,
   type CreateGalleryInput,
   type Gallery,
@@ -87,10 +88,18 @@ export const prismaStore: Store = {
     const prisma = getPrisma();
     const base = slugify(input.clientName || input.title) || "gallery";
 
-    // Cot slug la unique nen neu trung se nem loi P2002 — thu lai voi duoi ngau
-    // nhien thay vi hoi database truoc, tranh ke ho giua luc hoi va luc ghi.
+    /*
+      MOI slug deu co duoi ngau nhien, khong phai chi khi trung ten.
+      Album la anh rieng tu cua khach: neu slug chi la ten bo dau thi ai biet
+      ten co dau chu re cung mo duoc link. Duoi ngau nhien la thu duy nhat lam
+      link kho doan — xem duoiSlug() trong shared.ts.
+
+      Cot slug la unique nen neu (rat hiem) van trung se nem loi P2002; luc do
+      thu lai voi duoi khac, thay vi hoi database truoc — tranh ke ho giua luc
+      hoi va luc ghi.
+    */
     for (let attempt = 0; attempt < 5; attempt++) {
-      const slug = attempt === 0 ? base : `${base}-${crypto.randomUUID().slice(0, 6)}`;
+      const slug = `${base}-${duoiSlug()}`;
       try {
         const row = await prisma.gallery.create({
           data: {

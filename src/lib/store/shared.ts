@@ -117,6 +117,32 @@ export const DEFAULT_LISTS = [
 
 const VIETNAMESE_MAP: Record<string, string> = { đ: "d", Đ: "d" };
 
+/*
+  Chu cai dung cho duoi ngau nhien cua slug. Bo l/o/0/1 cho khoi nhin nham khi
+  anh doc link qua dien thoai cho khach.
+*/
+const CHU_DUOI = "abcdefghijkmnpqrstuvwxyz23456789";
+
+/**
+ * Duoi ngau nhien gan vao cuoi moi slug: "le-han" -> "le-han-k7m2xq".
+ *
+ * Ly do phai co: truoc day slug lay thang tu ten khach, nghia la ai biet ten
+ * co dau chu re la doan ra link va xem duoc ca bo anh cuoi. Album deu la anh
+ * rieng tu cua khach nen link phai kho doan, khong the chi dua vao viec "it ai
+ * nghi ra".
+ *
+ * 32^6 la hon mot ty to hop — cong voi viec phai doan dung ca ten, du de khong
+ * ai mo trung.
+ *
+ * Dung crypto toan cuc (co san ca o Node lan trinh duyet) thay vi node:crypto,
+ * vi file nay con duoc cac component phia khach lay kieu du lieu.
+ */
+export function duoiSlug(): string {
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => CHU_DUOI[b % CHU_DUOI.length]).join("");
+}
+
 /** Bien ten khach thanh chuoi dung duoc tren URL: "Vũ Phương" -> "vu-phuong". */
 export function slugify(input: string): string {
   return input
