@@ -205,6 +205,14 @@ phải lỗi cần sửa tiếp (sửa tiếp sẽ phải hy sinh lợi ích cac
 **`dispatchEvent(new Event('blur'))` giả không kích hoạt `onBlur` của React.**
 Blur không nổi bọt tự nhiên; phải gọi thật `element.blur()` để test.
 
+**Chú thích `{/* … */}` không đứng một mình trong `return (` hay trong nhánh
+của toán tử ba ngôi.** Chỗ đó chỉ nhận **một** phần tử gốc, mà chú thích JSX
+tính là một phần tử — thành ra hai. Lỗi báo rất khó lần: *"JSX expressions must
+have one parent element"* rồi kéo theo cả loạt lỗi cú pháp ở những dòng phía
+dưới, trông như hỏng ở chỗ khác. Đã vấp ba lần trong một buổi. Cách viết đúng:
+đặt chú thích **bên ngoài** `return`, hoặc dùng chú thích thường `/* … */`
+ngay sau dấu `(`, hoặc đẩy nó vào **trong** thẻ đã mở.
+
 **ESLint của React 19 bắt hai thứ mà bản cũ bỏ qua**, và cả hai đều là lỗi
 thật chứ không phải khó tính:
 - *Gọi hàm bất thuần lúc dựng giao diện* — `Date.now()` viết thẳng trong thân

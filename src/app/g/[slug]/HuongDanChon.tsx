@@ -70,7 +70,13 @@ export function HuongDanChon({
   ];
 
   return (
-    <section className="mx-auto mt-12 max-w-6xl px-4">
+    /*
+      mb-12 chu khong phai mt: chi dat khoang cach phia DUOI de tach khoi luoi
+      anh. Khoang cach phia tren de noi dung tu lo — khoi tieu de ngay tren da
+      co san dem duoi roi, tu them le tren o day nua la cong don thanh mot mang
+      trong qua rong.
+    */
+    <section className="mx-auto mb-12 max-w-6xl px-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {buoc.map((b) => (
           <div

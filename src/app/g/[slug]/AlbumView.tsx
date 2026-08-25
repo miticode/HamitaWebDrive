@@ -6,6 +6,7 @@ import { GalleryHeader } from "./GalleryHeader";
 import { LoiChuc } from "@/components/LoiChuc";
 import { DemNguoc } from "./DemNguoc";
 import { PhotoGrid } from "./PhotoGrid";
+import { HuongDanChon } from "./HuongDanChon";
 import { CodeDialog } from "./CodeDialog";
 import { SelectionProvider } from "./Selection";
 
@@ -78,19 +79,22 @@ export function AlbumView({
               <LoiChuc noiDung={gallery.message} />
             </div>
           )}
-          {/*
-            Nhắc gọn thôi. Bốn bước hướng dẫn đầy đủ nằm ở trang bìa — khách
-            luôn đi qua đó trước khi vào đây, nên lặp lại nguyên khối ở mỗi thư
-            mục con chỉ choán chỗ của chính bộ ảnh.
-          */}
-          <p className="mx-auto mt-6 max-w-md px-4 text-sm leading-relaxed text-fg-muted">
-            Bấm vào ảnh để xem lớn. Dùng{" "}
-            <span className="inline-block size-2 translate-y-px rounded-full bg-rose-500" />{" "}
-            để chọn ảnh in và{" "}
-            <span className="inline-block size-2 translate-y-px rounded-full bg-accent" />{" "}
-            cho những ảnh anh chị muốn giữ riêng. Lựa chọn được lưu tự động.
-          </p>
         </div>
+
+        {/*
+          Bốn bước hướng dẫn đặt ngay đây — trong thư mục con, sát trên lưới
+          ảnh. Ban đầu để ở trang bìa với lý do "khách đọc trước rồi mới vào
+          chọn", nhưng đây mới là nơi khách thật sự ngồi chọn: đọc xong là làm
+          được ngay, không phải nhớ lại từ trang trước. Khách vào thẳng một thư
+          mục qua link cũng thấy đủ hướng dẫn.
+
+          Nó thay luôn dòng chữ nhỏ trước đây, vì hai bước đầu đã nói đúng
+          những gì dòng đó nói.
+        */}
+        <HuongDanChon
+          soAnhTrongGoi={gallery.soAnhTrongGoi}
+          giaAnhThem={gallery.giaAnhThem}
+        />
 
         <PhotoGrid photos={photos} album={album.name} />
       </main>
