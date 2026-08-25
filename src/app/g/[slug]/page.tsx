@@ -4,11 +4,9 @@ import { notFound } from "next/navigation";
 import { ROOT_ALBUM, STUDIO_NAME } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
 import type { GalleryTree } from "@/lib/drive";
-import { getGalleryBySlug, getLists } from "@/lib/store";
+import { getGalleryBySlug } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { DriveLoi } from "@/components/DriveLoi";
-import { daMoKhoa } from "@/lib/access";
-import { AlbumView } from "./AlbumView";
 import { LoiChuc } from "@/components/LoiChuc";
 import { DemNguoc } from "./DemNguoc";
 import { NutTaiFolder } from "./NutTaiFolder";
@@ -81,8 +79,6 @@ export default async function GalleryPage({ params }: Props) {
 
   const title = gallery.clientName ?? gallery.title;
 
-  const unlocked = await daMoKhoa(gallery.id, gallery.accessCode);
-
   /*
     Drive tro chung thi hien man hinh giai thich, khong de trang nem loi.
     Truoc day mot nhip Drive khong phan hoi la khach thay trang "Trang gap truc
@@ -97,22 +93,15 @@ export default async function GalleryPage({ params }: Props) {
     return <DriveLoi tenKhach={title} thuLaiHref={`/g/${slug}`} />;
   }
 
-  // Chi co mot muc thi hien thang luoi anh — bat khach bam qua mot tam bia
-  // duy nhat chang de lam gi.
-  if (tree.albums.length === 1) {
-    const lists = await getLists(gallery.id);
-    return (
-      <AlbumView
-        slug={slug}
-        gallery={gallery}
-        lists={lists}
-        album={tree.albums[0]}
-        backHref={null}
-        unlocked={unlocked}
-      />
-    );
-  }
+  /*
+    Album chi co MOT thu muc van hien trang bia nay, khong nhay thang vao luoi
+    anh nua.
 
+    Truoc day co nhay thang, voi ly do "bat khach bam qua mot tam bia duy nhat
+    chang de lam gi". Nhung nhay thang la bo mat ca trang bia: anh bia lon
+    studio da chon, ten khach dat giua, so bo anh va so tam. Do moi la thu
+    khach nhin thay dau tien khi mo link — an tuong dau tien ve studio.
+  */
   const cover = chonAnhBia(gallery.coverFileId, tree);
 
   return (
@@ -172,10 +161,23 @@ export default async function GalleryPage({ params }: Props) {
 
         <LoiChuc noiDung={gallery.message} />
 
+        {/*
+          Ít mục thì thu hẹp lưới lại và đặt giữa, thay vì để một thẻ đơn độc
+          nằm dạt về góc trái với hai phần ba trang bỏ trống bên phải. Album một
+          thư mục là chuyện thường gặp — phần lớn buổi chụp chỉ có một bộ.
+        */}
         {tree.albums.length === 0 ? (
           <p className="text-center text-sm text-fg-muted">Thư mục này chưa có ảnh nào.</p>
         ) : (
-          <div className="grid grid-cols-1 gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            className={`grid gap-x-7 gap-y-12 ${
+              tree.albums.length === 1
+                ? "mx-auto max-w-sm grid-cols-1"
+                : tree.albums.length === 2
+                  ? "mx-auto max-w-3xl grid-cols-1 sm:grid-cols-2"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+            }`}
+          >
             {tree.albums.map((album) => (
               <div key={album.id || ROOT_ALBUM} className="text-center">
                 {/* Nút tải nằm NGOÀI thẻ Link: để bên trong thì bấm tải sẽ nhảy
