@@ -227,6 +227,17 @@ export const jsonStore: Store = {
     });
   },
 
+  setClientName(galleryId: string, clientName: string | null) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const g = db.galleries.find((x) => x.id === galleryId);
+      if (!g) return;
+      // Chi dong vao clientName; slug giu nguyen nen link da gui khach van song.
+      g.clientName = clientName;
+      await writeToDisk(db);
+    });
+  },
+
   setFeatured(galleryId: string, featured: boolean) {
     return withLock(async () => {
       const db = await readFromDisk();

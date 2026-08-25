@@ -98,6 +98,12 @@ export type Store = {
 
   setMessage(galleryId: string, message: string | null): Promise<void>;
 
+  /**
+   * Doi ten khach hien tren album. null = quay ve dung ten thu muc tren Drive.
+   * KHONG dung toi slug: link da gui khach van song nguyen.
+   */
+  setClientName(galleryId: string, clientName: string | null): Promise<void>;
+
   setFeatured(galleryId: string, featured: boolean): Promise<void>;
 
   /** Xep album vao mang chup be (true) hay mang cuoi (false). */

@@ -202,6 +202,14 @@ export const prismaStore: Store = {
     });
   },
 
+  async setClientName(galleryId: string, clientName: string | null) {
+    // Chi dong vao clientName; slug giu nguyen nen link da gui khach van song.
+    await getPrisma().gallery.update({
+      where: { id: galleryId },
+      data: { clientName },
+    });
+  },
+
   async setFeatured(galleryId: string, featured: boolean) {
     await getPrisma().gallery.update({
       where: { id: galleryId },

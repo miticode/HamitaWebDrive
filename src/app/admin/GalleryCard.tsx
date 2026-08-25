@@ -8,6 +8,7 @@ import { AccessControl } from "./AccessControl";
 import { CopyLink } from "./CopyLink";
 import { CoverPicker } from "./CoverPicker";
 import { LoiNhan } from "./LoiNhan";
+import { TenAlbum } from "./TenAlbum";
 import { AnhTieuBieu } from "./AnhTieuBieu";
 import { ThoiHan } from "./ThoiHan";
 import { XoaAlbumDialog } from "./XoaAlbumDialog";
@@ -111,12 +112,12 @@ export function GalleryCard({
 
       <div className="flex flex-1 flex-col p-4">
         <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
-          <Link
-            href={`/g/${gallery.slug}`}
-            className="font-display text-xl leading-snug transition group-hover:text-accent"
-          >
-            {title}
-          </Link>
+          <TenAlbum
+            galleryId={gallery.id}
+            slug={gallery.slug}
+            ten={title}
+            tenThuMuc={gallery.title}
+          />
 
           {gallery.selectionsDoneAt && (
             <span

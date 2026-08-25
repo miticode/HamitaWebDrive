@@ -20,6 +20,7 @@ import {
   deleteGallery,
   setAccess,
   setBaby,
+  setClientName,
   setCover,
   setExpiry,
   setFeatured,
@@ -184,6 +185,32 @@ export async function setMessageAction(
 
   await setMessage(galleryId, noiDung || null);
   revalidatePath("/admin");
+  return {};
+}
+
+/**
+ * Doi ten album hien cho khach.
+ *
+ * De trong thi quay ve dung ten thu muc tren Drive — do la trang thai binh
+ * thuong luc moi tao link, khong phai thieu sot.
+ *
+ * KHONG dung toi slug: slug da sinh luc tao link va co the anh da gui cho
+ * khach roi. Doi ten ma keo theo doi slug thi moi link da gui deu chet, va
+ * khong co cach nao bao cho nhung nguoi da nhan link biet.
+ */
+export async function setClientNameAction(
+  galleryId: string,
+  ten: string
+): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+
+  const sach = ten.trim();
+  if (sach.length > 120) return { error: "Tên dài quá 120 ký tự." };
+
+  await setClientName(galleryId, sach || null);
+  revalidatePath("/admin");
+  // Ten hien ca o trang khach xem lan the xem truoc luc gui link.
+  revalidatePath("/", "layout");
   return {};
 }
 
