@@ -6,7 +6,6 @@ import { PrismaClient } from "@/generated/prisma/client";
  * Prisma 7 khong con engine nhi phan nen bat buoc dung driver adapter.
  */
 declare global {
-  // eslint-disable-next-line no-var
   var __prisma: PrismaClient | undefined;
 }
 

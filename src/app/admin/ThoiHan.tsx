@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setExpiryAction } from "./actions";
 import { SO_NGAY_GIU_ANH_MAC_DINH } from "@/lib/constants";
@@ -36,9 +36,27 @@ export function ThoiHan({
 
   const [ngay, setNgay] = useState(String(soNgayHienTai));
 
-  const conLai = expiresAt
-    ? Math.ceil((Date.parse(expiresAt) - Date.now()) / 86_400_000)
-    : null;
+  /*
+    So ngay con lai phai tinh o PHIA MAY KHACH, khong duoc tinh thang trong luot
+    ve dau tien.
+
+    Truoc day cho Date.now() ngay trong than component: may chu dung ma dung
+    luc ve trang, may cua anh dung mot moc khac khi nhan trang — hai ben ra hai
+    con so, React ghep khong khop va co the hien nham mot ngay. Doi den khi
+    trang da chay o may thi chi con mot dong ho duy nhat.
+  */
+  const [bayGio, setBayGio] = useState<number | null>(null);
+  useEffect(() => {
+    // Qua setTimeout thay vi goi thang: doi state dong bo trong than effect keo
+    // theo mot luot ve lai ngay sau luot vua xong.
+    const id = setTimeout(() => setBayGio(Date.now()), 0);
+    return () => clearTimeout(id);
+  }, []);
+
+  const conLai =
+    expiresAt && bayGio !== null
+      ? Math.ceil((Date.parse(expiresAt) - bayGio) / 86_400_000)
+      : null;
 
   const ngayHan = expiresAt
     ? new Date(expiresAt).toLocaleDateString("vi-VN")
@@ -68,10 +86,16 @@ export function ThoiHan({
         <span className="w-24 shrink-0 text-fg-muted">Hạn giữ ảnh</span>
         <span className="min-w-0 flex-1 truncate">
           {expiresAt ? (
-            <>
-              còn <b>{conLai}</b> ngày{" "}
-              <span className="text-fg-faint">· {ngayHan}</span>
-            </>
+            // Nhip dau chua tinh xong so ngay thi hien ngay han truoc, khong de
+            // trong mot khoang "còn ___ ngày".
+            conLai !== null ? (
+              <>
+                còn <b>{conLai}</b> ngày{" "}
+                <span className="text-fg-faint">· {ngayHan}</span>
+              </>
+            ) : (
+              <span className="text-fg-faint">{ngayHan}</span>
+            )
           ) : (
             <span className="text-fg-faint">không đặt hạn</span>
           )}

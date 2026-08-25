@@ -34,34 +34,52 @@ export function CoverPicker({
   const [error, setError] = useState<string | null>(null);
   const [dangLuu, startLuu] = useTransition();
 
-  const tai = useCallback(
+  /*
+    Chi goi may chu va tra ve du lieu — KHONG dong vao state.
+
+    Tach nhu vay vi effect ben duoi dung chung ham nay: neu ham tu doi state thi
+    doi do chay dong bo ngay trong than effect, keo theo mot luot ve lai ngay sau
+    luot vua xong. De ham thuan tuy thi moi noi goi tu quyet dinh luc nao bat den
+    "dang tai", luc nao ghi ket qua.
+  */
+  const layAnh = useCallback(
     async (offset: number) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(
-          `/api/admin/photos?folder=${encodeURIComponent(folderId)}&offset=${offset}`
-        );
-        const data = (await res.json()) as {
-          photos?: Photo[];
-          total?: number;
-          error?: string;
-        };
-        if (!res.ok) throw new Error(data.error ?? `Lỗi ${res.status}`);
-        setTotal(data.total ?? 0);
-        setPhotos((cu) => (offset === 0 ? (data.photos ?? []) : [...cu, ...(data.photos ?? [])]));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        setLoading(false);
-      }
+      const res = await fetch(
+        `/api/admin/photos?folder=${encodeURIComponent(folderId)}&offset=${offset}`
+      );
+      const data = (await res.json()) as {
+        photos?: Photo[];
+        total?: number;
+        error?: string;
+      };
+      if (!res.ok) throw new Error(data.error ?? `Lỗi ${res.status}`);
+      return { photos: data.photos ?? [], total: data.total ?? 0 };
     },
     [folderId]
   );
 
   useEffect(() => {
-    void tai(0);
-  }, [tai]);
+    // Co huy: anh dong hop thoai giua chung thi khong ghi ket qua vao mot
+    // component da go khoi man hinh nua.
+    let huy = false;
+
+    layAnh(0)
+      .then((data) => {
+        if (huy) return;
+        setTotal(data.total);
+        setPhotos(data.photos);
+      })
+      .catch((err: unknown) => {
+        if (!huy) setError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => {
+        if (!huy) setLoading(false);
+      });
+
+    return () => {
+      huy = true;
+    };
+  }, [layAnh]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -170,7 +188,19 @@ export function CoverPicker({
               <button
                 type="button"
                 disabled={loading}
-                onClick={() => void tai(photos.length)}
+                onClick={() => {
+                  setLoading(true);
+                  setError(null);
+                  layAnh(photos.length)
+                    .then((data) => {
+                      setTotal(data.total);
+                      setPhotos((cu) => [...cu, ...data.photos]);
+                    })
+                    .catch((err: unknown) => {
+                      setError(err instanceof Error ? err.message : String(err));
+                    })
+                    .finally(() => setLoading(false));
+                }}
                 className="btn"
               >
                 {loading ? "Đang tải…" : `Xem thêm (${photos.length}/${total})`}

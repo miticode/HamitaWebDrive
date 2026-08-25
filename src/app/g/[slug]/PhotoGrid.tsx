@@ -237,8 +237,19 @@ export function PhotoGrid({ photos, album }: { photos: ClientPhoto[]; album: str
   const sentinel = useRef<HTMLDivElement>(null);
   const [openPhoto, setOpenPhoto] = useState<ClientPhoto | null>(null);
 
-  // Doi bo loc thi dem lai tu dau, khong thi dang loc 12 anh ma van bao "tai them".
-  useEffect(() => setShown(PAGE), [filter]);
+  /*
+    Doi bo loc thi dem lai tu dau, khong thi dang loc 12 anh ma van bao "tai them".
+
+    Chinh thang trong luot ve chu khong qua useEffect: lam bang effect thi khach
+    thay mot nhip luoi cu (so anh cua bo loc truoc) roi moi nhay ve dung, va
+    React phai ve lai hai lan cho mot cu bam. So voi lan ve truoc la cach React
+    khuyen dung cho viec "dat lai state khi mot gia tri dau vao doi".
+  */
+  const [locTruoc, setLocTruoc] = useState(filter);
+  if (filter !== locTruoc) {
+    setLocTruoc(filter);
+    setShown(PAGE);
+  }
 
   useEffect(() => {
     const node = sentinel.current;
