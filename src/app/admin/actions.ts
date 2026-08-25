@@ -8,6 +8,7 @@ import { getFolderName, parseFolderId } from "@/lib/drive";
 import { isAdmin, signIn, signOut } from "@/lib/auth";
 import { disconnect } from "@/lib/googleAuth";
 import { sinhMa } from "@/lib/access";
+import { GIA_ANH_THEM_MAC_DINH } from "@/lib/constants";
 import {
   LOCK_MINUTES,
   clearFailures,
@@ -190,16 +191,20 @@ export async function setMessageAction(
 }
 
 /**
- * Dat so anh trong goi va gia moi tam vuot goi cho album nay.
+ * Dat so anh in co san trong goi cua album nay.
  *
- * Hai so nay hien o phan huong dan chon anh phia khach, buoc "tha tim anh muon
- * in". Moi goi moi khac nen phai dat rieng tung album — de trong so anh thi
- * phan huong dan bo qua han doan gia ca, chi noi cach chon.
+ * So nay hien o phan huong dan chon anh phia khach, buoc "tha tim anh muon
+ * in". Moi goi moi khac nen phai dat rieng tung album — de trong thi phan
+ * huong dan bo qua han doan gia ca, chi noi cach chon.
+ *
+ * Gia moi tam vuot goi KHONG dat o day: no la con so co dinh cua studio
+ * (GIA_ANH_THEM_MAC_DINH trong constants.ts), giong nhau o moi goi. Cho sua
+ * rieng tung album chi tao them mot o de go nham ma khong duoc loi gi; muon
+ * doi gia thi sua mot cho trong constants.ts la doi ca he thong.
  */
 export async function setGoiAnhAction(
   galleryId: string,
-  soAnh: string,
-  gia: string
+  soAnh: string
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
 
@@ -212,12 +217,7 @@ export async function setGoiAnhAction(
     }
   }
 
-  const giaSo = Number(gia.trim());
-  if (!Number.isInteger(giaSo) || giaSo < 0) {
-    return { error: "Giá phải là số nguyên, không âm." };
-  }
-
-  await setGoiAnh(galleryId, so, giaSo);
+  await setGoiAnh(galleryId, so, GIA_ANH_THEM_MAC_DINH);
   revalidatePath("/admin");
   // So nay hien o trang khach xem nen phai lam moi ca duong do.
   revalidatePath("/", "layout");

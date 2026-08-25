@@ -10,11 +10,16 @@ function tien(so: number): string {
 }
 
 /**
- * Số ảnh in đã bao gồm trong gói khách mua, và giá mỗi tấm chọn vượt gói.
+ * Số ảnh in đã bao gồm trong gói khách mua.
  *
- * Hai số này hiện ở phần hướng dẫn chọn ảnh phía khách. Mỗi gói mỗi khác nên
- * phải đặt riêng từng album; để trống số ảnh thì phần hướng dẫn bỏ hẳn đoạn
- * giá cả, chỉ nói cách chọn — hợp với những album studio không tính theo gói.
+ * Hiện ở phần hướng dẫn chọn ảnh phía khách, bước "thả tim ảnh muốn in". Mỗi
+ * gói mỗi khác nên phải đặt riêng từng album; để trống thì phần hướng dẫn bỏ
+ * hẳn đoạn giá cả, chỉ nói cách chọn — hợp với album studio không tính theo gói.
+ *
+ * Giá mỗi tấm vượt gói KHÔNG sửa ở đây: đó là con số cố định của studio, giống
+ * nhau ở mọi gói. Cho sửa riêng từng album chỉ thêm một ô để gõ nhầm mà không
+ * được lợi gì — muốn đổi giá thì sửa GIA_ANH_THEM_MAC_DINH trong constants.ts,
+ * một chỗ đổi là cả hệ thống đổi theo.
  */
 export function GoiAnh({
   galleryId,
@@ -23,18 +28,18 @@ export function GoiAnh({
 }: {
   galleryId: string;
   soAnhTrongGoi: number | null;
+  /** Chỉ để hiển thị — ô này không sửa được giá. */
   giaAnhThem: number;
 }) {
   const router = useRouter();
   const [mo, setMo] = useState(false);
   const [soAnh, setSoAnh] = useState(soAnhTrongGoi?.toString() ?? "");
-  const [gia, setGia] = useState(giaAnhThem.toString());
   const [loi, setLoi] = useState<string | null>(null);
   const [dangLuu, start] = useTransition();
 
   const luu = () =>
     start(async () => {
-      const kq = await setGoiAnhAction(galleryId, soAnh, gia);
+      const kq = await setGoiAnhAction(galleryId, soAnh);
       if (kq?.error) {
         setLoi(kq.error);
         return;
@@ -48,7 +53,6 @@ export function GoiAnh({
     setMo(false);
     setLoi(null);
     setSoAnh(soAnhTrongGoi?.toString() ?? "");
-    setGia(giaAnhThem.toString());
   };
 
   if (!mo) {
@@ -84,24 +88,23 @@ export function GoiAnh({
         value={soAnh}
         autoFocus
         onChange={(e) => setSoAnh(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") luu();
+          if (e.key === "Escape") huy();
+        }}
         placeholder="để trống nếu không tính theo gói"
-        className="input mt-1.5"
-      />
-
-      <label className="eyebrow mt-3 block">Giá mỗi ảnh chọn thêm (đồng)</label>
-      <input
-        type="number"
-        min={0}
-        step={1000}
-        value={gia}
-        onChange={(e) => setGia(e.target.value)}
         className="input mt-1.5"
       />
 
       <p className="mt-2 text-xs leading-relaxed text-fg-faint">
         {soAnh
-          ? `Khách sẽ đọc: "Gói của anh chị gồm ${soAnh} ảnh in. Thích thêm tấm nào ngoài gói vẫn chọn được, mỗi tấm ${tien(Number(gia) || 0)}đ đã gồm chỉnh sửa và in."`
-          : "Để trống số ảnh thì phần hướng dẫn cho khách bỏ hẳn đoạn giá cả, chỉ nói cách chọn ảnh."}
+          ? `Khách sẽ đọc: "Gói của anh chị gồm ${soAnh} ảnh in. Thích thêm tấm nào ngoài gói vẫn chọn thoải mái — mỗi tấm ${tien(giaAnhThem)}đ, đã gồm chỉnh sửa và in."`
+          : "Để trống thì phần hướng dẫn cho khách bỏ hẳn đoạn giá cả, chỉ nói cách chọn ảnh."}
+      </p>
+
+      <p className="mt-2 text-[11px] leading-relaxed text-fg-faint">
+        Giá ảnh thêm cố định {tien(giaAnhThem)}đ/ảnh cho mọi gói. Muốn đổi giá thì
+        báo em sửa trong mã nguồn, đổi một lần áp dụng cho tất cả album.
       </p>
 
       {loi && <p className="mt-2 text-xs text-red-700">{loi}</p>}
