@@ -144,6 +144,29 @@ không có tiền tố nghĩa là bản cũ, đọc nguyên văn và tự ghi đ
 ở lần dùng kế tiếp. **Đổi `TOKEN_KEY` là phiếu cũ không đọc lại được** — phải
 vào trang quản trị bấm "Kết nối lại".
 
+**20. Trạng thái "đã chọn xong" tính RIÊNG từng thư mục con.**
+Bảng `MucXong`, mỗi thư mục một dòng, giữ cả tên thư mục lúc báo. Trước đây là
+một cột `selectionsDoneAt` chung cả album, nên khách xong thư mục đầu rồi sang
+thư mục thứ hai thì ở đó vẫn hiện "đã báo xong" — đúng lỗi anh phát hiện ngày
+25/08. Con số hỏi khách ("chọn xong N tấm rồi phải không ạ?") cũng phải đếm số
+tấm **riêng biệt trong thư mục đang mở**, không phải cả album và không đếm
+trùng khi một tấm nằm ở hai danh sách. Cột `selectionsDoneAt` giữ lại nhưng
+không còn ai dùng.
+
+**21. Service worker (`public/sw.js`) TUYỆT ĐỐI không cache.**
+Nó tồn tại vì hai việc: để album đủ điều kiện cài như app (Chrome trên Android
+chỉ mời cài khi có service worker biết xử lý fetch), và để nhận thông báo đẩy
+lúc web đã đóng. Thêm cache vào đây là phá nguyên tắc 4 — khách mở app sẽ thấy
+bộ ảnh của hôm qua mà không hiểu vì sao. Ảnh đã có CDN lo phần nhanh rồi.
+
+**22. Biểu tượng app là LOGO STUDIO, không phải ảnh của khách.**
+Tệp tĩnh dựng sẵn trong `public/icon-app-*.png`. Hai điều bắt buộc: nền phải
+đặc (logo gốc trong suốt, iOS lấp khoảng trong suốt bằng màu đen), và bản
+`maskable` cho Android phải để logo nhỏ hơn hẳn (56% thay vì 74%) vì hệ điều
+hành tự cắt theo hình của máy. Bản đầu dùng ảnh bìa album để khách phân biệt
+được, nhưng studio muốn giữ nhận diện thương hiệu — tên khách nằm dưới biểu
+tượng nên vẫn không lẫn.
+
 **19. Trang khách không được chết vì Drive trục trặc.**
 Danh sách ảnh đọc thẳng từ Drive mỗi lần khách mở trang (nguyên tắc 4), nên một
 nhịp Drive không phản hồi là cả trang ném lỗi. Hai trang `/g/[slug]` và
@@ -205,6 +228,35 @@ phải lỗi cần sửa tiếp (sửa tiếp sẽ phải hy sinh lợi ích cac
 **`dispatchEvent(new Event('blur'))` giả không kích hoạt `onBlur` của React.**
 Blur không nổi bọt tự nhiên; phải gọi thật `element.blur()` để test.
 
+**Thư viện ảnh (sharp) từ chối ảnh quá lớn.** Mặc định chỉ nhận 268 triệu điểm
+ảnh để chặn "bom nén". Ảnh in khổ lớn của studio vượt xa mốc đó — tấm mica
+60x120cm đo được 18000x36000 = 648 triệu điểm — và route trả về *"Input image
+exceeds pixel limit"* sau 30 giây chờ. Đã nới bằng `TRAN_DIEM_ANH` trong
+`constants.ts`, phải truyền vào **mọi** lời gọi `sharp()` (cả `/api/img` lẫn
+`/api/download`, bỏ sót một chỗ là ảnh hiện được mà tải lại hỏng). Nới không
+tốn bộ nhớ như tưởng: thư viện giải nén JPEG thẳng ở tỉ lệ thu nhỏ, tấm 648
+triệu điểm chỉ tốn 340 MB và 1,9 giây.
+
+**Phiếu thông báo đẩy chết theo hai kiểu, phải xử lý cả hai.** Dịch vụ trả
+404/410 là một kiểu (khách gỡ app). Kiểu thứ hai: dữ liệu phiếu tự nó hỏng
+(khoá sai dạng) — lỗi xảy ra lúc **mã hoá**, chưa kịp gửi đi đâu nên **không có
+mã trạng thái nào cả**. Chỉ bắt 404/410 thì phiếu rác nằm lại vĩnh viễn. Xem
+`phieuChet()` trong `src/lib/push.ts`.
+
+**Mở lại app đã cài KHÔNG phải là tải trang mới.** Hệ điều hành khôi phục
+nguyên cửa sổ cũ trong bộ nhớ, nên studio vừa thêm thư mục mà khách bấm vào
+lối tắt thì vẫn thấy bộ ảnh của lần xem trước. Đã xử lý bằng `TuLamMoi.tsx`
+(tự lấy lại nội dung khi khách quay lại sau hơn 20 giây, và bắt cả `pageshow`
+cho trường hợp trang lấy từ bộ nhớ đệm). Cùng lỗi này ở service worker: bấm
+thông báo mà chỉ gọi `focus()` thì cửa sổ hiện lên vẫn ở trang cũ — phải
+`navigate()` tới đúng nơi.
+
+**Thử một component có gọi mạng: chỉ chặn ĐÚNG đường cần giả.** Ghi đè
+`window.fetch` cho mọi đường sẽ làm `router.refresh()` của Next nhận dữ liệu
+rác rồi hỏng, mà triệu chứng giống hệt như component không chạy — mất rất
+nhiều thời gian lần. Nhớ thêm: chế độ phát triển của React chạy hiệu ứng hai
+lần, nên lần trả dữ liệu đầu tiên có thể bị nuốt.
+
 **Chú thích `{/* … */}` không đứng một mình trong `return (` hay trong nhánh
 của toán tử ba ngôi.** Chỗ đó chỉ nhận **một** phần tử gốc, mà chú thích JSX
 tính là một phần tử — thành ra hai. Lỗi báo rất khó lần: *"JSX expressions must
@@ -259,8 +311,13 @@ cũ. Sửa bằng cách truyền thẳng tham số vào hàm thay vì dựa vào
 
 ---
 
-- Deploy bằng `npx vercel deploy --prod`. Vercel đẩy lên rồi build trên máy
-  của họ, không nối tự động với GitHub.
+- **Deploy bằng `git push`.** Vercel đã nối với kho GitHub
+  (`miticode/HamitaWebDrive`) nên đẩy lên là nó tự dựng bản mới. **Đừng dùng
+  `npx vercel deploy --prod`** — lệnh đó hay chết giữa chừng vì phiên đăng nhập
+  CLI hết hạn (đã gặp hai lần trong một ngày), phải `npx vercel login` lại mới
+  chạy được.
+- Kiểm tra bản mới đã lên chưa bằng cách **gọi một đường API vừa đổi và xem nó
+  trả về kiểu cũ hay kiểu mới**, đừng đoán theo thời gian.
 - **Tài khoản Vercel phải nối với tài khoản GitHub** (Settings → Authentication →
   Login Connections). Từ khi kho có remote GitHub, Vercel đối chiếu email người
   tạo commit với tài khoản GitHub đã nối; chưa nối thì mọi bản deploy đều bị

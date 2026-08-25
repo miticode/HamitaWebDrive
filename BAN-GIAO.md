@@ -118,7 +118,82 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 Tóm tắt theo nhóm, mới nhất trước — chi tiết kỹ thuật nằm trong lịch sử commit
 Git (mỗi commit đều giải thích lý do dài, có số liệu đo thật).
 
-**Chia hai mảng cưới / bé trên trang giới thiệu (25/08):**
+### Album mở được như một app trên điện thoại (25/08)
+
+Khách bấm một nút là album nằm trên màn hình chính điện thoại, mở ra toàn màn
+hình không có thanh địa chỉ. **Mỗi album là một app riêng** — địa chỉ khởi động
+trỏ đúng album đó, tên khách nằm dưới biểu tượng, biểu tượng là logo studio.
+
+Android bấm một cái là xong. **iPhone thì Apple không cho web tự thêm lối tắt**
+— không có cách nào lách, mọi web trên đời đều vậy. Nên trên iPhone nút mở ra
+bảng chỉ đường ba bước có vẽ đúng biểu tượng Chia sẻ. Khách bấm link ngay
+trong Zalo/Facebook thì web tự nhận ra và bảo mở bằng Safari trước — trình
+duyệt trong mấy app đó không có nút Chia sẻ, chỉ đường kiểu cũ là chỉ vào một
+nút không tồn tại.
+
+### Thông báo đẩy về máy khách (25/08)
+
+Studio thêm thư mục vào Drive rồi bấm "Làm mới" → điện thoại khách hiện thông
+báo ngay trên màn hình khoá, **kể cả khi đã đóng web**. Bấm vào là mở thẳng thư
+mục vừa thêm.
+
+Tự động hoàn toàn, và chỉ báo khi **thật sự** có thư mục mới — bấm "Làm mới" để
+kiểm tra mà không thêm gì thì im lặng.
+
+Điều kiện: khách phải cài album ra màn hình chính (iPhone bắt buộc, từ iOS
+16.4) và bấm đồng ý nhận tin. Hai khoá `NEXT_PUBLIC_VAPID_PUBLIC_KEY` và
+`VAPID_PRIVATE_KEY` đã có trên Vercel.
+
+### Báo hai chiều lúc đang mở trang (25/08)
+
+- **Khách chọn xong → studio biết ngay.** Trang quản lý tự hỏi máy chủ mỗi 20
+  giây, có khách vừa báo là hiện thẻ ở góc kèm đường vào xem ảnh họ chọn.
+- **Studio thêm thư mục → khách thấy chấm "Mới"** cạnh tên thư mục chưa từng
+  xem. Ghi nhớ trong máy khách, không lưu database — vợ đã xem không có nghĩa
+  chồng đã xem. Lần đầu vào album không đánh dấu gì.
+
+### Trạng thái "chọn xong" tách theo từng thư mục (25/08)
+
+Trước đây là một cột chung cả album: khách xong thư mục đầu rồi sang thư mục
+thứ hai thì ở đó vẫn hiện "đã báo xong". Giờ mỗi thư mục một trạng thái riêng,
+và thông báo về studio nói rõ **vừa xong thư mục nào**. Thẻ album hiện từng
+nhãn mang tên thư mục.
+
+Cột `selectionsDoneAt` cũ không còn dùng (giữ lại, không xoá). Dữ liệu cũ
+**không chuyển sang được** vì cách cũ chỉ biết "xong album", không biết xong
+thư mục nào.
+
+### Giao diện khách viết lại toàn bộ giọng (25/08)
+
+Xưng **Hamita** thay cho "chúng tôi"/"studio", câu chữ ấm hơn. Rà 12 file, kể
+cả các màn hình trục trặc — đó là lúc khách dễ lo nhất nên phải mềm nhất.
+
+Thêm **bốn bước hướng dẫn chọn ảnh** đặt ngay trên lưới ảnh trong thư mục:
+ngắm ảnh → thả tim → dặn dò → nhắn Hamita. Bước hai mang thông tin gói: studio
+đặt **số ảnh trong gói** cho từng album ở trang quản lý, giá ảnh thêm cố định
+12.000đ (sửa trong `constants.ts`, một chỗ đổi là cả hệ thống đổi).
+
+### Trang giới thiệu và trang khách (25/08)
+
+- **Dải ảnh bìa chạy** thay ảnh tĩnh: bốn trang album đã dàn chữ, hiện trọn tấm
+  không cắt, nền lấp bằng chính tấm đó làm mờ. Ảnh gốc 60 MB nén còn 1,4 MB.
+- **Bỏ hết hiệu ứng nhấp nháy** trên toàn web. Chỗ duy nhất còn chuyển động là
+  vòng xoay nút "Làm mới" — ở đó nó mang thông tin thật.
+- **Ảnh bìa trang khách dùng đúng tấm studio chọn** (trước đây lấy cứng tấm đầu
+  tiên, nên nút "Đổi bìa" chỉ đổi được cái studio nhìn thấy).
+- **Album một thư mục vẫn hiện trang bìa**, không nhảy thẳng vào lưới ảnh nữa.
+- **Ảnh in khổ lớn hiện được**: hai tấm mica 60x120 và 60x90 (18000x36000 điểm
+  ảnh, 187 MB) trước đây báo lỗi sau 30 giây chờ. Đã nới trần điểm ảnh.
+
+### Trang quản lý (25/08)
+
+- **Chế độ nền tối**, nút ở cạnh "Đăng xuất". Đo thật: đọc số liệu ở nền tối
+  còn rõ hơn nền sáng (6,15 so với 5,48).
+- **Sửa được tên album** tại chỗ — không làm đổi link đã gửi khách.
+- **Nút "Làm mới" báo đang chạy** và khoá lại, chặn bấm chồng lên nhau.
+- **Thanh kết nối Drive thu gọn** còn một dòng, giấu hai nút nguy hiểm.
+
+### Chia hai mảng cưới / bé trên trang giới thiệu (25/08):
 Trang giới thiệu trước đây gom mọi ảnh vào một khu "Một vài bộ ảnh", còn phần
 Hami Baby chỉ có chữ không một tấm ảnh nào — người đi tìm chỗ chụp thôi nôi
 đọc xong vẫn không biết studio chụp bé ra sao. Giờ mỗi album có thêm ô tích
@@ -243,21 +318,21 @@ cần lấy đúng link "Chia sẻ" / "Copy link" (khác QR) từ trong app.
 
 ## 8. Việc còn treo, xếp theo mức nguy hiểm
 
-**🔴 9 album cũ vẫn mang link đoán được.**
-Slug của chúng lấy thẳng từ tên khách bỏ dấu, không có phần ngẫu nhiên nào —
-đã thử thật ngày 25/08: `/g/le-han`, `/g/vu-phuong-kim-tien`,
-`/g/the-lam-xuan-vy` đều mở ra bình thường. Ai biết tên cô dâu chú rể là xem
-được cả bộ ảnh cưới của họ. Album tạo **từ 25/08 trở đi đã có đuôi ngẫu nhiên**
-(`le-han-k7m2xq`) nên hết đoán được; anh chọn giữ nguyên 9 album cũ để link đã
-gửi khách không chết. Muốn bịt luôn thì đổi slug của chúng — đổi lúc nào cũng
-được, chỉ là phải gửi lại link mới cho từng nhà.
-
-**🔴 `/api/selections?slug=...` trả dữ liệu cho bất kỳ ai, không cần mã.**
+**🟡 `/api/selections?slug=...` trả dữ liệu cho bất kỳ ai, không cần mã.**
 Gọi từ ngoài không kèm gì cả vẫn nhận đủ danh sách ảnh khách đã chọn kèm ghi
-chú riêng của họ. Với 9 album cũ (slug đoán được) thì chỉ cần biết tên khách.
-Anh chọn chưa bịt trong đợt này. Sửa thì thêm kiểm tra `daMoKhoa()` vào hàm
-`GET` trong `src/app/api/selections/route.ts` — hệ quả: khách chưa nhập mã sẽ
-không thấy các lựa chọn cũ, phải nhập mã trước.
+chú riêng của họ.
+
+Hạ từ đỏ xuống vàng vì lý do bên dưới: giờ mọi album đều mang slug có đuôi
+ngẫu nhiên, nên phải **đoán trúng cả slug** mới gọi được — không còn chỉ cần
+biết tên khách như trước. Anh chọn chưa bịt. Muốn bịt thì thêm kiểm tra
+`daMoKhoa()` vào hàm `GET` trong `src/app/api/selections/route.ts` — hệ quả:
+khách chưa nhập mã sẽ không thấy các lựa chọn cũ.
+
+**✅ Link đoán được — đã hết.** Trước ngày 25/08, slug lấy thẳng tên khách bỏ
+dấu nên ai biết tên cô dâu chú rể là xem được cả bộ ảnh (đã thử thật:
+`/g/le-han`, `/g/vu-phuong-kim-tien` đều mở ra). Từ 25/08 mọi slug mới đều có
+đuôi ngẫu nhiên 6 ký tự, và anh đã dọn hết album cũ trong ngày — **cả 5 album
+hiện có đều mang slug kiểu mới**, không còn cái nào đoán được.
 
 **🔴 Vercel gói miễn phí cấm dùng cho việc kinh doanh.**
 Nguyên văn: *"Hobby teams are restricted to non-commercial personal use
@@ -292,21 +367,19 @@ giúp trong Drive.
 **🟡 Mật khẩu admin là 10 chữ số** (giống số điện thoại). Đã có chặn dò
 (sai 8 lần khoá 15 phút) nhưng vẫn nên đổi.
 
-**🟡 Chưa thêm `TOKEN_KEY` lên Vercel.**
-Web đã biết mã hoá phiếu Google trước khi ghi vào database, nhưng chỉ có tác
-dụng khi biến này tồn tại. Ở máy đã đặt rồi (trong `.env.local`); trên Vercel
-thì **chưa** — phải copy đúng chuỗi đó sang Vercel → Settings → Environment
-Variables, rồi deploy lại. Chưa làm thì bản trên mạng vẫn lưu nguyên văn như
-trước, không hỏng gì, chỉ là chưa được bảo vệ.
-
 **🟡 Băng thông khi khách tải cả bộ ảnh.**
 Ảnh gốc đi qua máy chủ chứ không tải thẳng từ Drive, nên bộ 1,6 GB tính trọn
 vào hạn mức Vercel (gói miễn phí: 100 GB/tháng). Vài lượt tải cả bộ là hết
 tháng. Gói Pro cho 1 TB nên nếu nâng Pro thì hết lo luôn khoản này.
 
 **⚪ Chưa làm:** watermark trên ảnh xem trước · tên miền riêng
-(hamitawedding.vn) · nút Zalo cho Hami Baby riêng · thêm vào màn hình chính
-(PWA).
+(hamitawedding.vn) · nút Zalo cho Hami Baby riêng.
+
+**✅ Đã xong trong ngày 25/08, không còn treo:**
+- `TOKEN_KEY` đã có trên Vercel, phiếu Google trong database đã ở dạng mã hoá.
+- Hai khoá VAPID đã có trên Vercel, thông báo đẩy chạy thật (3 máy đã đăng ký).
+- Thêm album ra màn hình chính (PWA) — đã làm xong.
+- Deploy giờ tự động qua GitHub, không cần lệnh CLI nữa (xem mục 9).
 
 **⚪ Nợ kỹ thuật:** cột `accessMode` trong database không còn dùng, giữ lại
 để tránh thao tác xoá không lùi được.
@@ -318,39 +391,48 @@ vs "Hamita Studio".
 
 ---
 
-## 9. Trạng thái hiện tại (đo thật ngày 25/08/2026)
+## 9. Trạng thái hiện tại (đo thật cuối ngày 25/08/2026)
 
-**9 album**, 7.270 ảnh, database 7.944 kB / 512 MB. 5 album đang bật "đưa ảnh
-bìa lên trang giới thiệu". Cả 9 album đều có mã chọn ảnh, đều cho tải, đều đã
-đồng bộ, chưa album nào quá hạn (hạn 19–22/11/2026).
+**5 album**, 3.417 ảnh, database 8.104 kB / 512 MB. 23 lựa chọn của khách.
+**3 máy đã đăng ký nhận thông báo đẩy** — nghĩa là tính năng đó chạy thật.
 
-| Album | Ảnh | Mục | Bìa lên trang chủ |
-|---|---:|---:|:---:|
-| `vu-phuong-kim-tien` | 765 | 1 | ✓ |
-| `dong-trieu-thuy-tien` | 990 | 1 | ✓ |
-| `thanh-tam-khanh-trinh` | 1.304 | 1 | |
-| `le-han` | 285 | 1 | |
-| `tan-hau-ngoc-nhi` | 489 | 5 | ✓ |
-| `hc-ngoc-tho-ba-ben` | 337 | 4 | |
-| `the-lam-xuan-vy` | 2.027 | 6 | ✓ |
-| `minh-sang-thuy-sang` | 109 | 2 | |
-| `dh-thuy-vi-quoc-dai` | 964 | 5 | ✓ |
+| Album | Ảnh | Mục | Bìa lên trang chủ | Mảng |
+|---|---:|---:|:---:|---|
+| `hc-vu-phuong-kim-tien-2e4kqn` | 765 | 1 | ✓ | cưới |
+| `his-dong-trieu-thuy-tien-kiqvtm` | 994 | 2 | ✓ | cưới |
+| `hc-her-his-ngoc-tho-ba-ben-93r9gb` | 1.350 | 8 | ✓ | cưới |
+| `baby-thuy-tien-qwsc4p` | 92 | 2 | ✓ | **bé** |
+| `sn-duyen-ngo-xn4hj7` | 216 | 1 | | cưới |
 
-**Đính chính:** bản viết ngày 24/08 ghi "8 album, 6.306 ảnh, 4 featured" — con
-số đó **sai**, đo lại thẳng từ database ngày 25/08 ra 9 album / 7.270 ảnh /
-5 featured. Không có album nào bị mất như đã lo; lỗi nằm ở phép đo hôm đó.
+Số album giảm so với bản trước (9 → 5) là do anh tự dọn bớt trong ngày, không
+phải mất mát. **Mọi album hiện có đều đã mang slug kiểu mới** (có đuôi ngẫu
+nhiên) — mối lo "link đoán được" ở mục 8 nhờ vậy đã tự hết theo.
+
+Một album đã đặt số ảnh trong gói; bốn album còn lại để trống nên phần hướng
+dẫn không nói tới giá.
 
 Mã chọn ảnh của từng album xem trong trang quản lý, dòng "Mã chọn ảnh".
+
+### Deploy: đẩy lên GitHub là xong
+
+Vercel đã nối với kho GitHub (`miticode/HamitaWebDrive`), nên **chỉ cần
+`git push` là Vercel tự dựng bản mới**. Không cần `npx vercel deploy` nữa —
+lệnh đó hay chết giữa chừng vì phiên đăng nhập CLI hết hạn (đã gặp hai lần
+trong ngày 25/08).
+
+Cách kiểm tra bản mới đã lên chưa: gọi một đường API vừa đổi và xem nó trả về
+kiểu cũ hay kiểu mới, thay vì đoán theo thời gian.
 
 ### Lệnh hay dùng
 
 | Lệnh | Việc |
 |---|---|
 | `npm run dev` | Chạy ở máy |
-| `npx vercel deploy --prod` | Đưa lên mạng |
+| `git push` | **Đưa lên mạng** (Vercel tự dựng) |
 | `npm run db:check` | Xem album nào khách đã chọn bao nhiêu ảnh |
 | `npm run db:sync` | Chụp lại số liệu Drive cho toàn bộ album |
 | `npm run db:push` | Cập nhật cấu trúc database |
+| `npx prisma generate` | Sinh lại Prisma Client sau khi đổi schema |
 | `npx tsx scripts/build-logo.mts assets/logo-goc.jpg` | Dựng lại logo |
 
 ---
