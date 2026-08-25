@@ -34,7 +34,12 @@ export function NutLuuApp({ tenKhach }: { tenKhach: string }) {
     null = chưa nhận diện xong máy khách. Lúc đó ẩn nút: thà chậm một nhịp còn
     hơn hiện nhầm bảng chỉ đường iPhone cho người dùng Android.
   */
-  const [may, setMay] = useState<{ ios: boolean; trongApp: boolean } | null>(null);
+  const [may, setMay] = useState<{
+    ios: boolean;
+    trongApp: boolean;
+    /** Đang xem trong trình duyệt nhúng của Zalo/Facebook chứ không phải Safari. */
+    trongUngDungKhac: boolean;
+  } | null>(null);
   const [moChiDan, setMoChiDan] = useState(false);
   const [daCai, setDaCai] = useState(false);
 
@@ -71,6 +76,13 @@ export function NutLuuApp({ tenKhach }: { tenKhach: string }) {
           /iPad|iPhone|iPod/.test(ua) ||
           // iPad đời mới tự khai là máy Mac, phải nhìn thêm số điểm chạm.
           (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1),
+        /*
+          Khách hay bấm link ngay trong Zalo hoặc Facebook. Trình duyệt nhúng
+          của mấy ứng dụng đó KHÔNG có nút Chia sẻ của Safari, nên chỉ đường
+          "bấm Chia sẻ" là chỉ vào một nút không tồn tại — khách tìm mãi không
+          thấy rồi bỏ cuộc. Nhận ra sớm để đổi lời chỉ dẫn.
+        */
+        trongUngDungKhac: /FBAN|FBAV|Instagram|Zalo|Line\/|MicroMessenger/i.test(ua),
         trongApp:
           window.matchMedia("(display-mode: standalone)").matches ||
           // Safari dùng cờ riêng, không theo chuẩn display-mode.
@@ -164,36 +176,92 @@ export function NutLuuApp({ tenKhach }: { tenKhach: string }) {
           >
             <p className="eyebrow">Trên iPhone</p>
             <h2 className="mt-1.5 font-display text-2xl leading-snug font-light">
-              Ba bước là xong ạ
+              {may?.trongUngDungKhac
+                ? "Mở bằng Safari trước đã ạ"
+                : "Ba bước là xong ạ"}
             </h2>
 
-            <ol className="mt-5 space-y-3.5 text-sm leading-relaxed">
+            {/*
+              Đang xem trong Zalo/Facebook thì chỉ đường "bấm Chia sẻ" là chỉ
+              vào một nút không tồn tại — trình duyệt nhúng của mấy ứng dụng đó
+              không có. Phải đưa khách ra Safari trước, rồi mới nói tiếp.
+            */}
+            {may?.trongUngDungKhac && (
+              <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3.5 py-3 text-[13px] leading-relaxed text-amber-900">
+                Anh chị đang xem trong Zalo/Facebook nên chưa lưu được. Bấm{" "}
+                <b>•••</b> ở góc màn hình, chọn <b>Mở bằng Safari</b>, rồi làm
+                tiếp ba bước dưới đây nhé ạ.
+              </p>
+            )}
+
+            <ol className="mt-5 space-y-4 text-sm leading-relaxed">
               {[
-                <>
-                  Bấm nút <b>Chia sẻ</b> ở thanh dưới cùng của Safari (hình ô
-                  vuông có mũi tên đi lên).
-                </>,
-                <>
-                  Kéo xuống, chọn <b>Thêm vào MH chính</b>.
-                </>,
-                <>
-                  Bấm <b>Thêm</b> ở góc trên bên phải là xong — biểu tượng ảnh
-                  cưới của anh chị sẽ nằm ngay màn hình.
-                </>,
-              ].map((dong, i) => (
-                <li key={i} className="flex gap-3">
+                {
+                  chu: (
+                    <>
+                      Bấm nút <b>Chia sẻ</b> ở thanh dưới cùng của Safari.
+                    </>
+                  ),
+                  // Đúng biểu tượng Chia sẻ của iOS: ô vuông có mũi tên đi lên.
+                  hinh: (
+                    <>
+                      <path d="M12 3v11m0-11 3.2 3.2M12 3 8.8 6.2" />
+                      <path d="M6.5 10.5H5.2A1.2 1.2 0 0 0 4 11.7v8.1A1.2 1.2 0 0 0 5.2 21h13.6a1.2 1.2 0 0 0 1.2-1.2v-8.1a1.2 1.2 0 0 0-1.2-1.2h-1.3" />
+                    </>
+                  ),
+                },
+                {
+                  chu: (
+                    <>
+                      Kéo xuống, chọn <b>Thêm vào MH chính</b>.
+                    </>
+                  ),
+                  hinh: (
+                    <>
+                      <rect x="3.5" y="3.5" width="17" height="17" rx="4" />
+                      <path d="M12 8.5v7M8.5 12h7" />
+                    </>
+                  ),
+                },
+                {
+                  chu: (
+                    <>
+                      Bấm <b>Thêm</b> ở góc trên bên phải là xong.
+                    </>
+                  ),
+                  hinh: (
+                    <>
+                      <circle cx="12" cy="12" r="8.5" />
+                      <path d="m8.5 12.3 2.4 2.4 4.6-5" />
+                    </>
+                  ),
+                },
+              ].map((b, i) => (
+                <li key={i} className="flex items-start gap-3">
                   <span className="grid size-6 shrink-0 place-items-center rounded-full bg-accent text-[11px] font-medium text-white">
                     {i + 1}
                   </span>
-                  <span className="flex-1">{dong}</span>
+                  <span className="flex-1">{b.chu}</span>
+                  {/* Vẽ đúng hình khách phải tìm — nhìn hình nhận ra nhanh hơn đọc chữ. */}
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden
+                    className="mt-0.5 size-5 shrink-0 text-fg-faint"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    {b.hinh}
+                  </svg>
                 </li>
               ))}
             </ol>
 
             <p className="mt-5 text-xs leading-relaxed text-fg-faint">
-              Lối tắt sẽ mang tên “{tenKhach}”. Nếu anh chị đang mở bằng ứng
-              dụng khác (Zalo, Facebook), bấm ••• rồi chọn mở bằng Safari trước
-              nhé ạ.
+              Xong rồi thì trên màn hình điện thoại anh chị sẽ có một biểu tượng
+              mang ảnh cưới của mình, tên “{tenKhach}”.
             </p>
 
             <button
