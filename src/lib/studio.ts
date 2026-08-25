@@ -41,6 +41,27 @@ export const STUDIO = {
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3923.804160937801!2d106.4736751768222!3d10.437109765357222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310ab39117b32b6b%3A0xc73f3ea590e38789!2sHamita%20Wedding%20House!5e0!3m2!1svi!2s!4v1787558664314!5m2!1svi!2s",
 } as const;
 
+/*
+  Anh bia chay o dau trang gioi thieu.
+
+  Day la TRANG ALBUM DA DAN (co chu, co bo cuc rieng), khong phai anh don — nen
+  o trang gioi thieu chung duoc hien tron tam chu khong cat theo khung.
+
+  File nam san trong public/bia/, moi ten hai ban: ban to 2048px cho may tinh
+  va ban "-nho" 1280px cho dien thoai. Anh goc nang 5-23 MB moi tam nen bat
+  buoc phai nen truoc khi dua vao (ca bo con duoi 1,4 MB) — de nguyen thi trang
+  gioi thieu tai rat cham va ngon bang thong.
+
+  Doi anh thi thay file trong public/bia/ roi sua danh sach nay; thu tu o day
+  la thu tu hien ra.
+*/
+export const ANH_BIA = [
+  { ten: "bia-1", mo: "Ảnh cưới trong phim trường của Hamita Studio" },
+  { ten: "bia-2", mo: "Ảnh cưới áo dài truyền thống" },
+  { ten: "bia-3", mo: "Ảnh cưới ngoài trời" },
+  { ten: "bia-4", mo: "Trang album cưới do Hamita Studio thiết kế" },
+] as const;
+
 /**
  * Ten "icon" ung voi bo net ve trong StudioIcon.tsx.
  * Tach rieng khoi component de studio.ts khong dinh JSX.

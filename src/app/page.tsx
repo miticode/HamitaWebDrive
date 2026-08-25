@@ -3,9 +3,10 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { FadeIn } from "@/components/FadeIn";
 import { StudioIcon } from "@/components/StudioIcon";
-import { DICH_VU, HAMI_BABY, STUDIO } from "@/lib/studio";
+import { ANH_BIA, DICH_VU, HAMI_BABY, STUDIO } from "@/lib/studio";
 import { listGalleries } from "@/lib/store";
 import { NavGioiThieu } from "./NavGioiThieu";
+import { AnhBiaChay } from "./AnhBiaChay";
 
 /* Đọc database mỗi lần mở trang, để anh vừa tích chọn album là thấy ngay. */
 export const dynamic = "force-dynamic";
@@ -54,31 +55,21 @@ export default async function Home() {
 
   return (
     <main>
-      <NavGioiThieu coAnhNen />
+      {/*
+        coAnhNen={false} chứ không phải true như hồi còn ảnh bìa cố định: ảnh
+        bìa cũ là poster nền đen nên chữ menu màu trắng nổi rõ, còn bốn trang
+        album bây giờ phần lớn nền sáng — để chữ trắng là menu biến mất. Chữ
+        tối, cộng với dải sáng ở mép trên dải ảnh, đọc được trên cả bốn tấm.
+      */}
+      <NavGioiThieu coAnhNen={false} />
 
       {/*
-        Ảnh bìa cố định do studio cung cấp (public/gioi-thieu-bia.jpg) — khác
-        với ảnh bìa album, đây là ảnh quảng bá riêng, không lấy từ Drive khách.
-        Ảnh đã kín chữ (logo HAMITA, tên đội, khẩu hiệu) nên KHÔNG chồng thêm
-        chữ của trang lên — dễ rối. Tên studio dời xuống dải tiêu đề ngay dưới,
-        như cách đặt caption dưới ảnh bìa tạp chí.
+        Dải ảnh bìa chạy. Ảnh là trang album đã dàn chữ nên hiện trọn tấm, không
+        cắt — xem AnhBiaChay.tsx. Cũng vì ảnh đã kín chữ sẵn nên KHÔNG chồng
+        thêm chữ của trang lên; tên studio nằm ở dải tiêu đề ngay dưới, như cách
+        đặt caption dưới ảnh bìa tạp chí.
       */}
-      <header className="relative flex min-h-[78svh] items-center justify-center overflow-hidden sm:min-h-[92svh]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/gioi-thieu-bia.jpg"
-          alt={`Ảnh quảng bá ${STUDIO.ten}`}
-          className="anh-nen-hero absolute inset-0 size-full object-cover object-top"
-        />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/55 to-transparent" />
-
-        <span
-          aria-hidden
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-2xl text-white/60"
-        >
-          ↓
-        </span>
-      </header>
+      <AnhBiaChay anh={ANH_BIA} />
 
       <section className="border-b border-line">
         <div className="mx-auto max-w-3xl px-6 py-14 text-center sm:py-16">
