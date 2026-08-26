@@ -5,8 +5,15 @@ import { NutDoiTong } from "./NutDoiTong";
 import { TheoDoiKhach } from "./TheoDoiKhach";
 import { serviceAccountEmail } from "@/lib/drive";
 import { getConnectedAccount, oauthIsConfigured } from "@/lib/googleAuth";
-import { listCounts, listGalleries, listMucXong, storageKind } from "@/lib/store";
+import {
+  listCounts,
+  listGalleries,
+  listMucXong,
+  storageKind,
+  type Gallery,
+} from "@/lib/store";
 import { logoutAction } from "./actions";
+import { KhoAnh } from "./KhoAnh";
 import { DriveConnection } from "./DriveConnection";
 import { AlbumList } from "./AlbumList";
 import { GalleryForm } from "./GalleryForm";
@@ -16,6 +23,51 @@ export const dynamic = "force-dynamic";
 
 // Dung san anh chay nen sau khi tra loi — can them thoi gian so voi mac dinh.
 export const maxDuration = 60;
+
+const NGAY = 86_400_000;
+/** Còn dưới ngần này ngày thì báo trước cho studio khỏi bị động. */
+const BAO_TRUOC_NGAY = 30;
+
+/**
+ * Xếp album theo hạn giữ ảnh: cái nào đã quá, cái nào sắp tới.
+ *
+ * Để NGOÀI thân component có lý do: `Date.now()` là hàm bất thuần, viết thẳng
+ * trong thân component thì ESLint của React 19 chặn (đúng cái bẫy đã ghi trong
+ * CLAUDE.md). Ở đây trang là server component chạy lại mỗi request nên không
+ * có nguy cơ lệch giữa máy chủ và máy khách, nhưng luật vẫn đúng về nguyên
+ * tắc — tách ra hàm riêng vừa qua được luật vừa dễ đọc hơn.
+ *
+ * Trả về số ngày đã tính sẵn chứ không đưa mốc thời gian thô xuống trình
+ * duyệt: để phía kia tự trừ là mở đường cho lệch múi giờ.
+ */
+function xepTheoHan(galleries: Gallery[]) {
+  const bayGio = Date.now();
+
+  const theoHan = galleries
+    .filter((g) => g.expiresAt)
+    .map((g) => {
+      const conLaiMs = Date.parse(g.expiresAt!) - bayGio;
+      return {
+        id: g.id,
+        ten: g.clientName ?? g.title,
+        slug: g.slug,
+        mb: g.dungLuongMB,
+        soNgay: Math.abs(Math.ceil(conLaiMs / NGAY)),
+        quaHan: conLaiMs < 0,
+        conLaiMs,
+      };
+    });
+
+  return {
+    // Quá lâu nhất lên đầu — đó là album nên dọn trước.
+    quaHan: theoHan
+      .filter((a) => a.quaHan)
+      .sort((a, b) => a.conLaiMs - b.conLaiMs),
+    sapHetHan: theoHan
+      .filter((a) => !a.quaHan && a.conLaiMs <= BAO_TRUOC_NGAY * NGAY)
+      .sort((a, b) => a.conLaiMs - b.conLaiMs),
+  };
+}
 
 export default async function AdminPage() {
   if (!(await isAdmin())) return <LoginForm />;
@@ -41,6 +93,8 @@ export default async function AdminPage() {
   }
 
   const onJsonStore = storageKind() === "json";
+
+  const { quaHan, sapHetHan } = xepTheoHan(galleries);
 
   // Cung mot cookie voi layout — doc lai o day de nut hien dung bieu tuong ngay
   // tu luot ve dau, khong nhay tu "Nen toi" sang "Nen sang" sau khi trang chay.
@@ -75,6 +129,18 @@ export default async function AdminPage() {
           oauthConfigured={oauthIsConfigured()}
           serviceAccount={serviceAccount}
         />
+      </div>
+
+      {/*
+        Khung kho ảnh đặt NGAY ĐẦU TRANG, trên cả ô tạo link.
+
+        Đây là việc duy nhất trên trang này có hạn chót thật: Drive đầy là
+        studio không upload được ảnh mới nữa. Đặt xuống cuối thì nó thành thứ
+        phải cuộn mới thấy, mà cái gì phải cuộn mới thấy thì không ai thấy.
+        Component tự giấu đi khi kho còn rộng và không album nào quá hạn.
+      */}
+      <div className="mt-4">
+        <KhoAnh quaHan={quaHan} sapHetHan={sapHetHan} />
       </div>
 
       {(!adminPasswordIsSet() || onJsonStore) && (

@@ -40,6 +40,8 @@ export type GalleryMeta = {
   coverFileId: string | null;
   photoCount: number;
   albumCount: number;
+  /** Tong dung luong anh tren Drive, tinh bang MB. 0 = chua do. */
+  dungLuongMB: number;
   subfolders: string[];
 };
 

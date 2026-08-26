@@ -126,6 +126,7 @@ export const jsonStore: Store = {
         coverPinned: false,
         photoCount: 0,
         albumCount: 0,
+        dungLuongMB: 0,
         subfolders: [],
         syncedAt: null,
         expiresAt: hanMacDinh().toISOString(),

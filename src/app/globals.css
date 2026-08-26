@@ -266,6 +266,17 @@ body {
   border-color: #7f1d1d;
   color: #fca5a5;
 }
+/*
+  Viền cảnh báo của khung "Kho ảnh" (KhoAnh.tsx). Sắc 300 là viền nhạt dành
+  cho nền sáng — để nguyên trên nền tối thì thành một đường sáng chói viền
+  quanh cả khung, gắt hơn hẳn nội dung bên trong nó.
+*/
+[data-admin-theme="dark"] .border-red-300 {
+  border-color: #7f1d1d;
+}
+[data-admin-theme="dark"] .border-amber-300 {
+  border-color: #78500f;
+}
 
 /*
   Ô ảnh chưa tải xong.

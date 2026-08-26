@@ -66,6 +66,22 @@ model Gallery {
   photoCount    Int      @default(0)
   albumCount    Int      @default(0)
   subfolders    String[]
+
+  /// Tong dung luong anh cua album tren Drive, tinh bang MEGABYTE.
+  ///
+  /// Chup lai cung luc voi photoCount: cung mot lan doc cay thu muc da co san
+  /// kich thuoc tung tep, nen khong ton them lan goi Drive nao. Nho vay trang
+  /// quan ly cong duoc "don album nay giai phong bao nhieu" ma van khong goi
+  /// Drive (nguyen tac 9).
+  ///
+  /// Don vi MB chu khong phai byte: mot album 2,58 GB tinh bang byte se vuot
+  /// tran kieu Int, ma doi sang BigInt thi keo theo rac roi luc chuyen so qua
+  /// JSON. MB du chinh xac cho viec quyet dinh don album nao truoc.
+  ///
+  /// 0 nghia la CHUA DO chu khong phai album rong — album tao truoc 26/08/2026
+  /// mang gia tri nay cho toi lan "Lam moi" ke tiep.
+  dungLuongMB   Int      @default(0)
+
   syncedAt      DateTime?
 
   /// Moc studio du dinh xoa anh khoi Drive. Khach thay dem nguoc de tranh thu

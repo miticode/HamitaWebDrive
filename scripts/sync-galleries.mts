@@ -18,14 +18,22 @@ console.log(`Co ${galleries.length} album, bat dau doc Drive…\n`);
 for (const g of galleries) {
   try {
     const tree = await getGalleryTree(g.driveFolderId);
+    const tongByte = tree.albums.reduce(
+      (tong, a) => tong + a.photos.reduce((s, p) => s + (p.size || 0), 0),
+      0
+    );
+    const mb = Math.round(tongByte / 1024 ** 2);
+
     await updateGalleryMeta(g.id, {
       coverFileId: tree.albums[0]?.photos[0]?.id ?? null,
       photoCount: tree.totalPhotos,
       albumCount: tree.albums.length,
+      dungLuongMB: mb,
       subfolders: tree.albums.map((a) => a.name),
     });
     console.log(
-      `  ${g.slug.padEnd(24)} ${String(tree.totalPhotos).padStart(5)} anh · ${tree.albums.length} thu muc`
+      `  ${g.slug.padEnd(24)} ${String(tree.totalPhotos).padStart(5)} anh · ` +
+        `${tree.albums.length} thu muc · ${(mb / 1024).toFixed(2)} GB`
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

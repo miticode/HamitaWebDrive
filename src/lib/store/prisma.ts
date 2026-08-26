@@ -34,6 +34,7 @@ type GalleryRow = {
   photoCount: number;
   albumCount: number;
   subfolders: string[];
+  dungLuongMB: number;
   syncedAt: Date | null;
   expiresAt: Date | null;
   selectionsDoneAt: Date | null;

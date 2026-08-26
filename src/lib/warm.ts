@@ -71,10 +71,22 @@ export async function syncAndWarm(
     ? tree.albums.filter((a) => !truoc.subfolders.includes(a.name))
     : [];
 
+  /*
+    Cong dung luong ngay tai day. Cay thu muc vua doc da mang san kich thuoc
+    tung tep, nen phep cong nay khong ton them mot lan goi Drive nao — ma nho
+    no trang quan ly moi cong duoc "don album nay giai phong bao nhieu" trong
+    khi van khong duoc phep goi Drive (nguyen tac 9).
+  */
+  const tongByte = tree.albums.reduce(
+    (tong, a) => tong + a.photos.reduce((s, p) => s + (p.size || 0), 0),
+    0
+  );
+
   await updateGalleryMeta(galleryId, {
     coverFileId: tree.albums[0]?.photos[0]?.id ?? null,
     photoCount: tree.totalPhotos,
     albumCount: tree.albums.length,
+    dungLuongMB: Math.round(tongByte / 1024 ** 2),
     subfolders: tenMuc,
   });
 
