@@ -346,17 +346,20 @@ cũ. Sửa bằng cách truyền thẳng tham số vào hàm thay vì dựa vào
 
 ---
 
-- **Deploy bằng `npx vercel deploy --prod --yes --scope hamita`.**
-  `git push` **KHÔNG** tự dựng bản mới — kho GitHub và dự án Vercel là hai thứ
-  rời nhau. Bản bàn giao ngày 25/08 từng ghi ngược lại; đã kiểm chứng và sửa
-  ngày 26/08: sau một cú `git push`, `npx vercel ls` cho thấy bản deploy mới
-  nhất vẫn là **17 tiếng trước**, và `npx vercel project inspect` không có mục
-  Git Repository nào.
-  Cả hai bước đều cần: `git push` để lưu mã nguồn, `vercel deploy` để đưa lên
-  mạng. Lệnh CLI đôi khi chết vì phiên đăng nhập hết hạn ("Not authorized") —
-  lúc đó chạy `npx vercel login` rồi làm lại.
-  *Muốn bỏ hẳn bước thứ hai* thì phải vào Vercel → project → Settings → Git →
-  Connect Git Repository. Đó là thao tác trên giao diện, phải nhờ anh làm.
+- **Deploy bằng `git push`** — kho `miticode/HamitaWebDrive` đã nối với dự án
+  Vercel **chiều 26/08/2026** (anh tự nối trong Settings → Git). Đẩy lên nhánh
+  `main` là Vercel tự dựng bản production.
+  *Lịch sử để khỏi lặp lại nhầm lẫn:* bản bàn giao 25/08 ghi câu này khi kho
+  **chưa** nối, nên suốt ngày 25 và sáng 26 mọi cú push đều không dựng gì mà
+  không ai biết. Cách phát hiện: `npx vercel ls hamita-gallery --scope hamita`
+  cho thấy bản mới nhất vẫn cũ hàng chục tiếng.
+- **Đừng tin là đã lên, phải kiểm.** Sau khi push, xem `npx vercel ls` có bản
+  mới với `Username` là tên tài khoản GitHub (deploy do git kích hoạt) hay
+  không, rồi **gọi một đường API vừa đổi và xem nó trả kiểu cũ hay kiểu mới**.
+  Đừng đoán theo thời gian.
+- **Đường lui khi cần đẩy gấp** (git trục trặc, hoặc muốn dựng từ mã chưa
+  commit): `npx vercel deploy --prod --yes --scope hamita`. Lệnh này đôi khi
+  báo "Not authorized" vì phiên CLI hết hạn — chạy `npx vercel login` rồi làm lại.
 - Kiểm tra bản mới đã lên chưa bằng cách **gọi một đường API vừa đổi và xem nó
   trả về kiểu cũ hay kiểu mới**, đừng đoán theo thời gian.
 - **Tài khoản Vercel phải nối với tài khoản GitHub** (Settings → Authentication →
@@ -372,7 +375,8 @@ cũ. Sửa bằng cách truyền thẳng tham số vào hàm thay vì dựa vào
 | Lệnh | Việc |
 |---|---|
 | `npm run dev` | Chạy ở máy |
-| `npx vercel deploy --prod --yes --scope hamita` | Đưa lên mạng (`git push` KHÔNG tự deploy) |
+| `git push` | **Đưa lên mạng** (Vercel tự dựng) |
+| `npx vercel deploy --prod --yes --scope hamita` | Đường lui khi git trục trặc |
 | `npm run db:check` | Xem album nào khách đã chọn bao nhiêu ảnh |
 | `npm run db:sync` | Chụp lại số liệu Drive cho toàn bộ album |
 | `npm run db:push` | Cập nhật cấu trúc database |

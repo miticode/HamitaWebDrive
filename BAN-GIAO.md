@@ -3,8 +3,8 @@
 Tài liệu này để dán vào đầu một cuộc trò chuyện mới, giúp phía hỗ trợ nắm được
 toàn bộ bối cảnh mà không phải hỏi lại từ đầu.
 
-Cập nhật: 26/08/2026 (vá lỗ hổng mất lựa chọn khi hai máy cùng chọn ảnh, và
-sửa lại hướng dẫn deploy vốn ghi sai ở bản 25/08).
+Cập nhật: 26/08/2026 (vá lỗ hổng mất lựa chọn khi hai máy cùng chọn ảnh, nối
+kho GitHub với Vercel, và sửa lại hướng dẫn deploy vốn ghi sai ở bản 25/08).
 
 ---
 
@@ -46,7 +46,7 @@ Biến môi trường nằm trong `D:\code\photo-gallery\.env.local` (đã gitig
 `NEXT_PUBLIC_STUDIO_NAME`.
 
 Công nghệ: Next.js 16 (App Router) · React 19 · Tailwind 4 · Prisma 7 + Neon ·
-sharp · exceljs · client-zip · TypeScript. Deploy: xem mục 9 — phải làm đủ HAI bước.
+sharp · exceljs · client-zip · TypeScript. Deploy bằng `git push` (xem mục 9).
 
 ---
 
@@ -446,25 +446,33 @@ dẫn không nói tới giá.
 
 Mã chọn ảnh của từng album xem trong trang quản lý, dòng "Mã chọn ảnh".
 
-### Deploy: phải làm ĐỦ HAI bước
-
-⚠️ Mục này ngày 25/08 ghi sai là "đẩy lên GitHub là xong". **Đã kiểm chứng và
-sửa ngày 26/08:** kho GitHub và dự án Vercel là hai thứ rời nhau, `git push`
-**không** kích hoạt build nào. Bằng chứng: sau một cú push, `npx vercel ls` cho
-thấy bản deploy mới nhất vẫn là 17 tiếng trước, và `npx vercel project inspect`
-không có mục Git Repository.
+### Deploy: `git push` là xong (từ chiều 26/08/2026)
 
 ```
-git push                                        # lưu mã nguồn
-npx vercel deploy --prod --yes --scope hamita   # đưa lên mạng
+git push
 ```
 
-Lệnh CLI đôi khi báo "Not authorized" vì phiên đăng nhập hết hạn — chạy
-`npx vercel login` rồi làm lại.
+Kho `miticode/HamitaWebDrive` đã nối với dự án Vercel — anh tự nối chiều
+26/08/2026 trong Settings → Git. Đẩy lên nhánh `main` là Vercel tự dựng bản
+production.
 
-**Muốn bỏ bước thứ hai:** vào Vercel → project `hamita-gallery` → Settings →
-Git → Connect Git Repository, trỏ vào `miticode/HamitaWebDrive`. Đây là thao
-tác trên giao diện web, anh phải tự làm.
+⚠️ **Lịch sử, để khỏi lặp lại nhầm lẫn:** bản bàn giao 25/08 đã ghi câu này khi
+kho **chưa** nối. Hậu quả: suốt ngày 25 và sáng 26, mọi cú `git push` đều không
+dựng gì mà không ai biết — mã nguồn nằm trên GitHub, còn web vẫn chạy bản cũ.
+Phát hiện ra ngày 26/08 khi `npx vercel ls` cho thấy bản deploy mới nhất vẫn là
+17 tiếng trước.
+
+**Nên luôn kiểm sau khi push**, đừng đoán theo thời gian:
+
+```
+npx vercel ls hamita-gallery --scope hamita
+```
+
+rồi gọi một đường API vừa đổi xem nó trả về kiểu cũ hay kiểu mới.
+
+**Đường lui khi cần đẩy gấp** (git trục trặc, hoặc muốn dựng từ mã chưa commit):
+`npx vercel deploy --prod --yes --scope hamita`. Lệnh này đôi khi báo
+"Not authorized" vì phiên CLI hết hạn — chạy `npx vercel login` rồi làm lại.
 
 Cách kiểm tra bản mới đã lên chưa: gọi một đường API vừa đổi và xem nó trả về
 kiểu cũ hay kiểu mới, thay vì đoán theo thời gian.
@@ -474,8 +482,8 @@ kiểu cũ hay kiểu mới, thay vì đoán theo thời gian.
 | Lệnh | Việc |
 |---|---|
 | `npm run dev` | Chạy ở máy |
-| `git push` | Lưu mã nguồn lên GitHub (KHÔNG tự deploy) |
-| `npx vercel deploy --prod --yes --scope hamita` | **Đưa lên mạng** |
+| `git push` | **Đưa lên mạng** (Vercel tự dựng, đã nối từ 26/08) |
+| `npx vercel deploy --prod --yes --scope hamita` | Đường lui khi git trục trặc |
 | `npm run db:check` | Xem album nào khách đã chọn bao nhiêu ảnh |
 | `npm run db:sync` | Chụp lại số liệu Drive cho toàn bộ album |
 | `npm run db:push` | Cập nhật cấu trúc database |
