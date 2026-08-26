@@ -82,11 +82,13 @@ npm run dev
 project `hamita-gallery`). Database Neon và server Vercel đều đặt ở Singapore —
 cấu hình region nằm trong `vercel.json`.
 
-Đẩy phiên bản mới lên:
+Đẩy phiên bản mới lên — kho GitHub đã nối với Vercel từ 26/08/2026 nên chỉ cần:
 
 ```
-npx vercel deploy --prod
+git push
 ```
+
+Đường lui khi git trục trặc: `npx vercel deploy --prod --yes --scope hamita`.
 
 Biến môi trường trên Vercel được lưu dạng **Sensitive** nên không đọc ngược lại
 được. Muốn đổi thì ghi đè:
@@ -122,6 +124,21 @@ npm run db:backup
 Ghi ra `data/sao-luu/hamita-2026-08-26-1614.json`, giữ **8 bản gần nhất** rồi
 tự dọn bản cũ. Thư mục `data/` đã nằm trong `.gitignore` nên bản sao lưu không
 bao giờ lọt lên GitHub.
+
+### Hoặc bấm nút, khỏi gõ lệnh
+
+Trang quản lý có nút **"Sao lưu ngay"** ngay cạnh thanh kết nối Drive. Cùng dữ
+liệu với lệnh trên — hai bên dùng chung `taoBanSaoLuu()` nên không bao giờ lệch
+nội dung — nhưng tệp tải thẳng về máy qua trình duyệt thay vì ghi vào
+`data/sao-luu/`.
+
+Máy chủ **không giữ lại bản nào**: Vercel có hệ thống tệp chỉ đọc, mà kể cả ghi
+được thì cũng vô nghĩa — bản sao lưu nằm cùng chỗ với thứ nó bảo vệ thì mất là
+mất cả hai.
+
+Nút hiện luôn **"Lần cuối: N ngày trước"**, và đổi sang màu cảnh báo khi quá 14
+ngày. Không có dòng đó thì nó chỉ là một cái nút bấm rồi quên — mà chính việc
+thiếu lời nhắc là lý do Drive đầy 99,5% mà không ai biết.
 
 **Không chứa phiếu đăng nhập Google.** Phiếu đó mở được toàn bộ Drive và không
 hết hạn — một tệp được chép đi chép lại không phải chỗ giữ nó. Phục hồi xong

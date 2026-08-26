@@ -12,7 +12,9 @@ import {
   storageKind,
   type Gallery,
 } from "@/lib/store";
+import { docMoc } from "@/lib/moc";
 import { logoutAction } from "./actions";
+import { NutSaoLuu } from "./NutSaoLuu";
 import { KhoAnh } from "./KhoAnh";
 import { DriveConnection } from "./DriveConnection";
 import { AlbumList } from "./AlbumList";
@@ -69,6 +71,17 @@ function xepTheoHan(galleries: Gallery[]) {
   };
 }
 
+/**
+ * Lần sao lưu gần nhất cách đây bao nhiêu ngày. null = chưa lần nào.
+ *
+ * Cùng lý do với `xepTheoHan()` ở trên: `Date.now()` là hàm bất thuần, để
+ * trong thân component thì ESLint của React 19 chặn.
+ */
+function cachDayMayNgay(luc: Date | null): number | null {
+  if (!luc) return null;
+  return Math.max(0, Math.floor((Date.now() - luc.getTime()) / NGAY));
+}
+
 export default async function AdminPage() {
   if (!(await isAdmin())) return <LoginForm />;
 
@@ -95,6 +108,7 @@ export default async function AdminPage() {
   const onJsonStore = storageKind() === "json";
 
   const { quaHan, sapHetHan } = xepTheoHan(galleries);
+  const saoLuuCachDay = cachDayMayNgay(await docMoc("saoLuu"));
 
   // Cung mot cookie voi layout — doc lai o day de nut hien dung bieu tuong ngay
   // tu luot ve dau, khong nhay tu "Nen toi" sang "Nen sang" sau khi trang chay.
@@ -123,12 +137,20 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      <div className="mt-6">
-        <DriveConnection
-          account={driveAccount}
-          oauthConfigured={oauthIsConfigured()}
-          serviceAccount={serviceAccount}
-        />
+      {/*
+        Thanh kết nối Drive và nút sao lưu chung một hàng: cả hai đều là việc
+        chăm sóc hệ thống, không phải việc làm với từng album. Gộp lại thì phần
+        trên trang gọn còn một hàng, chừa chỗ cho khung kho ảnh ngay dưới.
+      */}
+      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+        <div className="min-w-0 flex-1">
+          <DriveConnection
+            account={driveAccount}
+            oauthConfigured={oauthIsConfigured()}
+            serviceAccount={serviceAccount}
+          />
+        </div>
+        <NutSaoLuu soNgayTruoc={saoLuuCachDay} />
       </div>
 
       {/*

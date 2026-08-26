@@ -192,6 +192,18 @@ model Selection {
   @@index([listId])
 }
 
+/// Moc thoi gian cua nhung viec dinh ky studio lam bang tay, moi viec mot dong.
+///
+/// Hien chi dung mot khoa: "saoLuu" — lan bam nut "Sao luu ngay" gan nhat.
+/// Khong co dong nay thi nut chi la mot cai nut bam roi quen; co no thi trang
+/// quan ly noi duoc "lan cuoi cach day 12 ngay", ma do moi la thu nhac studio
+/// sao luu tiep. Chinh cai thieu loi nhac la ly do Drive day 99,5% ma khong ai
+/// biet — dung bai hoc do cho o day luon.
+model Moc {
+  ten String   @id
+  luc DateTime @default(now())
+}
+
 /// Ghi lai cac lan dang nhap sai de chan do mat khau.
 /// Phai luu o database chu khong phai trong bo nho: tren Vercel moi request co
 /// the roi vao mot may khac nhau, dem trong bo nho se bi reset lien tuc.
