@@ -316,15 +316,30 @@ export const prismaStore: Store = {
     };
 
     const existing = await prisma.selection.findUnique({ where });
-    if (existing) {
-      await prisma.selection.delete({ where });
+
+    /*
+      Khach noi ro muon gi thi lam dung the, khong lat nguoc.
+      Nho vay hai may cung bam "chon" mot tam thi ket qua van la da chon —
+      truoc day may thu hai lam mat lua chon cua may thu nhat (xem chu thich
+      o ToggleSelectionInput.muon).
+
+      Bo trong `muon` = ban JavaScript cu, van lat nguoc nhu truoc.
+    */
+    const { muon, ...duLieu } = input;
+    const chon = muon ?? !existing;
+
+    if (!chon) {
+      if (existing) await prisma.selection.delete({ where });
       return { selected: false };
     }
+
+    // Da co san thi thoi, khong ghi de — giu nguyen ca ghi chu khach da viet.
+    if (existing) return { selected: true };
 
     // Hai cu bam gan nhau tren cung mot anh co the cung chay den day; rang buoc
     // unique lo phan con lai, va ket qua van la "da chon" nen khong can bao loi.
     try {
-      await prisma.selection.create({ data: input });
+      await prisma.selection.create({ data: duLieu });
     } catch (err) {
       if ((err as { code?: string }).code !== "P2002") throw err;
     }

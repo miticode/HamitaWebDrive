@@ -58,6 +58,14 @@ function key(listId: string, fileId: string): string {
   return `${listId}:${fileId}`;
 }
 
+/**
+ * Bao lau hoi lai danh sach da chon mot lan, khi tab dang mo.
+ *
+ * 15 giay: du nhanh de vo chong ngoi canh nhau moi nguoi mot may khong thay
+ * kho chiu, du thua de khong lam phien may chu — moi lan hoi chi 1,3 KB.
+ */
+const NHIP_DONG_BO = 15_000;
+
 export function SelectionProvider({
   slug,
   lists,
@@ -113,28 +121,81 @@ export function SelectionProvider({
   const dangCho = useRef<null | (() => void)>(null);
 
   /*
+    Dem so cu bam dang tren duong toi may chu.
+    Nhip dong bo phia duoi doc con so nay de khong dap ban tra ve cu len thao
+    tac khach vua lam. Dung ref chu khong phai state: no chi de doi chieu,
+    doi no khong can ve lai gi.
+  */
+  const dangGhi = useRef(0);
+
+  /*
     Ca nha dung chung mot ma nen lua chon cung la mot danh sach chung.
     Nho vay co dau va chu re cung tim mot tam thi trong bang chi co mot dong —
     khong con chuyen mot tam anh bi dem hai lan roi in du.
+
+    Hoi lai deu dan chu khong chi tai mot lan luc mo trang. Truoc day chi tai
+    mot lan, nen co dau chon tren dien thoai thi chu re dang mo laptop khong
+    thay gi cho toi khi tu tai lai trang — hai may lech nhau ca buoi ma khong
+    ai biet. Do that: danh sach nay nang 1.329 byte, ve trong 0,25 giay, nen
+    hoi moi 15 giay gan nhu khong ton gi.
   */
   useEffect(() => {
-    fetch(`/api/selections?slug=${encodeURIComponent(slug)}`)
-      .then((r) => r.json())
-      .then(
-        (data: {
+    let con = true;
+
+    const tai = async () => {
+      try {
+        const res = await fetch(
+          `/api/selections?slug=${encodeURIComponent(slug)}`,
+          { cache: "no-store" }
+        );
+        if (!res.ok) return;
+        const data = (await res.json()) as {
           selections?: { listId: string; driveFileId: string; note: string | null }[];
-        }) => {
-          setSelected(
-            new Map(
-              (data.selections ?? []).map((s) => [
-                key(s.listId, s.driveFileId),
-                s.note,
-              ])
-            )
-          );
-        }
-      )
-      .catch(() => {});
+        };
+        if (!con) return;
+
+        /*
+          Dang co cu bam chua kip ve thi bo qua lot nay.
+          Khong co chot nay thi khach bam tim dung luc sap toi nhip hoi se thay
+          tim hien roi bien mat roi hien lai — vi ban tra ve duoc chup TRUOC
+          khi cu bam cua ho kip ghi vao database.
+        */
+        if (dangGhi.current > 0) return;
+
+        setSelected(
+          new Map(
+            (data.selections ?? []).map((s) => [
+              key(s.listId, s.driveFileId),
+              s.note,
+            ])
+          )
+        );
+      } catch {
+        // Mang truc trac thi thoi, nhip sau hoi lai.
+      }
+    };
+
+    void tai();
+
+    /*
+      Chi hoi khi tab dang mo. Khach de album trong tab nen ca buoi thi khong
+      co ly do gi phai hoi may chu — vua ton pin vua ton han muc.
+    */
+    const nhip = setInterval(() => {
+      if (document.visibilityState === "visible") void tai();
+    }, NHIP_DONG_BO);
+
+    // Quay lai tab la lay ngay, khong bat doi het mot nhip.
+    const khiQuayLai = () => {
+      if (document.visibilityState === "visible") void tai();
+    };
+    document.addEventListener("visibilitychange", khiQuayLai);
+
+    return () => {
+      con = false;
+      clearInterval(nhip);
+      document.removeEventListener("visibilitychange", khiQuayLai);
+    };
   }, [slug]);
 
   const guiToggle = useCallback(
@@ -142,16 +203,26 @@ export function SelectionProvider({
       const k = key(listId, photo.id);
       const ghiChuCu = selected.get(k) ?? null;
 
-      const flip = () =>
+      /*
+        Trang thai khach MUON sau cu bam nay. Gui thang y dinh nay len may chu
+        thay vi de may chu tu lat nguoc — xem ToggleSelectionInput.muon. Day la
+        nua dau cua viec va lo hong "hai may lam mat lua chon cua nhau".
+      */
+      const muon = !selected.has(k);
+
+      const datVe = (co: boolean, ghiChu: string | null) =>
         setSelected((prev) => {
+          if (prev.has(k) === co) return prev;
           const next = new Map(prev);
-          if (next.has(k)) next.delete(k);
-          else next.set(k, null);
+          if (co) next.set(k, ghiChu);
+          else next.delete(k);
           return next;
         });
 
       // Doi giao dien truoc cho muot, roi moi goi may chu.
-      flip();
+      datVe(muon, ghiChuCu);
+
+      dangGhi.current++;
 
       const gui = () =>
         fetch("/api/selections", {
@@ -163,6 +234,7 @@ export function SelectionProvider({
             driveFileId: photo.id,
             fileName: photo.name,
             albumName: photo.album,
+            muon,
           }),
         });
 
@@ -180,22 +252,31 @@ export function SelectionProvider({
           }
           return res;
         })
-        .then((res) => {
+        .then(async (res) => {
           // Phai kiem tra res.ok: fetch chi bao loi khi dut mang, con may chu
           // tra ve 400/403 thi van coi la thanh cong. Neu bo qua, giao dien se
           // hien la da chon trong khi may chu khong luu gi ca.
           if (!res.ok) throw new Error(`Máy chủ trả về ${res.status}`);
+
+          /*
+            Lay trang thai THAT trong database lam chuan, thay vi tin cu lat
+            phia trinh duyet. Day la nua sau cua viec va: truoc day cho nay chi
+            xem res.ok roi thoi, nen khi may chu tra ve mot ket qua khac voi
+            thu giao dien dang hien, khong ai biet — man hinh bao da chon trong
+            khi database trong ron.
+          */
+          const data = (await res.json().catch(() => null)) as {
+            selected?: boolean;
+          } | null;
+          if (typeof data?.selected === "boolean") datVe(data.selected, ghiChuCu);
         })
         .catch(() => {
           setFailed(true);
-          flip();
-          // Khoi phuc dung ghi chu cu neu vua bo chon (flip lai thanh da chon).
-          setSelected((prev) => {
-            if (!prev.has(k)) return prev;
-            const next = new Map(prev);
-            next.set(k, ghiChuCu);
-            return next;
-          });
+          // Tra giao dien ve dung trang thai truoc cu bam, kem ghi chu cu.
+          datVe(!muon, ghiChuCu);
+        })
+        .finally(() => {
+          dangGhi.current--;
         });
     },
     [slug, selected]
@@ -214,6 +295,10 @@ export function SelectionProvider({
         return next;
       });
 
+      // Cung ly do voi cu bam chon: nhip dong bo khong duoc dap len ghi chu
+      // khach vua go ma may chu chua kip nhan.
+      dangGhi.current++;
+
       fetch("/api/selections", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -229,6 +314,9 @@ export function SelectionProvider({
             next.set(k, truoc);
             return next;
           });
+        })
+        .finally(() => {
+          dangGhi.current--;
         });
     },
     [slug, selected]

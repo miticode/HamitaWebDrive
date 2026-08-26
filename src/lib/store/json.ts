@@ -341,15 +341,27 @@ export const jsonStore: Store = {
           s.visitorId === input.visitorId
       );
 
-      if (index >= 0) {
-        db.selections.splice(index, 1);
-        await writeToDisk(db);
+      /*
+        Giong ban Postgres: khach noi ro muon gi thi lam dung the, khong lat
+        nguoc — xem chu thich o ToggleSelectionInput.muon.
+      */
+      const { muon, ...duLieu } = input;
+      const chon = muon ?? index < 0;
+
+      if (!chon) {
+        if (index >= 0) {
+          db.selections.splice(index, 1);
+          await writeToDisk(db);
+        }
         return { selected: false };
       }
 
+      // Da co san thi giu nguyen, khong ghi de mat ghi chu khach da viet.
+      if (index >= 0) return { selected: true };
+
       db.selections.push({
         id: randomUUID(),
-        ...input,
+        ...duLieu,
         note: null,
         createdAt: new Date().toISOString(),
       });

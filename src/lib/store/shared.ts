@@ -97,6 +97,23 @@ export type ToggleSelectionInput = {
   fileName: string;
   albumName: string;
   visitorId: string;
+
+  /**
+   * Trang thai khach MUON dat sau cu bam: true = chon, false = bo chon.
+   *
+   * Vi sao can noi ro thay vi cu lat nguoc: ca nha dung chung mot danh sach,
+   * nen hai may co the cung bam mot tam. May thu hai van dang giu trang thai
+   * cu ("tam nay chua chon") nen cu bam cua ho la "chon"; neu may chu lat
+   * nguoc theo database thi no lai XOA dung tam nguoi kia vua chon — bam tim
+   * ma thanh bo tim, va khong ai thay gi bat thuong.
+   *
+   * Da do that tren ban dang chay ngay 26/08/2026: hai lan POST lien tiep cung
+   * mot tam tra ve {selected:true} roi {selected:false}.
+   *
+   * Bo trong = lat nguoc nhu cu. Giu duong lui nay cho nhung may khach dang mo
+   * san trang voi ban JavaScript cu, chua tai lai.
+   */
+  muon?: boolean;
 };
 
 /** Hai kho du lieu (JSON khi chay o may, Postgres khi len mang) deu theo giao dien nay. */
@@ -160,6 +177,13 @@ export type Store = {
   /** Cac thu muc da bao xong cua MOI album — trang quan ly doc mot lan. */
   listMucXong(): Promise<MucXong[]>;
   listCounts(): Promise<ListCount[]>;
+  /**
+   * Chon hoac bo chon mot anh.
+   *
+   * Tra ve trang thai THAT SU trong database sau khi ghi, khong phai thu phia
+   * trinh duyet doan — phia goi bat buoc phai lay ket qua nay lam chuan, vi
+   * mot may khac co the vua doi trang thai cua chinh tam do.
+   */
   toggleSelection(input: ToggleSelectionInput): Promise<{ selected: boolean }>;
   /** Ghi chu rieng cho mot anh da chon, vi du "in co 40x60". null = xoa ghi chu. */
   setSelectionNote(

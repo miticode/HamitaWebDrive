@@ -41,6 +41,13 @@ const ToggleBody = z.object({
   driveFileId: z.string().min(10),
   fileName: z.string().min(1).max(300),
   albumName: z.string().max(300),
+
+  /*
+    Trang thai khach muon dat, thay vi de may chu tu lat nguoc.
+    KHONG bat buoc co: may khach dang mo san trang voi ban JavaScript cu van
+    gui thieu truong nay, va van phai chay dung nhu truoc.
+  */
+  muon: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -71,6 +78,7 @@ export async function POST(req: NextRequest) {
     fileName: body.fileName,
     albumName: body.albumName,
     visitorId: CHUNG,
+    muon: body.muon,
   });
 
   return Response.json(result);
