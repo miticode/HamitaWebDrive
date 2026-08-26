@@ -167,6 +167,41 @@ hành tự cắt theo hình của máy. Bản đầu dùng ảnh bìa album đ�
 được, nhưng studio muốn giữ nhận diện thương hiệu — tên khách nằm dưới biểu
 tượng nên vẫn không lẫn.
 
+**23. Khi chọn ảnh, máy khách gửi Ý ĐỊNH lên máy chủ, không để máy chủ lật ngược.**
+`/api/selections` POST mang theo `muon: true/false` — trạng thái khách muốn có
+sau cú bấm. Trước đây máy chủ tự lật ngược theo database, và vì nguyên tắc 2
+(cả nhà chung một danh sách) nên hai máy cùng bấm một tấm là **mất lựa chọn của
+nhau**. Đo thật ngày 26/08/2026 trên bản đang chạy:
+
+```
+Máy A (vợ)    thả tim tấm X  →  {"selected":true}
+Máy B (chồng) thả tim tấm X  →  {"selected":false}   ← máy chủ XOÁ
+```
+
+Chồng bấm **tim** mà máy chủ **bỏ chọn**, vì máy chồng vẫn giữ trạng thái cũ
+"tấm này chưa chọn". Ba lớp phải giữ đủ, thiếu một lớp là lỗi quay lại:
+- Gửi `muon` thay vì để lật ngược (idempotent — bấm mấy lần cũng ra một kết quả).
+- **Đọc giá trị máy chủ trả về** rồi lấy đó làm chuẩn. Chỉ kiểm `res.ok` là
+  chưa đủ: 200 vẫn có thể mang kết quả ngược với thứ giao diện đang hiện, và
+  đó chính là cách lỗi cũ ẩn mình — hai màn hình đều đỏ tim, database trống rỗng.
+- Hỏi lại danh sách mỗi 15 giây khi tab đang mở (`NHIP_DONG_BO`), cộng một lần
+  ngay khi khách quay lại tab.
+
+`muon` **không bắt buộc** — máy khách đang mở sẵn trang với bản JavaScript cũ
+vẫn gửi thiếu, và vẫn phải chạy đúng như trước. Đừng bắt buộc trường này.
+
+Chốt `dangGhi` trong `Selection.tsx` đếm số cú bấm đang trên đường tới máy chủ;
+nhịp đồng bộ thấy khác 0 thì bỏ qua lượt đó, nếu không khách bấm tim đúng lúc
+sắp tới nhịp sẽ thấy tim hiện rồi biến mất rồi hiện lại.
+
+**Đã cân nhắc WebSocket cho việc này và loại** (26/08/2026). Vercel có hỗ trợ
+gốc từ 22/06/2026 và dự án này đã bật Fluid compute, nhưng: gói Hobby giới hạn
+**300 giây cứng** nên kết nối rớt và nối lại 9 lần trong một buổi khách ngắm
+ảnh; mỗi kết nối ghim vào **một** function instance nên vợ và chồng rơi vào hai
+instance là tin không sang được nhau, muốn phát tán phải thêm Redis. Hỏi lại
+mỗi 15 giây tốn 1.329 byte / 0,25 giây mỗi lượt — rẻ hơn, và chạy đúng cả khi
+hai máy ở hai instance khác nhau.
+
 **19. Trang khách không được chết vì Drive trục trặc.**
 Danh sách ảnh đọc thẳng từ Drive mỗi lần khách mở trang (nguyên tắc 4), nên một
 nhịp Drive không phản hồi là cả trang ném lỗi. Hai trang `/g/[slug]` và
@@ -311,11 +346,17 @@ cũ. Sửa bằng cách truyền thẳng tham số vào hàm thay vì dựa vào
 
 ---
 
-- **Deploy bằng `git push`.** Vercel đã nối với kho GitHub
-  (`miticode/HamitaWebDrive`) nên đẩy lên là nó tự dựng bản mới. **Đừng dùng
-  `npx vercel deploy --prod`** — lệnh đó hay chết giữa chừng vì phiên đăng nhập
-  CLI hết hạn (đã gặp hai lần trong một ngày), phải `npx vercel login` lại mới
-  chạy được.
+- **Deploy bằng `npx vercel deploy --prod --yes --scope hamita`.**
+  `git push` **KHÔNG** tự dựng bản mới — kho GitHub và dự án Vercel là hai thứ
+  rời nhau. Bản bàn giao ngày 25/08 từng ghi ngược lại; đã kiểm chứng và sửa
+  ngày 26/08: sau một cú `git push`, `npx vercel ls` cho thấy bản deploy mới
+  nhất vẫn là **17 tiếng trước**, và `npx vercel project inspect` không có mục
+  Git Repository nào.
+  Cả hai bước đều cần: `git push` để lưu mã nguồn, `vercel deploy` để đưa lên
+  mạng. Lệnh CLI đôi khi chết vì phiên đăng nhập hết hạn ("Not authorized") —
+  lúc đó chạy `npx vercel login` rồi làm lại.
+  *Muốn bỏ hẳn bước thứ hai* thì phải vào Vercel → project → Settings → Git →
+  Connect Git Repository. Đó là thao tác trên giao diện, phải nhờ anh làm.
 - Kiểm tra bản mới đã lên chưa bằng cách **gọi một đường API vừa đổi và xem nó
   trả về kiểu cũ hay kiểu mới**, đừng đoán theo thời gian.
 - **Tài khoản Vercel phải nối với tài khoản GitHub** (Settings → Authentication →
@@ -331,7 +372,7 @@ cũ. Sửa bằng cách truyền thẳng tham số vào hàm thay vì dựa vào
 | Lệnh | Việc |
 |---|---|
 | `npm run dev` | Chạy ở máy |
-| `npx vercel deploy --prod` | Đưa lên mạng |
+| `npx vercel deploy --prod --yes --scope hamita` | Đưa lên mạng (`git push` KHÔNG tự deploy) |
 | `npm run db:check` | Xem album nào khách đã chọn bao nhiêu ảnh |
 | `npm run db:sync` | Chụp lại số liệu Drive cho toàn bộ album |
 | `npm run db:push` | Cập nhật cấu trúc database |

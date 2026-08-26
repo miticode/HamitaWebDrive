@@ -3,8 +3,8 @@
 Tài liệu này để dán vào đầu một cuộc trò chuyện mới, giúp phía hỗ trợ nắm được
 toàn bộ bối cảnh mà không phải hỏi lại từ đầu.
 
-Cập nhật: 24/08/2026 (sau một đợt làm việc dài — rà bảo mật, thêm nhiều tính
-năng theo gợi ý, làm trang giới thiệu, và một đợt chỉnh giao diện).
+Cập nhật: 26/08/2026 (vá lỗ hổng mất lựa chọn khi hai máy cùng chọn ảnh, và
+sửa lại hướng dẫn deploy vốn ghi sai ở bản 25/08).
 
 ---
 
@@ -46,7 +46,7 @@ Biến môi trường nằm trong `D:\code\photo-gallery\.env.local` (đã gitig
 `NEXT_PUBLIC_STUDIO_NAME`.
 
 Công nghệ: Next.js 16 (App Router) · React 19 · Tailwind 4 · Prisma 7 + Neon ·
-sharp · exceljs · client-zip · TypeScript. Deploy bằng `npx vercel deploy --prod`.
+sharp · exceljs · client-zip · TypeScript. Deploy: xem mục 9 — phải làm đủ HAI bước.
 
 ---
 
@@ -113,10 +113,43 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 
 ---
 
-## 6. Việc lớn đã làm trong đợt này (22–25/08/2026)
+## 6. Việc lớn đã làm trong đợt này (22–26/08/2026)
 
 Tóm tắt theo nhóm, mới nhất trước — chi tiết kỹ thuật nằm trong lịch sử commit
 Git (mỗi commit đều giải thích lý do dài, có số liệu đo thật).
+
+### Vá lỗ hổng mất lựa chọn khi hai máy cùng chọn (26/08)
+
+Nguyên tắc 2 nói cả nhà dùng chung một mã nên chung một danh sách chọn. Nhưng
+trang khách chỉ tải danh sách đó **đúng một lần lúc mở trang**, nên cô dâu chọn
+trên điện thoại thì chú rể đang mở laptop không thấy gì.
+
+Cộng với việc máy chủ tự lật ngược trạng thái, ra một lỗi mất dữ liệu im lặng —
+**đo thật trên bản đang chạy**:
+
+```
+Máy A (vợ)    thả tim tấm X  →  {"selected":true}
+Máy B (chồng) thả tim tấm X  →  {"selected":false}   ← máy chủ XOÁ
+```
+
+Chồng bấm **tim** mà máy chủ **bỏ chọn**, vì máy chồng vẫn giữ trạng thái cũ.
+Và vì trang khách chỉ kiểm `res.ok` chứ không đọc giá trị trả về, **cả hai màn
+hình đều hiện tim đỏ trong khi database trống rỗng** — xuất Excel giao bên in
+là thiếu tấm đó, không ai biết.
+
+Vá ở ba lớp: máy khách gửi thẳng ý định (`muon: true/false`) thay vì để máy chủ
+lật ngược; máy khách lấy kết quả máy chủ trả về làm chuẩn; và danh sách được
+hỏi lại mỗi 15 giây khi tab đang mở, cộng một lần ngay khi khách quay lại tab.
+
+**Đã cân nhắc WebSocket và loại** — chi tiết trong `CLAUDE.md` nguyên tắc 23.
+Tóm tắt: Vercel có hỗ trợ gốc từ 22/06/2026, nhưng gói Hobby giới hạn 300 giây
+cứng, và mỗi kết nối ghim vào một máy chủ nên vợ chồng rơi vào hai máy khác
+nhau là tin không sang được nhau (phải thêm Redis). Hỏi lại mỗi 15 giây chỉ tốn
+1.329 byte / 0,25 giây và không dính hai vấn đề đó.
+
+Tiện thể gỡ `ws` + `@types/ws` khỏi `package.json` — không file nào dùng, và đã
+đo thật (giấu gói đó đi rồi chạy truy vấn database vẫn chạy: adapter Neon đi
+đường HTTP, không dùng WebSocket).
 
 ### Album mở được như một app trên điện thoại (25/08)
 
@@ -413,12 +446,25 @@ dẫn không nói tới giá.
 
 Mã chọn ảnh của từng album xem trong trang quản lý, dòng "Mã chọn ảnh".
 
-### Deploy: đẩy lên GitHub là xong
+### Deploy: phải làm ĐỦ HAI bước
 
-Vercel đã nối với kho GitHub (`miticode/HamitaWebDrive`), nên **chỉ cần
-`git push` là Vercel tự dựng bản mới**. Không cần `npx vercel deploy` nữa —
-lệnh đó hay chết giữa chừng vì phiên đăng nhập CLI hết hạn (đã gặp hai lần
-trong ngày 25/08).
+⚠️ Mục này ngày 25/08 ghi sai là "đẩy lên GitHub là xong". **Đã kiểm chứng và
+sửa ngày 26/08:** kho GitHub và dự án Vercel là hai thứ rời nhau, `git push`
+**không** kích hoạt build nào. Bằng chứng: sau một cú push, `npx vercel ls` cho
+thấy bản deploy mới nhất vẫn là 17 tiếng trước, và `npx vercel project inspect`
+không có mục Git Repository.
+
+```
+git push                                        # lưu mã nguồn
+npx vercel deploy --prod --yes --scope hamita   # đưa lên mạng
+```
+
+Lệnh CLI đôi khi báo "Not authorized" vì phiên đăng nhập hết hạn — chạy
+`npx vercel login` rồi làm lại.
+
+**Muốn bỏ bước thứ hai:** vào Vercel → project `hamita-gallery` → Settings →
+Git → Connect Git Repository, trỏ vào `miticode/HamitaWebDrive`. Đây là thao
+tác trên giao diện web, anh phải tự làm.
 
 Cách kiểm tra bản mới đã lên chưa: gọi một đường API vừa đổi và xem nó trả về
 kiểu cũ hay kiểu mới, thay vì đoán theo thời gian.
@@ -428,7 +474,8 @@ kiểu cũ hay kiểu mới, thay vì đoán theo thời gian.
 | Lệnh | Việc |
 |---|---|
 | `npm run dev` | Chạy ở máy |
-| `git push` | **Đưa lên mạng** (Vercel tự dựng) |
+| `git push` | Lưu mã nguồn lên GitHub (KHÔNG tự deploy) |
+| `npx vercel deploy --prod --yes --scope hamita` | **Đưa lên mạng** |
 | `npm run db:check` | Xem album nào khách đã chọn bao nhiêu ảnh |
 | `npm run db:sync` | Chụp lại số liệu Drive cho toàn bộ album |
 | `npm run db:push` | Cập nhật cấu trúc database |
