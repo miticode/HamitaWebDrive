@@ -3,8 +3,10 @@
 Tài liệu này để dán vào đầu một cuộc trò chuyện mới, giúp phía hỗ trợ nắm được
 toàn bộ bối cảnh mà không phải hỏi lại từ đầu.
 
-Cập nhật: 26/08/2026 (vá lỗ hổng mất lựa chọn khi hai máy cùng chọn ảnh, nối
-kho GitHub với Vercel, và sửa lại hướng dẫn deploy vốn ghi sai ở bản 25/08).
+Cập nhật: 26/08/2026 — một ngày dài. Vá lỗ hổng mất lựa chọn khi hai máy cùng
+chọn, rà soát toàn hệ thống, viết lại trang giới thiệu theo lối kể chuyện, và
+làm năm công cụ mới cho studio (kho ảnh, sao lưu, kiểm tra sức khoẻ, đơn giao
+in, thống kê).
 
 ---
 
@@ -117,6 +119,78 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 
 Tóm tắt theo nhóm, mới nhất trước — chi tiết kỹ thuật nằm trong lịch sử commit
 Git (mỗi commit đều giải thích lý do dài, có số liệu đo thật).
+
+### Năm công cụ mới cho studio (26/08, chiều)
+
+Làm theo đúng thứ tự trong bản rà soát rủi ro — cái nào cứu studio khỏi rắc rối
+thật thì làm trước, không theo độ khó.
+
+**Khung "Kho ảnh" ở đầu trang quản lý.** Hạn giữ ảnh trước đây chỉ là dòng đếm
+ngược cho khách xem, không ai nhắc studio dọn — và hậu quả là Drive đầy 99,5%
+mà không ai biết. Giờ đầu trang quản lý có thanh dung lượng Drive (đổi màu từ
+75%, cảnh báo từ 90%), danh sách album quá hạn kèm dung lượng dọn được, và
+album sắp tới hạn. Tự giấu đi khi kho còn rộng và không album nào quá hạn.
+
+Giữ được nguyên tắc 9 (trang quản lý không gọi Drive): dung lượng từng album
+chụp vào cột mới `dungLuongMB` ngay trong lần đọc Drive của "Làm mới" — lần đọc
+đó vốn đã mang sẵn kích thước từng tệp. Riêng dung lượng cả tài khoản tách ra
+`/api/admin/kho-anh`, gọi từ trình duyệt **sau khi** trang đã hiện.
+
+**Sao lưu và phục hồi database.** `npm run db:backup` ghi ra `data/sao-luu/`,
+giữ 8 bản gần nhất. Hoặc bấm nút **"Sao lưu ngay"** ở trang quản lý — cùng dữ
+liệu, tệp tải thẳng về máy. Nút hiện luôn "Lần cuối: N ngày trước".
+
+Ba quyết định về an toàn: **không sao lưu phiếu Google** (mở được toàn bộ Drive,
+mà phục hồi xong chỉ cần bấm "Kết nối lại"); **mặc định là xem trước**, phải gõ
+`--ghi` mới động vào database; **phục hồi chỉ THÊM**, không bao giờ ghi đè hay
+xoá — vì tình huống thật gần như luôn là "lỡ xoá một album", cho ghi đè thì một
+lần phục hồi nhầm sẽ xoá mất lựa chọn khách vừa làm hôm nay.
+
+**Đường kiểm tra sức khoẻ** `/api/suc-khoe` — trả 200 khi khoẻ, 503 khi hỏng.
+Kiểm đúng hai thứ khách cần: database đọc được, ảnh trên Drive đọc được. Không
+chỉ hỏi "trang có mở được không", vì trang chủ trả 200 ngay cả khi Drive đã
+đứt. Phần gọi thử và nhắn tin **phải để dịch vụ ngoài lo** — thứ canh chừng nằm
+cùng chỗ với thứ nó canh thì Vercel sập là nó sập theo. Hướng dẫn nối
+UptimeRobot nằm trong `README.md`.
+
+**Đơn giao in** `/admin/[slug]/don-in` — tờ đưa cho bên in: chỉ ảnh phải in,
+kèm mã số, ghi chú cỡ in của khách, và tiền phát sinh tính sẵn. In ra giấy hoặc
+chép gửi đội Media. Quy tắc tính tiền lấy từ **đúng lời đã nói với khách**: chỉ
+danh sách trái tim được in và tính tiền, danh sách tick là ảnh khách giữ riêng.
+
+**Thống kê** `/admin/thong-ke` — xếp theo việc cần làm: phần đầu là danh sách
+khách nên nhắn (chưa mở link / đã mở mà chưa chọn / chọn dở rồi dừng), số liệu
+để dưới. Phải bắt đầu đếm lượt xem mới trả lời được câu "khách đã mở link
+chưa"; chỉ đếm số lần, bỏ qua bot xem trước link.
+
+### Rà soát toàn hệ thống lần ba (26/08, sáng)
+
+40 phép kiểm trên bản đang chạy. Kết quả tốt: mọi cửa quản trị chặn đúng, chọn
+ảnh đòi mã đúng, tải ảnh kiểm quyền đúng, đủ 5 header bảo mật, phiếu Google đã
+mã hoá, ảnh bìa admin ghim không bị "Làm mới" ghi đè, 26 lựa chọn đều thuộc thư
+mục còn tồn tại.
+
+Tìm ra **hai album thật mang mã dễ đoán** (`00000` và `123456`) — vẫn chưa sửa,
+xem mục 8.
+
+Bản rà soát rủi ro và lộ trình đầy đủ nằm ở một trang riêng, có biểu đồ dung
+lượng Drive: https://claude.ai/code/artifact/3fba3b55-9c9e-4398-8ab8-748d7e6c914a
+
+### Trang giới thiệu kể chuyện thay vì liệt kê dịch vụ (26/08)
+
+Lưới năm ô dịch vụ có icon đổi thành **năm chương theo đúng thứ tự chúng diễn
+ra** với một cặp đôi: ngồi nghe trước đã → chọn váy chọn vest → sáng hôm chụp →
+buổi chụp → thứ còn lại sau tất cả. Có sợi chỉ dọc nối các chương vì đây là
+trình tự thật.
+
+**Ràng buộc về sự thật, không phải lựa chọn văn phong:** không ai biết chuyện
+thành lập studio nên không kể chuyện thành lập. Câu chuyện là hành trình *của
+khách* — mọi câu đều kiểm chứng được từ dịch vụ có thật, và cách kể đó còn đặt
+khách vào giữa câu chuyện.
+
+Đoạn "Về Hamita" giờ nêu quan điểm (*"Ảnh cưới đẹp thì nhiều. Ảnh giống anh chị
+thì hiếm."*) thay vì đọc lại danh sách dịch vụ bằng câu văn. Thêm câu mở đầu và
+câu kết. Mọi chữ khách đọc nằm trong `src/lib/studio.ts`.
 
 ### Trang giới thiệu chia bốn khu (26/08)
 
@@ -378,6 +452,39 @@ cần lấy đúng link "Chia sẻ" / "Copy link" (khác QR) từ trong app.
 
 ## 8. Việc còn treo, xếp theo mức nguy hiểm
 
+**🟠 Chỗ chứa trên Google Drive — đã nhẹ đi nhưng đừng quên.**
+Sáng 26/08 đo được **99,5%** (còn 9,97 GB, đủ khoảng 10 album nữa). Anh dọn
+trong ngày nên chiều còn **94,9%** — còn **104,66 GB**, tức khoảng 100 album.
+Hạ từ đỏ xuống cam nhờ vậy.
+
+Điều đáng nhớ: sáu album đang phục vụ khách chỉ chiếm **5,79 GB**. Phần còn
+lại là ảnh của những buổi chụp xong từ lâu. Nguyên nhân gốc là *không có ai
+nhắc dọn* — khung "Kho ảnh" ở đầu trang quản lý sinh ra để chữa đúng chỗ đó.
+
+Hệ quả nếu để đầy hẳn: Google dùng chung một kho cho Drive, Gmail và Photos,
+nên đầy là **Gmail cũng ngừng nhận thư** trên `hamita.studio@gmail.com` — tài
+khoản của cả Neon lẫn Vercel. Mất thư là mất đường khôi phục mật khẩu.
+
+**🟡 Hai album thật mang mã chọn ảnh dễ đoán.**
+`HC- Vũ Phương & Kim Tiên` mã **`00000`**, `sn Duyen Ngo` mã **`123456`**. Ba
+album còn lại đúng chuẩn `HAMITA-XX99`.
+
+Lớp chống dò (sai 8 lần/15 phút) vô dụng ở đây — `123456` đoán trúng ngay lần
+đầu. Ai có link là thêm bớt được ảnh trong danh sách in của khách. Gốc rễ:
+`setAccessAction` chỉ kiểm độ dài ≥ 4, không kiểm định dạng.
+
+Chưa sửa vì đổi mã là mọi phiếu mở khoá cũ hết hiệu lực — khách đang chọn dở sẽ
+bị hỏi mã lại, nên cần anh quyết và báo lại mã mới cho hai nhà đó.
+
+**🟡 Chưa nối dịch vụ theo dõi vào `/api/suc-khoe`.**
+Đường kiểm tra đã làm xong và chạy đúng, nhưng phần gọi thử mỗi vài phút rồi
+nhắn tin thì phải để dịch vụ ngoài lo (lý do kiến trúc — xem mục 6). Anh chưa
+tạo monitor. Hướng dẫn bốn dòng nằm trong `README.md`.
+
+**🟡 Sao lưu chưa chạy tự động.**
+Lệnh và nút đều có, nhưng lịch tự động thì anh chưa đặt. Lệnh PowerShell đặt
+lịch hằng tuần nằm trong `README.md`; giới hạn của nó là chỉ chạy khi máy bật.
+
 **🟡 `/api/selections?slug=...` trả dữ liệu cho bất kỳ ai, không cần mã.**
 Gọi từ ngoài không kèm gì cả vẫn nhận đủ danh sách ảnh khách đã chọn kèm ghi
 chú riêng của họ.
@@ -451,25 +558,31 @@ vs "Hamita Studio".
 
 ---
 
-## 9. Trạng thái hiện tại (đo thật cuối ngày 25/08/2026)
+## 9. Trạng thái hiện tại (đo thật cuối ngày 26/08/2026)
 
-**5 album**, 3.417 ảnh, database 8.104 kB / 512 MB. 23 lựa chọn của khách.
-**3 máy đã đăng ký nhận thông báo đẩy** — nghĩa là tính năng đó chạy thật.
+**6 album**, 3.434 ảnh, **5,79 GB** trên Drive. Database 8,0 MB / 512 MB.
+26 lựa chọn của khách, 1 thư mục đã báo chọn xong, **3 máy đăng ký nhận thông
+báo đẩy**.
 
-| Album | Ảnh | Mục | Bìa lên trang chủ | Mảng |
-|---|---:|---:|:---:|---|
-| `hc-vu-phuong-kim-tien-2e4kqn` | 765 | 1 | ✓ | cưới |
-| `his-dong-trieu-thuy-tien-kiqvtm` | 994 | 2 | ✓ | cưới |
-| `hc-her-his-ngoc-tho-ba-ben-93r9gb` | 1.350 | 8 | ✓ | cưới |
-| `baby-thuy-tien-qwsc4p` | 92 | 2 | ✓ | **bé** |
-| `sn-duyen-ngo-xn4hj7` | 216 | 1 | | cưới |
+**Google Drive: 1.943 / 2.048 GB — đã dùng 94,9%, còn 104,66 GB.**
 
-Số album giảm so với bản trước (9 → 5) là do anh tự dọn bớt trong ngày, không
-phải mất mát. **Mọi album hiện có đều đã mang slug kiểu mới** (có đuôi ngẫu
-nhiên) — mối lo "link đoán được" ở mục 8 nhờ vậy đã tự hết theo.
+| Album | Ảnh | Dung lượng | Mã chọn ảnh | Khu trên trang giới thiệu |
+|---|---:|---:|---|---|
+| `hc-vu-phuong-kim-tien-2e4kqn` | 765 | 0,99 GB | ⚠ `00000` | Album & hình cổng |
+| `his-dong-trieu-thuy-tien-kiqvtm` | 994 | 1,67 GB | `HAMITA-GS76` | Ảnh cưới |
+| `hc-her-his-ngoc-tho-ba-ben-93r9gb` | 1.350 | 2,58 GB | `HAMITA-ZT35` | Album & hình cổng |
+| `baby-thuy-tien-qwsc4p` | 93 | 0,31 GB | `HAMITA-KG45` | Hami Baby |
+| `sn-duyen-ngo-xn4hj7` | 216 | 0,23 GB | ⚠ `123456` | không đưa lên |
+| `hamita-garden-w399t5` | 16 | 0,01 GB | `HAMITA-QY29` | Phim trường |
 
-Một album đã đặt số ảnh trong gói; bốn album còn lại để trống nên phần hướng
-dẫn không nói tới giá.
+Một album đã đặt số ảnh trong gói (`sn-duyen-ngo`, 10 tấm — khách chọn 13 nên
+vượt 3 tấm, thành 36.000đ). Năm album còn lại để trống nên phần hướng dẫn phía
+khách không nói tới giá và đơn in không tính tiền.
+
+**Lượt xem mới bắt đầu đếm từ 26/08** nên con số còn gần 0. Album tạo trước mốc
+đó không kết luận được "khách chưa mở" — trang thống kê tự phân biệt.
+
+Bản sao lưu gần nhất: xem `data/sao-luu/` (thư mục đã gitignore).
 
 Mã chọn ảnh của từng album xem trong trang quản lý, dòng "Mã chọn ảnh".
 
