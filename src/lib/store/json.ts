@@ -127,6 +127,9 @@ export const jsonStore: Store = {
         photoCount: 0,
         albumCount: 0,
         dungLuongMB: 0,
+        luotXem: 0,
+        xemLanDau: null,
+        xemLanCuoi: null,
         subfolders: [],
         syncedAt: null,
         expiresAt: hanMacDinh().toISOString(),
@@ -289,6 +292,20 @@ export const jsonStore: Store = {
       const g = db.galleries.find((x) => x.id === galleryId);
       if (!g) return;
       g.expiresAt = expiresAt;
+      await writeToDisk(db);
+    });
+  },
+
+  ghiLuotXem(galleryId: string) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const g = db.galleries.find((x) => x.id === galleryId);
+      if (!g) return;
+      const luc = new Date().toISOString();
+      g.luotXem = (g.luotXem ?? 0) + 1;
+      // Lan dau chi dat mot lan roi giu nguyen mai.
+      g.xemLanDau = g.xemLanDau ?? luc;
+      g.xemLanCuoi = luc;
       await writeToDisk(db);
     });
   },

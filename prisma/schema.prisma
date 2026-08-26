@@ -82,6 +82,22 @@ model Gallery {
   /// mang gia tri nay cho toi lan "Lam moi" ke tiep.
   dungLuongMB   Int      @default(0)
 
+  /// So lan khach mo trang bia cua album.
+  ///
+  /// Chi dem, KHONG luu ai xem hay xem tu dau — studio khong can biet dieu do,
+  /// va khong thu thap thi khong phai giu gin.
+  ///
+  /// Muc dich that su khong phai bang xep hang cho vui, ma la tra loi mot cau
+  /// hoi co viec de lam: "link gui ba ngay roi ma khach chua mo lan nao" thi
+  /// studio nhac mot tieng. Truoc day khong co cach nao biet.
+  ///
+  /// 0 co the nghia la CHUA AI MO, ma cung co the la album tao truoc ngay
+  /// 26/08/2026 — luc do chua co cot nay. Trang thong ke phai phan biet bang
+  /// ngay tao, dung ket luan la khach bo be.
+  luotXem       Int      @default(0)
+  xemLanDau     DateTime?
+  xemLanCuoi    DateTime?
+
   syncedAt      DateTime?
 
   /// Moc studio du dinh xoa anh khoi Drive. Khach thay dem nguoc de tranh thu

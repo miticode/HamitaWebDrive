@@ -23,6 +23,11 @@ export type Gallery = {
   soAnhTrongGoi: number | null;
   /** Gia moi tam vuot goi (dong), da gom chinh sua lan in. */
   giaAnhThem: number;
+  /** So lan khach mo trang bia. Xem chu thich o schema.prisma. */
+  luotXem: number;
+  /** Lan mo dau tien / gan nhat (ISO). null = chua ai mo. */
+  xemLanDau: string | null;
+  xemLanCuoi: string | null;
   driveFolderId: string;
   allowDownload: boolean;
   createdAt: string;
@@ -186,6 +191,14 @@ export type Store = {
   ): Promise<void>;
 
   setExpiry(galleryId: string, expiresAt: string | null): Promise<void>;
+
+  /**
+   * Ghi mot luot khach mo trang album.
+   *
+   * Goi trong `after()` o trang khach — khach khong duoc doi mot phep ghi
+   * database chi de studio co so lieu.
+   */
+  ghiLuotXem(galleryId: string): Promise<void>;
 
   /** Khach bao da chon xong hay chua. */
   setSelectionsDone(galleryId: string, xong: boolean): Promise<void>;

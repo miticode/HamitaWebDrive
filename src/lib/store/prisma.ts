@@ -29,6 +29,9 @@ type GalleryRow = {
   driveFolderId: string;
   allowDownload: boolean;
   createdAt: Date;
+  luotXem: number;
+  xemLanDau: Date | null;
+  xemLanCuoi: Date | null;
   coverFileId: string | null;
   coverPinned: boolean;
   photoCount: number;
@@ -51,6 +54,8 @@ function toGallery(row: GalleryRow): Gallery {
     syncedAt: row.syncedAt?.toISOString() ?? null,
     expiresAt: row.expiresAt?.toISOString() ?? null,
     selectionsDoneAt: row.selectionsDoneAt?.toISOString() ?? null,
+    xemLanDau: row.xemLanDau?.toISOString() ?? null,
+    xemLanCuoi: row.xemLanCuoi?.toISOString() ?? null,
   };
 }
 
@@ -261,6 +266,26 @@ export const prismaStore: Store = {
       where: { id: galleryId },
       data: { expiresAt: expiresAt ? new Date(expiresAt) : null },
     });
+  },
+
+  async ghiLuotXem(galleryId: string) {
+    /*
+      Viet bang SQL thang thay vi prisma.update vi can COALESCE: "xemLanDau"
+      chi duoc dat MOT lan roi giu nguyen mai, con "xemLanCuoi" thi lan nao
+      cung doi. Prisma khong co cach dien dat "chi dat neu dang trong" trong
+      mot lenh update.
+
+      Lam mot luot chu khong doc truoc roi ghi sau: hai khach mo cung luc thi
+      ban doc-roi-ghi se dem thieu mot luot.
+    */
+    const luc = new Date();
+    await getPrisma().$executeRaw`
+      UPDATE "Gallery"
+      SET "luotXem" = "luotXem" + 1,
+          "xemLanDau" = COALESCE("xemLanDau", ${luc}),
+          "xemLanCuoi" = ${luc}
+      WHERE "id" = ${galleryId}
+    `;
   },
 
   async setSelectionsDone(galleryId: string, xong: boolean) {

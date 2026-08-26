@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ROOT_ALBUM, STUDIO_NAME } from "@/lib/constants";
+import { after } from "next/server";
+import { headers } from "next/headers";
+import { ROOT_ALBUM, STUDIO_NAME, laBot } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
 import type { GalleryTree } from "@/lib/drive";
-import { getGalleryBySlug } from "@/lib/store";
+import { getGalleryBySlug, ghiLuotXem } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { DriveLoi } from "@/components/DriveLoi";
 import { LoiChuc } from "@/components/LoiChuc";
@@ -112,6 +114,22 @@ export default async function GalleryPage({ params }: Props) {
   if (!gallery) notFound();
 
   const title = gallery.clientName ?? gallery.title;
+
+  /*
+    Đếm một lượt khách mở album.
+
+    `after()` nên phép ghi chạy SAU khi trang đã trả về — khách không phải đợi
+    một lần ghi database chỉ để studio có số liệu. Nuốt lỗi vì lý do tương tự:
+    không đếm được thì cùng lắm là thiếu một con số thống kê, tuyệt đối không
+    được làm hỏng trang xem ảnh của khách.
+
+    Bỏ qua bot xem trước link (Facebook, Zalo, Google): chúng gọi trang này mỗi
+    lần ai đó dán link vào khung chat, đếm cả vào thì con số "khách đã mở chưa"
+    thành vô nghĩa — mà đó mới là câu hỏi cần trả lời.
+  */
+  if (!laBot((await headers()).get("user-agent"))) {
+    after(() => ghiLuotXem(gallery.id).catch(() => {}));
+  }
 
   /*
     Drive tro chung thi hien man hinh giai thich, khong de trang nem loi.

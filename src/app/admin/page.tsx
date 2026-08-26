@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { adminPasswordIsSet, isAdmin } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
@@ -128,6 +129,9 @@ export default async function AdminPage() {
         <TheoDoiKhach />
 
         <div className="flex items-center gap-5">
+          <Link href="/admin/thong-ke" className="eyebrow transition hover:text-accent">
+            Thống kê
+          </Link>
           <NutDoiTong toiBanDau={tongToi} />
           {adminPasswordIsSet() && (
             <form action={logoutAction}>

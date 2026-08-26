@@ -336,6 +336,31 @@ lý do với khối chỉnh màu nền tối: cần thắng lớp tiện ích đ
 xám về đen. Máy in mặc định không in nền màu, nên mọi chữ xám nhạt trên giấy sẽ
 mờ hơn hẳn trên màn hình.
 
+**29. Thống kê xếp theo VIỆC CẦN LÀM, không theo con số đẹp.**
+Phần đầu `/admin/thong-ke` là danh sách khách nên nhắn, số liệu để ở dưới. Một
+trang thống kê chỉ toàn biểu đồ thì xem một lần rồi thôi; mở ra mà biết ngay
+hôm nay phải gọi cho ai thì mới có người mở lại.
+
+**Đếm lượt xem chỉ đếm SỐ LẦN**, không lưu ai xem hay xem từ đâu — studio không
+cần biết, và không thu thập thì không phải giữ gìn. Ghi trong `after()` ở
+`/g/[slug]` nên khách không phải đợi một phép ghi database; nuốt lỗi vì không
+đếm được thì cùng lắm thiếu một con số, còn làm hỏng trang xem ảnh thì không
+chấp nhận được.
+
+**Bỏ qua bot xem trước link** (`laBot()` trong `constants.ts`). Facebook/Zalo
+gọi vào trang mỗi lần ai đó dán link vào khung chat; đếm cả vào thì con số
+"khách đã mở link chưa" thành vô nghĩa — mà đó mới là câu hỏi cần trả lời. Đã
+đo: 3 lượt trình duyệt thật được đếm, 2 lượt bot bị bỏ.
+
+**`luotXem = 0` KHÔNG đồng nghĩa với "khách chưa mở"** cho album tạo trước
+`MOC_DEM_LUOT_XEM` (26/08/2026) — lúc đó chưa có cột này. Phải phân biệt bằng
+ngày tạo, nếu không trang sẽ khuyên gọi làm phiền những khách đã xem từ lâu.
+
+`ghiLuotXem` viết bằng SQL thẳng vì cần `COALESCE`: `xemLanDau` chỉ đặt **một
+lần** rồi giữ nguyên mãi, `xemLanCuoi` thì lần nào cũng đổi. Prisma không diễn
+đạt được "chỉ đặt nếu đang trống" trong một lệnh update, mà đọc-rồi-ghi thì hai
+khách mở cùng lúc sẽ đếm thiếu.
+
 **19. Trang khách không được chết vì Drive trục trặc.**
 Danh sách ảnh đọc thẳng từ Drive mỗi lần khách mở trang (nguyên tắc 4), nên một
 nhịp Drive không phản hồi là cả trang ném lỗi. Hai trang `/g/[slug]` và

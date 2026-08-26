@@ -67,3 +67,20 @@ export function hanMacDinh(): Date {
   d.setDate(d.getDate() + SO_NGAY_GIU_ANH_MAC_DINH);
   return d;
 }
+
+/**
+ * Co phai bot xem truoc link khong (Facebook, Zalo, Google...).
+ *
+ * Dung de KHONG dem chung vao luot xem cua khach: moi lan ai do dan link vao
+ * khung chat la bot goi vao trang mot lan. Dem ca vao thi con so "khach da mo
+ * link chua" thanh vo nghia — ma do moi la cau hoi studio can tra loi.
+ *
+ * Danh sach nay khong bao gio day du, va khong can day du: bo sot mot bot chi
+ * lam con so cao hon thuc te mot chut, khong lam sai ban chat.
+ */
+export function laBot(userAgent: string | null): boolean {
+  if (!userAgent) return true; // Khong khai bao gi thi gan nhu chac chan la may.
+  return /bot|crawler|spider|facebookexternalhit|zalo|slurp|bingpreview|whatsapp|telegram|preview|headless/i.test(
+    userAgent
+  );
+}
