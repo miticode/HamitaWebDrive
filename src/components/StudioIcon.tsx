@@ -1,6 +1,6 @@
-import type { DICH_VU } from "@/lib/studio";
+import type { HANH_TRINH } from "@/lib/studio";
 
-type Ten = (typeof DICH_VU)[number]["icon"];
+type Ten = (typeof HANH_TRINH)["chuong"][number]["icon"];
 
 /**
  * Bộ icon nét mảnh cho từng dịch vụ — cùng phong cách với các icon khác trong

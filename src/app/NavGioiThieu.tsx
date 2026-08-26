@@ -11,7 +11,7 @@ import { STUDIO } from "@/lib/studio";
 */
 const MUC = [
   { href: "#gioi-thieu", nhan: "Giới thiệu" },
-  { href: "#dich-vu", nhan: "Dịch vụ" },
+  { href: "#hanh-trinh", nhan: "Hành trình" },
   { href: "#anh", nhan: "Ảnh cưới" },
   /* "Album" chu khong phai "Album & HC": HC la tieng long trong nghe, khach
      khong hieu. Ten day du nam o tieu de cua chinh khu do. */

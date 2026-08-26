@@ -6,10 +6,12 @@ import { StudioIcon } from "@/components/StudioIcon";
 import {
   ALBUM_HC,
   ANH_BIA,
-  DICH_VU,
   HAMI_BABY,
+  HANH_TRINH,
+  LOI_KE,
   PHIM_TRUONG,
   STUDIO,
+  VE_HAMITA,
 } from "@/lib/studio";
 import { listGalleries, type KhuGioiThieu } from "@/lib/store";
 import { loadTree } from "@/lib/gallery";
@@ -120,9 +122,21 @@ export default async function Home() {
             <p className="mx-auto mt-4 max-w-xl font-display text-lg font-light text-fg-muted text-balance sm:text-xl">
               {STUDIO.khauHieu}
             </p>
-            <p className="eyebrow mt-4">{STUDIO.moTa}</p>
 
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {/*
+              Câu mở đầu đặt ngay đây, thay chỗ dòng "Chụp ảnh cưới, gia đình &
+              bé yêu tại Tầm Vu, Long An" cũ.
+
+              Dòng cũ là một cái nhãn phân loại — đúng nhưng không mời ai đọc
+              tiếp. Câu này nói thẳng vào thứ khách đang lo (ngày cưới trôi rất
+              nhanh) rồi mới nói Hamita làm gì với nó. Địa chỉ không mất đi, nó
+              nằm ở phần liên hệ và trong thẻ mô tả trang.
+            */}
+            <p className="mx-auto mt-7 max-w-lg text-[15px] leading-[1.9] text-balance text-fg-muted">
+              {LOI_KE.moDau}
+            </p>
+
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <a
                 href={`tel:${STUDIO.dienThoaiSo}`}
                 className="inline-flex min-h-12 items-center gap-2 rounded-full bg-fg px-7 text-sm font-medium tracking-wide text-bg transition hover:opacity-88 active:scale-95"
@@ -133,11 +147,11 @@ export default async function Home() {
                 {STUDIO.dienThoai}
               </a>
               <a
-                href="#dich-vu"
+                href="#hanh-trinh"
                 className="inline-flex min-h-12 items-center rounded-full border px-7 text-sm tracking-wide transition active:scale-95"
                 style={{ borderColor: "var(--line-strong)", color: "var(--fg)" }}
               >
-                Xem dịch vụ
+                Xem hành trình
               </a>
             </div>
           </FadeIn>
@@ -181,42 +195,75 @@ export default async function Home() {
           </FadeIn>
 
           <FadeIn cham={140}>
-            <p className="eyebrow">Về Hamita</p>
+            <p className="eyebrow">{VE_HAMITA.nhan}</p>
             <h2 className="rule mt-5 font-display text-3xl leading-[1.3] font-light text-balance sm:text-4xl">
-              Lo trọn ngày cưới, từ ý tưởng tới khoảnh khắc cuối cùng
+              {VE_HAMITA.tieuDe}
             </h2>
             <p className="mt-7 text-[15px] leading-[1.85] text-fg-muted">
-              Hamita là nơi lo trọn gói ngày cưới tại Tầm Vu, Long An — từ lễ
-              hỏi, ảnh cưới, trang điểm cho tới chiếc váy cô dâu mặc trong ngày
-              trọng đại. Mỗi cặp đôi một câu chuyện riêng, nên Hamita ngồi nghe
-              anh chị kể trước đã, rồi mới bấm máy.
+              {VE_HAMITA.ke}
             </p>
           </FadeIn>
         </div>
       </section>
 
-      <section id="dich-vu" className="scroll-mt-16 border-y border-line bg-bg-soft">
-        <div className="mx-auto max-w-6xl px-5 py-24 sm:px-6 sm:py-32">
+      {/*
+        Năm dịch vụ, kể lại thành năm chương theo đúng thứ tự chúng diễn ra với
+        một cặp đôi.
+
+        Trước đây là lưới năm ô có icon — đúng nhưng đọc như tờ rao giá, và
+        khách phải tự ghép xem mình sẽ trải qua những gì. Xếp theo thời gian
+        thì tự nó thành một mạch, đọc hết là hình dung được cả chặng đường.
+
+        Đánh số 01–05 ở đây là CÓ NGHĨA chứ không phải trang trí: đây thật sự
+        là một trình tự, chương 02 xảy ra sau chương 01. Sợi chỉ dọc nối các
+        chương cũng vì thế — nó nói rằng đây là một mạch liền, không phải năm
+        món rời nhau.
+      */}
+      <section id="hanh-trinh" className="scroll-mt-16 border-y border-line bg-bg-soft">
+        <div className="mx-auto max-w-3xl px-5 py-24 sm:px-6 sm:py-32">
           <FadeIn>
-            <p className="eyebrow text-center">Dịch vụ</p>
-            <h2 className="rule mx-auto mt-5 max-w-lg text-center font-display text-3xl font-light sm:text-4xl">
-              Mọi thứ cho một ngày trọn vẹn
+            <p className="eyebrow text-center">{HANH_TRINH.nhan}</p>
+            <h2 className="rule mx-auto mt-5 max-w-xl text-center font-display text-3xl leading-[1.25] font-light text-balance sm:text-4xl">
+              {HANH_TRINH.tieuDe}
             </h2>
           </FadeIn>
 
-          <div className="mt-16 grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-            {DICH_VU.map((dv, i) => (
-              <FadeIn key={dv.ten} cham={i * 80}>
-                <div className="group">
-                  <div className="flex size-14 items-center justify-center rounded-full border border-line-strong text-accent transition duration-500 group-hover:border-accent group-hover:bg-accent-soft">
-                    <StudioIcon ten={dv.icon} className="size-6" />
+          <ol className="mt-16 sm:mt-20">
+            {HANH_TRINH.chuong.map((c, i) => (
+              <li key={c.so}>
+                <FadeIn cham={i * 90}>
+                  <div className="relative grid grid-cols-[auto_1fr] gap-x-5 pb-12 sm:gap-x-8 sm:pb-14">
+                    {/*
+                      Sợi chỉ nối xuống chương sau. Chương cuối không có, nếu
+                      không sẽ có một đoạn chỉ thừa chạy vào khoảng trống.
+                    */}
+                    {i < HANH_TRINH.chuong.length - 1 && (
+                      <span
+                        aria-hidden
+                        className="absolute top-12 bottom-0 left-[1.375rem] w-px bg-line-strong sm:top-14 sm:left-[1.75rem]"
+                      />
+                    )}
+
+                    <div className="relative flex size-11 shrink-0 items-center justify-center rounded-full border border-line-strong bg-bg text-accent sm:size-14">
+                      <StudioIcon ten={c.icon} className="size-5 sm:size-6" />
+                    </div>
+
+                    <div>
+                      <p className="font-display text-sm tracking-[0.3em] text-accent">
+                        {c.so}
+                      </p>
+                      <h3 className="mt-1.5 font-display text-2xl font-normal sm:text-[1.75rem]">
+                        {c.ten}
+                      </h3>
+                      <p className="mt-3 text-[15px] leading-[1.85] text-fg-muted">
+                        {c.ke}
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="mt-5 font-display text-2xl font-normal">{dv.ten}</h3>
-                  <p className="mt-2.5 text-sm leading-relaxed text-fg-muted">{dv.mo}</p>
-                </div>
-              </FadeIn>
+                </FadeIn>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
@@ -230,6 +277,12 @@ export default async function Home() {
               <h2 className="rule mx-auto mt-5 max-w-lg text-center font-display text-3xl font-light sm:text-4xl">
                 Những khoảnh khắc Hamita giữ lại
               </h2>
+              {/* Ba khu ảnh phía dưới đều có một câu dẫn; riêng khu này trước
+                  đó nhảy thẳng từ tiêu đề vào lưới ảnh, đọc bị hụt một nhịp. */}
+              <p className="mx-auto mt-6 max-w-xl text-center text-sm leading-relaxed text-balance text-fg-muted">
+                Mỗi tấm dưới đây là của một nhà khác nhau, chụp ở một ngày khác
+                nhau. Anh chị xem thử có bắt gặp mình ở đâu trong đó không.
+              </p>
             </FadeIn>
 
             <div className="mt-16 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
@@ -426,6 +479,27 @@ export default async function Home() {
                 Xem trang Facebook
               </a>
             </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/*
+        Câu kết, đặt ngay trước phần liên hệ.
+
+        Một trang kể chuyện mà hết ảnh là nhảy thẳng vào bảng địa chỉ với bản
+        đồ thì cụt. Đoạn này khép mạch lại — nhắc rằng chương 01 (ngồi nghe
+        nhau) là thứ tiếp theo khách cần làm, rồi mới đưa số điện thoại.
+      */}
+      <section className="border-t border-line">
+        <div className="mx-auto max-w-2xl px-5 py-24 text-center sm:px-6 sm:py-28">
+          <FadeIn>
+            <span aria-hidden className="mx-auto block h-px w-10 bg-line-strong" />
+            <h2 className="mt-8 font-display text-3xl leading-[1.25] font-light text-balance sm:text-4xl">
+              {LOI_KE.ketTieuDe}
+            </h2>
+            <p className="mx-auto mt-6 max-w-lg text-[15px] leading-[1.9] text-balance text-fg-muted">
+              {LOI_KE.ket}
+            </p>
           </FadeIn>
         </div>
       </section>

@@ -63,36 +63,113 @@ export const ANH_BIA = [
 ] as const;
 
 /**
+ * Nam dich vu cua studio, ke lai theo DUNG THU TU chung dien ra voi mot cap doi.
+ *
+ * Truoc day day la mot luoi nam o vuong co icon — dung nhung doc nhu to rao
+ * gia. Xep lai theo thoi gian thi tu no thanh mot mach: buoi gap dau, thu vay,
+ * sang hom chup, buoi chup, roi cuon album cam ve. Khach doc theo mach do se
+ * hinh dung duoc minh sap trai qua nhung gi, thay vi phai tu ghep.
+ *
+ * QUAN TRONG khi sua: moi cau o day phai la thu KIEM CHUNG DUOC tu dich vu that
+ * cua studio. Khong biet chuyen thanh lap studio thi khong ke chuyen thanh lap
+ * — nen cau chuyen o day la hanh trinh CUA KHACH, khong phai lich su cua
+ * studio. Vua that vua dat khach vao giua cau chuyen.
+ *
  * Ten "icon" ung voi bo net ve trong StudioIcon.tsx.
- * Tach rieng khoi component de studio.ts khong dinh JSX.
  */
-export const DICH_VU = [
-  {
-    ten: "Trọn gói ngày cưới",
-    mo: "Lo trọn từ lễ hỏi tới tiệc cưới, anh chị chỉ việc có mặt.",
-    icon: "rings",
-  },
-  {
-    ten: "Phim trường độc quyền",
-    mo: "Bối cảnh riêng của studio, không đụng hàng với nơi khác.",
-    icon: "camera",
-  },
-  {
-    ten: "Chụp album cưới",
-    mo: "Album cưới, ảnh cổng và ảnh phóng sự trong ngày tiệc.",
-    icon: "album",
-  },
-  {
-    ten: "Trang điểm cô dâu",
-    mo: "Makeup và làm tóc theo từng gương mặt, giữ nét tự nhiên.",
-    icon: "sparkle",
-  },
-  {
-    ten: "Váy cưới · vest · áo dài",
-    mo: "Cho thuê váy cưới, vest chú rể và áo dài cho hai bên gia đình.",
-    icon: "dress",
-  },
-] as const;
+export const HANH_TRINH = {
+  nhan: "Hành trình",
+  tieuDe: "Từ buổi ngồi nghe đầu tiên, tới cuốn album anh chị cầm về",
+  chuong: [
+    {
+      so: "01",
+      ten: "Ngồi nghe trước đã",
+      ke:
+        "Buổi gặp đầu Hamita chưa bàn tới gói nào, giá nào. Hamita hỏi anh chị " +
+        "quen nhau thế nào, ngày cưới định làm ở nhà hay nhà hàng, hai bên nội " +
+        "ngoại có gì cần lưu ý. Nghe xong mới biết nên chụp kiểu gì — và từ đó " +
+        "Hamita lo được trọn ngày cưới, từ lễ hỏi tới lúc tan tiệc.",
+      icon: "rings",
+    },
+    {
+      so: "02",
+      ten: "Chọn váy, chọn vest",
+      ke:
+        "Váy cưới, vest chú rể, áo dài cho hai bên gia đình đều có sẵn tại " +
+        "studio để anh chị mặc thử ngay tại chỗ. Không phải chạy mỗi nơi mượn " +
+        "một thứ, và thử tới lúc ưng thì thôi.",
+      icon: "dress",
+    },
+    {
+      so: "03",
+      ten: "Sáng hôm chụp",
+      ke:
+        "Trang điểm và làm tóc theo từng gương mặt, không rập một kiểu cho tất " +
+        "cả. Hamita giữ nét tự nhiên của cô dâu — để mấy năm sau mở ảnh ra, anh " +
+        "chị vẫn nhận ra chính mình chứ không phải một người nào khác.",
+      icon: "sparkle",
+    },
+    {
+      so: "04",
+      ten: "Buổi chụp",
+      ke:
+        "Phim trường riêng của Hamita có nhiều bối cảnh dựng theo phong cách " +
+        "châu Âu, đủ cho trọn một buổi mà không phải di chuyển đi đâu. Anh chị " +
+        "thích ngoài trời hay thích áo dài truyền thống thì Hamita đi cùng.",
+      icon: "camera",
+    },
+    {
+      so: "05",
+      ten: "Thứ còn lại sau tất cả",
+      ke:
+        "Tiệc tan, khách về hết. Cái còn lại là tấm hình cổng từng đứng trước " +
+        "nhà hôm ấy, và cuốn album Hamita tự tay dàn từng trang. Mười năm nữa " +
+        "mở ra, ngày hôm ấy vẫn còn nguyên.",
+      icon: "album",
+    },
+  ],
+} as const;
+
+/**
+ * Cau mo dau va cau ket cua trang gioi thieu.
+ *
+ * Giu rieng o day chu khong viet thang vao JSX: hai cau nay la giong noi cua
+ * studio, sua chu nghia thi khong phai mo file giao dien ra sua.
+ */
+/**
+ * Doan "Ve Hamita", dat NGAY TRUOC phan hanh trinh.
+ *
+ * Nhiem vu cua no la neu QUAN DIEM, khong phai liet ke dich vu — dich vu da co
+ * ca mot mach ke ngay duoi roi, noi lai o day thi thanh lap. Mot trang ke
+ * chuyen can co mot cau dam nhan, va day la cho dat cau do.
+ *
+ * Ban cu viet "Hamita la noi lo tron goi ngay cuoi tai Tam Vu, Long An — tu le
+ * hoi, anh cuoi, trang diem cho toi chiec vay..." tuc la doc lai danh sach
+ * dich vu mot lan nua bang cau van.
+ */
+export const VE_HAMITA = {
+  nhan: "Về Hamita",
+  /** Cau dam nhan — neu quan diem, khong mo ta dich vu. */
+  tieuDe: "Ảnh cưới đẹp thì nhiều. Ảnh giống anh chị thì hiếm.",
+  ke:
+    "Hamita ở Tầm Vu, Long An, và đã quen với đám cưới miền Tây — có lễ hỏi, " +
+    "có nhà gái nhà trai, có tấm hình cổng dựng trước sân. Hamita không đưa anh " +
+    "chị một bộ mẫu rồi bảo chụp theo. Ngồi nghe chuyện của hai người trước đã, " +
+    "rồi mới bàn tới bối cảnh, tới váy, tới ngày.",
+} as const;
+
+export const LOI_KE = {
+  /** Cau hook ngay duoi ten studio — dat ky vong cho ca trang. */
+  moDau:
+    "Ngày cưới chỉ có một lần và trôi rất nhanh. Việc của Hamita là giữ nó lại — " +
+    "đủ rõ để nhiều năm sau anh chị mở ra vẫn thấy nguyên vẹn.",
+  /** Cau ket, dat ngay truoc phan lien he. */
+  ketTieuDe: "Câu chuyện tiếp theo là của anh chị",
+  ket:
+    "Hamita đã đi cùng rất nhiều đám cưới ở Tầm Vu và quanh Long An. Không đám " +
+    "nào giống đám nào, nên cũng không bộ ảnh nào nên giống bộ ảnh nào. Anh chị " +
+    "gọi Hamita một tiếng, mình ngồi nghe nhau trước đã.",
+} as const;
 
 /**
  * Khu Album va hinh cong — SAN PHAM IN khach cam ve tay.
@@ -115,9 +192,9 @@ export const ALBUM_HC = {
 /**
  * Phim truong rieng cua studio.
  *
- * "Phim truong doc quyen" von da nam trong DICH_VU o tren, nhung chi co mot
- * dong chu va mot cai icon — nguoi dang tim cho chup doc xong van khong biet
- * boi canh trong do ra sao. Dung cai loi ma khu Hami Baby tung mac phai.
+ * Phim truong da duoc nhac o chuong 04 cua HANH_TRINH, nhung o do chi co chu.
+ * Nguoi dang tim cho chup doc xong van khong biet boi canh trong do ra sao —
+ * dung cai loi ma khu Hami Baby tung mac phai. Khu nay la phan anh that.
  *
  * Chu o day co tinh giu dung nhung gi kiem chung duoc: so goc chup lay tu
  * chinh ten thu muc Drive cua album ("PhimTruongHamitaGarden - 16 view"),

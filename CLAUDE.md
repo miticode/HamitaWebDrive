@@ -232,6 +232,27 @@ hình cổng là xem **thứ mình sẽ cầm về**. "HC" = hình cổng (đọ
 mục Drive "File gốc hình cổng"), là tiếng lóng trong nghề nên **không đưa vào
 chữ khách đọc** — thanh điều hướng chỉ ghi "Album".
 
+**25. Trang giới thiệu kể chuyện HÀNH TRÌNH CỦA KHÁCH, không kể lịch sử studio.**
+Đây không phải lựa chọn văn phong mà là ràng buộc về sự thật: **không ai ở đây
+biết chuyện thành lập studio**, nên viết ra là bịa. Còn hành trình của cặp đôi
+thì mọi câu đều kiểm chứng được từ dịch vụ có thật — và cách kể đó còn đặt
+khách vào giữa câu chuyện thay vì bắt họ đọc về người khác.
+
+Năm dịch vụ xếp lại thành năm chương theo **đúng thứ tự chúng diễn ra**: ngồi
+nghe → chọn váy → trang điểm → buổi chụp → album cầm về (`HANH_TRINH` trong
+`studio.ts`). Đánh số 01–05 ở đây **có nghĩa thật** — chương 02 xảy ra sau
+chương 01 — nên sợi chỉ dọc nối các chương cũng nói đúng một điều: đây là mạch
+liền, không phải năm món rời. Chương cuối **không** có sợi chỉ, nếu không sẽ
+thừa một đoạn chạy vào khoảng trống.
+
+Mọi chữ khách đọc nằm trong `src/lib/studio.ts` (`HANH_TRINH`, `VE_HAMITA`,
+`LOI_KE`, `ALBUM_HC`, `PHIM_TRUONG`, `HAMI_BABY`), **không viết thẳng vào JSX** —
+sửa giọng văn thì không phải mở file giao diện.
+
+Đoạn `VE_HAMITA` phải nêu **quan điểm**, không liệt kê dịch vụ: ngay dưới nó đã
+có cả một mạch kể dịch vụ rồi, nói lại là lặp. Bản cũ chính là lỗi đó ("Hamita
+là nơi lo trọn gói… từ lễ hỏi, ảnh cưới, trang điểm cho tới chiếc váy").
+
 **19. Trang khách không được chết vì Drive trục trặc.**
 Danh sách ảnh đọc thẳng từ Drive mỗi lần khách mở trang (nguyên tắc 4), nên một
 nhịp Drive không phản hồi là cả trang ném lỗi. Hai trang `/g/[slug]` và
