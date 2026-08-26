@@ -280,6 +280,34 @@ rác mà lần gửi đầu tiên sẽ xoá đi (xem `phieuChet()` trong `push.t
 hồi — **11/11 trường khớp chính xác**, kể cả ghi chú "in cỡ 40x60" của khách.
 Dọn sạch sau khi thử, không đụng album nào của khách.
 
+**27. `/api/suc-khoe` kiểm ĐÚNG hai thứ khách cần, không phải "trang có mở được không".**
+Database đọc được, và ảnh trên Drive đọc được. Trả 200 khi khoẻ, **503** khi
+hỏng — mọi dịch vụ theo dõi đều dựa vào mã trạng thái này.
+
+Vì sao không chỉ gọi trang chủ: trang chủ trả 200 ngay cả khi kết nối Drive đã
+đứt, lúc đó khách vẫn mở được link nhưng thấy màn hình `DriveLoi` thay vì ảnh.
+Kiểu hỏng đó dễ xảy ra hơn hẳn việc cả Vercel sập, mà phép kiểm "có 200 không"
+lại bỏ sót đúng nó.
+
+Album đem ra thử chọn theo `albumCount` **nhỏ nhất** — mỗi thư mục con là một
+lần gọi Drive, thử album 8 thư mục thay vì 1 thư mục là tốn gấp tám lần cho
+cùng một câu trả lời. Phải dùng album **thật**: mã thư mục bịa thì Drive trả
+404 ngay cả khi kết nối hoàn toàn khoẻ.
+
+Để công khai, không đòi mã, nên dịch vụ theo dõi nào cũng gọi được ngay. Đổi
+lại phần trả về **cố ý nghèo nàn** — không tên album, không số liệu, không
+thông báo lỗi gốc. Cache 60 giây nên gọi dồn không tốn thêm lần gọi Drive.
+
+**Phần gọi thử và nhắn tin PHẢI để dịch vụ bên ngoài lo** — không phải lười mà
+là kiến trúc: thứ canh chừng nằm cùng chỗ với thứ nó canh thì Vercel sập là nó
+sập theo. Một cron chạy trên chính Vercel vô dụng đúng vào lúc cần nhất. Đừng
+đề xuất lại phương án đó.
+
+*Hệ quả kèm theo:* trang quản lý không gọi Drive (nguyên tắc 9) nên Drive đứt
+là trang vẫn mở bình thường, không gì tố cáo. Vì vậy khung `KhoAnh` phân biệt
+**chưa nối Google** (giấu khung đi) với **gọi Drive hỏng** (hiện dòng đỏ) — gộp
+chung thì khung lặng lẽ biến mất và studio chỉ biết khi khách gọi điện.
+
 **19. Trang khách không được chết vì Drive trục trặc.**
 Danh sách ảnh đọc thẳng từ Drive mỗi lần khách mở trang (nguyên tắc 4), nên một
 nhịp Drive không phản hồi là cả trang ném lỗi. Hai trang `/g/[slug]` và

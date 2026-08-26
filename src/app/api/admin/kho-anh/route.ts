@@ -69,16 +69,24 @@ export async function GET() {
   try {
     const kho = await cached("kho-anh", TTL_MS, docKho);
     return Response.json(
-      { kho },
+      { kho, loi: false },
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch {
     /*
-      Nuốt lỗi có chủ đích: đây là một khung thông tin thêm, không phải thứ
-      trang quản lý sống nhờ. Trả về null thì giao diện tự giấu khung đi.
+      Không để lỗi làm chết trang quản lý — nhưng PHẢI phân biệt hai chuyện,
+      vì trước đây gộp chung khiến hỏng Drive thành ra im lặng:
+
+      - `kho: null, loi: false` — chưa nối Google bằng tài khoản chủ. Bình
+        thường, giao diện giấu khung đi.
+      - `kho: null, loi: true`  — gọi Drive HỎNG. Đây là chuyện studio cần biết
+        ngay: trang quản lý không gọi Drive (nguyên tắc 9) nên đây là chỗ duy
+        nhất trên trang này lộ ra việc Drive đứt. Gộp chung với trường hợp trên
+        thì khung lặng lẽ biến mất, và studio chỉ biết khi khách gọi điện báo
+        không xem được ảnh.
     */
     return Response.json(
-      { kho: null },
+      { kho: null, loi: true },
       { headers: { "Cache-Control": "no-store" } }
     );
   }

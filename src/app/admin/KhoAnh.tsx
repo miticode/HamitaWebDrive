@@ -54,6 +54,7 @@ export function KhoAnh({
   sapHetHan: AlbumHan[];
 }) {
   const [kho, setKho] = useState<SoLieuKho | null>(null);
+  const [driveHong, setDriveHong] = useState(false);
   const [dangDoc, setDangDoc] = useState(true);
 
   useEffect(() => {
@@ -63,9 +64,13 @@ export function KhoAnh({
       try {
         const res = await fetch("/api/admin/kho-anh", { cache: "no-store" });
         if (!res.ok) return;
-        const data = (await res.json()) as { kho: SoLieuKho | null };
+        const data = (await res.json()) as {
+          kho: SoLieuKho | null;
+          loi?: boolean;
+        };
         if (!con) return;
         setKho(data.kho);
+        setDriveHong(Boolean(data.loi));
       } catch {
         // Mạng trục trặc thì thôi, khung dung lượng tự ẩn.
       } finally {
@@ -86,14 +91,24 @@ export function KhoAnh({
   const chuY = kho !== null && kho.phanTram >= NGUONG_GAN_DAY;
 
   // Không có gì đáng nói thì không chiếm chỗ.
-  if (!dangDoc && !kho && quaHan.length === 0 && sapHetHan.length === 0) {
+  if (
+    !dangDoc &&
+    !kho &&
+    !driveHong &&
+    quaHan.length === 0 &&
+    sapHetHan.length === 0
+  ) {
     return null;
   }
 
   return (
     <section
       className={`card p-4 sm:p-5 ${
-        gapKho ? "border-red-300" : chuY ? "border-amber-300" : ""
+        gapKho || driveHong
+          ? "border-red-300"
+          : chuY
+            ? "border-amber-300"
+            : ""
       }`}
       aria-label="Kho ảnh trên Drive"
     >
@@ -103,6 +118,19 @@ export function KhoAnh({
           <span className="text-xs text-fg-faint">{kho.email}</span>
         )}
       </div>
+
+      {/*
+        Drive hỏng thì PHẢI nói ra. Trang quản lý không gọi Drive (nguyên tắc
+        9) nên đây là chỗ duy nhất trên trang này lộ ra việc kết nối đứt —
+        trước đây khung chỉ lặng lẽ biến mất, và studio chỉ biết khi khách gọi
+        điện báo không xem được ảnh.
+      */}
+      {driveHong && (
+        <p className="notice mt-3 bg-red-50 text-red-700">
+          <b>Không đọc được Google Drive.</b> Khách mở link lúc này sẽ không thấy
+          ảnh. Kiểm tra mục kết nối Drive ngay bên trên, hoặc bấm “Kết nối lại”.
+        </p>
+      )}
 
       {kho && (
         <div className="mt-3">

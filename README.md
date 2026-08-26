@@ -172,6 +172,63 @@ Sáng thứ Hai hằng tuần là có một bản mới. **Giới hạn cần bi
 chạy khi máy đang bật. Máy tắt cả tuần thì tuần đó không có bản nào — nên thỉnh
 thoảng vẫn nên tự chạy `npm run db:backup` sau những đợt khách chọn ảnh nhiều.
 
+## Cảnh báo khi web trục trặc
+
+```
+https://hamita-gallery.vercel.app/api/suc-khoe
+```
+
+Trả về **200** khi khoẻ, **503** khi hỏng. Mọi dịch vụ theo dõi đều dựa vào mã
+trạng thái này.
+
+**Không chỉ kiểm "trang có mở được không".** Trang chủ trả về 200 ngay cả khi
+kết nối Drive đã đứt — lúc đó khách vẫn mở được link nhưng thấy màn hình "ảnh
+vẫn còn nguyên" thay vì ảnh. Kiểu hỏng đó dễ xảy ra hơn hẳn việc cả Vercel sập,
+mà một phép kiểm "có 200 không" lại bỏ sót đúng nó. Đường này kiểm **đúng hai
+thứ khách cần**: database đọc được, và ảnh trên Drive đọc được.
+
+```json
+{"ok":true,"kiem":{"database":true,"drive":true},"luc":"2026-08-26T09:58:45.535Z"}
+```
+
+Để công khai, không đòi mã, nên dịch vụ nào cũng gọi được ngay. Đổi lại phần
+trả về cố ý nghèo nàn — không tên album, không số liệu, không thông báo lỗi
+gốc. Kết quả có cache 60 giây nên ai gọi dồn dập cũng không tốn thêm lần gọi
+Drive nào. Album đem ra thử là album **ít thư mục con nhất**, vì mỗi thư mục
+con là một lần gọi Drive.
+
+### Nối vào một dịch vụ theo dõi
+
+Phần "gọi thử mỗi vài phút rồi nhắn tin" **phải để dịch vụ bên ngoài lo**, và
+đây là lý do kiến trúc chứ không phải lười: thứ canh chừng mà nằm cùng chỗ với
+thứ nó canh thì Vercel sập là nó sập theo, chẳng ai báo được. Một cron chạy
+trên chính Vercel là vô dụng đúng vào lúc cần nhất.
+
+Dịch vụ nào cũng được (UptimeRobot, Better Stack, Hetrix… đều có gói miễn phí).
+Cấu hình cần đúng bốn thứ:
+
+| Mục | Đặt là |
+|---|---|
+| Kiểu theo dõi | HTTP(s) |
+| Địa chỉ | `https://hamita-gallery.vercel.app/api/suc-khoe` |
+| Nhịp gọi | 5 phút |
+| Báo về | email của anh (hoặc Telegram nếu dịch vụ có) |
+
+Không cần đặt gì thêm — mặc định của các dịch vụ này là "coi mã khác 2xx là
+hỏng", mà đường này đã trả 503 đúng lúc hỏng rồi.
+
+**Thử xem cảnh báo có chạy không:** vào trang quản lý bấm "Ngắt kết nối" Drive,
+chờ qua một nhịp gọi, xem có nhận được email không, rồi bấm "Kết nối lại". Đừng
+tin là nó chạy cho tới khi thấy tận mắt một cái email.
+
+### Drive đứt lúc web vẫn sống
+
+Trang quản lý cố ý không gọi Drive (nguyên tắc 9), nên nếu kết nối đứt thì
+trang vẫn mở bình thường và không có gì tố cáo. Vì vậy khung **"Kho ảnh trên
+Drive"** ở đầu trang quản lý sẽ hiện hẳn một dòng đỏ *"Không đọc được Google
+Drive"* thay vì lặng lẽ biến mất — đó là chỗ duy nhất trên trang quản lý lộ ra
+chuyện này.
+
 ## Kiến trúc
 
 - `src/lib/drive.ts` — xác thực Service Account, đọc cây thư mục, tải file gốc.
