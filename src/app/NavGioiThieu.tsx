@@ -13,6 +13,7 @@ const MUC = [
   { href: "#gioi-thieu", nhan: "Giới thiệu" },
   { href: "#dich-vu", nhan: "Dịch vụ" },
   { href: "#anh", nhan: "Ảnh cưới" },
+  { href: "#phim-truong", nhan: "Phim trường" },
   { href: "#baby", nhan: "Chụp bé" },
   { href: "#lien-he", nhan: "Liên hệ" },
 ];

@@ -16,11 +16,12 @@ import {
   recordFailure,
   remainingAttempts,
 } from "@/lib/rateLimit";
+import type { KhuGioiThieu } from "@/lib/store";
 import {
   createGallery,
   deleteGallery,
   setAccess,
-  setBaby,
+  setKhuGioiThieu,
   setClientName,
   setGoiAnh,
   setCover,
@@ -268,20 +269,24 @@ export async function setFeaturedAction(
 }
 
 /**
- * Xep album vao mang chup be (Hami Baby) hay mang cuoi.
+ * Xep album vao khu nao tren trang gioi thieu: anh cuoi, chup be, hay phim truong.
  *
- * Studio co hai mang tach bach, khach cung khac han nhau: nguoi tim chup cuoi
- * khong tim chup thoi noi. Tren trang gioi thieu, anh bia cua album danh dau
- * la be se hien o khu Hami Baby thay vi khu "Mot vai bo anh" cua mang cuoi.
+ * Studio co nhieu mang va khach cua tung mang khac han nhau: nguoi tim chup
+ * cuoi khong di tim chup thoi noi, con nguoi hoi thue phim truong lai la mot
+ * nhom khac nua. Nen tren trang gioi thieu moi mang mot khu rieng.
  *
- * Chi co y nghia khi album da bat "dua anh bia len trang gioi thieu".
+ * Ba khu LOAI TRU NHAU nen chi mot ham duy nhat, khong tach thanh hai cong
+ * tac roi rac — de roi rac thi bat duoc ca "la be" lan "la phim truong" cung
+ * luc va khong ai doan duoc album do hien o dau.
+ *
+ * Chi co y nghia khi album da bat "dua len trang gioi thieu".
  */
-export async function setBabyAction(
+export async function setKhuAction(
   galleryId: string,
-  laBaby: boolean
+  khu: KhuGioiThieu
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
-  await setBaby(galleryId, laBaby);
+  await setKhuGioiThieu(galleryId, khu);
   revalidatePath("/admin");
   revalidatePath("/");
   return {};

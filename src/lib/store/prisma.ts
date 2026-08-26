@@ -6,6 +6,7 @@ import {
   type CreateGalleryInput,
   type Gallery,
   type MucXong,
+  type KhuGioiThieu,
   type Selection,
   type SelectionList,
   type GalleryMeta,
@@ -24,6 +25,7 @@ type GalleryRow = {
   message: string | null;
   featured: boolean;
   laBaby: boolean;
+  laPhimTruong: boolean;
   driveFolderId: string;
   allowDownload: boolean;
   createdAt: Date;
@@ -234,10 +236,12 @@ export const prismaStore: Store = {
     });
   },
 
-  async setBaby(galleryId: string, laBaby: boolean) {
+  async setKhuGioiThieu(galleryId: string, khu: KhuGioiThieu) {
+    // Ghi ca hai co trong MOT lenh: ba khu loai tru nhau nen khong duoc phep
+    // co luc nao ca hai cung bat.
     await getPrisma().gallery.update({
       where: { id: galleryId },
-      data: { laBaby },
+      data: { laBaby: khu === "baby", laPhimTruong: khu === "phimtruong" },
     });
   },
 

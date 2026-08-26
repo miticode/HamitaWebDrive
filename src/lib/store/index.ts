@@ -8,6 +8,7 @@ export type {
   GalleryMeta,
   ListCount,
   Gallery,
+  KhuGioiThieu,
   MucXong,
   Selection,
   SelectionList,
@@ -56,7 +57,8 @@ export const setClientName: Store["setClientName"] = (id, clientName) =>
 export const setFeatured: Store["setFeatured"] = (id, featured) =>
   store.setFeatured(id, featured);
 
-export const setBaby: Store["setBaby"] = (id, laBaby) => store.setBaby(id, laBaby);
+export const setKhuGioiThieu: Store["setKhuGioiThieu"] = (id, khu) =>
+  store.setKhuGioiThieu(id, khu);
 
 export const setGoiAnh: Store["setGoiAnh"] = (id, so, gia) =>
   store.setGoiAnh(id, so, gia);

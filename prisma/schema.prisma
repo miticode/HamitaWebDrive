@@ -22,6 +22,19 @@ model Gallery {
   /// bo anh" (cuoi) hay khu Hami Baby tren trang gioi thieu. Mac dinh false vi
   /// phan lon album cua studio la anh cuoi.
   laBaby        Boolean  @default(false)
+
+  /// Album nay la PHIM TRUONG cua studio, khong phai anh cua khach.
+  ///
+  /// Khac han hai mang kia o cach hien: anh cuoi va anh be moi album gop mot
+  /// ANH BIA vao luoi chung (moi album la mot buoi chup cua mot nha khach).
+  /// Phim truong thi nguoc lai — chi co mot album duy nhat, va chinh 16 goc
+  /// chup ben trong no moi la thu can khoe. Nen khu Phim truong doc THANG
+  /// nhieu anh tu trong album nay ra, khong phai mot tam bia.
+  ///
+  /// Chi album dau tien mang co nay duoc dung; bat co cho album thu hai thi
+  /// album do bi bo qua (xem src/app/page.tsx).
+  laPhimTruong  Boolean  @default(false)
+
   driveFolderId String
   allowDownload Boolean  @default(true)
   createdAt     DateTime @default(now())

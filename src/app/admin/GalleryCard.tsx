@@ -195,6 +195,7 @@ export function GalleryCard({
             galleryId={gallery.id}
             featured={gallery.featured}
             laBaby={gallery.laBaby}
+            laPhimTruong={gallery.laPhimTruong}
             coTheHien={gallery.coverFileId !== null}
           />
         </div>

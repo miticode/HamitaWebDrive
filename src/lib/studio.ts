@@ -94,6 +94,30 @@ export const DICH_VU = [
   },
 ] as const;
 
+/**
+ * Phim truong rieng cua studio.
+ *
+ * "Phim truong doc quyen" von da nam trong DICH_VU o tren, nhung chi co mot
+ * dong chu va mot cai icon — nguoi dang tim cho chup doc xong van khong biet
+ * boi canh trong do ra sao. Dung cai loi ma khu Hami Baby tung mac phai.
+ *
+ * Chu o day co tinh giu dung nhung gi kiem chung duoc: so goc chup lay tu
+ * chinh ten thu muc Drive cua album ("PhimTruongHamitaGarden - 16 view"),
+ * phong cach chau Au la do studio noi. KHONG ta chi tiet tung boi canh —
+ * chua ai o day nhin tan mat, ta bua ra la sai voi khach.
+ */
+export const PHIM_TRUONG = {
+  ten: "Phim trường Hamita Garden",
+  nhan: "Phim trường độc quyền",
+  tieuDe: "Bối cảnh châu Âu ngay tại Long An",
+  moTa:
+    "Phim trường riêng của Hamita, dựng theo phong cách châu Âu. Anh chị có " +
+    "trọn một buổi chụp với nhiều bối cảnh khác nhau mà không phải đi đâu xa — " +
+    "và không đụng hàng với bất cứ nơi nào khác.",
+  /** Cau chot duoi luoi anh, moi khach goi dat lich xem phim truong. */
+  moiGoi: "Muốn xem trực tiếp trước khi quyết? Anh chị gọi Hamita một tiếng nhé.",
+} as const;
+
 /** Thuong hieu thu hai cua studio — chup be va gia dinh. */
 export const HAMI_BABY = {
   ten: "Hami Baby Studio",

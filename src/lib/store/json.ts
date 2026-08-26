@@ -8,6 +8,7 @@ import {
   type CreateGalleryInput,
   type Gallery,
   type MucXong,
+  type KhuGioiThieu,
   type Selection,
   type SelectionList,
   type GalleryMeta,
@@ -116,6 +117,7 @@ export const jsonStore: Store = {
         message: null,
         featured: false,
         laBaby: false,
+        laPhimTruong: false,
         soAnhTrongGoi: null,
         giaAnhThem: GIA_ANH_THEM_MAC_DINH,
         driveFolderId: input.driveFolderId,
@@ -260,12 +262,14 @@ export const jsonStore: Store = {
     });
   },
 
-  setBaby(galleryId: string, laBaby: boolean) {
+  setKhuGioiThieu(galleryId: string, khu: KhuGioiThieu) {
     return withLock(async () => {
       const db = await readFromDisk();
       const g = db.galleries.find((x) => x.id === galleryId);
       if (!g) return;
-      g.laBaby = laBaby;
+      // Dat ca hai cung luc: ba khu loai tru nhau, khong duoc phep ca hai cung bat.
+      g.laBaby = khu === "baby";
+      g.laPhimTruong = khu === "phimtruong";
       await writeToDisk(db);
     });
   },

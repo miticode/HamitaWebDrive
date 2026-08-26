@@ -3,8 +3,9 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { FadeIn } from "@/components/FadeIn";
 import { StudioIcon } from "@/components/StudioIcon";
-import { ANH_BIA, DICH_VU, HAMI_BABY, STUDIO } from "@/lib/studio";
+import { ANH_BIA, DICH_VU, HAMI_BABY, PHIM_TRUONG, STUDIO } from "@/lib/studio";
 import { listGalleries } from "@/lib/store";
+import { loadTree } from "@/lib/gallery";
 import { NavGioiThieu } from "./NavGioiThieu";
 import { AnhBiaChay } from "./AnhBiaChay";
 
@@ -36,19 +37,48 @@ export default async function Home() {
   const galleries = await listGalleries();
 
   /*
-    Studio có hai mảng tách bạch và khách của hai mảng cũng khác hẳn nhau:
-    người tìm chụp cưới không đi tìm chụp thôi nôi. Nên ảnh cũng chia đôi —
-    ảnh cưới ở khu "Một vài bộ ảnh", ảnh bé ở khu Hami Baby ngay bên dưới.
+    Studio có nhiều mảng tách bạch và khách của từng mảng khác hẳn nhau: người
+    tìm chụp cưới không đi tìm chụp thôi nôi, còn người hỏi thuê phim trường
+    lại là nhóm khác nữa. Nên ảnh chia theo khu — ảnh cưới, ảnh bé, phim trường.
   */
   const daChon = galleries.filter((g) => g.featured && g.coverFileId);
   const anhTieuBieu = daChon
-    .filter((g) => !g.laBaby)
+    .filter((g) => !g.laBaby && !g.laPhimTruong)
     .map((g) => g.coverFileId as string)
     .slice(0, 8);
   const anhBaby = daChon
     .filter((g) => g.laBaby)
     .map((g) => g.coverFileId as string)
     .slice(0, 8);
+
+  /*
+    Khu phim trường đọc khác hẳn hai khu trên.
+
+    Ảnh cưới và ảnh bé gom ẢNH BÌA của nhiều album — mỗi album là buổi chụp của
+    một nhà khách. Phim trường thì chỉ có MỘT album, và chính các góc chụp bên
+    trong nó mới là thứ cần khoe; lấy một tấm bìa thì chẳng quảng cáo được gì.
+    Nên ở đây đọc thẳng cây thư mục của album đó ra.
+
+    Đây là lời gọi Drive duy nhất của trang này. Chấp nhận được vì `loadTree`
+    có cache 5 phút dùng chung với trang khách xem, nên thực tế là một lần gọi
+    mỗi 5 phút chứ không phải mỗi lượt khách vào.
+  */
+  const albumPhimTruong = galleries.find((g) => g.featured && g.laPhimTruong);
+  let anhPhimTruong: string[] = [];
+  if (albumPhimTruong) {
+    try {
+      const tree = await loadTree(albumPhimTruong.driveFolderId);
+      anhPhimTruong = tree.albums
+        .flatMap((a) => a.photos)
+        .map((p) => p.id)
+        .slice(0, 8);
+    } catch {
+      /*
+        Drive trục trặc thì bỏ qua khu này, KHÔNG để cả trang giới thiệu chết
+        theo — đây là trang quảng bá công khai, mất nó là mất khách vào xem.
+      */
+    }
+  }
 
   // Ảnh minh hoạ cạnh phần "Về Hamita" — đoạn đó nói về cưới nên lấy ảnh cưới.
   const anhBenCanh = anhTieuBieu[0] ?? null;
@@ -207,6 +237,79 @@ export default async function Home() {
                 </FadeIn>
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/*
+        Khu phim trường.
+
+        Đặt ngay sau khu ảnh cưới chứ không xuống cuối trang: người vừa xem
+        xong ảnh cưới là người đang cân nhắc đặt chụp, và câu hỏi kế tiếp của
+        họ thường là "chụp ở đâu". Trả lời ngay lúc đó là đúng nhịp nhất.
+
+        Bố cục cố ý khác hai khu kia — ảnh đầu tràn rộng, bảy tấm còn lại xếp
+        lưới nhỏ bên dưới. Đây là bối cảnh chứ không phải ảnh của khách, khoe
+        không gian thì cần một tấm đủ lớn để thấy được tổng thể.
+      */}
+      {anhPhimTruong.length > 0 && (
+        <section
+          id="phim-truong"
+          className="scroll-mt-16 border-t border-line bg-bg-soft"
+        >
+          <div className="mx-auto max-w-[1700px] px-5 py-24 sm:px-6 sm:py-28">
+            <FadeIn>
+              <div className="mx-auto max-w-3xl text-center">
+                <p className="eyebrow">{PHIM_TRUONG.nhan}</p>
+                <h2 className="rule mx-auto mt-5 font-display text-3xl font-light sm:text-4xl">
+                  {PHIM_TRUONG.tieuDe}
+                </h2>
+                <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-balance text-fg-muted">
+                  {PHIM_TRUONG.moTa}
+                </p>
+                <p className="eyebrow mt-4">
+                  {PHIM_TRUONG.ten} · {albumPhimTruong?.photoCount ?? 0} góc chụp
+                </p>
+              </div>
+            </FadeIn>
+
+            {/*
+              Khung 2:3 chứ không phải 3/4 như hai khu kia, và cũng không phải
+              một tấm ngang lớn như bản đầu.
+
+              Lý do đo được: cả 16 tấm của album này đều là ảnh DỌC 1365x2048,
+              tức đúng 2:3. Bản đầu em dựng một tấm 16:9 tràn rộng cho hoành
+              tráng, nhưng object-cover sẽ xén mất khoảng 63% chiều cao mỗi
+              tấm — mà đây là ảnh khoe KHÔNG GIAN, xén đi thì còn lại đúng cái
+              nó cần cho thấy. Khung khớp đúng tỉ lệ gốc thì không xén tấm nào.
+            */}
+            <div className="mt-14 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+              {anhPhimTruong.map((fileId, i) => (
+                <FadeIn key={fileId} cham={i * 60}>
+                  <div className="group skeleton aspect-[2/3] overflow-hidden rounded-sm">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/img/${fileId}?w=640`}
+                      alt={`Bối cảnh tại ${PHIM_TRUONG.ten}`}
+                      loading="lazy"
+                      className="size-full object-cover transition duration-700 ease-out group-hover:scale-105"
+                    />
+                  </div>
+                </FadeIn>
+              ))}
+            </div>
+
+            <FadeIn>
+              <div className="mt-12 text-center">
+                <p className="text-sm text-fg-muted">{PHIM_TRUONG.moiGoi}</p>
+                <a
+                  href={`tel:${STUDIO.dienThoaiSo}`}
+                  className="btn-primary mt-5 inline-flex"
+                >
+                  {STUDIO.dienThoai}
+                </a>
+              </div>
+            </FadeIn>
           </div>
         </section>
       )}

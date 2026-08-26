@@ -13,6 +13,11 @@ export type Gallery = {
    * trang gioi thieu.
    */
   laBaby: boolean;
+  /**
+   * Album nay la phim truong cua studio, khong phai anh cua khach.
+   * Xem chu thich day du o model Gallery trong schema.prisma.
+   */
+  laPhimTruong: boolean;
   /** Moc studio du dinh xoa anh (ISO). null = khong dat han. */
   expiresAt: string | null;
   /** Khach tu bao da chon xong luc nao (ISO). null = chua bao. */
@@ -116,6 +121,14 @@ export type ToggleSelectionInput = {
   muon?: boolean;
 };
 
+/**
+ * Ba khu tren trang gioi thieu. Mot album chi thuoc dung MOT khu.
+ *
+ * "cuoi" va "baby" gop ANH BIA cua nhieu album vao mot luoi. "phimtruong" thi
+ * doc thang nhieu anh tu trong mot album duy nhat ra — xem schema.prisma.
+ */
+export type KhuGioiThieu = "cuoi" | "baby" | "phimtruong";
+
 /** Hai kho du lieu (JSON khi chay o may, Postgres khi len mang) deu theo giao dien nay. */
 export type Store = {
   listGalleries(): Promise<Gallery[]>;
@@ -142,8 +155,14 @@ export type Store = {
 
   setFeatured(galleryId: string, featured: boolean): Promise<void>;
 
-  /** Xep album vao mang chup be (true) hay mang cuoi (false). */
-  setBaby(galleryId: string, laBaby: boolean): Promise<void>;
+  /**
+   * Xep album vao khu nao tren trang gioi thieu.
+   *
+   * Mot ham thay vi hai co chuyen (setBaby + setPhimTruong): ba khu la ba lua
+   * chon LOAI TRU NHAU, de hai co roi rac thi bat duoc ca hai cung luc va
+   * khong ai biet album do se hien o dau.
+   */
+  setKhuGioiThieu(galleryId: string, khu: KhuGioiThieu): Promise<void>;
 
   /**
    * Dat so anh trong goi va gia moi tam vuot goi.
