@@ -8,16 +8,10 @@ export type Gallery = {
   /** Cho phep dua anh bia len trang gioi thieu cong khai. */
   featured: boolean;
   /**
-   * Album thuoc mang chup be (Hami Baby) chu khong phai mang cuoi.
-   * Chi co y nghia khi featured bat — quyet dinh anh bia roi vao khu nao tren
-   * trang gioi thieu.
+   * Album nay hien o khu nao tren trang gioi thieu.
+   * Chi co y nghia khi featured bat. Xem type KhuGioiThieu ben duoi.
    */
-  laBaby: boolean;
-  /**
-   * Album nay la phim truong cua studio, khong phai anh cua khach.
-   * Xem chu thich day du o model Gallery trong schema.prisma.
-   */
-  laPhimTruong: boolean;
+  khuGioiThieu: KhuGioiThieu;
   /** Moc studio du dinh xoa anh (ISO). null = khong dat han. */
   expiresAt: string | null;
   /** Khach tu bao da chon xong luc nao (ISO). null = chua bao. */
@@ -122,12 +116,27 @@ export type ToggleSelectionInput = {
 };
 
 /**
- * Ba khu tren trang gioi thieu. Mot album chi thuoc dung MOT khu.
+ * Bon khu tren trang gioi thieu. Mot album chi thuoc dung MOT khu.
  *
- * "cuoi" va "baby" gop ANH BIA cua nhieu album vao mot luoi. "phimtruong" thi
- * doc thang nhieu anh tu trong mot album duy nhat ra — xem schema.prisma.
+ * - "cuoi"       — anh chup trong buoi cuoi
+ * - "albumhc"    — trang album da dan va hinh cong, tuc SAN PHAM IN khach nhan
+ * - "phimtruong" — boi canh cua studio, khong phai anh cua khach
+ * - "baby"       — mang chup be (Hami Baby)
+ *
+ * Tach "albumhc" khoi "cuoi" vi khach nhin hai thu do voi hai muc dich khac
+ * nhau: mot ben xem phong cach chup, mot ben xem san pham in se cam ve tay.
+ *
+ * Ba khu dau kieu "gom anh bia" gop MOT tam bia moi album; rieng "phimtruong"
+ * doc thang nhieu anh tu mot album duy nhat — xem chu thich o schema.prisma.
  */
-export type KhuGioiThieu = "cuoi" | "baby" | "phimtruong";
+export type KhuGioiThieu = "cuoi" | "albumhc" | "phimtruong" | "baby";
+
+/** Doc gia tri tu database ve dung kieu, gia tri la thi coi nhu "cuoi". */
+export function docKhu(gia: string): KhuGioiThieu {
+  return gia === "albumhc" || gia === "phimtruong" || gia === "baby"
+    ? gia
+    : "cuoi";
+}
 
 /** Hai kho du lieu (JSON khi chay o may, Postgres khi len mang) deu theo giao dien nay. */
 export type Store = {

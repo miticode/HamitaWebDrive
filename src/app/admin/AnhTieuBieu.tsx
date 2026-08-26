@@ -24,45 +24,42 @@ const KHU: { ma: KhuGioiThieu; nhan: string; giaiThich: string }[] = [
   {
     ma: "cuoi",
     nhan: "Ảnh cưới",
-    giaiThich: "Ảnh bìa hiện ở khu Ảnh cưới",
+    giaiThich: "Ảnh bìa hiện ở khu Ảnh cưới — ảnh chụp trong buổi cưới",
   },
   {
-    ma: "baby",
-    nhan: "Ảnh bé — khu Hami Baby",
-    giaiThich: "Ảnh bìa hiện ở khu Hami Baby thay vì khu ảnh cưới",
+    ma: "albumhc",
+    nhan: "Album & hình cổng",
+    giaiThich:
+      "Ảnh bìa hiện ở khu Album và hình cổng — sản phẩm in khách cầm về tay, tách riêng khỏi ảnh chụp",
   },
   {
     ma: "phimtruong",
-    nhan: "Phim trường — khu riêng",
+    nhan: "Phim trường",
     giaiThich:
       "Khu Phim trường lấy NHIỀU ảnh từ trong album này ra, không phải một tấm bìa. Chỉ nên đặt cho một album duy nhất.",
+  },
+  {
+    ma: "baby",
+    nhan: "Ảnh bé — Hami Baby",
+    giaiThich: "Ảnh bìa hiện ở khu Hami Baby",
   },
 ];
 
 export function AnhTieuBieu({
   galleryId,
   featured,
-  laBaby,
-  laPhimTruong,
+  khuHienTai,
   coTheHien,
 }: {
   galleryId: string;
   featured: boolean;
-  /** Album thuoc mang chup be (Hami Baby). */
-  laBaby: boolean;
-  /** Album la phim truong cua studio, khong phai anh cua khach. */
-  laPhimTruong: boolean;
+  /** Album dang o khu nao tren trang gioi thieu. */
+  khuHienTai: KhuGioiThieu;
   /** Chua co anh bia thi bat len cung khong hien duoc gi. */
   coTheHien: boolean;
 }) {
   const router = useRouter();
   const [dangLuu, start] = useTransition();
-
-  const khuHienTai: KhuGioiThieu = laPhimTruong
-    ? "phimtruong"
-    : laBaby
-      ? "baby"
-      : "cuoi";
 
   const doiHien = () =>
     start(async () => {

@@ -2,6 +2,7 @@ import { getPrisma } from "@/lib/db";
 import {
   DEFAULT_LISTS,
   duoiSlug,
+  docKhu,
   slugify,
   type CreateGalleryInput,
   type Gallery,
@@ -24,8 +25,7 @@ type GalleryRow = {
   clientName: string | null;
   message: string | null;
   featured: boolean;
-  laBaby: boolean;
-  laPhimTruong: boolean;
+  khuGioiThieu: string;
   driveFolderId: string;
   allowDownload: boolean;
   createdAt: Date;
@@ -45,6 +45,7 @@ type GalleryRow = {
 function toGallery(row: GalleryRow): Gallery {
   return {
     ...row,
+    khuGioiThieu: docKhu(row.khuGioiThieu),
     createdAt: row.createdAt.toISOString(),
     syncedAt: row.syncedAt?.toISOString() ?? null,
     expiresAt: row.expiresAt?.toISOString() ?? null,
@@ -237,11 +238,9 @@ export const prismaStore: Store = {
   },
 
   async setKhuGioiThieu(galleryId: string, khu: KhuGioiThieu) {
-    // Ghi ca hai co trong MOT lenh: ba khu loai tru nhau nen khong duoc phep
-    // co luc nao ca hai cung bat.
     await getPrisma().gallery.update({
       where: { id: galleryId },
-      data: { laBaby: khu === "baby", laPhimTruong: khu === "phimtruong" },
+      data: { khuGioiThieu: khu },
     });
   },
 

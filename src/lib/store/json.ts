@@ -116,8 +116,7 @@ export const jsonStore: Store = {
         clientName: input.clientName,
         message: null,
         featured: false,
-        laBaby: false,
-        laPhimTruong: false,
+        khuGioiThieu: "cuoi",
         soAnhTrongGoi: null,
         giaAnhThem: GIA_ANH_THEM_MAC_DINH,
         driveFolderId: input.driveFolderId,
@@ -267,9 +266,7 @@ export const jsonStore: Store = {
       const db = await readFromDisk();
       const g = db.galleries.find((x) => x.id === galleryId);
       if (!g) return;
-      // Dat ca hai cung luc: ba khu loai tru nhau, khong duoc phep ca hai cung bat.
-      g.laBaby = khu === "baby";
-      g.laPhimTruong = khu === "phimtruong";
+      g.khuGioiThieu = khu;
       await writeToDisk(db);
     });
   },

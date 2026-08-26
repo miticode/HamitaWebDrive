@@ -21,19 +21,28 @@ model Gallery {
   /// Chi co y nghia khi featured bat: quyet dinh anh bia roi vao khu "Mot vai
   /// bo anh" (cuoi) hay khu Hami Baby tren trang gioi thieu. Mac dinh false vi
   /// phan lon album cua studio la anh cuoi.
+  /// KHONG CON DUNG — thay bang cot khuGioiThieu. Giu lai de khong phai xoa
+  /// cot (thao tac khong lui duoc), giong cach da lam voi accessMode.
   laBaby        Boolean  @default(false)
-
-  /// Album nay la PHIM TRUONG cua studio, khong phai anh cua khach.
-  ///
-  /// Khac han hai mang kia o cach hien: anh cuoi va anh be moi album gop mot
-  /// ANH BIA vao luoi chung (moi album la mot buoi chup cua mot nha khach).
-  /// Phim truong thi nguoc lai — chi co mot album duy nhat, va chinh 16 goc
-  /// chup ben trong no moi la thu can khoe. Nen khu Phim truong doc THANG
-  /// nhieu anh tu trong album nay ra, khong phai mot tam bia.
-  ///
-  /// Chi album dau tien mang co nay duoc dung; bat co cho album thu hai thi
-  /// album do bi bo qua (xem src/app/page.tsx).
+  /// KHONG CON DUNG — thay bang cot khuGioiThieu. Xem chu thich o laBaby.
   laPhimTruong  Boolean  @default(false)
+
+  /// Album nay hien o KHU NAO tren trang gioi thieu.
+  ///
+  /// Nhan mot trong bon gia tri: "cuoi" | "albumhc" | "phimtruong" | "baby".
+  /// Chi co y nghia khi featured bat.
+  ///
+  /// Vi sao mot cot chu thay vi nhieu cot dung/sai: bon khu LOAI TRU NHAU, ma
+  /// ba cot dung/sai sinh ra tam to hop trong do bon cai vo nghia ("vua la be
+  /// vua la phim truong"). Mot cot chu thi trang thai vo nghia khong ton tai.
+  ///
+  /// Hai khu doc du lieu theo hai kieu khac han nhau:
+  /// - "cuoi", "albumhc", "baby": moi album gop dung MOT ANH BIA vao luoi
+  ///   chung, vi moi album la buoi chup cua mot nha khach.
+  /// - "phimtruong": chi mot album duy nhat, va doc THANG nhieu anh tu trong
+  ///   no ra — day la boi canh cua studio, mot tam bia khong khoe duoc gi.
+  ///   Bat cho album thu hai thi album do bi bo qua (xem src/app/page.tsx).
+  khuGioiThieu  String   @default("cuoi")
 
   driveFolderId String
   allowDownload Boolean  @default(true)

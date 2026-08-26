@@ -202,6 +202,36 @@ instance là tin không sang được nhau, muốn phát tán phải thêm Redis
 mỗi 15 giây tốn 1.329 byte / 0,25 giây mỗi lượt — rẻ hơn, và chạy đúng cả khi
 hai máy ở hai instance khác nhau.
 
+**24. Trang giới thiệu chia BỐN khu, chọn bằng MỘT cột chữ `khuGioiThieu`.**
+Giá trị: `cuoi` · `albumhc` · `phimtruong` · `baby`. Chỉ có nghĩa khi `featured`
+bật. Hai cột cũ `laBaby`/`laPhimTruong` **không còn dùng**, giữ lại theo tiền lệ
+`accessMode` (xoá cột là không lùi được).
+
+Vì sao một cột chữ chứ không phải nhiều cột đúng/sai: bốn khu **loại trừ nhau**,
+mà ba cột đúng/sai sinh ra tám tổ hợp trong đó bốn cái vô nghĩa ("vừa là bé vừa
+là phim trường"). Ở trang quản lý cũng vì thế mà dùng **ô tròn**, không phải ô
+vuông. Muốn thêm khu thứ năm thì thêm một giá trị, không thêm cột.
+
+Ba khu đọc dữ liệu kiểu "gom ảnh bìa" — mỗi album góp đúng **một** tấm bìa, vì
+mỗi album là buổi chụp của một nhà khách. Riêng `phimtruong` đọc **thẳng nhiều
+ảnh từ trong một album duy nhất**: đó là bối cảnh của studio, một tấm bìa không
+khoe được gì. Đây cũng là lời gọi Drive **duy nhất** của trang giới thiệu — chấp
+nhận được vì `loadTree` cache 5 phút dùng chung với trang khách, và phải bọc
+`try/catch` để Drive trục trặc không giết cả trang quảng bá.
+
+Khung ảnh mỗi khu khác nhau **theo tỉ lệ thật của ảnh trong đó**, đã đo chứ
+không chọn cho đẹp: `cuoi`/`baby` dùng 3/4, `phimtruong` dùng **2/3** (cả 16 tấm
+đều là ảnh dọc 1365×2048 — bản đầu em dựng khung 16:9 thì `object-cover` xén mất
+khoảng 63% chiều cao, mà đó là ảnh khoe không gian), `albumhc` dùng **4/5** (trang
+album và hình cổng rộng bản hơn ảnh chân dung). Thêm khu mới thì **đo tỉ lệ ảnh
+thật trước rồi mới chọn khung**.
+
+Tách `albumhc` khỏi `cuoi` là theo yêu cầu ngày 26/08: khách nhìn hai thứ đó với
+hai mục đích khác nhau — xem ảnh cưới là xem **phong cách chụp**, xem album và
+hình cổng là xem **thứ mình sẽ cầm về**. "HC" = hình cổng (đọc được từ tên thư
+mục Drive "File gốc hình cổng"), là tiếng lóng trong nghề nên **không đưa vào
+chữ khách đọc** — thanh điều hướng chỉ ghi "Album".
+
 **19. Trang khách không được chết vì Drive trục trặc.**
 Danh sách ảnh đọc thẳng từ Drive mỗi lần khách mở trang (nguyên tắc 4), nên một
 nhịp Drive không phản hồi là cả trang ném lỗi. Hai trang `/g/[slug]` và

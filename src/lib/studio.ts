@@ -95,6 +95,24 @@ export const DICH_VU = [
 ] as const;
 
 /**
+ * Khu Album va hinh cong — SAN PHAM IN khach cam ve tay.
+ *
+ * Tach rieng khoi khu anh cuoi vi khach nhin hai thu do voi hai muc dich khac
+ * nhau: xem anh cuoi la xem PHONG CACH CHUP, con xem album va hinh cong la
+ * xem thu minh se nhan duoc. Gop chung mot luoi thi ca hai deu bi loang.
+ *
+ * "HC" trong ten album cua studio la hinh cong — doc duoc tu chinh ten thu muc
+ * Drive ("File gốc hình cổng" trong album mang ma HC).
+ */
+export const ALBUM_HC = {
+  nhan: "Sản phẩm in",
+  tieuDe: "Album và hình cổng",
+  moTa:
+    "Ngoài file ảnh, anh chị còn cầm về những thứ có thể chạm vào: từng trang " +
+    "album do Hamita tự dàn, và tấm hình cổng đặt trước nhà ngày cưới.",
+} as const;
+
+/**
  * Phim truong rieng cua studio.
  *
  * "Phim truong doc quyen" von da nam trong DICH_VU o tren, nhung chi co mot

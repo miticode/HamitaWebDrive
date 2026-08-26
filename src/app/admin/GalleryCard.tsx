@@ -194,8 +194,7 @@ export function GalleryCard({
           <AnhTieuBieu
             galleryId={gallery.id}
             featured={gallery.featured}
-            laBaby={gallery.laBaby}
-            laPhimTruong={gallery.laPhimTruong}
+            khuHienTai={gallery.khuGioiThieu}
             coTheHien={gallery.coverFileId !== null}
           />
         </div>

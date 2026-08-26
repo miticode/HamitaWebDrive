@@ -3,8 +3,15 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { FadeIn } from "@/components/FadeIn";
 import { StudioIcon } from "@/components/StudioIcon";
-import { ANH_BIA, DICH_VU, HAMI_BABY, PHIM_TRUONG, STUDIO } from "@/lib/studio";
-import { listGalleries } from "@/lib/store";
+import {
+  ALBUM_HC,
+  ANH_BIA,
+  DICH_VU,
+  HAMI_BABY,
+  PHIM_TRUONG,
+  STUDIO,
+} from "@/lib/studio";
+import { listGalleries, type KhuGioiThieu } from "@/lib/store";
 import { loadTree } from "@/lib/gallery";
 import { NavGioiThieu } from "./NavGioiThieu";
 import { AnhBiaChay } from "./AnhBiaChay";
@@ -42,14 +49,15 @@ export default async function Home() {
     lại là nhóm khác nữa. Nên ảnh chia theo khu — ảnh cưới, ảnh bé, phim trường.
   */
   const daChon = galleries.filter((g) => g.featured && g.coverFileId);
-  const anhTieuBieu = daChon
-    .filter((g) => !g.laBaby && !g.laPhimTruong)
-    .map((g) => g.coverFileId as string)
-    .slice(0, 8);
-  const anhBaby = daChon
-    .filter((g) => g.laBaby)
-    .map((g) => g.coverFileId as string)
-    .slice(0, 8);
+  const biaCuaKhu = (khu: KhuGioiThieu) =>
+    daChon
+      .filter((g) => g.khuGioiThieu === khu)
+      .map((g) => g.coverFileId as string)
+      .slice(0, 8);
+
+  const anhTieuBieu = biaCuaKhu("cuoi");
+  const anhAlbumHC = biaCuaKhu("albumhc");
+  const anhBaby = biaCuaKhu("baby");
 
   /*
     Khu phim trường đọc khác hẳn hai khu trên.
@@ -63,7 +71,9 @@ export default async function Home() {
     có cache 5 phút dùng chung với trang khách xem, nên thực tế là một lần gọi
     mỗi 5 phút chứ không phải mỗi lượt khách vào.
   */
-  const albumPhimTruong = galleries.find((g) => g.featured && g.laPhimTruong);
+  const albumPhimTruong = galleries.find(
+    (g) => g.featured && g.khuGioiThieu === "phimtruong"
+  );
   let anhPhimTruong: string[] = [];
   if (albumPhimTruong) {
     try {
@@ -226,6 +236,54 @@ export default async function Home() {
               {anhTieuBieu.map((fileId, i) => (
                 <FadeIn key={fileId} cham={i * 60}>
                   <div className="group skeleton aspect-[3/4] overflow-hidden rounded-sm">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/img/${fileId}?w=640`}
+                      alt=""
+                      loading="lazy"
+                      className="size-full object-cover transition duration-700 ease-out group-hover:scale-105"
+                    />
+                  </div>
+                </FadeIn>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/*
+        Khu Album và hình cổng — sản phẩm in.
+
+        Tách khỏi khu ảnh cưới ngay trên vì khách nhìn hai thứ đó với hai mục
+        đích khác nhau: xem ảnh cưới là xem PHONG CÁCH CHỤP, còn xem album và
+        hình cổng là xem THỨ MÌNH SẼ CẦM VỀ. Gộp chung một lưới thì cả hai đều
+        bị loãng — người đang chọn studio không phân biệt được studio này chụp
+        đẹp hay dàn album đẹp.
+
+        Đặt liền ngay sau ảnh cưới: xem xong ảnh, câu hỏi kế tiếp thường là
+        "rồi tôi nhận được gì".
+
+        Khung 4/5 chứ không phải 3/4 như khu ảnh cưới — trang album dàn ngang
+        và hình cổng đều rộng bản hơn ảnh chân dung, khung cao quá sẽ xén mất
+        hai bên đúng chỗ có chữ.
+      */}
+      {anhAlbumHC.length > 0 && (
+        <section id="album-hc" className="scroll-mt-16 border-t border-line">
+          <div className="mx-auto max-w-[1700px] px-2 py-24 sm:px-6 sm:py-32">
+            <FadeIn>
+              <p className="eyebrow text-center">{ALBUM_HC.nhan}</p>
+              <h2 className="rule mx-auto mt-5 max-w-lg text-center font-display text-3xl font-light sm:text-4xl">
+                {ALBUM_HC.tieuDe}
+              </h2>
+              <p className="mx-auto mt-6 max-w-xl text-center text-sm leading-relaxed text-balance text-fg-muted">
+                {ALBUM_HC.moTa}
+              </p>
+            </FadeIn>
+
+            <div className="mt-16 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+              {anhAlbumHC.map((fileId, i) => (
+                <FadeIn key={fileId} cham={i * 60}>
+                  <div className="group skeleton aspect-[4/5] overflow-hidden rounded-sm">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`/api/img/${fileId}?w=640`}

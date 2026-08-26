@@ -13,6 +13,9 @@ const MUC = [
   { href: "#gioi-thieu", nhan: "Giới thiệu" },
   { href: "#dich-vu", nhan: "Dịch vụ" },
   { href: "#anh", nhan: "Ảnh cưới" },
+  /* "Album" chu khong phai "Album & HC": HC la tieng long trong nghe, khach
+     khong hieu. Ten day du nam o tieu de cua chinh khu do. */
+  { href: "#album-hc", nhan: "Album" },
   { href: "#phim-truong", nhan: "Phim trường" },
   { href: "#baby", nhan: "Chụp bé" },
   { href: "#lien-he", nhan: "Liên hệ" },

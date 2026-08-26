@@ -118,6 +118,33 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 Tóm tắt theo nhóm, mới nhất trước — chi tiết kỹ thuật nằm trong lịch sử commit
 Git (mỗi commit đều giải thích lý do dài, có số liệu đo thật).
 
+### Trang giới thiệu chia bốn khu (26/08)
+
+Trước đây chỉ có hai: ảnh cưới và Hami Baby. Nay thành **bốn**:
+
+| Khu | Nội dung | Cách lấy ảnh |
+|---|---|---|
+| Ảnh cưới | ảnh chụp trong buổi cưới | một ảnh bìa mỗi album |
+| Album và hình cổng | sản phẩm in khách cầm về | một ảnh bìa mỗi album |
+| Phim trường | bối cảnh riêng của studio | **nhiều ảnh** từ một album |
+| Hami Baby | mảng chụp bé | một ảnh bìa mỗi album |
+
+**Phim trường Hamita Garden** lấp một lỗ hổng cũ: "Phim trường độc quyền" vốn
+đã nằm trong danh sách dịch vụ nhưng chỉ có một dòng chữ và cái icon — đúng y
+vấn đề mà khu Hami Baby từng mắc. Khu này lấy 8 trong 16 góc chụp.
+
+**Album và hình cổng** tách khỏi ảnh cưới theo yêu cầu của anh: khách nhìn hai
+thứ đó với hai mục đích khác nhau — xem ảnh cưới là xem *phong cách chụp*, xem
+album và hình cổng là xem *thứ mình sẽ cầm về*.
+
+Ở trang quản lý, ô tích "Là ảnh bé" đổi thành **bốn ô tròn** (Ảnh cưới / Album
+& hình cổng / Phim trường / Ảnh bé). Ô tròn chứ không phải ô vuông vì bốn khu
+loại trừ nhau — ô vuông thì tích được hai cái cùng lúc rồi không ai đoán được
+album hiện ở đâu. Trong database gộp thành **một cột chữ** `khuGioiThieu`; hai
+cột cũ `laBaby`/`laPhimTruong` giữ lại nhưng không còn dùng.
+
+Chi tiết kỹ thuật và lý do chọn khung ảnh từng khu: `CLAUDE.md` nguyên tắc 24.
+
 ### Vá lỗ hổng mất lựa chọn khi hai máy cùng chọn (26/08)
 
 Nguyên tắc 2 nói cả nhà dùng chung một mã nên chung một danh sách chọn. Nhưng
