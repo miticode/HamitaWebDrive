@@ -308,6 +308,34 @@ là trang vẫn mở bình thường, không gì tố cáo. Vì vậy khung `Kho
 **chưa nối Google** (giấu khung đi) với **gọi Drive hỏng** (hiện dòng đỏ) — gộp
 chung thì khung lặng lẽ biến mất và studio chỉ biết khi khách gọi điện.
 
+**28. Đơn giao in CHỈ tính danh sách "Ảnh in" (trái tim), không tính "Ảnh chọn" (tick).**
+Đây không phải lựa chọn kỹ thuật mà là **lời đã nói với khách**, nguyên văn ở
+bước 02 trong `HuongDanChon.tsx`:
+
+> *"Thấy tấm nào ưng, anh chị bấm **trái tim** để Hamita **in ra** nhé. Còn
+> **dấu tick** dành cho những tấm anh chị muốn **giữ riêng cho mình**."*
+
+Suy ra ba điều mà `src/lib/anhIn.ts` phải giữ đúng:
+- Chỉ danh sách trái tim được in và được tính tiền. Đưa danh sách tick vào đơn
+  là in thừa, mà tính tiền thì là **thu tiền thứ khách không đặt**.
+- Đếm theo **tấm riêng biệt**. Một tấm vừa thả tim vừa tick vẫn chỉ là một tấm
+  cần in.
+- `soAnhTrongGoi = null` thì **không đưa ra con số tiền nào** — lúc đó phần
+  hướng dẫn phía khách cũng đã bỏ qua đoạn giá, tự tính tiền là nói khác với
+  thứ khách đọc được.
+
+Chọn danh sách theo **biểu tượng** (`icon === "heart"`), không phải theo vị trí
+đầu tiên: thứ tự có thể đổi, còn biểu tượng thì gắn với ý nghĩa.
+
+Đã đo trên dữ liệu thật ngày 26/08/2026: `sn Duyen Ngo` có 13 tim / gói 10 →
+vượt 3 tấm → **36.000đ**. Biên cũng đúng: 0 tấm → 0đ, đúng 10 tấm → 0đ, không
+đặt gói → không tính.
+
+*Quy tắc CSS cho bản in* nằm cuối `globals.css`, viết **ngoài mọi layer** cùng
+lý do với khối chỉnh màu nền tối: cần thắng lớp tiện ích để xoá nền và kéo chữ
+xám về đen. Máy in mặc định không in nền màu, nên mọi chữ xám nhạt trên giấy sẽ
+mờ hơn hẳn trên màn hình.
+
 **19. Trang khách không được chết vì Drive trục trặc.**
 Danh sách ảnh đọc thẳng từ Drive mỗi lần khách mở trang (nguyên tắc 4), nên một
 nhịp Drive không phản hồi là cả trang ném lỗi. Hai trang `/g/[slug]` và

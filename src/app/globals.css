@@ -289,6 +289,55 @@ body {
   Vẫn giữ nền tĩnh: chỗ sắp có ảnh không bị trống hoác rồi ảnh nhảy vào đột
   ngột, mà bố cục đứng yên sẵn từ đầu.
 */
+/*
+  Bản in của đơn giao in (/admin/[slug]/don-in).
+
+  Viết NGOÀI @layer components có chủ đích, cùng lý do với khối chỉnh màu chế
+  độ tối ở trên: ở đây cần THẮNG lớp tiện ích của Tailwind, vì phải xoá nền và
+  đổi màu chữ mà các lớp `bg-bg-soft`, `text-fg-muted`… đang đặt.
+
+  Máy in không in nền màu (mặc định của trình duyệt), nên mọi chữ xám nhạt trên
+  giấy sẽ mờ hơn hẳn trên màn hình — phải kéo hết về đen. Giấy trắng thì tương
+  phản cao là đúng, không cần thứ bậc màu tinh tế như trên màn hình.
+*/
+@media print {
+  .khong-in {
+    display: none !important;
+  }
+
+  .trang-don-in {
+    max-width: none;
+    padding: 0;
+    color: #000;
+    font-size: 11pt;
+  }
+
+  /* Chữ phụ trên giấy phải đen, không thì mờ tịt. */
+  .trang-don-in .text-fg-muted,
+  .trang-don-in .text-fg-faint,
+  .trang-don-in .eyebrow {
+    color: #000 !important;
+  }
+
+  /* Nền xám của dòng tổng tiền không in ra được, thay bằng đường kẻ đậm. */
+  .trang-don-in .bg-bg-soft {
+    background: transparent !important;
+    border-top: 2px solid #000;
+  }
+
+  /* Đừng cắt một thư mục làm đôi qua hai trang giấy. */
+  .trang-don-in .khoi-thu-muc {
+    break-inside: avoid;
+  }
+
+  .trang-don-in table {
+    break-inside: auto;
+  }
+  .trang-don-in tr {
+    break-inside: avoid;
+  }
+}
+
 .skeleton {
   background: var(--bg-soft);
 }

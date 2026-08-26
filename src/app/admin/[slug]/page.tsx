@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
 import { getGalleryBySlug, getLists, getSelections, type Selection } from "@/lib/store";
+import { maSoFile } from "@/lib/anhIn";
 import { LoginForm } from "../LoginForm";
 import { NutDoiTong } from "../NutDoiTong";
 import { ExportButton } from "./ExportButton";
@@ -19,19 +20,6 @@ function gomTheoAlbum(anh: Selection[]) {
     else groups.set(a.albumName, [a]);
   }
   return [...groups.entries()];
-}
-
-/**
- * Bo tien to chu va duoi file, chi giu lai ma so — dung dinh dang doi Media
- * quen dung de do tim anh trong thu muc goc tren may.
- *
- * "HMT06704.jpg" -> "06704", "DD_08601.jpg" -> "08601". Nhung ten khong co
- * tien to chu o dau (vi du "001-002.jpg") giu nguyen — khong doan bua, tranh
- * cat mat mot nua ma so cua file ghep nhieu tam.
- */
-function maSoFile(tenFile: string): string {
-  const khongDuoi = tenFile.replace(/\.[a-z0-9]+$/i, "");
-  return khongDuoi.replace(/^[^\d]+/, "") || khongDuoi;
 }
 
 export default async function ResultsPage({ params }: Props) {
@@ -65,11 +53,24 @@ export default async function ResultsPage({ params }: Props) {
         {selections.length > 0 && (
           <a
             href={`/api/admin/export?slug=${encodeURIComponent(gallery.slug)}`}
-            className="btn-primary"
+            className="btn"
             title="Tải file Excel liệt kê danh sách, thư mục, tên ảnh và ghi chú của mọi ảnh đã chọn"
           >
             Xuất Excel
           </a>
+        )}
+        {selections.length > 0 && (
+          /*
+            Nút chính của trang này. Xuất Excel là để lưu đối chiếu, còn đơn
+            giao in mới là thứ đưa cho người khác làm — nên nó nổi hơn.
+          */
+          <Link
+            href={`/admin/${gallery.slug}/don-in`}
+            className="btn-primary"
+            title="Tờ giao cho bên in ảnh: chỉ ảnh phải in, kèm mã số, ghi chú cỡ in và tiền phát sinh"
+          >
+            Đơn giao in
+          </Link>
         )}
       </div>
 
