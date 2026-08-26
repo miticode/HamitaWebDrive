@@ -12,7 +12,9 @@
     "db:studio": "prisma studio",
     "db:migrate-json": "tsx scripts/migrate-json-to-postgres.mts",
     "db:check": "tsx scripts/check-db.mts",
-    "db:sync": "tsx scripts/sync-galleries.mts"
+    "db:sync": "tsx scripts/sync-galleries.mts",
+    "db:backup": "tsx scripts/backup-db.mts",
+    "db:restore": "tsx scripts/restore-db.mts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

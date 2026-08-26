@@ -103,8 +103,57 @@ Sửa biến môi trường xong phải deploy lại thì bản đang chạy m�
 |---|---|
 | `npm run db:push` | Tạo/cập nhật bảng theo `prisma/schema.prisma` |
 | `npm run db:check` | Xem nhanh trong database đang có gì |
+| `npm run db:backup` | Sao lưu database ra `data/sao-luu/` |
+| `npm run db:restore` | Liệt kê bản sao lưu · xem trước · phục hồi |
 | `npm run db:migrate-json` | Chuyển dữ liệu từ `data/db.json` sang Postgres (chạy một lần) |
 | `npm run db:studio` | Mở giao diện xem/sửa dữ liệu |
+
+## Sao lưu và phục hồi
+
+Ảnh nằm trên Drive, nhưng thứ **không thể tạo lại** nằm trong database: khách
+đã thả tim những tấm nào, ghi chú "in cỡ 40x60" ở tấm nào, mã chọn ảnh của từng
+album. Xoá nhầm một album là mất sạch những thứ đó, và xoá kéo theo dây chuyền
+nên không lùi được.
+
+```
+npm run db:backup
+```
+
+Ghi ra `data/sao-luu/hamita-2026-08-26-1614.json`, giữ **8 bản gần nhất** rồi
+tự dọn bản cũ. Thư mục `data/` đã nằm trong `.gitignore` nên bản sao lưu không
+bao giờ lọt lên GitHub.
+
+**Không chứa phiếu đăng nhập Google.** Phiếu đó mở được toàn bộ Drive và không
+hết hạn — một tệp được chép đi chép lại không phải chỗ giữ nó. Phục hồi xong
+chỉ cần vào trang quản lý bấm "Kết nối lại".
+
+### Phục hồi
+
+```
+npm run db:restore                                  # xem có những bản nào
+npm run db:restore -- <tệp>                         # XEM TRƯỚC, không ghi gì
+npm run db:restore -- <tệp> --ghi                   # ghi thật
+npm run db:restore -- <tệp> --album <slug> --ghi    # chỉ một album
+```
+
+Mặc định là **xem trước** — phải gõ thêm `--ghi` mới động vào database. Và nó
+**chỉ thêm những gì đang thiếu**, không bao giờ ghi đè hay xoá: album nào còn
+tồn tại thì bỏ qua và báo rõ. Nhờ vậy một lần phục hồi nhầm không xoá mất những
+lựa chọn khách vừa làm hôm nay.
+
+### Cho nó chạy hằng tuần
+
+Đặt lịch trên Windows — mở PowerShell rồi dán (chạy một lần duy nhất):
+
+```powershell
+$act = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c cd /d D:\code\photo-gallery && npm run db:backup" 
+$trg = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At 9am
+Register-ScheduledTask -TaskName "Hamita - sao luu database" -Action $act -Trigger $trg
+```
+
+Sáng thứ Hai hằng tuần là có một bản mới. **Giới hạn cần biết:** cách này chỉ
+chạy khi máy đang bật. Máy tắt cả tuần thì tuần đó không có bản nào — nên thỉnh
+thoảng vẫn nên tự chạy `npm run db:backup` sau những đợt khách chọn ảnh nhiều.
 
 ## Kiến trúc
 

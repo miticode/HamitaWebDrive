@@ -253,6 +253,33 @@ sửa giọng văn thì không phải mở file giao diện.
 có cả một mạch kể dịch vụ rồi, nói lại là lặp. Bản cũ chính là lỗi đó ("Hamita
 là nơi lo trọn gói… từ lễ hỏi, ảnh cưới, trang điểm cho tới chiếc váy").
 
+**26. Bản sao lưu KHÔNG được chứa phiếu đăng nhập Google.**
+`npm run db:backup` xuất mọi bảng trừ hai thứ: cột `refreshToken` của
+`GoogleAccount`, và cả bảng `LoginAttempt`.
+
+Phiếu Google mở được **toàn bộ** Drive của studio và không hết hạn. Một tệp sao
+lưu nằm trên ổ đĩa, được chép đi chép lại, gửi qua chỗ này chỗ kia — không phải
+chỗ để giữ một chìa khoá như thế. Mà bỏ nó đi cũng chẳng mất gì: phục hồi xong
+chỉ cần vào trang quản lý bấm "Kết nối lại", một phút là xong. Vẫn giữ `email`
+và `connectedAt` để người phục hồi biết là đã từng có kết nối.
+
+**Phục hồi CHỈ THÊM, không bao giờ ghi đè hay xoá.** Bản ghi nào còn tồn tại
+thì bỏ qua và báo rõ. Lý do: trường hợp cần phục hồi trong thực tế gần như luôn
+là "xoá nhầm một album", chứ không phải "quay cả database về hôm qua". Cho ghi
+đè thì một lần phục hồi nhầm sẽ xoá mất những lựa chọn khách vừa làm hôm nay —
+đúng cái mà bản sao lưu sinh ra để bảo vệ.
+
+**Mặc định là xem trước**, phải gõ thêm `--ghi` mới động vào database. Một lệnh
+phục hồi gõ nhầm mà chạy ngay còn tai hại hơn là không có lệnh nào.
+
+`PushSub` có xuất ra tệp nhưng **không phục hồi lại**: phiếu đó gắn với một
+trình duyệt cụ thể và hết hiệu lực khi khách gỡ app, phục hồi chỉ tạo ra dòng
+rác mà lần gửi đầu tiên sẽ xoá đi (xem `phieuChet()` trong `push.ts`).
+
+Đã đo thật ngày 26/08/2026 bằng một album thử dựng riêng — sao lưu, xoá, phục
+hồi — **11/11 trường khớp chính xác**, kể cả ghi chú "in cỡ 40x60" của khách.
+Dọn sạch sau khi thử, không đụng album nào của khách.
+
 **19. Trang khách không được chết vì Drive trục trặc.**
 Danh sách ảnh đọc thẳng từ Drive mỗi lần khách mở trang (nguyên tắc 4), nên một
 nhịp Drive không phản hồi là cả trang ném lỗi. Hai trang `/g/[slug]` và
@@ -430,4 +457,6 @@ cũ. Sửa bằng cách truyền thẳng tham số vào hàm thay vì dựa vào
 | `npx vercel deploy --prod --yes --scope hamita` | Đường lui khi git trục trặc |
 | `npm run db:check` | Xem album nào khách đã chọn bao nhiêu ảnh |
 | `npm run db:sync` | Chụp lại số liệu Drive cho toàn bộ album |
+| `npm run db:backup` | **Sao lưu database** ra `data/sao-luu/` |
+| `npm run db:restore` | Liệt kê các bản sao lưu · xem trước · phục hồi |
 | `npm run db:push` | Cập nhật cấu trúc database |

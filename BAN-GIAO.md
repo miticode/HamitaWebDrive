@@ -513,6 +513,8 @@ kiểu cũ hay kiểu mới, thay vì đoán theo thời gian.
 | `npx vercel deploy --prod --yes --scope hamita` | Đường lui khi git trục trặc |
 | `npm run db:check` | Xem album nào khách đã chọn bao nhiêu ảnh |
 | `npm run db:sync` | Chụp lại số liệu Drive cho toàn bộ album |
+| `npm run db:backup` | **Sao lưu database** ra `data/sao-luu/` |
+| `npm run db:restore` | Liệt kê các bản sao lưu · xem trước · phục hồi |
 | `npm run db:push` | Cập nhật cấu trúc database |
 | `npx prisma generate` | Sinh lại Prisma Client sau khi đổi schema |
 | `npx tsx scripts/build-logo.mts assets/logo-goc.jpg` | Dựng lại logo |
