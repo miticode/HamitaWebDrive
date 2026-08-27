@@ -432,7 +432,12 @@ export default async function Home() {
         thôi nôi đọc xong vẫn không biết studio chụp bé ra sao. Giờ ảnh của
         mảng này nằm ngay đây, tách hẳn khỏi ảnh cưới phía trên.
       */}
-      <section id="baby" className="scroll-mt-16 border-t border-line bg-bg-soft">
+      {/*
+        khu-baby đổi bảng màu của cả khu sang tông trắng hồng — xem chú thích
+        ở globals.css. Đặt trên chính <section> chứ không phải thẻ con, để
+        đường kẻ trên và nền cũng nằm trong phạm vi đổi màu.
+      */}
+      <section id="baby" className="khu-baby scroll-mt-16 border-t border-line bg-bg-soft">
         <div className="mx-auto max-w-[1700px] px-5 py-24 sm:px-6 sm:py-28">
           <FadeIn>
             <div className="mx-auto max-w-3xl text-center">

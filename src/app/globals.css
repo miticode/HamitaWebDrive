@@ -202,6 +202,32 @@ body {
     opacity: 0.4;
   }
 
+  /*
+    Khu "Hami Baby Studio" trên trang giới thiệu: tông trắng hồng.
+
+    Cách làm là ghi đè BẢNG MÀU trong phạm vi khu đó, không phải viết đè từng
+    lớp một. Nhờ `@theme inline` ở trên, mọi tiện ích màu của Tailwind
+    (`bg-bg-soft`, `text-fg-muted`, `border-line`…) biên dịch thành
+    `var(--bg-soft)` chứ không phải mã màu cứng — nên đổi biến ở đây là cả khu
+    đổi theo, kể cả những phần tử thêm vào sau này.
+
+    `--fg` giữ nguyên nâu đen: tiêu đề và chữ chính phải đọc rõ như mọi khu
+    khác. Chỉ những thứ phụ mới ngả hồng — nền, đường kẻ, chữ mờ, điểm nhấn.
+
+    Hồng chọn ngả ĐÀO chứ không ngả tím, để đứng cạnh nền kem #f6f3ee của các
+    khu trên dưới mà không lạc quẻ — cùng một chất ấm, chỉ khác sắc.
+  */
+  .khu-baby {
+    --bg-soft: #fdf4f2;
+    --bg-raised: #fffbfa;
+    --line: #f4e3df;
+    --line-strong: #e8cdc7;
+    --fg-muted: #7a625d;
+    --fg-faint: #a8908b;
+    --accent: #b07a72;
+    --accent-soft: #faeae7;
+  }
+
   .notice {
     border-radius: 3px;
     padding: 0.65rem 0.9rem;
