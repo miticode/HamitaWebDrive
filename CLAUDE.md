@@ -609,4 +609,5 @@ cũ. Sửa bằng cách truyền thẳng tham số vào hàm thay vì dựa vào
 | `npm run db:sync` | Chụp lại số liệu Drive cho toàn bộ album |
 | `npm run db:backup` | **Sao lưu database** ra `data/sao-luu/` |
 | `npm run db:restore` | Liệt kê các bản sao lưu · xem trước · phục hồi |
+| `npm run kiem:domain -- https://...` | **Kiểm một domain mới đã sẵn sàng chưa** (16 phép kiểm) |
 | `npm run db:push` | Cập nhật cấu trúc database |

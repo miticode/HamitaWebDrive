@@ -110,6 +110,106 @@ Sửa biến môi trường xong phải deploy lại thì bản đang chạy m�
 | `npm run db:migrate-json` | Chuyển dữ liệu từ `data/db.json` sang Postgres (chạy một lần) |
 | `npm run db:studio` | Mở giao diện xem/sửa dữ liệu |
 
+## Đổi sang domain riêng
+
+Làm theo đúng thứ tự dưới đây. Ba bước đầu phải xong **trước** khi trỏ domain,
+nếu không sẽ có quãng thời gian web sống mà kết nối Google đã hỏng.
+
+### Trước khi trỏ domain
+
+**1. Thêm địa chỉ trả về vào Google Cloud Console.**
+Vào *APIs & Services → Credentials → OAuth 2.0 Client ID → Authorized redirect
+URIs*, thêm dòng mới **và giữ nguyên dòng cũ**:
+
+```
+https://tenmien-moi.com/api/google/callback
+```
+
+Đây là bước dễ quên nhất và hỏng âm thầm nhất: web vẫn mở bình thường, ảnh vẫn
+hiện (vì phiếu Drive cũ còn hiệu lực), chỉ tới lúc bấm "Kết nối lại" mới báo
+`redirect_uri_mismatch`. Mà lúc cần bấm "Kết nối lại" thì thường là lúc ảnh đã
+tắt hết rồi.
+
+**2. Sao lưu database.** Bấm "Sao lưu ngay" ở trang quản lý, hoặc `npm run db:backup`.
+Đổi domain không đụng tới database, nhưng đây là lúc thay đổi nhiều thứ cùng lúc.
+
+**3. Thêm domain vào Vercel** (*Settings → Domains*) và trỏ DNS theo hướng dẫn
+Vercel đưa ra. Chờ tới khi Vercel báo domain đã hợp lệ.
+
+### Sau khi domain đã hợp lệ
+
+**4. Đặt địa chỉ web tường minh:**
+
+```
+npx vercel env add NEXT_PUBLIC_SITE_URL production --force
+```
+
+Nhập `https://tenmien-moi.com` (không có dấu `/` ở cuối).
+
+Không đặt thì `siteUrl()` rơi về `VERCEL_PROJECT_PRODUCTION_URL` do Vercel tự
+đặt — thường đúng, nhưng nó quyết định **địa chỉ trả về của Google**, sitemap và
+thẻ chia sẻ link. Ba thứ đó không nên phụ thuộc vào một biến mình không kiểm
+soát. Đây là biến `NEXT_PUBLIC_` nên nó được nhúng **lúc build**: đặt xong
+**bắt buộc deploy lại**, sửa biến không thôi thì bản đang chạy vẫn dùng giá trị cũ.
+
+**5. Deploy lại:**
+
+```
+git commit --allow-empty -m "Deploy lai de nhan NEXT_PUBLIC_SITE_URL" && git push
+```
+
+**6. Kiểm bằng máy, đừng kiểm bằng mắt:**
+
+```
+npm run kiem:domain -- https://tenmien-moi.com
+```
+
+Script chạy 16 phép kiểm: trang khách và trang quản lý, database và Drive còn
+đọc được không, sitemap/robots đã mang domain mới chưa, ảnh có hiện không, mấy
+đường quản trị có chặn người lạ không, và **link cũ đã gửi khách còn phục vụ
+không**. Mở trình duyệt xem thì trang nào cũng đẹp — ba thứ đầu hỏng mà không
+nhìn ra được.
+
+**7. Vào trang quản lý bấm "Kết nối lại" Google** để phiếu Drive gắn với domain
+mới. Kiểm lại bằng khung "Kho ảnh" ở đầu trang — hiện được số GB là xong.
+
+### Những thứ đổi domain sẽ làm gián đoạn
+
+Không phải lỗi, là hệ quả tất yếu vì trình duyệt gắn mọi thứ theo tên miền:
+
+| Thứ | Chuyện gì xảy ra | Phải làm gì |
+|---|---|---|
+| **Mã mở album của khách** | Phiếu mở khoá lưu theo tên miền, sang tên mới coi như chưa nhập | Báo trước cho nhà nào đang chọn dở |
+| **Mật khẩu trang quản lý** | Phải đăng nhập lại một lần | Không phải làm gì |
+| **App khách đã cài** | Lối tắt trỏ tên miền cũ | Chỉ hỏng nếu tên miền cũ ngừng phục vụ |
+| **Thông báo ảnh mới** | Phiếu đẩy gắn tên miền cũ, sang tên mới phải bật lại | Khách tự bật, hoặc bỏ qua |
+| **Link 6 album đã gửi** | Vẫn sống chừng nào `.vercel.app` còn phục vụ | Xem mục dưới |
+
+### Link cũ đã gửi khách
+
+Vercel **vẫn giữ** `hamita-gallery.vercel.app` sau khi thêm domain riêng, nên
+link đã gửi không chết. Nhưng trong *Settings → Domains* có tuỳ chọn chuyển
+hướng nó sang domain mới — **cân nhắc kỹ trước khi bật**:
+
+- **Không chuyển hướng:** link cũ chạy như cũ, khách không phải nhập lại mã.
+  Đổi lại là hai địa chỉ cùng phục vụ một nội dung.
+- **Chuyển hướng:** gọn về một địa chỉ, nhưng mọi khách đang giữ link cũ bị đá
+  sang tên miền mới và **phải nhập lại mã album** — kể cả nhà đang chọn dở.
+
+Khuyên: **để nguyên, không chuyển hướng**, cho tới khi 6 album hiện tại giao
+xong. Album mới thì gửi link tên miền mới ngay từ đầu.
+
+### Gói Pro mang lại gì
+
+Lý do chính không phải tốc độ mà là **điều khoản**: gói Hobby cấm dùng cho mục
+đích thương mại, mà web này đang phục vụ khách trả tiền. Kèm theo:
+
+- Băng thông 1 TB/tháng thay vì 100 GB — hiện mỗi tháng dùng khoảng 5 GB nên
+  đây không phải thứ đang thiếu.
+- Hàm chạy được lâu hơn. Các hàm trong dự án đang đặt 30–60 giây, chưa cái nào
+  chạm trần, nên **không cần sửa gì**.
+- Vẫn giữ `vercel.json` với region `sin1` như cũ.
+
 ## Sao lưu và phục hồi
 
 Ảnh nằm trên Drive, nhưng thứ **không thể tạo lại** nằm trong database: khách
