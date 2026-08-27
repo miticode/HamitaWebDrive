@@ -409,6 +409,35 @@ mất vị trí đang cuộn. `daTungChon` đọc ở máy chủ trong `[albumId
 và tính trên **cả album**, không riêng thư mục đang mở: khách đọc hướng dẫn ở
 thư mục đầu là đã biết cách, sang thư mục thứ hai không phải đọc lại.
 
+**31. Ô ghi chú phải có nút xác nhận nhìn thấy được — lưu ngầm là chưa đủ.**
+Ô này vẫn lưu lúc rời khỏi ô (blur) và lúc bấm Enter như trước, nhưng **không
+được bỏ nút "Lưu" đi** với lý do "blur lo rồi".
+
+Anh phát hiện ngày 27/08/2026: ô ghi chú trên ảnh to không có nút nào, mà ngay
+dưới nó là ba nút tròn — tim, **tick**, tải về. Khách gõ xong "Bóp eo", nhìn
+xuống thấy dấu tick thì hiểu đó là nút xác nhận, bấm vào. Hậu quả: tấm ảnh bị
+thêm vào danh sách **"Ảnh chọn" (giữ riêng)** — việc họ không hề định làm — mà
+câu hỏi thật sự của họ ("ghi chú của mình lưu chưa?") vẫn không ai trả lời.
+
+Ba chi tiết trong `OGhiChu` đều có lý do, đừng gỡ:
+
+- **Nút luôn có mặt**, chỉ đổi trạng thái (mờ → sáng → "Đã lưu" → mờ lại sau
+  2 giây). Cho nút hiện ra lúc bắt đầu gõ thì ô nhập co lại giữa chừng, chữ
+  đang viết nhảy một cái.
+- **`onPointerDown` chứ không phải `onClick`.** Ô nhập đang có con trỏ; bấm
+  vào nút làm nó blur **trước** khi click kịp chạy, mà blur đã gọi `luu()` rồi
+  nên cú bấm rơi vào khoảng không — nút bấm mà như không bấm. `pointerdown`
+  chạy trước blur, kèm `preventDefault()` để giữ con trỏ lại.
+- **Chưa mở khoá thì KHÔNG báo "Đã lưu".** Lúc đó `guiGhiChu` không gửi gì cả,
+  nó treo thao tác lại chờ khách nhập mã. Báo đã lưu là nói dối, mà nói dối ở
+  đây còn tệ hơn không có nút nào: khách yên tâm đóng máy, đến ngày in mới biết
+  lời dặn không tới nơi. Trường hợp gửi đi rồi mà mạng hỏng thì thanh đỏ "Có
+  tấm chưa lưu kịp" ở đầu trang tự hiện — để cho nó lo, đừng nhân đôi một lời
+  báo nữa.
+
+Hàng ghi chú dùng `max-w-sm` chứ không phải `max-w-xs`: phải chừa chỗ cho nút.
+Đo trên bản thật ở màn hình 375px — ô nhập 222×44, nút 49×44, cùng hàng.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại
