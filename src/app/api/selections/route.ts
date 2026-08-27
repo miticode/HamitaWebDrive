@@ -19,11 +19,23 @@ export const runtime = "nodejs";
 */
 const CHUNG = "chung";
 
-/** Doc lai cac anh da chon cua album. */
+/**
+ * Doc lai cac anh da chon cua album.
+ *
+ * PHAI hoi ma giong het luc ghi. Truoc day duong nay mo tu do, nen bat ky ai
+ * co link album — thu chuyen ra khoi tay khach rat de, mot lan chuyen tiep
+ * Zalo la du — deu doc duoc ca danh sach khach da chon lan ghi chu rieng cua
+ * ho (vi du "in cỡ 40x60"). Ghi thi khong ghi duoc, nhung rieng viec doc da
+ * la thu khach khong dinh cho ai xem ngoai studio.
+ */
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get("slug") ?? "";
   const gallery = await getGalleryBySlug(slug);
   if (!gallery) return Response.json({ error: "Không tìm thấy" }, { status: 404 });
+
+  if (!(await daMoKhoa(gallery.id, gallery.accessCode))) {
+    return Response.json({ error: "Cần mã của studio để xem danh sách" }, { status: 403 });
+  }
 
   const all = await getSelections(gallery.id);
   return Response.json({

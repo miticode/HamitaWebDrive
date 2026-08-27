@@ -42,6 +42,20 @@ số điện thoại rồi bỏ).
 **3. Kiểm tra mã ở PHÍA MÁY CHỦ, không chỉ giấu nút.**
 `/api/selections` phải tự xác thực. Giấu nút ở giao diện là vô nghĩa.
 
+**Cả GET cũng phải hỏi mã, không riêng POST/PATCH.** Đây là lỗ đã có thật, vá
+ngày 27/08/2026: đường GET vốn mở tự do, nên bất kỳ ai cầm link album — thứ rời
+khỏi tay khách rất dễ, một lần chuyển tiếp Zalo là đủ — đọc được cả danh sách
+khách đã chọn lẫn ghi chú riêng của họ ("in cỡ 40x60"). Đã đo trên bản đang
+chạy: gọi thẳng đường đó không có gì trong tay vẫn trả về đủ. Đừng nghĩ "đọc
+thì có sao đâu" mà mở lại — nguyên tắc 1 nói ai có link đều **xem ảnh** được,
+không nói ai có link đều xem được **khách đã chọn gì**.
+
+Vá ở máy chủ thì phải vá kèm ở máy khách: nhịp đồng bộ trong `Selection.tsx`
+có `unlocked` trong dãy phụ thuộc để khách nhập mã xong là tải lại ngay. Thiếu
+chốt đó, khách ngồi nhìn màn hình trống tới 15 giây rồi tưởng những tấm cả nhà
+đã chọn bị mất. Đo thật sau khi vá: nhập mã xong **873ms** là danh sách về,
+và thư mục có sẵn lựa chọn cũ vẫn hiện đúng "Ảnh in 1 · Ảnh chọn 1".
+
 **4. Không chụp danh sách ảnh vào database.**
 Mỗi lần khách mở trang thì đọc thẳng Drive (cache 5 phút). Đây là thứ làm nên
 "link sống": studio thả folder mới vào Drive là khách F5 thấy ngay.

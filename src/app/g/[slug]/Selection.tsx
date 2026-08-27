@@ -196,7 +196,13 @@ export function SelectionProvider({
       clearInterval(nhip);
       document.removeEventListener("visibilitychange", khiQuayLai);
     };
-  }, [slug]);
+    /*
+      Co "unlocked" trong day phu thuoc vi may chu gio doi ma moi cho doc danh
+      sach. Khach chua nhap ma thi moi nhip deu bi tu choi; nhap xong phai tai
+      lai NGAY, khong thi ho ngoi nhin mot man hinh trong toi 15 giay roi tuong
+      la nhung tam ca nha da chon truoc do bi mat.
+    */
+  }, [slug, unlocked]);
 
   const guiToggle = useCallback(
     (listId: string, photo: Photo) => {
