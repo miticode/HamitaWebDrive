@@ -95,6 +95,19 @@ export default async function ResultsPage({ params }: Props) {
                 />
                 {list.name}
                 <span className="ml-2 text-lg text-fg-muted">{anh.length} ảnh</span>
+                {/*
+                  So tam co loi dan, dat ngay canh so anh.
+
+                  Loi dan la thu DUY NHAT tren trang nay khong doan duoc tu anh:
+                  nhin tam anh thi biet khach chon gi, nhung "in cỡ 40x60" hay
+                  "bóp eo" thi khong nhin ra. Neu phai luot het luoi moi biet co
+                  ai dan gi khong thi se co hom bo sot — nen dem san o day.
+                */}
+                {anh.some((a) => a.note) && (
+                  <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-1 align-middle text-xs text-amber-900">
+                    {anh.filter((a) => a.note).length} lời dặn
+                  </span>
+                )}
               </h2>
               <ExportButton
                 fileName={`${gallery.slug}-${list.name}`}
@@ -125,8 +138,26 @@ export default async function ResultsPage({ params }: Props) {
                         loading="lazy"
                         className="aspect-[3/4] w-full object-cover"
                       />
-                      <figcaption className="truncate px-1.5 py-1.5 text-[11px] text-fg-faint">
-                        {row.fileName}
+                      {/*
+                        Loi dan hien DAY DU, khong cat bot bang truncate nhu ten
+                        file. Ten file cat mat mot doan van doan duoc; loi dan
+                        cat mat mot doan la doc sai y khach — "in cỡ 40x60" cat
+                        con "in cỡ 40..." thi ben in lam sao biet.
+
+                        Hien o CA HAI danh sach, khong rieng "Ảnh in". Don giao
+                        in chi lay danh sach trai tim (nguyen tac 28) nen loi
+                        dan khach ghi tren tam giu rieng truoc day khong hien o
+                        dau ca — go xong roi khong ai doc.
+                      */}
+                      <figcaption className="px-1.5 py-1.5">
+                        <span className="block truncate text-[11px] text-fg-faint">
+                          {row.fileName}
+                        </span>
+                        {row.note && (
+                          <span className="mt-1 block rounded-sm bg-amber-100 px-1.5 py-1 text-[11px] leading-snug text-amber-900">
+                            {row.note}
+                          </span>
+                        )}
                       </figcaption>
                     </figure>
                   ))}
