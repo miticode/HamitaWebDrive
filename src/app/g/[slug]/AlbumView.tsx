@@ -9,6 +9,7 @@ import { PhotoGrid } from "./PhotoGrid";
 import { HuongDanChon } from "./HuongDanChon";
 import { TuLamMoi } from "./TuLamMoi";
 import { CodeDialog } from "./CodeDialog";
+import { XacNhanXong } from "./XacNhanXong";
 import { SelectionProvider } from "./Selection";
 
 /**
@@ -112,6 +113,14 @@ export function AlbumView({
         />
 
         <PhotoGrid photos={photos} album={album.name} />
+
+        {/*
+          Loi moi bao xong dat o CUOI, sau khi khach da xem het anh.
+          Thanh tren cung van giu dong "Báo cho Hamita" — hai cho phuc vu hai
+          luc khac nhau: thanh tren cho nguoi dang o giua trang muon bao ngay,
+          khoi nay cho nguoi vua cuon het thu muc va khong con viec gi khac.
+        */}
+        <XacNhanXong tenMuc={album.name} />
       </main>
 
       <CodeDialog />

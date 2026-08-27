@@ -34,7 +34,16 @@ type Ctx = {
   /** Ghi lai ghi chu — chi co tac dung khi anh da nam trong danh sach do. */
   guiGhiChu: (listId: string, photo: Photo, note: string) => void;
 
-  /** Tong so anh da chon, gop ca gallery — khong rieng thu muc dang xem. */
+  /**
+   * So tam da chon TRONG THU MUC DANG MO, dem theo tam rieng biet — mot tam
+   * vua tha tim vua tick van chi la mot.
+   *
+   * Chu thich cu o day ghi nguoc han ("gop ca gallery"), trong khi ma ben duoi
+   * van loc theo idTrongMuc tu dau. Sua lai cho khoi ai tin nham: con so nay
+   * di thang vao cau hoi khach doc ("Anh chị chọn xong N tấm..."), ma trang
+   * thai bao xong lai tinh rieng tung thu muc (nguyen tac 20) — dem ca gallery
+   * o day la hoi mot dang, ghi nhan mot neo.
+   */
   tongSoDaChon: number;
   /** Khach da bao "chon xong" chua. */
   daBaoXong: boolean;
