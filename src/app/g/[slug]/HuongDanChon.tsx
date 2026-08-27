@@ -20,10 +20,20 @@ function tien(so: number): string {
 export function HuongDanChon({
   soAnhTrongGoi,
   giaAnhThem,
+  daTungChon,
 }: {
   /** null = album này không tính theo gói, bỏ hẳn đoạn giá cả. */
   soAnhTrongGoi: number | null;
   giaAnhThem: number;
+  /**
+   * Khách đã chọn tấm nào trong album này chưa.
+   *
+   * Đã chọn rồi thì thu bốn bước lại, vì họ biết cách làm rồi. Đo thật ngày
+   * 27/08/2026 trên màn hình 375px: để mở sẵn thì khách phải cuộn 1.506px —
+   * gần hai màn hình — mới thấy tấm ảnh đầu tiên, và phải cuộn lại từng ấy
+   * mỗi lần vào một thư mục mới. Thu lại còn 44px.
+   */
+  daTungChon: boolean;
 }) {
   const buoc = [
     {
@@ -71,75 +81,108 @@ export function HuongDanChon({
 
   return (
     /*
-      mb-12 chu khong phai mt: chi dat khoang cach phia DUOI de tach khoi luoi
+      mb chu khong phai mt: chi dat khoang cach phia DUOI de tach khoi luoi
       anh. Khoang cach phia tren de noi dung tu lo — khoi tieu de ngay tren da
       co san dem duoi roi, tu them le tren o day nua la cong don thanh mot mang
-      trong qua rong.
+      trong qua rong. Thu lai thi khoi nay chi con mot hang nen le duoi hep
+      theo, khong thi no thanh mot mang trong giua hang chu va luoi anh.
     */
-    <section className="mx-auto mb-12 max-w-6xl px-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {buoc.map((b) => (
-          <div
-            key={b.so}
-            className="relative flex flex-col rounded-md border border-line bg-bg-raised p-5 pt-7 text-center"
-          >
-            {/*
-              Số bước nằm vắt lên mép trên của thẻ: đây là một quy trình có thứ
-              tự thật sự (xem trước rồi mới chọn, chọn xong mới báo), nên đánh
-              số là mang thông tin chứ không phải trang trí.
-            */}
-            <span className="absolute -top-3 left-1/2 grid size-7 -translate-x-1/2 place-items-center rounded-full bg-accent text-[11px] font-medium text-white">
-              {b.so}
-            </span>
-
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden
-              className="mx-auto size-7 text-accent"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              {b.icon}
-            </svg>
-
-            <h3 className="mt-3.5 text-xs font-medium tracking-[0.12em] uppercase">
-              {b.ten}
-            </h3>
-            <p className="mt-2.5 text-[13px] leading-relaxed text-fg-muted">{b.mo}</p>
-
-            {b.them && (
-              <p className="mt-auto pt-3.5 text-[12px] leading-relaxed text-fg-faint">
-                <span className="mx-auto mb-3 block h-px w-8 bg-line" />
-                {b.them}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-
+    <section
+      className={`mx-auto max-w-6xl px-4 ${daTungChon ? "mb-6" : "mb-12"}`}
+    >
       {/*
-        Đường cứu cho khách bối rối. Không có nó thì người ngại hỏi sẽ im lặng
-        bỏ dở, studio không biết mà nhắc.
+        Dung <details> cua HTML chu khong phai state trong React.
+
+        Ly do khong phai la it code hon: trang thai mo/thu phai DUNG NGAY o
+        dong HTML dau tien. Lam bang React thi component phai doi danh sach da
+        chon tai ve moi biet khach da tung chon chua — khach da chon roi se
+        thay bon buoc hien ra rong roi tu gap lai, keo ca trang giat mot cai
+        va nhay mat vi tri dang cuon. <details open={...}> do may chu quyet
+        dinh san nen khong co nhip nao sai ca, va no chay ca khi JavaScript
+        chua kip tai.
       */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-bg-soft px-5 py-4">
-        <div className="min-w-0">
-          <p className="text-sm font-medium">Phân vân quá, chọn tấm nào bây giờ?</p>
-          <p className="mt-0.5 text-[13px] text-fg-muted">
-            Anh chị cứ nhắn, Hamita ngồi xem cùng và gợi ý giúp anh chị ạ.
-          </p>
+      <details open={!daTungChon} className="group">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-md text-xs font-medium tracking-[0.12em] text-fg-muted uppercase transition hover:text-accent [&::-webkit-details-marker]:hidden">
+          <span className="group-open:hidden">Xem lại 4 bước chọn ảnh</span>
+          <span className="hidden group-open:inline">4 bước chọn ảnh</span>
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden
+            className="size-4 transition-transform duration-200 group-open:rotate-180"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </summary>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {buoc.map((b) => (
+            <div
+              key={b.so}
+              className="relative flex flex-col rounded-md border border-line bg-bg-raised p-5 pt-7 text-center"
+            >
+              {/*
+                Số bước nằm vắt lên mép trên của thẻ: đây là một quy trình có thứ
+                tự thật sự (xem trước rồi mới chọn, chọn xong mới báo), nên đánh
+                số là mang thông tin chứ không phải trang trí.
+              */}
+              <span className="absolute -top-3 left-1/2 grid size-7 -translate-x-1/2 place-items-center rounded-full bg-accent text-[11px] font-medium text-white">
+                {b.so}
+              </span>
+
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden
+                className="mx-auto size-7 text-accent"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {b.icon}
+              </svg>
+
+              <h3 className="mt-3.5 text-xs font-medium tracking-[0.12em] uppercase">
+                {b.ten}
+              </h3>
+              <p className="mt-2.5 text-[13px] leading-relaxed text-fg-muted">{b.mo}</p>
+
+              {b.them && (
+                <p className="mt-auto pt-3.5 text-[12px] leading-relaxed text-fg-faint">
+                  <span className="mx-auto mb-3 block h-px w-8 bg-line" />
+                  {b.them}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
-        <a
-          href={STUDIO.zalo}
-          target="_blank"
-          rel="noreferrer"
-          className="btn shrink-0"
-        >
-          Nhắn Hamita · {STUDIO.dienThoai}
-        </a>
-      </div>
+
+        {/*
+          Đường cứu cho khách bối rối. Không có nó thì người ngại hỏi sẽ im lặng
+          bỏ dở, studio không biết mà nhắc.
+        */}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-bg-soft px-5 py-4">
+          <div className="min-w-0">
+            <p className="text-sm font-medium">Phân vân quá, chọn tấm nào bây giờ?</p>
+            <p className="mt-0.5 text-[13px] text-fg-muted">
+              Anh chị cứ nhắn, Hamita ngồi xem cùng và gợi ý giúp anh chị ạ.
+            </p>
+          </div>
+          <a
+            href={STUDIO.zalo}
+            target="_blank"
+            rel="noreferrer"
+            className="btn shrink-0"
+          >
+            Nhắn Hamita · {STUDIO.dienThoai}
+          </a>
+        </div>
+      </details>
     </section>
   );
 }

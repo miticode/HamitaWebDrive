@@ -55,14 +55,22 @@ export function GalleryHeader({
   const muc: ReactNode[] = [];
 
   if (!unlocked) {
+    /*
+      "Nhap ma" phai la NUT THAT, khong phai chu gach chan trong cau.
+      Do that ngay 27/08/2026 tren man hinh 375px: dang chu gach chan no chi
+      cao 16px, trong khi day la viec quan trong nhat khach phai lam — chua
+      nhap ma thi khong tha tim duoc tam nao. Gio cao 44px, co vien va nen
+      rieng de nhin ra ngay la bam duoc.
+    */
     muc.push(
-      <span key="khoa">
-        Anh chị xin Hamita mã để chọn ảnh nhé{" "}
+      <span key="khoa" className="inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+        Anh chị xin Hamita mã để chọn ảnh nhé
         <button
+          type="button"
           onClick={openCode}
-          className="underline underline-offset-2 hover:text-accent"
+          className="inline-flex min-h-11 items-center rounded-full border border-line-strong bg-bg-raised px-4 text-xs font-medium text-fg transition hover:border-accent hover:text-accent"
         >
-          nhập mã
+          Nhập mã
         </button>
       </span>
     );

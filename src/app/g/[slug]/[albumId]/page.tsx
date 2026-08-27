@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ROOT_ALBUM } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
-import { getGalleryBySlug, getLists, getMucXong } from "@/lib/store";
+import { getGalleryBySlug, getLists, getMucXong, getSelections } from "@/lib/store";
 import { daMoKhoa } from "@/lib/access";
 import { DriveLoi } from "@/components/DriveLoi";
 import { AlbumView } from "../AlbumView";
@@ -50,6 +50,20 @@ export default async function AlbumPage({ params }: Props) {
   const dsXong = await getMucXong(gallery.id);
   const mucXongLuc = dsXong.find((m) => m.albumId === wanted)?.xongLuc ?? null;
 
+  /*
+    Khach da tung chon tam nao trong album nay chua — de quyet dinh bon buoc
+    huong dan mo san hay thu lai.
+
+    Doc o MAY CHU chu khong doi danh sach ve o may khach: phia khach bat dau
+    voi danh sach rong roi moi tai ve, nen neu quyet dinh o do thi khach da
+    chon roi se thay huong dan hien ra roi tu thu lai, keo theo ca trang giat
+    mot cai. Doc san o day thi ngay dong HTML dau tien da dung.
+
+    Tinh tren CA album chu khong rieng thu muc dang mo: khach doc huong dan o
+    thu muc dau la da biet cach lam, sang thu muc thu hai khong phai doc lai.
+  */
+  const daTungChon = (await getSelections(gallery.id)).length > 0;
+
   return (
     <AlbumView
       slug={slug}
@@ -59,6 +73,7 @@ export default async function AlbumPage({ params }: Props) {
       backHref={`/g/${slug}`}
       unlocked={unlocked}
       mucXongLuc={mucXongLuc}
+      daTungChon={daTungChon}
     />
   );
 }

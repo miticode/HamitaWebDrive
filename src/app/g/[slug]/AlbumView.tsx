@@ -24,6 +24,7 @@ export function AlbumView({
   backHref,
   unlocked,
   mucXongLuc,
+  daTungChon,
 }: {
   slug: string;
   gallery: Gallery;
@@ -33,6 +34,8 @@ export function AlbumView({
   unlocked: boolean;
   /** Khách đã báo chọn xong THƯ MỤC NÀY lúc nào — null nếu chưa báo. */
   mucXongLuc: string | null;
+  /** Khách đã chọn tấm nào trong album này chưa — quyết định hướng dẫn mở hay thu. */
+  daTungChon: boolean;
 }) {
   const photos = album.photos.map((p) => ({
     id: p.id,
@@ -105,6 +108,7 @@ export function AlbumView({
         <HuongDanChon
           soAnhTrongGoi={gallery.soAnhTrongGoi}
           giaAnhThem={gallery.giaAnhThem}
+          daTungChon={daTungChon}
         />
 
         <PhotoGrid photos={photos} album={album.name} />

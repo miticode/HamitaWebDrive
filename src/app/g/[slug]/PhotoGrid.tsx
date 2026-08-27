@@ -136,7 +136,16 @@ function SelectButtons({
   const { lists, isSelected, toggle } = useSelection();
 
   return (
-    <div className={size === "lg" ? "flex gap-4" : "flex gap-1.5"}>
+    /*
+      Khoang cach giua hai nut la chuyen AN TOAN, khong phai chuyen tham my.
+      Tim = "in ra", tick = "giu rieng" — hai y nghia nguoc nhau ma dat sat
+      nhau thi bam nham la tam khach muon in roi vao danh sach giu rieng, toi
+      ngay giao anh moi phat hien thieu. Do that ngay 27/08/2026 tren man hinh
+      375px: hai nut 40px cach nhau dung 6px, trong khi dau ngon tay nguoi lon
+      rong 45-57px. Gio moi nut 44px (muc toi thieu cua ca Apple lan Google) va
+      cach nhau 12px.
+    */
+    <div className={size === "lg" ? "flex gap-4" : "flex gap-3"}>
       {lists.map((list) => {
         const on = isSelected(list.id, photo.id);
         return (
@@ -152,7 +161,7 @@ function SelectButtons({
             }}
             className={[
               "grid place-items-center rounded-full backdrop-blur-sm transition duration-200 active:scale-90",
-              size === "lg" ? "size-14" : "size-10",
+              size === "lg" ? "size-14" : "size-11",
               on
                 ? list.icon === "heart"
                   ? "bg-rose-500 text-white shadow-lg"
