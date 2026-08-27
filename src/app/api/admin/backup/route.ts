@@ -1,5 +1,6 @@
 import { isAdmin } from "@/lib/auth";
-import { databaseIsConfigured, getPrisma } from "@/lib/db";
+import { databaseIsConfigured } from "@/lib/db";
+import { ghiMoc } from "@/lib/moc";
 import { taoBanSaoLuu, tenTepSaoLuu } from "@/lib/saoLuu";
 
 export const runtime = "nodejs";
@@ -37,18 +38,9 @@ export async function GET() {
   const ban = await taoBanSaoLuu(luc);
   const noiDung = JSON.stringify(ban, null, 2);
 
-  /*
-    Ghi lại mốc để trang quản lý nói được "lần cuối cách đây bao lâu".
-    Nuốt lỗi: ghi mốc hỏng thì cũng không được làm hỏng việc giao tệp — tệp mới
-    là thứ anh cần, cái mốc chỉ để nhắc.
-  */
-  await getPrisma()
-    .moc.upsert({
-      where: { ten: "saoLuu" },
-      create: { ten: "saoLuu", luc },
-      update: { luc },
-    })
-    .catch(() => {});
+  // Ghi lại mốc để trang quản lý nói được "lần cuối cách đây bao lâu".
+  // Dùng chung ghiMoc() với `npm run db:backup` — xem chú thích ở moc.ts.
+  await ghiMoc("saoLuu", luc);
 
   const tenTep = tenTepSaoLuu(luc);
 

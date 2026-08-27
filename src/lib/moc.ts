@@ -1,5 +1,3 @@
-import { databaseIsConfigured, getPrisma } from "@/lib/db";
-
 /**
  * Moc thoi gian cua nhung viec dinh ky studio lam bang tay.
  *
@@ -10,6 +8,35 @@ import { databaseIsConfigured, getPrisma } from "@/lib/db";
  * chi doc qua lop store, de mot loi goi prisma tran vao giua thi lan sau kho
  * doc ra la trang cham vi cai gi.
  */
+import { databaseIsConfigured, getPrisma } from "@/lib/db";
+
+/**
+ * Ghi lai moc "vua lam xong viec nay".
+ *
+ * PHAI dung chung cho MOI duong sao luu, dung chep logic upsert ra tung noi.
+ * Truoc day chi duong API (nut "Sao luu ngay") ghi moc, con `npm run db:backup`
+ * thi khong — nen sao luu bang lenh xong, trang quan ly van bao ngay cu. Lech
+ * do vo hai cho toi khi studio dat lich chay lenh hang tuan theo huong dan
+ * trong README: luc ay sao luu chay deu moi tuan ma trang quan ly bao "lan
+ * cuoi cach day 40 ngay" mai mai, roi mat niem tin vao chinh con so do.
+ *
+ * Nuot loi: ghi moc hong thi cung khong duoc lam hong viec sao luu. Tep moi la
+ * thu can giu, cai moc chi de nhac.
+ */
+export async function ghiMoc(ten: string, luc: Date): Promise<void> {
+  if (!databaseIsConfigured()) return;
+  try {
+    await getPrisma().moc.upsert({
+      where: { ten },
+      create: { ten, luc },
+      update: { luc },
+    });
+  } catch {
+    // Cung ly do voi docMoc: bang Moc them sau, ban cu co the chua co.
+  }
+}
+
+/** Lan cuoi lam viec nay la luc nao. null = chua lan nao. */
 export async function docMoc(ten: string): Promise<Date | null> {
   if (!databaseIsConfigured()) return null;
   try {

@@ -17,6 +17,7 @@ import { join } from "node:path";
 
 const { databaseIsConfigured } = await import("../src/lib/db");
 const { taoBanSaoLuu, tenTepSaoLuu } = await import("../src/lib/saoLuu");
+const { ghiMoc } = await import("../src/lib/moc");
 
 /** Giu lai bao nhieu ban gan nhat. 8 ban tuan la khoang hai thang lich su. */
 const GIU_LAI = 8;
@@ -39,6 +40,16 @@ await mkdir(THU_MUC, { recursive: true });
 const duongDan = join(THU_MUC, tenTepSaoLuu(luc));
 const noiDung = JSON.stringify(ban, null, 2);
 await writeFile(duongDan, noiDung, "utf8");
+
+/*
+  Ghi moc de trang quan ly noi duoc "lan cuoi cach day bao lau".
+
+  Truoc day chi nut "Sao luu ngay" ghi moc, lenh nay thi khong — nen sao luu
+  bang lenh xong, trang quan ly van bao ngay cu. Vo hai cho toi khi studio dat
+  lich chay lenh nay hang tuan theo huong dan trong README: luc ay sao luu chay
+  deu ma trang quan ly bao "lan cuoi cach day 40 ngay" mai mai.
+*/
+await ghiMoc("saoLuu", luc);
 
 console.log(`Da luu: ${duongDan}`);
 console.log(`  ${Math.round(noiDung.length / 1024).toLocaleString("vi-VN")} kB\n`);
