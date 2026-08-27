@@ -66,13 +66,27 @@ function Icon({ kind, filled }: { kind: ClientList["icon"]; filled: boolean }) {
   );
 }
 
+/** Bao lau thi chu "Da luu" tu mo di. */
+const GIU_DA_LUU_MS = 2000;
+
 /**
  * O ghi chu rieng cho mot tam anh trong mot danh sach da chon, vi du
  * "in cỡ 40x60". Chi hien khi anh dang nam trong danh sach do — ghi chu la
  * mot phan cua lua chon, khong co lua chon thi khong co gi de ghi chu vao.
  *
- * Luu luc roi khoi o nhap (blur) hoac bam Enter, khong luu tren tung phim go
- * — tranh goi may chu lien tuc trong luc khach dang go.
+ * Van luu luc roi khoi o nhap (blur) hoac bam Enter — khong luu tren tung
+ * phim go, tranh goi may chu lien tuc trong luc khach dang viet.
+ *
+ * NHUNG PHAI CO NUT XAC NHAN NHIN THAY DUOC. Anh phat hien ngay 27/08/2026:
+ * o ghi chu truoc day khong co nut nao ca, ma ngay duoi no la ba nut tron —
+ * tim, TICK, tai ve. Khach go xong "Bóp eo", nhin xuong thay dau tick thi hieu
+ * do la nut xac nhan ghi chu, bam vao. Hau qua: tam anh bi them vao danh sach
+ * "Anh chon" (giu rieng) — mot viec ho khong he dinh lam — trong khi cau hoi
+ * that su cua ho ("ghi chu cua minh luu chua?") van khong duoc tra loi.
+ *
+ * Nut o day luon co mat chu khong hien ra khi go: hien ra moi go thi o nhap
+ * bi co lai giua chung, chu dang viet nhay mot cai. Ba trang thai:
+ * chua doi (mo, khong bam duoc) · dang doi (sang, moi bam) · vua luu ("Đã lưu").
  */
 function OGhiChu({
   photo,
@@ -83,10 +97,40 @@ function OGhiChu({
   album: string;
   list: ClientList;
 }) {
-  const { noteOf, guiGhiChu } = useSelection();
-  const [nhap, setNhap] = useState(() => noteOf(list.id, photo.id) ?? "");
+  const { noteOf, guiGhiChu, unlocked } = useSelection();
+  const banDau = noteOf(list.id, photo.id) ?? "";
+  const [nhap, setNhap] = useState(banDau);
+  const [daLuu, setDaLuu] = useState(banDau);
+  const [vuaLuu, setVuaLuu] = useState(false);
+  const hen = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const luu = () => guiGhiChu(list.id, { id: photo.id, name: photo.name, album }, nhap);
+  // Don hen gio khi khach dong anh to, khong thi setState chay vao com ma.
+  useEffect(() => () => {
+    if (hen.current) clearTimeout(hen.current);
+  }, []);
+
+  const coThayDoi = nhap.trim() !== daLuu.trim();
+
+  const luu = () => {
+    if (!coThayDoi) return;
+    guiGhiChu(list.id, { id: photo.id, name: photo.name, album }, nhap);
+
+    /*
+      Chua mo khoa thi guiGhiChu KHONG gui gi ca — no mo hop nhap ma va treo
+      thao tac lai cho tới khi khách nhập xong. Bao "Đã lưu" luc do la noi doi
+      khach, ma noi doi o day con te hon la khong co nut nao: ho yen tam dong
+      may, den ngay in moi biet loi dan khong toi noi.
+
+      Con truong hop gui di roi ma mang hong thi thanh do "Co tam chua luu kip"
+      o dau trang tu hien — de cho no lo, khong nhan doi mot loi bao nua.
+    */
+    if (!unlocked) return;
+
+    setDaLuu(nhap);
+    setVuaLuu(true);
+    if (hen.current) clearTimeout(hen.current);
+    hen.current = setTimeout(() => setVuaLuu(false), GIU_DA_LUU_MS);
+  };
 
   return (
     <div className="flex items-center gap-2">
@@ -103,8 +147,52 @@ function OGhiChu({
         onClick={(e) => e.stopPropagation()}
         placeholder="Dặn Hamita điều gì không ạ? Ví dụ: in cỡ 40x60"
         maxLength={300}
-        className="min-w-0 flex-1 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white outline-none transition placeholder:text-white/40 focus:border-white/45 focus:bg-white/15"
+        className="min-h-11 min-w-0 flex-1 rounded-full border border-white/20 bg-white/10 px-3.5 text-xs text-white outline-none transition placeholder:text-white/40 focus:border-white/45 focus:bg-white/15"
       />
+      {/*
+        onPointerDown chu khong phai onClick: o nhap dang co con tro, bam vao
+        nut se lam no mat con tro (blur) TRUOC khi click kip chay — luc do luu()
+        da chay o blur roi, nut coi nhu khong con gi de luu va cu bam roi vao
+        khoang khong. Bat o pointerdown thi chay truoc blur.
+      */}
+      <button
+        type="button"
+        onPointerDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          luu();
+        }}
+        onClick={(e) => e.stopPropagation()}
+        disabled={!coThayDoi && !vuaLuu}
+        aria-label={`Lưu lời dặn cho ${photo.name}`}
+        className={`inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3.5 text-xs font-medium transition ${
+          vuaLuu
+            ? "bg-emerald-500/90 text-white"
+            : coThayDoi
+              ? "bg-white text-black"
+              : "bg-white/10 text-white/35"
+        }`}
+      >
+        {vuaLuu ? (
+          <>
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden
+              className="size-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20 6.5 9.2 17.3 4 12.1" />
+            </svg>
+            Đã lưu
+          </>
+        ) : (
+          "Lưu"
+        )}
+      </button>
     </div>
   );
 }
@@ -116,7 +204,13 @@ function GhiChuAnh({ photo, album }: { photo: ClientPhoto; album: string }) {
   if (coChon.length === 0) return null;
 
   return (
-    <div className="mb-3 flex w-full max-w-xs flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
+    /*
+      max-w-sm chu khong phai max-w-xs: hang nay gio phai chua them nut "Luu"
+      (~49px) ben canh o nhap. Giu nguyen be rong cu thi o nhap co lai con
+      chua day 200px — khach go loi dan dai mot chut la khong doc lai duoc
+      minh vua viet gi.
+    */
+    <div className="mb-3 flex w-full max-w-sm flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
       {coChon.map((list) => (
         <OGhiChu key={`${photo.id}:${list.id}`} photo={photo} album={album} list={list} />
       ))}
