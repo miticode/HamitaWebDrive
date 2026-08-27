@@ -383,6 +383,32 @@ nhịp Drive không phản hồi là cả trang ném lỗi. Hai trang `/g/[slug]
 điện thoại studio. Không được để khách rơi vào trang lỗi đỏ chung: khách đang
 chờ xem ảnh cưới của mình rất dễ hiểu nhầm là studio đã xoá mất ảnh.
 
+**30. Ba kích thước trên trang khách là chuyện AN TOÀN, không phải thẩm mỹ.**
+Đo ngày 27/08/2026 trên màn hình 375px, cả ba đều là số đo được.
+
+- **Nút trái tim và nút tick: 44px, cách nhau 12px.** Trước là 40px cách 6px,
+  trong khi đầu ngón tay người lớn rộng 45–57px. Hai nút này mang **ý nghĩa
+  ngược nhau** — tim là *in ra*, tick là *giữ riêng* — nên bấm nhầm không phải
+  phiền một chút: tấm khách muốn in rơi vào danh sách giữ riêng, tới ngày giao
+  ảnh mới phát hiện thiếu và không ai biết vì sao. Đừng thu `gap-3` lại cho
+  "gọn mắt".
+- **Nút "Nhập mã": 44px cao, có viền.** Trước là chữ gạch chân cao 16px —
+  thứ nhỏ nhất trên màn hình, mà chưa nhập mã thì khách không thả tim được
+  tấm nào.
+- **Bốn bước hướng dẫn thu lại khi khách đã từng chọn.** Để mở sẵn thì khách
+  phải cuộn **1.506px** — gần hai màn hình — mới thấy tấm ảnh đầu tiên, và
+  cuộn lại từng ấy mỗi lần đổi thư mục. Thu lại còn **438px**, tức là ảnh nằm
+  ngay trong màn hình đầu.
+
+Việc thu/mở dùng **`<details>` của HTML, không phải state React** — và đây là
+phần dễ bị "sửa cho hiện đại" nhất. Lý do không phải ít code hơn: trạng thái
+mở/thu phải **đúng ngay dòng HTML đầu tiên**. Làm bằng React thì component phải
+đợi danh sách đã chọn tải về mới biết khách đã từng chọn chưa — khách đã chọn
+rồi sẽ thấy bốn bước hiện ra rồi tự gấp lại, kéo cả trang giật một cái và nhảy
+mất vị trí đang cuộn. `daTungChon` đọc ở máy chủ trong `[albumId]/page.tsx`
+và tính trên **cả album**, không riêng thư mục đang mở: khách đọc hướng dẫn ở
+thư mục đầu là đã biết cách, sang thư mục thứ hai không phải đọc lại.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại
