@@ -1,5 +1,3 @@
-import { STUDIO } from "@/lib/studio";
-
 /** Viết 12000 thành "12.000" — cách viết tiền quen thuộc với người Việt. */
 function tien(so: number): string {
   return so.toLocaleString("vi-VN");
@@ -157,27 +155,6 @@ export function HuongDanChon({
               )}
             </div>
           ))}
-        </div>
-
-        {/*
-          Đường cứu cho khách bối rối. Không có nó thì người ngại hỏi sẽ im lặng
-          bỏ dở, studio không biết mà nhắc.
-        */}
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-bg-soft px-5 py-4">
-          <div className="min-w-0">
-            <p className="text-sm font-medium">Phân vân quá, chọn tấm nào bây giờ?</p>
-            <p className="mt-0.5 text-[13px] text-fg-muted">
-              Anh chị cứ nhắn, Hamita ngồi xem cùng và gợi ý giúp anh chị ạ.
-            </p>
-          </div>
-          <a
-            href={STUDIO.zalo}
-            target="_blank"
-            rel="noreferrer"
-            className="btn shrink-0"
-          >
-            Nhắn Hamita · {STUDIO.dienThoai}
-          </a>
         </div>
       </details>
     </section>
