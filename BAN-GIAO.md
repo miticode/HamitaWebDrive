@@ -3,10 +3,14 @@
 Tài liệu này để dán vào đầu một cuộc trò chuyện mới, giúp phía hỗ trợ nắm được
 toàn bộ bối cảnh mà không phải hỏi lại từ đầu.
 
-Cập nhật: 26/08/2026 — một ngày dài. Vá lỗ hổng mất lựa chọn khi hai máy cùng
-chọn, rà soát toàn hệ thống, viết lại trang giới thiệu theo lối kể chuyện, và
-làm năm công cụ mới cho studio (kho ảnh, sao lưu, kiểm tra sức khoẻ, đơn giao
-in, thống kê).
+Cập nhật: **28/08/2026**. Web đã lên tên miền riêng
+**https://www.hamitastudio.com** và gói Vercel **Pro**. Hai rủi ro đỏ cũ đã
+hết. Trong hai ngày 27–28/08 làm 20 việc: vá một lỗ rò rỉ, đổi tên miền, sửa
+mười chỗ giao diện điện thoại, và thêm ba công cụ cho studio.
+
+Bản cũ (26/08): vá lỗ hổng mất lựa chọn khi hai máy cùng chọn, rà soát toàn hệ
+thống, viết lại trang giới thiệu theo lối kể chuyện, và làm năm công cụ mới
+(kho ảnh, sao lưu, kiểm tra sức khoẻ, đơn giao in, thống kê).
 
 ---
 
@@ -115,10 +119,120 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 
 ---
 
-## 6. Việc lớn đã làm trong đợt này (22–26/08/2026)
+## 6. Việc lớn đã làm trong đợt này (22–28/08/2026)
 
 Tóm tắt theo nhóm, mới nhất trước — chi tiết kỹ thuật nằm trong lịch sử commit
 Git (mỗi commit đều giải thích lý do dài, có số liệu đo thật).
+
+### Lên tên miền riêng và gói Pro (27/08)
+
+**https://www.hamitastudio.com**, gói Vercel **Pro**. Hai rủi ro đỏ tồn từ đầu
+dự án hết cùng lúc: gói Hobby cấm dùng thương mại, và màn hình chấp thuận OAuth
+còn ở chế độ Testing (Google huỷ phiếu sau 7 ngày — nếu để nguyên thì quanh
+01/09 ảnh tắt cho **tất cả** khách cùng lúc). Anh đã Publish app.
+
+Ba tên miền cùng phục vụ: `www.hamitastudio.com` là chính, `hamitastudio.com`
+chuyển 308 sang www, và `hamita-gallery.vercel.app` **vẫn sống**. Cố ý chưa bật
+chuyển hướng địa chỉ cũ — bật là mọi khách đang giữ link cũ phải **nhập lại mã
+album**, kể cả nhà đang chọn dở.
+
+`NEXT_PUBLIC_SITE_URL` đặt tường minh vì Vercel vẫn báo địa chỉ production là
+`.vercel.app` dù đã gắn tên miền. Biến này quyết định địa chỉ trả về của Google,
+sitemap và thẻ xem trước link — ba thứ không nên phụ thuộc giá trị mình không
+kiểm soát. Nó nhúng **lúc build** nên đặt xong phải deploy lại.
+
+Có script kiểm: `npm run kiem:domain -- https://...` — 16 phép kiểm, trong đó
+có ba thứ **không nhìn thấy bằng mắt**: sitemap trỏ sai địa chỉ, đường kết nối
+Google trỏ nhầm nơi, và link cũ đã gửi khách còn phục vụ không.
+
+### Vá lỗ rò rỉ danh sách khách đã chọn (27/08)
+
+Đường `GET /api/selections` vốn mở tự do: bất kỳ ai cầm link album — thứ rời
+khỏi tay khách rất dễ, một lần chuyển tiếp Zalo là đủ — đọc được cả danh sách
+khách đã chọn lẫn **lời dặn riêng** của họ. Ghi thì không ghi được, nhưng riêng
+việc đọc đã là thứ khách không định cho ai xem ngoài studio.
+
+Vá ở cả hai đầu: máy chủ đòi mã y như lúc ghi, và nhịp đồng bộ phía khách có
+`unlocked` trong dãy phụ thuộc để nhập mã xong là tải lại ngay — thiếu chốt đó
+khách nhìn màn hình trống tới 15 giây rồi tưởng lựa chọn cũ bị mất.
+
+### Mười chỗ giao diện điện thoại (27–28/08)
+
+Đa số khách xem bằng điện thoại, nên đo lại toàn bộ trên màn hình 375px.
+
+**Trang bìa album nhiều thư mục** — nặng nhất. Album 8 thư mục trước đây dài
+**7,9 màn hình** chỉ để xem *có những thư mục nào*: mỗi khối 573px, riêng ảnh
+bìa đã 447px. Từ ba thư mục trở lên giờ xếp **hai cột**, khối còn 333px, cả
+trang còn **3,7 màn hình**. Một hoặc hai thư mục vẫn giữ một cột — lúc đó không
+có gì để so sánh, ảnh bìa lớn mới đáng tiền.
+
+**Chín vùng chạm dưới 44px**, đo được từng cái:
+
+| Chỗ | Trước | Sau |
+|---|---|---|
+| Nút trái tim / dấu tick | 40px, cách nhau 6px | 44px, cách 12px |
+| Nút `.btn` (8 nút "Tải tất cả") | 38px | 44px |
+| Nút đếm ở thanh trên | 36px | 44px |
+| Nút "Đóng" khung xem ảnh | 40px | 44px |
+| Nút "Nhập mã" | 16px (chữ gạch chân) | 44px, có viền |
+| Số điện thoại ở thanh trên | 16px | 44px |
+| Số điện thoại + email chân trang | 20px | 44px |
+| Chấm chuyển ảnh (chiều ngang) | 6px | 26px |
+| Link quay lại | 16px | 32px |
+
+Nút tim và tick đáng kể nhất: hai nút **ý nghĩa ngược nhau** — tim là *in ra*,
+tick là *giữ riêng* — mà đặt cách 6px. Bấm nhầm thì tấm khách muốn in rơi vào
+danh sách giữ riêng, tới ngày giao ảnh mới phát hiện thiếu.
+
+Số điện thoại cũng vậy: đó là **hành động chính của trang giới thiệu** — khách
+xem xong thì việc tiếp theo là gọi — mà vùng chạm cao 16px.
+
+Cách nới đều là `py-N -my-N`: vùng chạm dày ra mà bố cục **không xê dịch một
+ly**, vì lề âm kéo lại đúng bằng phần vừa thêm.
+
+### Ba công cụ mới cho studio (28/08)
+
+**Nút "Chép tin nhắn"** trên thẻ album. Trước đây mỗi lần gửi album phải làm ba
+việc: chép link, dán vào Zalo, rồi tự gõ mã và tự gõ lời hướng dẫn. Web đã biết
+cả ba. Tin nhắn chép sẵn gồm lời chào, link, mã, hướng dẫn tim/tick, lời mời
+bấm "Báo cho Hamita", và hạn giữ ảnh — bỏ dòng mã nếu album chưa đặt mã, bỏ
+dòng hạn nếu không đặt hạn.
+
+**Hàng thư mục ngang** ở đầu lưới ảnh. Trước đây đổi thư mục phải quay về trang
+bìa rồi chọn lại. Điện thoại cuộn ngang trong chính hàng (không để trang xô
+ngang), màn hình lớn thì xuống dòng.
+
+**Ảnh bìa riêng cho từng thư mục con** — xem nguyên tắc 32. Gộp vào hộp chọn
+bìa đang có thay vì thêm nút mới: thẻ album đã chật, mà từ góc nhìn studio hai
+việc giống hệt nhau, chỉ khác ở chỗ tấm ảnh đại diện cho ai.
+
+### Những thay đổi theo yêu cầu của studio (27–28/08)
+
+- **Mã mặc định khi tạo link là `123456`** thay cho mã ngẫu nhiên. Anh đã gõ
+  tay như vậy sau mỗi lần tạo album rồi. Đánh đổi đã nói rõ và anh chấp nhận:
+  ai từng nhận mã của một nhà thì mở được album nhà khác nếu có link. Nút "Sinh
+  mã mới" vẫn sinh ngẫu nhiên — nếu nó cũng trả về `123456` thì bấm xong mã
+  không đổi, nút thành vô nghĩa.
+- **Hướng dẫn chọn ảnh còn ba bước**, bỏ "Ngắm ảnh thật kỹ" (chỉ dạy khách chạm
+  vào ảnh — thứ ai cầm điện thoại cũng tự làm). Đánh số lại 01–03 liền mạch.
+- **Bỏ khối "Phân vân quá, chọn tấm nào bây giờ?"**. Hệ quả: trang album không
+  còn số điện thoại ở đâu, trừ màn hình báo lỗi Drive.
+- **Khu Hami Baby** đổi sang tông trắng hồng, **khu Phim trường** sang tông giấy
+  da châu Âu. Cách làm là ghi đè bảng màu trong phạm vi khu (`.khu-baby`,
+  `.khu-phim-truong`) chứ không đè từng lớp — nhờ `@theme inline`, mọi tiện ích
+  màu của Tailwind đọc biến lúc chạy nên cả khu đổi theo, kể cả thứ thêm sau
+  này. Chữ chính giữ nguyên màu đậm để đọc rõ như mọi khu khác.
+- **Lời dặn của khách hiện trên từng ảnh** ở trang "Ảnh khách chọn", cả hai danh
+  sách. Trước đây chỉ đọc được ở đơn giao in, mà đơn đó chỉ lấy danh sách trái
+  tim — nên lời dặn trên tấm giữ riêng không hiện ở đâu cả.
+- **Ô ghi chú có nút "Lưu"** — xem nguyên tắc 31.
+- **Khối xác nhận "đã chọn xong" ở cuối trang thư mục**, nói rõ tên thư mục.
+- **Nhãn "Đã chọn xong"** trên thẻ album giờ ghi đúng chữ đó, thay vì chỉ ghi
+  tên thư mục và giấu ý nghĩa trong tooltip (trên điện thoại không rê chuột được).
+- **Sao lưu bằng lệnh cũng ghi mốc**, không riêng nút bấm. Trước đó
+  `npm run db:backup` không cập nhật mốc, nên nếu anh đặt lịch chạy hằng tuần
+  theo hướng dẫn README thì trang quản lý sẽ báo "lần cuối cách đây 40 ngày"
+  mãi mãi.
 
 ### Năm công cụ mới cho studio (26/08, chiều)
 
@@ -452,141 +566,129 @@ cần lấy đúng link "Chia sẻ" / "Copy link" (khác QR) từ trong app.
 
 ## 8. Việc còn treo, xếp theo mức nguy hiểm
 
-**🟠 Chỗ chứa trên Google Drive — đã nhẹ đi nhưng đừng quên.**
-Sáng 26/08 đo được **99,5%** (còn 9,97 GB, đủ khoảng 10 album nữa). Anh dọn
-trong ngày nên chiều còn **94,9%** — còn **104,66 GB**, tức khoảng 100 album.
-Hạ từ đỏ xuống cam nhờ vậy.
+Hai rủi ro **đỏ** tồn từ đầu dự án đã hết ngày 27/08: gói Vercel Hobby cấm dùng
+thương mại (đã lên **Pro**), và màn hình chấp thuận OAuth còn ở chế độ Testing
+khiến phiếu Google chết sau 7 ngày (anh đã **Publish app**).
 
-Điều đáng nhớ: sáu album đang phục vụ khách chỉ chiếm **5,79 GB**. Phần còn
+**🟠 Chỗ chứa trên Google Drive.**
+Đo 28/08: **1.947 / 2.048 GB — 95,1%, còn 100,89 GB**. Sáng 26/08 từng chạm
+**99,5%** (chỉ còn 9,97 GB), anh dọn trong ngày mới nhẹ đi.
+
+Điều đáng nhớ: chín album đang phục vụ khách chỉ chiếm **10,4 GB**. Phần còn
 lại là ảnh của những buổi chụp xong từ lâu. Nguyên nhân gốc là *không có ai
-nhắc dọn* — khung "Kho ảnh" ở đầu trang quản lý sinh ra để chữa đúng chỗ đó.
+nhắc dọn* — khung "Kho ảnh" ở đầu trang quản lý sinh ra để chữa đúng chỗ đó,
+nhưng nó chỉ **nhắc**, không tự xoá gì cả.
 
 Hệ quả nếu để đầy hẳn: Google dùng chung một kho cho Drive, Gmail và Photos,
 nên đầy là **Gmail cũng ngừng nhận thư** trên `hamita.studio@gmail.com` — tài
 khoản của cả Neon lẫn Vercel. Mất thư là mất đường khôi phục mật khẩu.
 
-**🟡 Hai album thật mang mã chọn ảnh dễ đoán.**
-`HC- Vũ Phương & Kim Tiên` mã **`00000`**, `sn Duyen Ngo` mã **`123456`**. Ba
-album còn lại đúng chuẩn `HAMITA-XX99`.
+**🟡 Một album còn mã `00000`.**
+`HC- Vũ Phương & Kim Tiên`. Từ 28/08, album mới tạo mặc định mang mã `123456`
+theo yêu cầu của studio — đánh đổi đã ghi ở mục 6. Nhưng `00000` thì ngay cả
+theo chuẩn mới cũng nên đổi.
 
-Lớp chống dò (sai 8 lần/15 phút) vô dụng ở đây — `123456` đoán trúng ngay lần
-đầu. Ai có link là thêm bớt được ảnh trong danh sách in của khách. Gốc rễ:
-`setAccessAction` chỉ kiểm độ dài ≥ 4, không kiểm định dạng.
-
-Chưa sửa vì đổi mã là mọi phiếu mở khoá cũ hết hiệu lực — khách đang chọn dở sẽ
-bị hỏi mã lại, nên cần anh quyết và báo lại mã mới cho hai nhà đó.
+Chưa sửa vì đổi mã là mọi phiếu mở khoá cũ hết hiệu lực — nhà đó đang chọn dở
+sẽ bị hỏi mã lại, nên cần anh quyết và báo lại cho họ.
 
 **🟡 Chưa nối dịch vụ theo dõi vào `/api/suc-khoe`.**
 Đường kiểm tra đã làm xong và chạy đúng, nhưng phần gọi thử mỗi vài phút rồi
-nhắn tin thì phải để dịch vụ ngoài lo (lý do kiến trúc — xem mục 6). Anh chưa
-tạo monitor. Hướng dẫn bốn dòng nằm trong `README.md`.
+nhắn tin thì phải để dịch vụ ngoài lo (lý do kiến trúc — xem nguyên tắc 27).
+Anh chưa tạo monitor. Hướng dẫn bốn dòng nằm trong `README.md`.
 
 **🟡 Sao lưu chưa chạy tự động.**
-Lệnh và nút đều có, nhưng lịch tự động thì anh chưa đặt. Lệnh PowerShell đặt
-lịch hằng tuần nằm trong `README.md`; giới hạn của nó là chỉ chạy khi máy bật.
+Lệnh và nút đều có, mốc trên trang quản lý giờ cập nhật đúng cho cả hai đường
+(sửa 28/08). Lịch tự động thì anh chưa đặt — lệnh PowerShell nằm trong
+`README.md`; giới hạn của nó là chỉ chạy khi máy bật.
 
-**🟡 `/api/selections?slug=...` trả dữ liệu cho bất kỳ ai, không cần mã.**
-Gọi từ ngoài không kèm gì cả vẫn nhận đủ danh sách ảnh khách đã chọn kèm ghi
-chú riêng của họ.
+**🟡 Tên thư mục trên Drive là chữ của thợ, không phải chữ của khách.**
+Khách đang nhìn thấy "File gốc nhà trai", "file gốc hc", "hamita14a 60x120 mica
+titan". Sau các thay đổi 28/08 thì tên này còn xuất hiện ở hai chỗ nữa: hàng
+thư mục ngang, và câu hỏi *"Anh chị chọn xong thư mục ... chưa ạ?"*.
 
-Hạ từ đỏ xuống vàng vì lý do bên dưới: giờ mọi album đều mang slug có đuôi
-ngẫu nhiên, nên phải **đoán trúng cả slug** mới gọi được — không còn chỉ cần
-biết tên khách như trước. Anh chọn chưa bịt. Muốn bịt thì thêm kiểm tra
-`daMoKhoa()` vào hàm `GET` trong `src/app/api/selections/route.ts` — hệ quả:
-khách chưa nhập mã sẽ không thấy các lựa chọn cũ.
+Đây là việc anh làm trên **Drive**, không cần code.
 
-**✅ Link đoán được — đã hết.** Trước ngày 25/08, slug lấy thẳng tên khách bỏ
-dấu nên ai biết tên cô dâu chú rể là xem được cả bộ ảnh (đã thử thật:
-`/g/le-han`, `/g/vu-phuong-kim-tien` đều mở ra). Từ 25/08 mọi slug mới đều có
-đuôi ngẫu nhiên 6 ký tự, và anh đã dọn hết album cũ trong ngày — **cả 5 album
-hiện có đều mang slug kiểu mới**, không còn cái nào đoán được.
+**🟡 "HC-" đứng trước tên cô dâu chú rể.**
+`HC- Vũ Phương & Kim Tiên` — khách không biết HC là gì (hình cổng, tiếng lóng
+trong nghề). Ô "sửa" tên album đã có sẵn.
 
-**🔴 Vercel gói miễn phí cấm dùng cho việc kinh doanh.**
-Nguyên văn: *"Hobby teams are restricted to non-commercial personal use
-only."* Studio thu tiền khách nên thuộc diện thương mại → có thể bị tạm dừng
-tài khoản, mọi link chết cùng lúc. Phương án: nâng Pro (20 USD/tháng) hoặc
-VPS riêng. **Anh chưa quyết — treo từ đầu dự án tới giờ.**
+**🟡 Ảnh nhớ theo mã file suốt một năm.**
+Anh chỉnh sửa lại một tấm rồi thay bản mới trên Drive mà giữ nguyên file thì
+khách vẫn xem bản cũ. Cách tránh: xoá tấm cũ, tải tấm mới lên thành file mới.
 
-**✅ Google đã Publish App — đã xác nhận tận mắt ngày 25/08/2026.**
-Google Auth Platform → Audience của project **`trihamita`** ghi *Publishing
-status: **In production***, User type *External*, dùng 1/100 suất người dùng.
-Nghĩa là phiếu đăng nhập **không còn bị huỷ sau 7 ngày** — mối lo lớn nhất
-trong bản bàn giao trước hoá ra đã được xử lý từ trước, chỉ chưa ai xác nhận.
+**🟡 Trang album không còn đường liên hệ nào.**
+Sau khi bỏ khối "Phân vân quá…" theo yêu cầu (28/08), trang album hiện **0 liên
+kết gọi điện** — trừ màn hình báo lỗi Drive. Khách nhắn ngược Zalo được, nhưng
+nếu có nhà nào bỏ dở im lặng thì đây là chỗ đầu tiên đáng xem lại.
 
-⚠️ Ngay dưới dòng trạng thái có nút **"Back to testing"** — bấm nhầm là quay
-lại đúng cái bẫy 7 ngày. Đừng đụng vào.
+**🟡 Album lớn: khách quay lại là mất dấu.**
+Đo 28/08 trên dữ liệu thật — tỉ lệ khách chọn ảnh **giảm thẳng theo số ảnh**:
 
-App chưa qua xác minh của Google (Verification Center) nhưng **không cần
-làm gì**: chỉ mình anh đăng nhập bằng chính tài khoản chủ Drive. Chưa xác
-minh chỉ khiến màn hình đăng nhập hiện cảnh báo "Google hasn't verified this
-app" (bấm *Advanced → Go to…* là qua), hoàn toàn không ảnh hưởng độ bền của
-phiếu.
+| Số ảnh | Lượt mở | Đã chọn | Tỉ lệ |
+|---:|---:|---:|---:|
+| 216 | 5 | 13 | 6,0% |
+| 270 | 31 | 11 | 4,1% |
+| 773 | 15 | 6 | 0,8% |
+| 1.350 | 5 | 4 | 0,3% |
+| **707** | **19** | **0** | **0,0%** |
 
-**🟡 Nút Zalo trên trang giới thiệu chưa hoạt động đúng.**
-Link hiện tại giải mã từ ảnh QR anh gửi, chỉ chạy khi mở trong app Zalo. Cần
-anh mở app Zalo, tìm nút "Chia sẻ" trên trang cá nhân hoặc Official Account
-của studio, tìm mục "Sao chép liên kết" (khác mã QR) rồi gửi link đó.
+Album 707 ảnh: khách **mở 19 lần** trong 15 tiếng mà chưa chốt được tấm nào.
 
-**🟡 Hai folder Drive từng ghi nhận vẫn để công khai** (`Vũ Phương & Kim
-Tiên`, `Thanh Tâm & Khánh Trinh`) — chưa đo lại lần này, anh tự kiểm tra
-giúp trong Drive.
+Và khách **không chọn một lèo** — nhà Vũ Phương chọn qua **3 buổi trong 46
+tiếng**. Nhưng web chưa có gì đánh dấu "đã xem tới đây" ở mức ảnh (mới có ở mức
+thư mục, là chấm "Mới"). Quay lại lần hai trong 707 tấm là mất dấu hoàn toàn.
 
-**🟡 Mật khẩu admin là 10 chữ số** (giống số điện thoại). Đã có chặn dò
-(sai 8 lần khoá 15 phút) nhưng vẫn nên đổi.
+Hàng thư mục ngang (28/08) đỡ được một phần. Phần còn lại — vạch "xem tiếp từ
+đây" — chưa làm.
 
-**🟡 Băng thông khi khách tải cả bộ ảnh.**
-Ảnh gốc đi qua máy chủ chứ không tải thẳng từ Drive, nên bộ 1,6 GB tính trọn
-vào hạn mức Vercel (gói miễn phí: 100 GB/tháng). Vài lượt tải cả bộ là hết
-tháng. Gói Pro cho 1 TB nên nếu nâng Pro thì hết lo luôn khoản này.
+**🟡 Studio không biết khi khách chọn thêm sau lúc đã báo xong.**
+Nhà Vũ Phương bấm "Báo cho Hamita" rồi **chọn thêm 3 tấm sau đó**. Nếu nhận báo
+xong là bắt tay làm ngay thì ba tấm đó rơi ra ngoài. Studio cũng chỉ biết khách
+báo xong khi **đang mở sẵn** trang quản lý.
 
-**⚪ Chưa làm:** watermark trên ảnh xem trước · tên miền riêng
-(hamitawedding.vn) · nút Zalo cho Hami Baby riêng.
 
-**✅ Đã xong trong ngày 25/08, không còn treo:**
-- `TOKEN_KEY` đã có trên Vercel, phiếu Google trong database đã ở dạng mã hoá.
-- Hai khoá VAPID đã có trên Vercel, thông báo đẩy chạy thật (3 máy đã đăng ký).
-- Thêm album ra màn hình chính (PWA) — đã làm xong.
-- Deploy giờ tự động qua GitHub, không cần lệnh CLI nữa (xem mục 9).
+## 9. Trạng thái hiện tại (đo thật 28/08/2026)
 
-**⚪ Nợ kỹ thuật:** cột `accessMode` trong database không còn dùng, giữ lại
-để tránh thao tác xoá không lùi được.
+**9 album**, 6.364 ảnh, **10,4 GB** trên Drive. Database 8,3 MB / 512 MB.
+41 lựa chọn của khách, 4 lời dặn, 3 thư mục đã báo chọn xong, 2 ảnh bìa thư mục
+do studio tự chọn, 4 máy đăng ký nhận thông báo đẩy.
 
-**Đã xong, không còn treo nữa (so với bản bàn giao trước):** xoá album không
-hỏi lại · trang lỗi/không tìm thấy · tải zip cả album · xuất Excel · nút báo
-đã chọn xong · ghi chú trên từng ảnh · tên gọi lẫn lộn "Hamita Wedding House"
-vs "Hamita Studio".
+**Google Drive: 1.947 / 2.048 GB — đã dùng 95,1%, còn 100,89 GB.**
 
----
+| Album | Mã chọn ảnh |
+|---|---|
+| `hc-vu-phuong-kim-tien-2e4kqn` | ⚠ `00000` |
+| `his-dong-trieu-thuy-tien-kiqvtm` | `HAMITA-GS76` |
+| `hc-her-his-ngoc-tho-ba-ben-93r9gb` | `HAMITA-ZT35` |
+| `baby-thuy-tien-qwsc4p` | `HAMITA-KG45` |
+| `sn-duyen-ngo-xn4hj7` | `123456` |
+| `hamita-garden-w399t5` | `HAMITA-QY29` |
+| `his-kim-chi-thiemta-phanpaphon-34vcka` | `123456` |
+| `concept-thanh-ngan-ds8aqu` | `123456` |
+| `ab-thanh-dong-yen-linh-5bc2yh` | `123456` |
 
-## 9. Trạng thái hiện tại (đo thật cuối ngày 26/08/2026)
+Số ảnh, dung lượng và khu trên trang giới thiệu của từng album xem trong trang
+quản lý — đọc ở đây thì lỗi thời ngay sau lần "Làm mới" kế tiếp.
 
-**6 album**, 3.434 ảnh, **5,79 GB** trên Drive. Database 8,0 MB / 512 MB.
-26 lựa chọn của khách, 1 thư mục đã báo chọn xong, **3 máy đăng ký nhận thông
-báo đẩy**.
+**Lượt xem bắt đầu đếm từ 26/08.** Album tạo trước mốc đó không kết luận được
+"khách chưa mở" — trang thống kê tự phân biệt.
 
-**Google Drive: 1.943 / 2.048 GB — đã dùng 94,9%, còn 104,66 GB.**
+Bản sao lưu gần nhất: xem `data/sao-luu/` (thư mục đã gitignore). Mốc trên
+trang quản lý cập nhật đúng cho cả nút bấm lẫn lệnh.
 
-| Album | Ảnh | Dung lượng | Mã chọn ảnh | Khu trên trang giới thiệu |
-|---|---:|---:|---|---|
-| `hc-vu-phuong-kim-tien-2e4kqn` | 765 | 0,99 GB | ⚠ `00000` | Album & hình cổng |
-| `his-dong-trieu-thuy-tien-kiqvtm` | 994 | 1,67 GB | `HAMITA-GS76` | Ảnh cưới |
-| `hc-her-his-ngoc-tho-ba-ben-93r9gb` | 1.350 | 2,58 GB | `HAMITA-ZT35` | Album & hình cổng |
-| `baby-thuy-tien-qwsc4p` | 93 | 0,31 GB | `HAMITA-KG45` | Hami Baby |
-| `sn-duyen-ngo-xn4hj7` | 216 | 0,23 GB | ⚠ `123456` | không đưa lên |
-| `hamita-garden-w399t5` | 16 | 0,01 GB | `HAMITA-QY29` | Phim trường |
+### Ba tên miền cùng phục vụ
 
-Một album đã đặt số ảnh trong gói (`sn-duyen-ngo`, 10 tấm — khách chọn 13 nên
-vượt 3 tấm, thành 36.000đ). Năm album còn lại để trống nên phần hướng dẫn phía
-khách không nói tới giá và đơn in không tính tiền.
+| Tên miền | Vai trò |
+|---|---|
+| **www.hamitastudio.com** | chính — gửi link mới từ đây |
+| hamitastudio.com | chuyển 308 sang www |
+| hamita-gallery.vercel.app | **vẫn sống** — link đã gửi khách không chết |
 
-**Lượt xem mới bắt đầu đếm từ 26/08** nên con số còn gần 0. Album tạo trước mốc
-đó không kết luận được "khách chưa mở" — trang thống kê tự phân biệt.
+Cố ý **chưa bật chuyển hướng** địa chỉ cũ: bật là mọi khách đang giữ link cũ
+phải nhập lại mã album, kể cả nhà đang chọn dở. Để nguyên cho tới khi những
+album hiện tại giao xong.
 
-Bản sao lưu gần nhất: xem `data/sao-luu/` (thư mục đã gitignore).
-
-Mã chọn ảnh của từng album xem trong trang quản lý, dòng "Mã chọn ảnh".
-
-### Deploy: `git push` là xong (từ chiều 26/08/2026)
+### Deploy: `git push` là xong
 
 ```
 git push
@@ -629,6 +731,7 @@ kiểu cũ hay kiểu mới, thay vì đoán theo thời gian.
 | `npm run db:backup` | **Sao lưu database** ra `data/sao-luu/` |
 | `npm run db:restore` | Liệt kê các bản sao lưu · xem trước · phục hồi |
 | `npm run db:push` | Cập nhật cấu trúc database |
+| `npm run kiem:domain -- https://...` | Kiểm một tên miền đã sẵn sàng chưa (16 phép) |
 | `npx prisma generate` | Sinh lại Prisma Client sau khi đổi schema |
 | `npx tsx scripts/build-logo.mts assets/logo-goc.jpg` | Dựng lại logo |
 

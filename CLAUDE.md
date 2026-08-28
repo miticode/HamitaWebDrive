@@ -6,7 +6,10 @@ Web cho khách xem ảnh cưới và tự chọn ảnh. **Ảnh nằm nguyên tr
 của studio**, web chỉ là lớp hiển thị — không upload lại, không tốn chỗ chứa.
 Thay thế dịch vụ Gump studio đang thuê.
 
-Đang chạy tại https://hamita-gallery.vercel.app · trang quản lý ở `/admin`.
+Đang chạy tại **https://www.hamitastudio.com** · trang quản lý ở `/admin`.
+Gói Vercel **Pro** từ 27/08/2026. Địa chỉ cũ `hamita-gallery.vercel.app` **vẫn
+phục vụ** — link đã gửi khách không chết, và cố ý chưa bật chuyển hướng để nhà
+nào đang chọn dở không bị hỏi lại mã.
 Tài khoản dùng chung cho Google, Neon và Vercel: `hamita.studio@gmail.com`.
 
 Chi tiết đầy đủ về trạng thái, việc còn treo và bối cảnh: đọc **`BAN-GIAO.md`**.
@@ -438,6 +441,27 @@ Ba chi tiết trong `OGhiChu` đều có lý do, đừng gỡ:
 
 Hàng ghi chú dùng `max-w-sm` chứ không phải `max-w-xs`: phải chừa chỗ cho nút.
 Đo trên bản thật ở màn hình 375px — ô nhập 222×44, nút 49×44, cùng hàng.
+
+**32. Thứ gì gắn với một THƯ MỤC CON thì phải là bảng riêng, tra theo `albumId`.**
+Thư mục con **không có bản ghi nào** trong database — danh sách thư mục đọc
+thẳng từ Drive mỗi lần khách mở trang (nguyên tắc 4). Muốn gắn thêm gì cho một
+thư mục thì phải có bảng trỏ tới nó bằng mã thư mục. `MucXong` làm vậy trước,
+`BiaMuc` (ảnh bìa riêng từng thư mục, 28/08/2026) làm theo.
+
+**Tra theo MÃ thư mục, không phải tên.** Studio đổi tên thư mục trên Drive là
+mọi liên kết đứt — mà đổi tên thì họ đổi luôn chứ không báo ai. Vì cột
+`subfolders` chỉ lưu tên chứ không lưu mã, đường `/api/admin/photos` phải trả
+kèm danh sách thư mục có mã cho ô chọn ảnh bìa dùng.
+
+**Không có dòng nào = rơi về mặc định**, đừng bắt studio phải đặt cho đủ. Thư
+mục chưa đặt bìa vẫn lấy tấm đầu tiên như trước, nên mọi thư mục đều có bìa kể
+cả cái chưa ai đụng tới.
+
+*Bài học kèm theo, ghi vì đã vấp:* em từng chặn ô chọn bìa thư mục ở điều kiện
+"album có từ hai thư mục trở lên", với lý do tự suy ra là *"một thư mục thì bìa
+album và bìa thư mục là một"*. Sai — khách nhìn thấy **cả hai** trên trang bìa:
+ảnh lớn ở đầu trang, và thẻ thư mục ngay bên dưới. **Đừng chặn một tính năng
+bằng suy luận về cách người dùng nhìn màn hình; mở trang ra mà xem.**
 
 ---
 
