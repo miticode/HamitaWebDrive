@@ -4,6 +4,7 @@ import { prismaStore } from "./prisma";
 import type { Store } from "./shared";
 
 export type {
+  BiaMuc,
   CreateGalleryInput,
   GalleryMeta,
   ListCount,
@@ -75,3 +76,10 @@ export const setMucXong: Store["setMucXong"] = (id, albumId, ten, xong) =>
 export const getMucXong: Store["getMucXong"] = (id) => store.getMucXong(id);
 
 export const listMucXong: Store["listMucXong"] = () => store.listMucXong();
+
+export const setBiaMuc: Store["setBiaMuc"] = (id, albumId, fileId) =>
+  store.setBiaMuc(id, albumId, fileId);
+
+export const getBiaMuc: Store["getBiaMuc"] = (id) => store.getBiaMuc(id);
+
+export const listBiaMuc: Store["listBiaMuc"] = () => store.listBiaMuc();

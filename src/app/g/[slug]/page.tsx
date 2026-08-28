@@ -6,7 +6,7 @@ import { headers } from "next/headers";
 import { ROOT_ALBUM, STUDIO_NAME, laBot } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
 import type { GalleryTree } from "@/lib/drive";
-import { getGalleryBySlug, ghiLuotXem } from "@/lib/store";
+import { getBiaMuc, getGalleryBySlug, ghiLuotXem } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { DriveLoi } from "@/components/DriveLoi";
 import { LoiChuc } from "@/components/LoiChuc";
@@ -156,6 +156,22 @@ export default async function GalleryPage({ params }: Props) {
   */
   const cover = chonAnhBia(gallery.coverFileId, tree);
 
+  /*
+    Anh bia rieng cho tung thu muc, do studio chon.
+
+    Doc mot lan roi tra cuu bang Map, khong goi database trong vong lap: album
+    8 thu muc ma moi thu muc mot lan goi thi trang bia cham them tam nhip.
+
+    Khong co dong nao cho mot thu muc thi rot ve tam DAU TIEN nhu truoc — dung
+    cach anh bia album van lam. Nho vay bat ky thu muc nao cung co bia, ke ca
+    thu muc studio chua bao gio dung toi.
+  */
+  const biaTheoMuc = new Map(
+    (await getBiaMuc(gallery.id)).map((b) => [b.albumId, b.fileId])
+  );
+  const biaCuaMuc = (album: { id: string; photos: { id: string }[] }) =>
+    biaTheoMuc.get(album.id) ?? album.photos[0].id;
+
   return (
     <main>
       {/*
@@ -286,7 +302,7 @@ export default async function GalleryPage({ params }: Props) {
                   <div className="skeleton aspect-[3/4] overflow-hidden rounded-sm">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={`/api/img/${album.photos[0].id}?w=960`}
+                      src={`/api/img/${biaCuaMuc(album)}?w=960`}
                       alt={album.name}
                       loading="lazy"
                       className="size-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.04]"

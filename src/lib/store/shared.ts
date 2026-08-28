@@ -81,6 +81,14 @@ export type Selection = {
 };
 
 /** Mot thu muc con khach da bao chon xong. */
+/** Anh bia studio tu chon cho mot thu muc con. */
+export type BiaMuc = {
+  galleryId: string;
+  /** Chuoi rong = anh nam ngay thu muc goc. */
+  albumId: string;
+  fileId: string;
+};
+
 export type MucXong = {
   galleryId: string;
   /** Chuoi rong = anh nam ngay thu muc goc. */
@@ -219,6 +227,18 @@ export type Store = {
 
   /** Cac thu muc da bao xong cua MOI album — trang quan ly doc mot lan. */
   listMucXong(): Promise<MucXong[]>;
+
+  /**
+   * Dat anh bia rieng cho MOT thu muc con. fileId = null nghia la bo chon,
+   * quay ve dung tam dau tien nhu mac dinh.
+   */
+  setBiaMuc(galleryId: string, albumId: string, fileId: string | null): Promise<void>;
+
+  /** Anh bia rieng cua tung thu muc trong mot album. */
+  getBiaMuc(galleryId: string): Promise<BiaMuc[]>;
+
+  /** Bia thu muc cua MOI album — trang quan ly doc mot lan, giong listMucXong. */
+  listBiaMuc(): Promise<BiaMuc[]>;
   listCounts(): Promise<ListCount[]>;
   /**
    * Chon hoac bo chon mot anh.

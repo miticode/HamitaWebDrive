@@ -20,7 +20,9 @@ import type { KhuGioiThieu } from "@/lib/store";
 import {
   createGallery,
   deleteGallery,
+  getGalleryById,
   setAccess,
+  setBiaMuc,
   setKhuGioiThieu,
   setClientName,
   setGoiAnh,
@@ -320,6 +322,30 @@ export async function setExpiryAction(
 
   await setExpiry(galleryId, expiresAt);
   revalidatePath("/admin");
+  return {};
+}
+
+/**
+ * Dat anh bia rieng cho mot thu muc con. fileId rong = bo chon, quay ve dung
+ * tam dau tien nhu mac dinh.
+ */
+export async function setBiaMucAction(
+  galleryId: string,
+  albumId: string,
+  fileId: string | null
+): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+
+  await setBiaMuc(galleryId, albumId, fileId?.trim() || null);
+
+  /*
+    Anh bia thu muc hien o TRANG BIA CUA KHACH, khong phai trang quan ly — nen
+    phai lam moi ca hai. Thieu duong cua khach thi studio doi bia xong, mo link
+    khach ra van thay tam cu cho toi khi Next tu het han bo nho dem.
+  */
+  revalidatePath("/admin");
+  const g = await getGalleryById(galleryId);
+  if (g) revalidatePath(`/g/${g.slug}`);
   return {};
 }
 

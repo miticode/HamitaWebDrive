@@ -29,10 +29,12 @@ type Db = {
   selections: Selection[];
   /** Them sau nen co the thieu o tep cu — luon doc bang `?? []`. */
   mucXong?: MucXong[];
+  /** Cung ly do voi mucXong: them sau, tep cu khong co truong nay. */
+  biaMuc?: { galleryId: string; albumId: string; fileId: string }[];
 };
 
 const FILE = join(process.cwd(), "data", "db.json");
-const EMPTY: Db = { galleries: [], lists: [], selections: [], mucXong: [] };
+const EMPTY: Db = { galleries: [], lists: [], selections: [], mucXong: [], biaMuc: [] };
 
 async function readFromDisk(): Promise<Db> {
   try {
@@ -347,6 +349,32 @@ export const jsonStore: Store = {
     return withLock(async () => {
       const db = await readFromDisk();
       return db.mucXong ?? [];
+    });
+  },
+
+  setBiaMuc(galleryId: string, albumId: string, fileId: string | null) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const ds = db.biaMuc ?? [];
+      const conLai = ds.filter(
+        (b) => !(b.galleryId === galleryId && b.albumId === albumId)
+      );
+      db.biaMuc = fileId ? [...conLai, { galleryId, albumId, fileId }] : conLai;
+      await writeToDisk(db);
+    });
+  },
+
+  getBiaMuc(galleryId: string) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      return (db.biaMuc ?? []).filter((b) => b.galleryId === galleryId);
+    });
+  },
+
+  listBiaMuc() {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      return db.biaMuc ?? [];
     });
   },
 

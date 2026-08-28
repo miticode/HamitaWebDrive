@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Gallery, ListCount, MucXong } from "@/lib/store";
+import type { BiaMuc, Gallery, ListCount, MucXong } from "@/lib/store";
 import { refreshGalleryAction } from "./actions";
 import { AccessControl } from "./AccessControl";
 import { CopyLink } from "./CopyLink";
@@ -60,11 +60,14 @@ export function GalleryCard({
   gallery,
   counts,
   mucXong,
+  biaMuc,
 }: {
   gallery: Gallery;
   counts: ListCount[];
   /** Các thư mục khách đã báo chọn xong của album này. */
   mucXong: MucXong[];
+  /** Ảnh bìa riêng từng thư mục của album này. */
+  biaMuc: BiaMuc[];
 }) {
   const title = gallery.clientName ?? gallery.title;
   const chuaDongBo = gallery.syncedAt === null;
@@ -262,6 +265,7 @@ export function GalleryCard({
           title={title}
           coverFileId={gallery.coverFileId}
           coverPinned={gallery.coverPinned}
+          biaMuc={biaMuc}
           onClose={() => setMoChonBia(false)}
         />
       )}

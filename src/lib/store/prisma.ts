@@ -4,6 +4,7 @@ import {
   duoiSlug,
   docKhu,
   slugify,
+  type BiaMuc,
   type CreateGalleryInput,
   type Gallery,
   type MucXong,
@@ -89,6 +90,17 @@ function toMucXong(row: {
   xongLuc: Date;
 }): MucXong {
   return { ...row, xongLuc: row.xongLuc.toISOString() };
+}
+
+/**
+ * Bo bot cot id cua database.
+ *
+ * Khong dung `...row` nhu toMucXong: hang tra ve tu Prisma con mang ca `id`
+ * rieng cua dong, ma phia goi khong can — de lot ra thi mot ngay nao do co
+ * nguoi tuong do la ma anh roi truyen nham vao /api/img.
+ */
+function toBiaMuc(row: { galleryId: string; albumId: string; fileId: string }): BiaMuc {
+  return { galleryId: row.galleryId, albumId: row.albumId, fileId: row.fileId };
 }
 
 function toSelection(row: SelectionRow): Selection {
@@ -332,6 +344,33 @@ export const prismaStore: Store = {
       orderBy: { xongLuc: "desc" },
     });
     return rows.map(toMucXong);
+  },
+
+  async setBiaMuc(galleryId: string, albumId: string, fileId: string | null) {
+    const prisma = getPrisma();
+
+    if (!fileId) {
+      // deleteMany chu khong delete: bo chon khi chua tung chon thi khong co
+      // dong nao, va do khong phai loi — cung ly do voi setMucXong.
+      await prisma.biaMuc.deleteMany({ where: { galleryId, albumId } });
+      return;
+    }
+
+    await prisma.biaMuc.upsert({
+      where: { galleryId_albumId: { galleryId, albumId } },
+      create: { galleryId, albumId, fileId },
+      update: { fileId },
+    });
+  },
+
+  async getBiaMuc(galleryId: string) {
+    const rows = await getPrisma().biaMuc.findMany({ where: { galleryId } });
+    return rows.map(toBiaMuc);
+  },
+
+  async listBiaMuc() {
+    const rows = await getPrisma().biaMuc.findMany();
+    return rows.map(toBiaMuc);
   },
 
   async toggleSelection(input: ToggleSelectionInput) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useDeferredValue, useMemo, useState } from "react";
-import type { Gallery, ListCount, MucXong } from "@/lib/store";
+import type { BiaMuc, Gallery, ListCount, MucXong } from "@/lib/store";
 import { GalleryCard } from "./GalleryCard";
 
 /** Bo ma nhan hay dung o dau ten album — bam mot cai la loc ngay. */
@@ -47,11 +47,14 @@ export function AlbumList({
   galleries,
   counts,
   mucXong,
+  biaMuc,
 }: {
   galleries: Gallery[];
   counts: ListCount[];
   /** Các thư mục khách đã báo chọn xong, của mọi album. */
   mucXong: MucXong[];
+  /** Ảnh bìa riêng của từng thư mục, của mọi album. */
+  biaMuc: BiaMuc[];
 }) {
   const [tuKhoa, setTuKhoa] = useState("");
   const [nhan, setNhan] = useState<string | null>(null);
@@ -194,6 +197,7 @@ export function AlbumList({
                 gallery={g}
                 counts={countsOf(g.id)}
                 mucXong={mucXong.filter((m) => m.galleryId === g.id)}
+                biaMuc={biaMuc.filter((b) => b.galleryId === g.id)}
               />
             ))}
           </div>

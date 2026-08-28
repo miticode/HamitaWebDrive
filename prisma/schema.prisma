@@ -121,6 +121,7 @@ model Gallery {
   lists SelectionList[]
   pushSubs PushSub[]
   mucXong  MucXong[]
+  biaMuc   BiaMuc[]
 
   @@index([driveFolderId])
 }
@@ -174,6 +175,28 @@ model PushSub {
 
 /// Moi gallery co nhieu danh sach chon (mac dinh: "Anh in" va "Anh chon").
 /// Tach thanh bang rieng de sau nay them loai moi ma khong phai sua schema.
+/// Anh bia rieng cho MOT thu muc con, do studio tu chon.
+///
+/// Vi sao la bang rieng chu khong phai mot cot trong Gallery: thu muc con
+/// KHONG co ban ghi nao trong database ca — danh sach thu muc doc thang tu
+/// Drive moi lan khach mo trang (nguyen tac 4). Muon gan them thu gi cho mot
+/// thu muc thi phai co bang tro toi no bang albumId, dung cach MucXong da lam.
+///
+/// Khong co dong nao cho mot thu muc = dung tam dau tien lam bia, nhu truoc.
+model BiaMuc {
+  id        String @id @default(cuid())
+  galleryId String
+  /// Ma thu muc con tren Drive. Chuoi rong nghia la anh nam ngay thu muc goc.
+  albumId   String
+  /// Ma tam anh duoc chon lam bia.
+  fileId    String
+
+  gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  @@unique([galleryId, albumId])
+  @@index([galleryId])
+}
+
 model SelectionList {
   id        String @id @default(cuid())
   galleryId String
