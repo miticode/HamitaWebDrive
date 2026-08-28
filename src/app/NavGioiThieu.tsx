@@ -66,7 +66,15 @@ export function NavGioiThieu({ coAnhNen }: { coAnhNen: boolean }) {
 
         <a
           href={`tel:${STUDIO.dienThoaiSo}`}
-          className="text-xs font-medium tracking-wide sm:text-sm"
+          /*
+            py-3 -my-3: vung cham cao 40px thay vi 16px, ma thanh dieu huong
+            khong day them mot ly nao — le am keo lai dung bang phan vua them.
+
+            Day la hanh dong CHINH cua ca trang gioi thieu: khach xem xong thi
+            viec tiep theo la goi. De 16px thi tren dien thoai phai nham lam moi
+            trung.
+          */
+          className="-my-3.5 py-3.5 text-xs font-medium tracking-wide sm:text-sm"
           style={{ color: noiSang ? "#fff" : "var(--fg)" }}
         >
           {STUDIO.dienThoai}

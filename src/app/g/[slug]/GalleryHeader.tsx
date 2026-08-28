@@ -133,7 +133,13 @@ export function GalleryHeader({
           {backHref && (
             <Link
               href={backHref}
-              className="inline-flex items-center gap-1 text-xs text-fg-muted transition hover:text-accent"
+              /*
+                py-2 -mt-2 chu khong phai chi py-2: dem doc lam vung cham cao
+                len 32px (16px chu + 8px moi ben) ma KHONG day tieu de xuong —
+                le am keo lai dung bang phan vua them. Do that: truoc khi sua
+                vung cham chi cao 16px, mong hon mot nua muc toi thieu.
+              */
+              className="-mt-2 inline-flex items-center gap-1 py-2 text-xs text-fg-muted transition hover:text-accent"
             >
               <span aria-hidden>←</span>
               <span className="max-w-[40vw] truncate sm:max-w-none">{backLabel}</span>
@@ -161,7 +167,7 @@ export function GalleryHeader({
                       ? "Bấm để xem lại tất cả ảnh"
                       : `Chỉ xem ${n} ảnh trong “${list.name}”`
                 }
-                className={`flex min-h-9 items-center gap-1.5 rounded-full border px-2.5 text-sm transition disabled:opacity-40 ${
+                className={`flex min-h-11 items-center gap-1.5 rounded-full border px-2.5 text-sm transition disabled:opacity-40 ${
                   dangLoc
                     ? "border-transparent bg-fg text-bg"
                     : "border-line-strong bg-bg-raised hover:border-accent"

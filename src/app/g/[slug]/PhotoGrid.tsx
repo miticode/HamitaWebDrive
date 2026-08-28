@@ -530,7 +530,7 @@ function Lightbox({
         <button
           onClick={onClose}
           aria-label="Đóng"
-          className="grid size-10 shrink-0 place-items-center rounded-full text-xl text-white/60 transition hover:bg-white/10 hover:text-white"
+          className="grid size-11 shrink-0 place-items-center rounded-full text-xl text-white/60 transition hover:bg-white/10 hover:text-white"
         >
           ✕
         </button>

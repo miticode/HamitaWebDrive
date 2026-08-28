@@ -251,13 +251,28 @@ export default async function GalleryPage({ params }: Props) {
         {tree.albums.length === 0 ? (
           <p className="text-center text-sm text-fg-muted">Thư mục này chưa có ảnh nào.</p>
         ) : (
+          /*
+            Tu BA thu muc tro len thi dien thoai xep HAI COT, khong phai mot.
+
+            Do that tren album 8 thu muc, man hinh 375px: moi khoi mot cot cao
+            573px (rieng anh bia da 447px), ca trang 6.453px — gan TAM man hinh
+            chi de xem co nhung thu muc nao. Khach khong the nhin tong quan, phai
+            cuon tam lan va tu nho.
+
+            Hai cot ha moi khoi xuong con khoang mot nua chieu cao, tuc ca trang
+            gon lai gan mot nua. Anh bia nho di nhung van du nhan ra — no chi
+            can tra loi "thu muc nay chup gi", khong phai de ngam.
+
+            MOT hoac HAI thu muc thi giu mot cot: luc do khong co gi de so sanh,
+            anh bia lon la thu dang tien.
+          */
           <div
-            className={`grid gap-x-7 gap-y-12 ${
+            className={`grid gap-x-4 sm:gap-x-7 ${
               tree.albums.length === 1
-                ? "mx-auto max-w-sm grid-cols-1"
+                ? "mx-auto max-w-sm grid-cols-1 gap-y-12"
                 : tree.albums.length === 2
-                  ? "mx-auto max-w-3xl grid-cols-1 sm:grid-cols-2"
-                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                  ? "mx-auto max-w-3xl grid-cols-1 gap-y-12 sm:grid-cols-2"
+                  : "grid-cols-2 gap-y-8 sm:gap-y-12 lg:grid-cols-3"
             }`}
           >
             {tree.albums.map((album) => (
@@ -277,7 +292,16 @@ export default async function GalleryPage({ params }: Props) {
                       className="size-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.04]"
                     />
                   </div>
-                  <h2 className="mt-5 font-display text-2xl font-normal transition group-hover:text-accent sm:text-3xl">
+                  {/*
+                    Co chu theo so thu muc, cung ly do voi so cot: ten dai nhu
+                    "File gốc nhà gái" trong o hai cot rong 160px ma de 24px thi
+                    tran ba dong. Mot hai thu muc van giu chu to.
+                  */}
+                  <h2
+                    className={`mt-3 font-display font-normal transition group-hover:text-accent sm:mt-5 sm:text-3xl ${
+                      tree.albums.length >= 3 ? "text-lg" : "text-2xl"
+                    }`}
+                  >
                     {album.name}
                     {/* Chấm "Mới" cho thư mục khách chưa từng thấy — xem DauMoi.tsx. */}
                     <DauMoi slug={slug} albumId={album.id || ROOT_ALBUM} />

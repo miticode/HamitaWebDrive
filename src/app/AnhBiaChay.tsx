@@ -136,7 +136,13 @@ export function AnhBiaChay({ anh }: { anh: readonly { ten: string; mo: string }[
           </button>
 
           {/* Chấm chỉ vị trí, cũng là nút nhảy thẳng tới một tấm. */}
-          <div className="absolute inset-x-0 bottom-5 flex justify-center gap-2.5">
+          {/*
+            gap-0 chu khong phai gap-2.5: khoang cach giua cac cham gio do
+            chinh phan dem cua nut tao ra (px-2.5 moi ben), nen vung cham cua
+            hai cham lien nhau ke sat ma khong chong len nhau. De ca gap lan
+            dem thi cham thua ra qua xa.
+          */}
+          <div className="absolute inset-x-0 bottom-5 flex justify-center gap-0">
             {anh.map((a, i) => (
               <button
                 key={a.ten}
@@ -144,8 +150,16 @@ export function AnhBiaChay({ anh }: { anh: readonly { ten: string; mo: string }[
                 onClick={() => sang(i)}
                 aria-label={`Xem tấm ${i + 1}`}
                 aria-current={i === hienTai}
-                /* py-3 -my-3: nới vùng bấm cho ngón tay, chấm nhìn vẫn nhỏ. */
-                className="-my-3 py-3"
+                /*
+                  py-3 -my-3 va px-2.5 -mx-2.5: nới vùng bấm cho ngón tay theo
+                  CA HAI chiều, chấm nhìn vẫn nhỏ.
+
+                  Bản đầu chỉ nới chiều dọc, nên đo trên màn hình 375px ra vùng
+                  chạm 6×30px — rộng bằng đúng cái chấm. Trên điện thoại chấm
+                  chỉ là thứ chỉ vị trí (chuyển ảnh đã có vuốt), nhưng ai muốn
+                  bấm thì phải bấm được.
+                */
+                className="-mx-2.5 -my-3 px-2.5 py-3"
               >
                 <span
                   className={`block h-1.5 rounded-full transition-all duration-300 ${

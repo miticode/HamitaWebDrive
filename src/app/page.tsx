@@ -536,12 +536,12 @@ export default async function Home() {
               <div>
                 <dt className="eyebrow">Điện thoại</dt>
                 <dd className="mt-2 leading-relaxed">
-                  <a href={`tel:${STUDIO.dienThoaiSo}`} className="hover:text-accent">
+                  <a href={`tel:${STUDIO.dienThoaiSo}`} className="-my-2.5 inline-block py-2.5 hover:text-accent">
                     {STUDIO.dienThoai}
                   </a>
                   <span className="text-fg-faint"> · cưới hỏi</span>
                   <br />
-                  <a href={`tel:${HAMI_BABY.dienThoaiSo}`} className="hover:text-accent">
+                  <a href={`tel:${HAMI_BABY.dienThoaiSo}`} className="-my-2.5 inline-block py-2.5 hover:text-accent">
                     {HAMI_BABY.dienThoai}
                   </a>
                   <span className="text-fg-faint"> · chụp bé và gia đình</span>
@@ -550,7 +550,7 @@ export default async function Home() {
               <div>
                 <dt className="eyebrow">Email</dt>
                 <dd className="mt-2 leading-relaxed">
-                  <a href={`mailto:${STUDIO.email}`} className="hover:text-accent">
+                  <a href={`mailto:${STUDIO.email}`} className="-my-2.5 inline-block py-2.5 hover:text-accent">
                     {STUDIO.email}
                   </a>
                 </dd>

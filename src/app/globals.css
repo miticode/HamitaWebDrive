@@ -150,8 +150,15 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
-    /* Tối thiểu 38px cho ngón tay bấm trên điện thoại. */
-    min-height: 2.375rem;
+    /*
+      44px — mức tối thiểu của cả Apple lẫn Google cho một vùng chạm.
+
+      Trước đây để 2.375rem (38px) với chú thích "tối thiểu 38px cho ngón tay",
+      nhưng 38 chưa đủ: đầu ngón tay người lớn rộng 45–57px. Đo ngày 28/08/2026
+      trên màn hình 375px, tám nút "Tải tất cả" ở trang bìa album đều dính mức
+      này. Nâng ở đây là nâng cho mọi nút .btn của cả web.
+    */
+    min-height: 2.75rem;
     border: 1px solid var(--line-strong);
     border-radius: 3px;
     padding: 0.35rem 0.8rem;
