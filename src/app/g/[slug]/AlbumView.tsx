@@ -9,6 +9,7 @@ import { PhotoGrid } from "./PhotoGrid";
 import { HuongDanChon } from "./HuongDanChon";
 import { TuLamMoi } from "./TuLamMoi";
 import { CodeDialog } from "./CodeDialog";
+import { ChonThuMuc } from "./ChonThuMuc";
 import { XacNhanXong } from "./XacNhanXong";
 import { SelectionProvider } from "./Selection";
 
@@ -26,6 +27,7 @@ export function AlbumView({
   unlocked,
   mucXongLuc,
   daTungChon,
+  dsMuc,
 }: {
   slug: string;
   gallery: Gallery;
@@ -37,6 +39,8 @@ export function AlbumView({
   mucXongLuc: string | null;
   /** Khách đã chọn tấm nào trong album này chưa — quyết định hướng dẫn mở hay thu. */
   daTungChon: boolean;
+  /** Mọi thư mục của album — để nhảy thẳng giữa chúng. Rỗng khi ở trang bìa. */
+  dsMuc: { id: string; ten: string; soAnh: number }[];
 }) {
   const photos = album.photos.map((p) => ({
     id: p.id,
@@ -95,6 +99,14 @@ export function AlbumView({
             </div>
           )}
         </div>
+
+        {/*
+          Hàng thư mục đặt GIỮA tiêu đề và hướng dẫn, không lẫn vào hướng dẫn:
+          đây là chuyện "tôi đang ở đâu, đi đâu tiếp", còn ba bước dưới là
+          chuyện "chọn ảnh thế nào". Gộp hai thứ vào một khối thì khách phải
+          đọc qua hướng dẫn mới thấy đường sang thư mục khác.
+        */}
+        <ChonThuMuc slug={slug} dsMuc={dsMuc} mucDangMo={album.id} />
 
         {/*
           Ba bước hướng dẫn đặt ngay đây — trong thư mục con, sát trên lưới

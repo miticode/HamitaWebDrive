@@ -74,6 +74,11 @@ export default async function AlbumPage({ params }: Props) {
       unlocked={unlocked}
       mucXongLuc={mucXongLuc}
       daTungChon={daTungChon}
+      dsMuc={tree.albums.map((a) => ({
+        id: a.id,
+        ten: a.name,
+        soAnh: a.photos.length,
+      }))}
     />
   );
 }
