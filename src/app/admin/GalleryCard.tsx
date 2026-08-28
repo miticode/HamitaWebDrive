@@ -146,7 +146,22 @@ export function GalleryCard({
                   className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700"
                 >
                   <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />
-                  <span className="max-w-[10rem] truncate">{m.tenMuc}</span>
+                  {/*
+                    Nhan PHAI mang chu "Da chon xong", khong chi ten thu muc.
+
+                    Truoc day nhan chi ghi "file gốc" — y nghia nam trong
+                    tooltip, phai RE CHUOT moi thay. Tren dien thoai khong re
+                    duoc, ma day lai la thu studio can liec mot cai la biet:
+                    nha nao xong roi, san sang giao in.
+
+                    Album mot thu muc thi bo ten di: da biet la album nao roi,
+                    them ten thu muc chi lam nhan dai ra ma khong noi them gi.
+                    Album nhieu thu muc thi ten la phan quan trong nhat — no
+                    tra loi "xong CAI NAO trong tam cai".
+                  */}
+                  <span className="max-w-[12rem] truncate">
+                    {gallery.albumCount > 1 ? `Xong · ${m.tenMuc}` : "Đã chọn xong"}
+                  </span>
                 </span>
               ))}
             </div>
@@ -204,7 +219,11 @@ export function GalleryCard({
         </p>
 
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3">
-          <CopyLink path={`/g/${gallery.slug}`} />
+          <CopyLink
+            path={`/g/${gallery.slug}`}
+            code={gallery.accessCode}
+            expiresAt={gallery.expiresAt}
+          />
 
           <Link href={`/admin/${gallery.slug}`} className="btn">
             Ảnh khách chọn
