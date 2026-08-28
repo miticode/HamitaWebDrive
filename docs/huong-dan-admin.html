@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Hướng dẫn dùng trang quản lý — Hamita Studio</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", "Times New Roman", sans-serif;
+    color: #1f1c1a; font-size: 10.5pt; line-height: 1.65; margin: 0;
+  }
+  h1, h2, h3 { line-height: 1.25; margin: 0; }
+  h2 {
+    font-size: 17pt; font-weight: 600; margin: 0 0 4mm;
+    padding-bottom: 2mm; border-bottom: 2px solid #9c7c4f;
+  }
+  h3 { font-size: 12pt; font-weight: 600; margin: 6mm 0 2mm; color: #6b4f24; }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1.5mm; }
+  code {
+    font-family: Consolas, monospace; font-size: 9.5pt;
+    background: #f2ede4; padding: 0.5mm 1.4mm; border-radius: 2px;
+  }
+  .trang { page-break-after: always; }
+  .trang:last-child { page-break-after: auto; }
+
+  .bia { text-align: center; padding-top: 55mm; }
+  .bia .ten { font-size: 13pt; letter-spacing: 6px; color: #9c7c4f; text-transform: uppercase; }
+  .bia h1 { font-size: 30pt; font-weight: 300; margin: 8mm 0 5mm; }
+  .bia .phu { font-size: 11.5pt; color: #6f6862; max-width: 120mm; margin: 0 auto; }
+  .bia .chan { margin-top: 45mm; font-size: 9.5pt; color: #a29a92; }
+
+  .luuy, .canhbao, .meo {
+    border-left: 3px solid #9c7c4f; background: #faf6ee;
+    padding: 3mm 4mm; margin: 3mm 0; font-size: 10pt;
+  }
+  .canhbao { border-left-color: #b91c1c; background: #fdf3f3; }
+  .meo { border-left-color: #15803d; background: #f2f9f4; }
+  .luuy b, .canhbao b, .meo b { display: block; margin-bottom: 1mm; }
+
+  .buoc { display: flex; gap: 4mm; margin-bottom: 4mm; page-break-inside: avoid; }
+  .buoc .so {
+    flex: 0 0 8mm; height: 8mm; border-radius: 50%; background: #9c7c4f;
+    color: #fff; font-weight: 600; font-size: 11pt;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .buoc .noi { flex: 1; }
+  .buoc .noi b { display: block; margin-bottom: 1mm; }
+
+  .man {
+    border: 1px solid #d9d3c9; border-radius: 4px; overflow: hidden;
+    margin: 3mm 0 4mm; page-break-inside: avoid; background: #fff;
+  }
+  .man .thanh {
+    background: #f2ede4; border-bottom: 1px solid #d9d3c9;
+    padding: 2mm 3mm; font-size: 8.5pt; color: #6f6862; letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .man .than { padding: 3.5mm; }
+  .nhan { font-size: 8pt; letter-spacing: 1.5px; text-transform: uppercase; color: #a29a92; }
+  .o {
+    border: 1px solid #d9d3c9; border-radius: 3px; padding: 2mm 2.5mm;
+    font-size: 9.5pt; color: #a29a92; margin: 1mm 0 3mm; background: #fff;
+  }
+  .nut {
+    display: inline-block; border: 1px solid #d9d3c9; border-radius: 3px;
+    padding: 1.5mm 3mm; font-size: 9pt; margin: 0.8mm 1.5mm 0.8mm 0; background: #fff;
+  }
+  .nut.chinh { background: #1f1c1a; color: #fff; border-color: #1f1c1a; }
+  .nut.xanh { background: #eefaf1; border-color: #86c79b; color: #15803d; }
+  .the-album { border: 1px solid #d9d3c9; border-radius: 4px; overflow: hidden; background: #fff; }
+  .the-album .anh {
+    height: 26mm; background: repeating-linear-gradient(45deg,#efeae1,#efeae1 3mm,#e6e0d4 3mm,#e6e0d4 6mm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8.5pt; color: #a29a92;
+  }
+  .the-album .noi { padding: 3mm; }
+  .dong-ts {
+    display: flex; justify-content: space-between; gap: 2mm;
+    border-top: 1px solid #ebe7e0; padding: 1.6mm 0; font-size: 9.5pt;
+  }
+  .dong-ts .trai { color: #6f6862; }
+  .dong-ts .phai { text-align: right; }
+
+  table { width: 100%; border-collapse: collapse; margin: 3mm 0; font-size: 9.5pt; }
+  th, td { border: 1px solid #e0dad0; padding: 2mm 2.5mm; text-align: left; vertical-align: top; }
+  th { background: #f6f3ee; font-weight: 600; }
+
+  .mucluc li { margin-bottom: 2.5mm; }
+  .mucluc b { color: #6b4f24; }
+</style>
+</head>
+<body>
+
+<section class="trang bia">
+  <div class="ten">Hamita Studio</div>
+  <h1>Hướng dẫn dùng<br>trang quản lý</h1>
+  <p class="phu">
+    Dành cho nhân viên studio. Đọc hết một lượt khoảng 20 phút,
+    sau đó chỉ cần mở lại đúng phần mình cần.
+  </p>
+  <div class="chan">
+    www.hamitastudio.com/admin<br>
+    Bản ngày 28/08/2026
+  </div>
+</section>
+
+<section class="trang">
+  <h2>Trang quản lý dùng để làm gì</h2>
+  <p>
+    Ảnh của khách nằm nguyên trên <b>Google Drive</b> của studio. Trang quản lý
+    không giữ ảnh — nó chỉ tạo ra một đường link đẹp để gửi khách xem, và ghi
+    lại những tấm khách chọn.
+  </p>
+  <p>Vì vậy hai điều sau luôn đúng:</p>
+  <ul>
+    <li>Thêm ảnh mới vào thư mục Drive thì khách <b>tự thấy</b>, không phải làm gì trên web.</li>
+    <li>Xoá ảnh trên Drive là khách <b>mất luôn</b> tấm đó trên web.</li>
+  </ul>
+
+  <h3>Mục lục</h3>
+  <ol class="mucluc">
+    <li><b>Đăng nhập</b> — vào trang quản lý</li>
+    <li><b>Tạo link cho khách</b> — từ thư mục Drive tới link gửi Zalo</li>
+    <li><b>Gửi link cho khách</b> — nút Chép tin nhắn</li>
+    <li><b>Các ô trên thẻ album</b> — tên, mã, lời nhắn, hạn, gói ảnh</li>
+    <li><b>Đổi ảnh bìa</b> — bìa album và bìa từng thư mục</li>
+    <li><b>Theo dõi khách chọn ảnh</b> — biết ai xong, ai chưa</li>
+    <li><b>Lấy danh sách ảnh khách chọn</b> — xem, xuất Excel</li>
+    <li><b>Đơn giao in</b> — tờ đưa bên in, có tính tiền</li>
+    <li><b>Thống kê, kho ảnh và sao lưu</b></li>
+    <li><b>Những việc không được làm</b></li>
+    <li><b>Gặp sự cố thì làm gì</b></li>
+  </ol>
+
+  <div class="luuy">
+    <b>Một câu cần nhớ trước khi bắt đầu</b>
+    Mọi thay đổi trên trang này <b>hiện ngay với khách</b>. Không có nút lưu
+    nháp. Sửa tên album là khách thấy tên mới ngay lúc đó.
+  </div>
+</section>
+
+<section class="trang">
+  <h2>1. Đăng nhập</h2>
+
+  <div class="buoc">
+    <div class="so">1</div>
+    <div class="noi">
+      <b>Mở địa chỉ</b>
+      Gõ <code>www.hamitastudio.com/admin</code> vào trình duyệt.
+    </div>
+  </div>
+  <div class="buoc">
+    <div class="so">2</div>
+    <div class="noi">
+      <b>Nhập mật khẩu quản lý</b>
+      Mật khẩu do chủ studio giữ. Đây <b>không phải</b> mã chọn ảnh của khách —
+      hai thứ khác nhau hoàn toàn.
+    </div>
+  </div>
+  <div class="buoc">
+    <div class="so">3</div>
+    <div class="noi">
+      <b>Máy nhớ trong 30 ngày</b>
+      Sau đó phải nhập lại. Đăng nhập trên máy nào thì chỉ máy đó nhớ.
+    </div>
+  </div>
+
+  <div class="canhbao">
+    <b>Sai 8 lần là bị khoá 15 phút</b>
+    Đây là lớp chặn người lạ dò mật khẩu. Nếu bị khoá thì chờ đủ 15 phút, đừng
+    thử tiếp — thử thêm chỉ làm thời gian khoá kéo dài.
+  </div>
+
+  <h3>Nút đổi nền sáng và nền tối</h3>
+  <p>
+    Góc trên bên phải có nút đổi tông. Chỉ đổi cho trang quản lý, <b>không ảnh
+    hưởng gì tới trang khách xem</b> — khách luôn thấy nền sáng.
+  </p>
+</section>
+
+<section class="trang">
+  <h2>2. Tạo link cho khách</h2>
+
+  <div class="man">
+    <div class="thanh">Ô Tạo link mới — nằm bên phải trang quản lý</div>
+    <div class="than">
+      <div style="font-size:14pt;margin-bottom:3mm">Tạo link mới</div>
+      <div class="nhan">Link folder Drive</div>
+      <div class="o">https://drive.google.com/drive/folders/...</div>
+      <div class="nhan">Tên khách (để trống thì lấy tên thư mục)</div>
+      <div class="o">Vũ Phương và Kim Tiên</div>
+      <div style="background:#f3ede2;padding:2.5mm;font-size:9pt;margin:2mm 0">
+        Khách xem ảnh thoải mái, nhưng phải có mã của studio mới chọn được ảnh.
+      </div>
+      <div style="font-size:9.5pt;margin:2mm 0">☑ Cho khách tải ảnh về</div>
+      <span class="nut chinh">Tạo link</span>
+    </div>
+  </div>
+
+  <div class="buoc">
+    <div class="so">1</div>
+    <div class="noi">
+      <b>Mở thư mục khách trên Google Drive</b>
+      Vào Drive, mở đúng thư mục chứa ảnh của nhà khách đó.
+    </div>
+  </div>
+  <div class="buoc">
+    <div class="so">2</div>
+    <div class="noi">
+      <b>Copy địa chỉ trên thanh trình duyệt</b>
+      Bôi đen cả dòng địa chỉ rồi Ctrl+C. Dán vào ô Link folder Drive.
+    </div>
+  </div>
+  <div class="buoc">
+    <div class="so">3</div>
+    <div class="noi">
+      <b>Gõ tên khách</b>
+      Đây là tên khách nhìn thấy, nên viết cho đẹp — <b>đừng để mã nội bộ như
+      HC- hay AB- đằng trước</b>. Để trống thì web lấy tên thư mục Drive,
+      thường không đẹp.
+    </div>
+  </div>
+  <div class="buoc">
+    <div class="so">4</div>
+    <div class="noi">
+      <b>Chọn có cho tải ảnh về hay không</b>
+      Mặc định là có. Bỏ tick nếu nhà đó chưa thanh toán xong.
+    </div>
+  </div>
+  <div class="buoc">
+    <div class="so">5</div>
+    <div class="noi">
+      <b>Bấm Tạo link</b>
+      Chờ vài giây. Xong là album hiện trong danh sách bên trái, mã chọn ảnh
+      đặt sẵn là <code>123456</code>.
+    </div>
+  </div>
+
+  <div class="meo">
+    <b>Sắp xếp thư mục trên Drive quyết định cái khách nhìn thấy</b>
+    Tên thư mục con hiện <b>nguyên văn</b> cho khách. Những tên như
+    <i>File gốc nhà trai</i> hay <i>hamita14a 60x120 mica titan</i> là chữ của
+    thợ, khách không hiểu. Đặt tên dễ hiểu trên Drive <i>trước khi</i> tạo link
+    thì khách đọc mới xuôi.
+  </div>
+</section>
+
+<section class="trang">
+  <h2>3. Gửi link cho khách</h2>
+
+  <p>
+    Trên thẻ album có hàng nút ở dưới cùng. Dùng nút <b>Chép tin nhắn</b> — nó
+    chép sẵn cả tin nhắn hoàn chỉnh, chỉ việc dán vào Zalo.
+  </p>
+
+  <div class="man">
+    <div class="thanh">Hàng nút dưới thẻ album</div>
+    <div class="than">
+      <span class="nut chinh">Chép tin nhắn</span>
+      <span class="nut">Chép link</span>
+      <span class="nut">Ảnh khách chọn</span>
+      <span class="nut">Làm mới</span>
+      <span class="nut">Xoá</span>
+    </div>
+  </div>
+
+  <h3>Tin nhắn được chép sẵn trông như thế này</h3>
+  <div class="man">
+    <div class="thanh">Dán thẳng vào Zalo</div>
+    <div class="than" style="font-size:9.5pt;white-space:pre-line;color:#3a332c">Hamita gửi anh chị bộ ảnh của mình ạ.
+
+Xem ảnh: https://www.hamitastudio.com/g/concept-thanh-ngan-ds8aqu
+Mã chọn ảnh: 123456
+
+Anh chị bấm trái tim vào tấm nào muốn Hamita in ra nhé. Còn dấu tick là những tấm anh chị muốn giữ riêng cho mình ạ.
+
+Chọn xong anh chị bấm "Báo cho Hamita" giúp em một tiếng là Hamita bắt tay vào làm liền ạ.
+
+Hamita giữ ảnh giúp anh chị tới ngày 26/11/2026, anh chị tranh thủ tải về máy trước ngày đó nhé ạ.</div>
+  </div>
+
+  <p>
+    Mã và ngày hết hạn trong tin nhắn <b>tự lấy đúng của album đó</b>. Album
+    chưa đặt hạn thì tin nhắn tự bỏ dòng cuối.
+  </p>
+
+  <div class="luuy">
+    <b>Nút Chép link khác gì</b>
+    Nó chỉ chép mỗi đường dẫn, không kèm mã và lời hướng dẫn. Dùng khi cần dán
+    vào ghi chú hoặc gửi qua chỗ khác.
+  </div>
+</section>
+
+<section class="trang">
+  <h2>4. Các ô trên thẻ album</h2>
+
+  <div class="man">
+    <div class="thanh">Một thẻ album đầy đủ</div>
+    <div class="than" style="padding:0">
+      <div class="the-album" style="border:0">
+        <div class="anh">ảnh bìa album — bấm Đổi bìa để chọn tấm khác</div>
+        <div class="noi">
+          <div style="font-size:12pt;margin-bottom:2mm">concept - Thanh Ngân <span style="font-size:9pt;color:#a29a92">sửa</span></div>
+          <div style="font-size:9pt;color:#6f6862;margin-bottom:2mm">270 ảnh · 1 thư mục · 11 đã chọn</div>
+          <div class="dong-ts"><span class="trai">Mã chọn ảnh</span><span class="phai">123456 · <i>đổi</i></span></div>
+          <div class="dong-ts"><span class="trai">Lời nhắn</span><span class="phai">đang dùng lời chúc chung · <i>sửa</i></span></div>
+          <div class="dong-ts"><span class="trai">Hạn giữ ảnh</span><span class="phai">còn 90 ngày · 26/11/2026 · <i>sửa</i></span></div>
+          <div class="dong-ts"><span class="trai">Gói ảnh</span><span class="phai">10 ảnh · thêm 12.000đ mỗi ảnh · <i>sửa</i></span></div>
+          <div class="dong-ts"><span class="trai">Trang giới thiệu</span><span class="phai">Đưa lên trang giới thiệu</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <tr><th style="width:32mm">Ô</th><th>Làm gì</th></tr>
+    <tr>
+      <td><b>Tên album</b></td>
+      <td>Tên khách nhìn thấy. Bấm <i>sửa</i> để đổi. Đây là chỗ bỏ mã nội bộ như HC- đi.</td>
+    </tr>
+    <tr>
+      <td><b>Mã chọn ảnh</b></td>
+      <td>Khách phải nhập mã này mới thả tim được. Mặc định <code>123456</code>.
+          Bấm vào mã là chép. Bấm <i>đổi</i> để gõ mã riêng, hoặc bấm
+          <i>Sinh mã mới</i> để lấy mã ngẫu nhiên.</td>
+    </tr>
+    <tr>
+      <td><b>Lời nhắn</b></td>
+      <td>Lời chúc riêng cho nhà đó, hiện ở đầu trang album. Để trống thì dùng lời chúc chung.</td>
+    </tr>
+    <tr>
+      <td><b>Hạn giữ ảnh</b></td>
+      <td>Ngày web nhắc khách tải ảnh về. Mặc định 90 ngày.
+          <b>Chỉ là lời nhắc</b> — hết hạn ảnh vẫn còn, không tự xoá gì cả.</td>
+    </tr>
+    <tr>
+      <td><b>Gói ảnh</b></td>
+      <td>Số tấm in có sẵn trong gói và giá mỗi tấm vượt gói. Đơn giao in dựa
+          vào đây để tính tiền. <b>Để trống thì không tính tiền</b>, và phần
+          hướng dẫn phía khách cũng không nói tới giá.</td>
+    </tr>
+    <tr>
+      <td><b>Trang giới thiệu</b></td>
+      <td>Đưa một tấm của album lên trang chủ để quảng bá. Chọn khu: Ảnh cưới,
+          Album và hình cổng, Phim trường, hoặc Chụp bé.</td>
+    </tr>
+  </table>
+
+  <div class="canhbao">
+    <b>Đổi mã là khách phải nhập lại</b>
+    Mọi thiết bị đang mở album đó sẽ bị hỏi mã lần nữa. Nhà nào đang chọn dở sẽ
+    khó chịu. Đổi xong <b>phải nhắn mã mới cho khách ngay</b>.
+  </div>
+</section>
+
+<section class="trang">
+  <h2>5. Đổi ảnh bìa</h2>
+
+  <p>Bấm <b>Đổi bìa</b> ở góc ảnh trên thẻ album. Hộp chọn ảnh mở ra.</p>
+
+  <div class="man">
+    <div class="thanh">Hộp chọn ảnh bìa</div>
+    <div class="than">
+      <div style="font-size:8pt;letter-spacing:1.5px;color:#a29a92">CHỌN ẢNH BÌA</div>
+      <div style="font-size:13pt;margin-bottom:3mm">concept - Thanh Ngân</div>
+      <div style="border-top:1px solid #ebe7e0;border-bottom:1px solid #ebe7e0;padding:2.5mm 0;margin-bottom:3mm">
+        <span style="font-size:9pt;color:#6f6862;margin-right:2mm">Đặt bìa cho</span>
+        <span class="nut chinh" style="font-size:8.5pt">Cả album</span>
+        <span class="nut" style="font-size:8.5pt">file gốc</span>
+        <span class="nut" style="font-size:8.5pt">Hình cổng</span>
+      </div>
+      <div style="display:flex;gap:2mm">
+        <div style="flex:1;height:18mm;background:#e6e0d4;border:2px solid #9c7c4f;border-radius:2px;position:relative">
+          <div style="position:absolute;bottom:0;left:0;right:0;background:#9c7c4f;color:#fff;font-size:7pt;text-align:center;padding:0.6mm">ĐANG DÙNG</div>
+        </div>
+        <div style="flex:1;height:18mm;background:#efeae1;border-radius:2px"></div>
+        <div style="flex:1;height:18mm;background:#e9e3d8;border-radius:2px"></div>
+        <div style="flex:1;height:18mm;background:#efeae1;border-radius:2px"></div>
+        <div style="flex:1;height:18mm;background:#e6e0d4;border-radius:2px"></div>
+      </div>
+      <div style="border-top:1px solid #ebe7e0;margin-top:3mm;padding-top:2mm;font-size:9pt;color:#a29a92">
+        Đang dùng ảnh bìa anh tự chọn &nbsp;&nbsp; <span class="nut" style="font-size:8.5pt">Trở lại tự động</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>Hàng Đặt bìa cho — đây là phần hay nhầm</h3>
+  <p>Một album có <b>hai loại ảnh bìa khác nhau</b>:</p>
+  <table>
+    <tr><th style="width:34mm">Chọn</th><th>Ảnh này hiện ở đâu</th></tr>
+    <tr>
+      <td><b>Cả album</b></td>
+      <td>Ảnh lớn ở <b>đầu trang</b>, khách mở link ra là thấy đầu tiên. Nên
+          chọn tấm đẹp nhất, gây ấn tượng.</td>
+    </tr>
+    <tr>
+      <td><b>Tên thư mục</b></td>
+      <td>Ảnh trên <b>thẻ thư mục</b> ở giữa trang. Nên chọn tấm nói rõ thư mục
+          đó chụp gì, để khách nhìn là biết bấm vào đâu.</td>
+    </tr>
+  </table>
+
+  <p>
+    Chọn một thư mục thì hộp chỉ hiện ảnh của thư mục đó, không phải cả album —
+    khỏi phải bấm xem thêm hàng chục lần.
+  </p>
+
+  <div class="meo">
+    <b>Không đặt thì vẫn có bìa</b>
+    Thư mục nào chưa chọn bìa thì web tự lấy tấm đầu tiên. Bấm
+    <i>Trở lại tự động</i> để quay về như cũ.
+  </div>
+</section>
+
+<section class="trang">
+  <h2>6. Theo dõi khách chọn ảnh</h2>
+
+  <h3>Nhãn xanh trên thẻ album</h3>
+  <p>Khi khách bấm Báo cho Hamita, thẻ album hiện nhãn xanh:</p>
+  <div class="man">
+    <div class="than">
+      <div style="margin-bottom:2mm">
+        Album một thư mục: <span class="nut xanh">Đã chọn xong</span>
+      </div>
+      <div>
+        Album nhiều thư mục: <span class="nut xanh">Xong · Hình cổng</span>
+        <span class="nut xanh">Xong · file gốc</span>
+      </div>
+    </div>
+  </div>
+  <p>
+    Album nhiều thư mục thì mỗi thư mục một nhãn riêng — khách có thể xong thư
+    mục này mà chưa xong thư mục kia.
+  </p>
+
+  <h3>Thẻ báo khi đang mở trang</h3>
+  <p>
+    Nếu trang quản lý <b>đang mở sẵn</b> lúc khách bấm báo xong, một thẻ nhỏ
+    hiện ở góc màn hình. Đóng trang thì không có thông báo nào — nên đừng dựa
+    hẳn vào nó.
+  </p>
+
+  <div class="canhbao">
+    <b>Khách vẫn chọn thêm được sau khi đã báo xong</b>
+    Đã có nhà báo xong rồi chọn thêm 3 tấm nữa. <b>Trước khi giao in, mở lại
+    trang Ảnh khách chọn xem con số có khớp không</b> — đừng in ngay lúc vừa
+    nhận báo.
+  </div>
+
+  <h3>Nút Làm mới</h3>
+  <p>
+    Bấm khi vừa <b>thêm hoặc bớt ảnh trên Drive</b>. Nó đọc lại thư mục và cập
+    nhật số ảnh, ảnh bìa, danh sách thư mục con. Khách đã cài album như app sẽ
+    nhận được thông báo có ảnh mới.
+  </p>
+</section>
+
+<section class="trang">
+  <h2>7. Lấy danh sách ảnh khách chọn</h2>
+
+  <p>Bấm <b>Ảnh khách chọn</b> trên thẻ album.</p>
+
+  <div class="man">
+    <div class="thanh">Trang Ảnh khách chọn</div>
+    <div class="than">
+      <div style="font-size:13pt;margin-bottom:3mm">Ảnh khách chọn — concept - Thanh Ngân
+        <span class="nut" style="font-size:8.5pt">Xuất Excel</span>
+        <span class="nut chinh" style="font-size:8.5pt">Đơn giao in</span>
+      </div>
+      <div style="font-size:12pt">Ảnh in <span style="font-size:9pt;color:#6f6862">11 ảnh</span>
+        <span class="nut" style="font-size:8pt">2 lời dặn</span></div>
+      <div style="display:flex;gap:2mm;margin:2mm 0">
+        <div style="flex:1">
+          <div style="height:16mm;background:#e6e0d4;border-radius:2px"></div>
+          <div style="font-size:7.5pt;color:#a29a92;margin-top:0.6mm">HMT05273.jpg</div>
+          <div style="font-size:7.5pt;background:#fdf3d8;padding:0.8mm;margin-top:0.6mm;border-radius:2px">Bóp eo</div>
+        </div>
+        <div style="flex:1">
+          <div style="height:16mm;background:#efeae1;border-radius:2px"></div>
+          <div style="font-size:7.5pt;color:#a29a92;margin-top:0.6mm">HMT05303.jpg</div>
+        </div>
+        <div style="flex:1">
+          <div style="height:16mm;background:#e9e3d8;border-radius:2px"></div>
+          <div style="font-size:7.5pt;color:#a29a92;margin-top:0.6mm">HMT05310.jpg</div>
+        </div>
+        <div style="flex:1"></div>
+      </div>
+      <div style="font-size:12pt;margin-top:2mm">Ảnh chọn <span style="font-size:9pt;color:#6f6862">6 ảnh</span></div>
+    </div>
+  </div>
+
+  <h3>Hai danh sách khác nhau ra sao</h3>
+  <table>
+    <tr><th style="width:30mm">Danh sách</th><th>Nghĩa là gì</th></tr>
+    <tr><td><b>Ảnh in (trái tim)</b></td><td>Khách muốn studio <b>in ra</b>. Đây là danh sách đưa bên in và tính tiền.</td></tr>
+    <tr><td><b>Ảnh chọn (dấu tick)</b></td><td>Khách chỉ muốn <b>giữ riêng</b> file. <b>Không in, không tính tiền.</b></td></tr>
+  </table>
+
+  <h3>Lời dặn của khách</h3>
+  <p>
+    Ô vàng dưới tấm ảnh là lời khách dặn, ví dụ <i>Bóp eo</i> hay
+    <i>in cỡ 40x60</i>. Số lời dặn hiện cạnh tên danh sách để không bỏ sót.
+    <b>Đọc hết trước khi chỉnh sửa ảnh.</b>
+  </p>
+
+  <h3>Nút Xuất Excel</h3>
+  <p>
+    Tải về file <code>.xlsx</code> liệt kê đủ: danh sách, thư mục, tên ảnh, lời
+    dặn, giờ khách chọn. Dùng để lưu đối chiếu.
+  </p>
+</section>
+
+<section class="trang">
+  <h2>8. Đơn giao in</h2>
+
+  <p>Bấm nút <b>Đơn giao in</b> (nút đậm). Đây là tờ đưa cho bên in ảnh.</p>
+
+  <div class="man">
+    <div class="thanh">Đơn giao in — in ra giấy hoặc chép gửi Zalo</div>
+    <div class="than">
+      <div style="font-size:13pt">ĐƠN GIAO IN — concept - Thanh Ngân</div>
+      <div style="font-size:9pt;color:#6f6862;margin-bottom:3mm">Hamita Studio · 28/08/2026</div>
+      <div class="dong-ts"><span class="trai">Tổng số tấm in</span><span class="phai"><b>13</b></span></div>
+      <div class="dong-ts"><span class="trai">Trong gói</span><span class="phai">10 trên 10</span></div>
+      <div class="dong-ts"><span class="trai">Khách trả thêm</span><span class="phai"><b>3 tấm nhân 12.000đ bằng 36.000đ</b></span></div>
+      <div style="margin-top:3mm;font-size:9pt">
+        <table style="margin:0">
+          <tr><th>Mã số</th><th>Tên file</th><th>Khách dặn</th></tr>
+          <tr><td>05273</td><td>HMT05273.jpg</td><td>Bóp eo</td></tr>
+          <tr><td>05303</td><td>HMT05303.jpg</td><td></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="luuy">
+    <b>Đơn chỉ lấy danh sách trái tim</b>
+    Đúng như đã nói với khách: tim là in ra, tick là giữ riêng. Ảnh tick không
+    vào đơn và không tính tiền. Muốn đọc lời dặn trên ảnh tick thì xem ở trang
+    Ảnh khách chọn.
+  </div>
+
+  <h3>Cách tính tiền</h3>
+  <ul>
+    <li>Đếm <b>số tấm riêng biệt</b> trong danh sách Ảnh in.</li>
+    <li>Trong gói: tối đa bằng số ảnh gói đã đặt.</li>
+    <li>Vượt gói: phần dư nhân với giá mỗi tấm.</li>
+    <li>Album <b>không đặt gói</b> thì đơn không hiện con số tiền nào.</li>
+  </ul>
+
+  <p><b>Cột Mã số</b> là phần số trong tên file — bên in quen dùng để dò ảnh.</p>
+</section>
+
+<section class="trang">
+  <h2>9. Thống kê, kho ảnh và sao lưu</h2>
+
+  <h3>Thống kê — mở ra là biết hôm nay nhắn ai</h3>
+  <p>Bấm <b>Thống kê</b> ở góc trên trang quản lý.</p>
+  <div class="man">
+    <div class="than">
+      <div class="nhan">Nên nhắn khách</div>
+      <div class="dong-ts"><span class="trai">His-Kim Chi và Thiemta</span><span class="phai" style="font-size:8.5pt">đã mở 19 lần nhưng chưa chọn tấm nào · 1 ngày trước</span></div>
+      <div class="dong-ts"><span class="trai">His - Đông Triều</span><span class="phai" style="font-size:8.5pt">chưa mở link lần nào · 3 ngày trước</span></div>
+    </div>
+  </div>
+  <p>
+    Phần đầu là <b>việc cần làm</b>, không phải con số cho đẹp. Phía dưới mới là
+    số liệu: khách mất bao lâu để chọn, thư mục nào hay được chọn, giờ nào khách
+    hay ngồi chọn ảnh.
+  </p>
+
+  <h3>Khung Kho ảnh</h3>
+  <p>
+    Ở đầu trang quản lý, hiện khi Google Drive sắp đầy hoặc có album quá hạn giữ
+    ảnh. <b>Drive đầy là không upload được ảnh mới</b> — và vì Google dùng chung
+    một kho, đầy thì <b>Gmail cũng ngừng nhận thư</b>.
+  </p>
+  <p>Khung này chỉ <b>nhắc</b>, không tự xoá gì. Dọn ảnh cũ là việc làm tay trên Drive.</p>
+
+  <h3>Nút Sao lưu ngay</h3>
+  <p>
+    Tải về một file chứa toàn bộ dữ liệu: album, mã, lựa chọn của khách, lời
+    dặn. <b>Không chứa ảnh</b> — ảnh nằm trên Drive.
+  </p>
+  <p>
+    Cạnh nút có dòng lần cuối cách đây bao nhiêu ngày. Nên bấm <b>mỗi tuần một
+    lần</b>, hoặc trước khi làm gì lớn như xoá album.
+  </p>
+</section>
+
+<section class="trang">
+  <h2>10. Những việc không được làm</h2>
+
+  <div class="canhbao">
+    <b>Không xoá album khi chưa chắc</b>
+    Nút Xoá xoá vĩnh viễn mọi lựa chọn và lời dặn của khách. <b>Không lấy lại
+    được</b> trừ khi có bản sao lưu. Ảnh trên Drive thì vẫn còn, nhưng link đã
+    gửi khách sẽ chết.
+  </div>
+
+  <div class="canhbao">
+    <b>Không xoá hay đổi tên thư mục Drive khi khách đang chọn</b>
+    Web đọc thẳng từ Drive. Xoá ảnh là khách mất tấm đó ngay lập tức, kể cả tấm
+    họ đã thả tim.
+  </div>
+
+  <div class="canhbao">
+    <b>Không đưa mật khẩu quản lý cho khách</b>
+    Khách chỉ cần <b>mã chọn ảnh</b> của album họ. Mật khẩu quản lý mở được mọi
+    album của mọi nhà.
+  </div>
+
+  <h3>Nên cẩn thận</h3>
+  <ul>
+    <li><b>Đổi mã chọn ảnh</b> — mọi khách đang mở album đó phải nhập lại mã.</li>
+    <li><b>Bỏ tick Cho khách tải ảnh về</b> — khách đang tải dở sẽ bị chặn giữa chừng.</li>
+    <li><b>Đổi hạn giữ ảnh về ngày gần</b> — khách thấy đếm ngược gấp, dễ lo lắng gọi hỏi.</li>
+  </ul>
+</section>
+
+<section class="trang">
+  <h2>11. Gặp sự cố thì làm gì</h2>
+
+  <table>
+    <tr><th style="width:52mm">Hiện tượng</th><th>Xử lý</th></tr>
+    <tr>
+      <td><b>Khách báo không mở được link</b></td>
+      <td>Mở thử link đó trên máy mình. Nếu mình mở được thì nhờ khách thử
+          trình duyệt khác hoặc gửi lại link — có thể link bị cắt khi copy.</td>
+    </tr>
+    <tr>
+      <td><b>Khách báo không thấy ảnh, trang trắng</b></td>
+      <td>Kiểm tra thư mục trên Drive còn ảnh không, và có bị đổi quyền chia sẻ
+          không. Nếu Drive trục trặc, khách sẽ thấy màn hình báo ảnh vẫn còn
+          nguyên kèm số điện thoại studio.</td>
+    </tr>
+    <tr>
+      <td><b>Khách nhập mã báo sai</b></td>
+      <td>Xem lại mã trên thẻ album — bấm vào mã là chép. Nhắc khách mã
+          <b>không phân biệt hoa thường</b>. Sai 8 lần thì máy khách bị khoá
+          15 phút.</td>
+    </tr>
+    <tr>
+      <td><b>Thêm ảnh mới mà khách chưa thấy</b></td>
+      <td>Bấm <b>Làm mới</b> trên thẻ album. Nhắc khách kéo trang xuống để tải
+          lại.</td>
+    </tr>
+    <tr>
+      <td><b>Số ảnh trên thẻ không khớp với Drive</b></td>
+      <td>Bấm <b>Làm mới</b>. Con số trên thẻ được chụp lại lúc tạo link và mỗi
+          lần bấm nút đó.</td>
+    </tr>
+    <tr>
+      <td><b>Ảnh bìa tự đổi sau khi làm mới</b></td>
+      <td>Chỉ ảnh bìa <b>chưa chọn tay</b> mới bị ghi đè. Vào Đổi bìa chọn tay
+          một tấm thì nó được giữ luôn.</td>
+    </tr>
+    <tr>
+      <td><b>Không đăng nhập được</b></td>
+      <td>Sai 8 lần là khoá 15 phút — chờ đủ rồi thử lại. Vẫn không được thì
+          hỏi chủ studio.</td>
+    </tr>
+    <tr>
+      <td><b>Trang quản lý mở rất chậm</b></td>
+      <td>Bình thường dưới 1 giây. Chậm bất thường thì thử lại sau vài phút.</td>
+    </tr>
+  </table>
+
+  <div class="luuy">
+    <b>Việc gì không chắc thì hỏi trước</b>
+    Nhất là <b>Xoá album</b> và <b>đổi mã chọn ảnh</b> — hai việc này ảnh hưởng
+    trực tiếp tới khách và khó quay lại.
+  </div>
+
+  <div style="margin-top:14mm;padding-top:4mm;border-top:1px solid #d9d3c9;font-size:9pt;color:#a29a92;text-align:center">
+    Hamita Studio · www.hamitastudio.com/admin · Bản ngày 28/08/2026
+  </div>
+</section>
+
+</body>
+</html>

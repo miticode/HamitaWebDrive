@@ -50,3 +50,6 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Ban PDF dung tu docs/huong-dan-admin.html — dung lai bang: npm run pdf:huong-dan
+docs/*.pdf
