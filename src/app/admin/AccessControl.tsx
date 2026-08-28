@@ -82,7 +82,7 @@ export function AccessControl({
       <input
         value={ma}
         onChange={(e) => setMa(e.target.value.toUpperCase())}
-        placeholder="HAMITA-AB12"
+        placeholder="123456"
         className="input mt-1.5 font-mono tracking-wider"
       />
       <button

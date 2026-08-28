@@ -13,6 +13,19 @@ import { cookies } from "next/headers";
  * tim mot tam thi chi tinh mot lan.
  */
 
+/**
+ * Ma dat san cho album vua tao.
+ *
+ * Studio chon mot ma CHUNG, de doc qua dien thoai va khach de nho, thay vi
+ * moi album mot ma ngau nhien. Doi lai: ai tung nhan ma cua mot nha thi mo
+ * duoc album nha khac neu co link — anh da biet va chap nhan (27/08/2026).
+ *
+ * Muon mot album co ma rieng thi van lam duoc bat cu luc nao: o trang quan ly
+ * go ma tuy y, hoac bam "Sinh ma moi" de lay mot ma ngau nhien dang
+ * HAMITA-AB12. Doi ma la moi phieu mo khoa cu tu het hieu luc (xem chuKy()).
+ */
+export const MA_MAC_DINH = "123456";
+
 /** Chu de doc, bo nhung ky tu de nhin nham: 0/O, 1/I/l. */
 const CHU = "ABCDEFGHJKMNPQRSTUVWXYZ";
 const SO = "23456789";

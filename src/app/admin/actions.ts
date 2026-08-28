@@ -7,7 +7,7 @@ import { invalidate } from "@/lib/cache";
 import { getFolderName, parseFolderId } from "@/lib/drive";
 import { isAdmin, signIn, signOut } from "@/lib/auth";
 import { disconnect } from "@/lib/googleAuth";
-import { sinhMa } from "@/lib/access";
+import { MA_MAC_DINH, sinhMa } from "@/lib/access";
 import { GIA_ANH_THEM_MAC_DINH } from "@/lib/constants";
 import {
   LOCK_MINUTES,
@@ -105,8 +105,14 @@ export async function createGalleryAction(
     allowDownload: formData.get("allowDownload") === "on",
   });
 
-  // Ma sinh san de anh khoi phai nghi; sua lai duoc bat cu luc nao.
-  await setAccess(gallery.id, sinhMa());
+  /*
+    Ma dat san la MA_MAC_DINH ("123456"), khong phai ma ngau nhien.
+
+    Studio muon mot ma chung cho de doc qua dien thoai. Nut "Sinh ma moi" van
+    sinh ngau nhien nhu cu — neu no cung tra ve 123456 thi bam xong ma khong
+    doi, nut thanh vo nghia.
+  */
+  await setAccess(gallery.id, MA_MAC_DINH);
 
   // Dung san nhung tam anh dau tien sau khi da tra loi — khach mo link ngay
   // luc nay cung khong phai doi tung tam mot.

@@ -48,7 +48,7 @@ export function CodeForm({
         autoFocus={autoFocus}
         autoComplete="off"
         spellCheck={false}
-        placeholder="HAMITA-AB12"
+        placeholder="123456"
         aria-label="Mã xem album"
         className="input text-center tracking-[0.12em] uppercase"
       />
