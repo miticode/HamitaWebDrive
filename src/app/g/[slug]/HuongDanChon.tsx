@@ -6,16 +6,20 @@ function tien(so: number): string {
 }
 
 /**
- * Bốn bước hướng dẫn khách chọn ảnh, đặt ngay trên lưới ảnh.
+ * Ba bước hướng dẫn khách chọn ảnh, đặt ngay trên lưới ảnh.
  *
  * Vì sao cần: trước đây chỉ có một dòng chữ nhỏ "bấm vào ảnh để xem lớn, dùng
  * chấm đỏ để chọn ảnh in…". Khách mở link trên điện thoại thường lướt thẳng
  * xuống ảnh, không đọc dòng đó, rồi nhắn hỏi studio từng bước một — hoặc tệ
  * hơn là chọn xong mà không báo, studio ngồi đợi.
  *
- * Bốn bước ứng đúng bốn việc khách phải làm, theo thứ tự: xem → thả tim →
- * ghi chú → báo studio. Riêng bước hai mang thông tin gói ảnh, phần duy nhất
- * khác nhau giữa các album nên studio đặt riêng cho từng album ở trang quản lý.
+ * Ba bước ứng đúng ba việc khách phải làm, theo thứ tự: thả tim → ghi chú →
+ * báo studio. Riêng bước một mang thông tin gói ảnh, phần duy nhất khác nhau
+ * giữa các album nên studio đặt riêng cho từng album ở trang quản lý.
+ *
+ * Bước "Ngắm ảnh thật kỹ" đã bỏ ngày 28/08/2026 theo yêu cầu của studio. Nó
+ * chỉ dạy khách chạm vào ảnh để xem lớn — thứ ai cầm điện thoại cũng tự làm —
+ * mà lại chiếm ô đầu tiên, đẩy ba việc thật sự cần hướng dẫn xuống dưới.
  */
 export function HuongDanChon({
   soAnhTrongGoi,
@@ -38,19 +42,6 @@ export function HuongDanChon({
   const buoc = [
     {
       so: "01",
-      ten: "Ngắm ảnh thật kỹ",
-      mo: "Chạm vào từng tấm để xem thật lớn. Anh chị cứ thong thả ngắm, hôm nay chưa xong thì mai mở lại xem tiếp cũng được ạ.",
-      them: null as string | null,
-      icon: (
-        <>
-          <rect x="3" y="4" width="18" height="16" rx="2" />
-          <circle cx="8.5" cy="9.5" r="1.5" />
-          <path d="m21 16-5-5L5 20" />
-        </>
-      ),
-    },
-    {
-      so: "02",
       ten: "Thả tim tấm mình thương",
       mo: "Thấy tấm nào ưng, anh chị bấm trái tim để Hamita in ra nhé. Còn dấu tick dành cho những tấm anh chị muốn giữ riêng cho mình.",
       them: soAnhTrongGoi
@@ -59,14 +50,14 @@ export function HuongDanChon({
       icon: <path d="M12 20s-7-4.6-7-9.5A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.5c0 4.9-7 9.5-7 9.5Z" />,
     },
     {
-      so: "03",
+      so: "02",
       ten: "Dặn dò Hamita",
       mo: "Muốn ảnh sáng hơn, muốn chỉnh chỗ nào — anh chị cứ ghi ngay dưới tấm đó, đừng ngại nhé.",
       them: "Hamita đọc kỹ từng dòng anh chị dặn trước khi bắt tay chỉnh sửa.",
       icon: <path d="M20 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z" />,
     },
     {
-      so: "04",
+      so: "03",
       ten: "Nhắn Hamita một tiếng",
       mo: 'Chọn xong, anh chị bấm "Báo cho Hamita" ở thanh trên cùng là Hamita nhận được ngay và bắt tay vào làm liền.',
       them: "Lỡ quên tấm nào hay đổi ý sau đó, anh chị vẫn chọn lại được bình thường ạ.",
@@ -103,8 +94,8 @@ export function HuongDanChon({
       */}
       <details open={!daTungChon} className="group">
         <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-md text-xs font-medium tracking-[0.12em] text-fg-muted uppercase transition hover:text-accent [&::-webkit-details-marker]:hidden">
-          <span className="group-open:hidden">Xem lại 4 bước chọn ảnh</span>
-          <span className="hidden group-open:inline">4 bước chọn ảnh</span>
+          <span className="group-open:hidden">Xem lại 3 bước chọn ảnh</span>
+          <span className="hidden group-open:inline">3 bước chọn ảnh</span>
           <svg
             viewBox="0 0 24 24"
             aria-hidden
@@ -119,7 +110,13 @@ export function HuongDanChon({
           </svg>
         </summary>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/*
+          Chia ba cot tu md (768px) chu khong phai sm (640px). Do that o 640px:
+          moi the chi con 176px, doan mo ta xuong 7 dong, the cao 445px — chat
+          hon han ban bon buoc cu vi gio moi the phai chua ca doan "them" ma
+          truoc day nam rai o bon o.
+        */}
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
           {buoc.map((b) => (
             <div
               key={b.so}

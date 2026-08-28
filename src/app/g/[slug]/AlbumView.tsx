@@ -97,7 +97,7 @@ export function AlbumView({
         </div>
 
         {/*
-          Bốn bước hướng dẫn đặt ngay đây — trong thư mục con, sát trên lưới
+          Ba bước hướng dẫn đặt ngay đây — trong thư mục con, sát trên lưới
           ảnh. Ban đầu để ở trang bìa với lý do "khách đọc trước rồi mới vào
           chọn", nhưng đây mới là nơi khách thật sự ngồi chọn: đọc xong là làm
           được ngay, không phải nhớ lại từ trang trước. Khách vào thẳng một thư
