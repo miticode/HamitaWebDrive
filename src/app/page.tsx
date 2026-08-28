@@ -366,7 +366,12 @@ export default async function Home() {
       {anhPhimTruong.length > 0 && (
         <section
           id="phim-truong"
-          className="scroll-mt-16 border-t border-line bg-bg-soft"
+          /*
+            khu-phim-truong đổi bảng màu cả khu sang tông giấy da châu Âu —
+            xem chú thích ở globals.css. Đặt trên chính <section> để đường kẻ
+            trên và nền cũng nằm trong phạm vi đổi màu.
+          */
+          className="khu-phim-truong scroll-mt-16 border-t border-line bg-bg-soft"
         >
           <div className="mx-auto max-w-[1700px] px-5 py-24 sm:px-6 sm:py-28">
             <FadeIn>

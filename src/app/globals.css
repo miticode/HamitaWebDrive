@@ -228,6 +228,36 @@ body {
     --accent-soft: #faeae7;
   }
 
+  /*
+    Khu "Phim trường Hamita Garden": tông giấy da châu Âu, ngả vintage.
+
+    Cùng cách với .khu-baby — ghi đè bảng màu trong phạm vi khu, để mọi tiện
+    ích màu của Tailwind trong đó tự đổi theo.
+
+    Chọn màu có đo chứ không đoán. Màu trung bình của bốn tấm đầu trong album
+    này là #d0c9bc · #d6d1c7 · #9fa59a · #a5a69b — hai tấm đầu là trang giấy
+    cũ, hai tấm sau sẫm hơn vì nhiều cây. Nền khu (#f2ebdd) vẫn sáng hơn tất
+    cả, nên mỗi tấm vẫn nổi lên như một trang album đặt trên mặt bàn.
+
+    Cái đổi ở đây là SẮC chứ không phải độ sáng: nền chung #f6f3ee gần như
+    trung tính (lệch đỏ–lam chỉ 8), còn nền này lệch 21 nên ngả vàng nâu thấy
+    rõ — đúng chất giấy da. Điểm nhấn kéo về đồng cổ đậm hơn màu đồng chung.
+
+    Chữ chính cũng ngả ấm (#251d12 thay cho #1f1c1a): ở đây nâu đen hợp với
+    giấy da hơn là đen trung tính, mà vẫn thừa tương phản để đọc.
+  */
+  .khu-phim-truong {
+    --bg-soft: #f2ebdd;
+    --bg-raised: #faf5eb;
+    --line: #e2d6c0;
+    --line-strong: #c9b795;
+    --fg: #251d12;
+    --fg-muted: #6b5a41;
+    --fg-faint: #9b8968;
+    --accent: #8a6b39;
+    --accent-soft: #ece0c8;
+  }
+
   .notice {
     border-radius: 3px;
     padding: 0.65rem 0.9rem;
