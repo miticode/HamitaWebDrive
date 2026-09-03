@@ -59,13 +59,33 @@ export function GoiAnh({
     return (
       <div className="flex items-baseline gap-2 py-2 text-xs">
         <span className="w-24 shrink-0 text-fg-muted">Gói ảnh</span>
-        <span className={`min-w-0 flex-1 truncate ${soAnhTrongGoi ? "" : "text-fg-faint"}`}>
+        {/*
+          Cho chữ XUỐNG DÒNG, bỏ hẳn `truncate`.
+
+          Ô này chỉ rộng 150px trong thẻ album — đo thật — nên cả hai dòng đều
+          không vừa, và cắt đi thì mất đúng phần quan trọng:
+
+          - Chưa đặt: "chưa đặt — không nói giá với khách" cụt thành "chưa đặt —
+            không nó…", mất vế nói rõ hậu quả. Studio đọc dòng đó rồi vẫn đi tìm
+            khối gói ảnh trên điện thoại khách, không hiểu vì sao không thấy
+            (03/09/2026). Câu cũng viết lại cho nói thẳng vào thứ nhìn thấy được.
+          - Đã đặt: "33 ảnh · thêm 12.000đ/ảnh" cụt mất đuôi giá. Cắt cụt một
+            con số tiền là chuyện không nên làm, dù đọc lướt vẫn đoán ra.
+
+          Đổi lại thẻ album cao thêm một dòng. Đáng — thẻ này vốn đã dài, thêm
+          16px không đổi gì, còn đọc nhầm giá thì đổi.
+        */}
+        <span
+          className={`min-w-0 flex-1 leading-relaxed ${
+            soAnhTrongGoi ? "" : "text-fg-faint"
+          }`}
+        >
           {soAnhTrongGoi ? (
             <>
               <b>{soAnhTrongGoi}</b> ảnh · thêm {tien(giaAnhThem)}đ/ảnh
             </>
           ) : (
-            "chưa đặt — không nói giá với khách"
+            "chưa đặt — khách không thấy khối gói ảnh"
           )}
         </span>
         <button
@@ -103,8 +123,8 @@ export function GoiAnh({
       </p>
 
       <p className="mt-2 text-[11px] leading-relaxed text-fg-faint">
-        Giá ảnh thêm cố định {tien(giaAnhThem)}đ/ảnh cho mọi gói. Muốn đổi giá thì
-        báo em sửa trong mã nguồn, đổi một lần áp dụng cho tất cả album.
+        Giá ảnh thêm cố định {tien(giaAnhThem)}đ/ảnh cho mọi gói. Muốn đổi giá
+        thì báo em sửa trong mã nguồn, đổi một lần áp dụng cho tất cả album.
       </p>
 
       {loi && <p className="mt-2 text-xs text-red-700">{loi}</p>}
