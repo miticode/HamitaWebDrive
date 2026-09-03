@@ -311,6 +311,21 @@ lần gọi Drive, thử album 8 thư mục thay vì 1 thư mục là tốn gấ
 cùng một câu trả lời. Phải dùng album **thật**: mã thư mục bịa thì Drive trả
 404 ngay cả khi kết nối hoàn toàn khoẻ.
 
+**Nhưng chỉ lấy album ĐÃ CÓ THƯ MỤC (`albumCount > 0`).** Thiếu điều kiện này
+thì `orderBy` luôn chọn đúng một album **rỗng** — 0 là nhỏ nhất — đọc ra cây
+không có thư mục nào rồi kết luận Drive hỏng. Mà album rỗng là trạng thái bình
+thường và cố ý: studio gửi link cho khách **trước** khi có ảnh (xem nguyên tắc
+34). Đã xảy ra thật ngày 03/09/2026 — đường này trả **503 liên tục** trong khi
+ảnh vẫn tải về 77 KB trong 1,9 giây và cả ba trang album đều mở 200. **Báo
+nhầm còn tệ hơn không có phép kiểm nào**: dịch vụ theo dõi kêu suốt cho tới lúc
+studio tắt nó đi, rồi hỏng thật cũng không ai biết. Không còn album nào đủ điều
+kiện thì coi là **khoẻ**, cùng nhánh với trường hợp chưa tạo album nào.
+
+Cùng một cái bẫy ở `scripts/kiem-domain.mts`: nó lấy cứng `gallery[0]` của bản
+sao lưu mới nhất, mà bản sao lưu là ảnh chụp một thời điểm — album đó có thể đã
+bị xoá, và thế là bốn phép kiểm cùng báo hỏng oan. Nay thử lần lượt các slug,
+lấy cái đầu tiên domain còn phục vụ thật.
+
 Để công khai, không đòi mã, nên dịch vụ theo dõi nào cũng gọi được ngay. Đổi
 lại phần trả về **cố ý nghèo nàn** — không tên album, không số liệu, không
 thông báo lỗi gốc. Cache 60 giây nên gọi dồn không tốn thêm lần gọi Drive.
