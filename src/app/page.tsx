@@ -77,13 +77,33 @@ export default async function Home() {
     (g) => g.featured && g.khuGioiThieu === "phimtruong"
   );
   let anhPhimTruong: string[] = [];
+  let tongGocChup = 0;
   if (albumPhimTruong) {
     try {
       const tree = await loadTree(albumPhimTruong.driveFolderId);
-      anhPhimTruong = tree.albums
-        .flatMap((a) => a.photos)
-        .map((p) => p.id)
-        .slice(0, 8);
+      const tatCa = tree.albums.flatMap((a) => a.photos);
+      tongGocChup = tatCa.length;
+
+      /*
+        Ở đây chỉ lấy ẢNH DỌC, và chỉ tám tấm.
+
+        Album phim trường mới trộn cả dọc lẫn ngang — đo 20 tấm ngày 03/09/2026
+        ra 12 dọc, 8 ngang, tỉ lệ trải từ 0,563 tới 1,499. Lưới dưới đây là
+        khung 2:3 cố định để tám ô đều tăm tắp; nhét một tấm ngang 3:2 vào đó
+        thì `object-cover` xén mất khoảng 55% chiều rộng — mà đây là ảnh khoe
+        KHÔNG GIAN, xén đi thì mất đúng thứ nó cần cho thấy. Album cũ toàn ảnh
+        dọc nên chuyện này chưa từng lộ ra.
+
+        Ảnh ngang không bị bỏ phí: trang /phim-truong hiện đủ cả 60 tấm theo
+        đúng tỉ lệ gốc, không xén tấm nào.
+
+        Thiếu ảnh dọc thì bù bằng những tấm còn lại — thà một hai ô bị xén còn
+        hơn khu này trống trơn.
+      */
+      const doc = tatCa.filter((p) => p.width && p.height && p.height > p.width);
+      anhPhimTruong = [...doc, ...tatCa.filter((p) => !doc.includes(p))]
+        .slice(0, 8)
+        .map((p) => p.id);
     } catch {
       /*
         Drive trục trặc thì bỏ qua khu này, KHÔNG để cả trang giới thiệu chết
@@ -384,7 +404,7 @@ export default async function Home() {
                   {PHIM_TRUONG.moTa}
                 </p>
                 <p className="eyebrow mt-4">
-                  {PHIM_TRUONG.ten} · {albumPhimTruong?.photoCount ?? 0} góc chụp
+                  {PHIM_TRUONG.ten} · {tongGocChup} góc chụp
                 </p>
               </div>
             </FadeIn>
@@ -402,7 +422,16 @@ export default async function Home() {
             <div className="mt-14 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
               {anhPhimTruong.map((fileId, i) => (
                 <FadeIn key={fileId} cham={i * 60}>
-                  <div className="group skeleton aspect-[2/3] overflow-hidden rounded-sm">
+                  {/*
+                    Cả ô ảnh là một liên kết sang trang xem đủ bối cảnh. Khách
+                    thấy ảnh đẹp thì phản xạ đầu tiên là bấm vào chính tấm ảnh
+                    đó, không phải đi tìm một cái nút ở đâu khác — nên bấm vào
+                    đâu cũng phải ra cùng một chỗ.
+                  */}
+                  <Link
+                    href="/phim-truong"
+                    className="group skeleton block aspect-[2/3] overflow-hidden rounded-sm"
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`/api/img/${fileId}?w=640`}
@@ -410,10 +439,30 @@ export default async function Home() {
                       loading="lazy"
                       className="size-full object-cover transition duration-700 ease-out group-hover:scale-105"
                     />
-                  </div>
+                  </Link>
                 </FadeIn>
               ))}
             </div>
+
+            {/*
+              Nút riêng bên cạnh việc bấm vào ảnh: bấm vào ảnh là thứ khách hay
+              thử, còn dòng chữ này mới là thứ NÓI cho họ biết bên trong còn
+              bao nhiêu nữa. Tám tấm trên kia trông như đã là tất cả nếu không
+              ai nói gì.
+            */}
+            {tongGocChup > anhPhimTruong.length && (
+              <FadeIn>
+                <div className="mt-10 text-center">
+                  <Link
+                    href="/phim-truong"
+                    className="btn inline-flex items-center gap-2"
+                  >
+                    Xem tất cả {tongGocChup} góc chụp
+                    <span aria-hidden>→</span>
+                  </Link>
+                </div>
+              </FadeIn>
+            )}
 
             <FadeIn>
               <div className="mt-12 text-center">

@@ -243,6 +243,31 @@ khoảng 63% chiều cao, mà đó là ảnh khoe không gian), `albumhc` dùng 
 album và hình cổng rộng bản hơn ảnh chân dung). Thêm khu mới thì **đo tỉ lệ ảnh
 thật trước rồi mới chọn khung**.
 
+*Cập nhật 03/09/2026 — album phim trường đổi, và cái luật trên vừa cứu một bàn:*
+studio thay album cũ (16 tấm, **toàn ảnh dọc** 2:3) bằng "All View HamitaGarden"
+**60 tấm trộn cả dọc lẫn ngang** — đo 20 tấm ra 12 dọc / 8 ngang, tỉ lệ trải từ
+**0,563 tới 1,499**. Không một khung cố định nào vừa cả hai kiểu: nhét tấm ngang
+3:2 vào khung 2:3 thì `object-cover` xén mất khoảng **55% chiều rộng**, mà đây
+là ảnh khoe KHÔNG GIAN. Hai nơi giải hai kiểu:
+
+- **Trang chủ giữ khung 2:3 nhưng chỉ lấy ẢNH DỌC**, tám tấm. Lưới mời gọi cần
+  tám ô đều tăm tắp; đo lại sau khi sửa: 6 tấm xén 0%, 2 tấm xén 17%. Thiếu ảnh
+  dọc thì bù bằng tấm còn lại — thà một hai ô bị xén còn hơn khu này trống.
+- **`/phim-truong` bỏ hẳn khung cố định**, dùng lưới cột báo (`columns`) và đặt
+  `aspect-ratio` đúng kích thước Drive trả về cho từng tấm. Không tấm nào bị
+  cắt, và vì tỉ lệ đặt sẵn nên trang không giật nhảy lúc ảnh lần lượt hiện.
+  Drive **có sẵn** `imageMediaMetadata(width,height)` trong cùng lời gọi liệt kê
+  tệp — không tốn thêm lần gọi nào, đừng đi đo lại bằng cách tải ảnh về.
+
+**`/phim-truong` là trang riêng, KHÔNG dùng lại `/g/[slug]`.** Trang album là
+chỗ riêng tư của một nhà khách: có nhập mã, thả tim, tick giữ riêng, đếm ngược
+hạn giữ ảnh, và tự khai `noindex`. Phim trường thì ngược hẳn — công khai, càng
+nhiều người tìm thấy càng tốt (nên có trong `sitemap.ts`), và khách xem nó
+không chọn ảnh gì cả. Trang chủ khoe tám tấm; ai muốn xem hết thì sang đây.
+
+`NavGioiThieu` nhận thêm cờ `trangKhac`: các mục là neo trong trang (`#anh`) khi
+ở trang chủ, phải thành `/#anh` khi dùng ở trang khác, không thì bấm vào đứng im.
+
 Tách `albumhc` khỏi `cuoi` là theo yêu cầu ngày 26/08: khách nhìn hai thứ đó với
 hai mục đích khác nhau — xem ảnh cưới là xem **phong cách chụp**, xem album và
 hình cổng là xem **thứ mình sẽ cầm về**. "HC" = hình cổng (đọc được từ tên thư

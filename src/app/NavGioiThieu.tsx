@@ -28,7 +28,18 @@ const MUC = [
  * khách cuộn xuống — cùng cơ chế phát hiện cuộn với GalleryHeader ở trang xem
  * ảnh, để hai nơi nhất quán.
  */
-export function NavGioiThieu({ coAnhNen }: { coAnhNen: boolean }) {
+export function NavGioiThieu({
+  coAnhNen,
+  /*
+    Thanh này dùng ở cả trang chủ lẫn trang /phim-truong. Ở trang chủ các mục
+    là neo trong trang ("#anh"); ở trang khác chúng phải quay về trang chủ rồi
+    mới cuộn tới ("/#anh"), không thì bấm vào chẳng đi đâu cả.
+  */
+  trangKhac = false,
+}: {
+  coAnhNen: boolean;
+  trangKhac?: boolean;
+}) {
   const [daCuon, setDaCuon] = useState(false);
 
   useEffect(() => {
@@ -39,6 +50,7 @@ export function NavGioiThieu({ coAnhNen }: { coAnhNen: boolean }) {
   }, []);
 
   const noiSang = coAnhNen && !daCuon;
+  const duong = (href: string) => (trangKhac ? `/${href}` : href);
 
   return (
     <header
@@ -47,7 +59,7 @@ export function NavGioiThieu({ coAnhNen }: { coAnhNen: boolean }) {
       }`}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-6">
-        <a href="#" className="flex items-center gap-2.5">
+        <a href={trangKhac ? "/" : "#"} className="flex items-center gap-2.5">
           <Logo size="sm" on={noiSang ? "dark" : "page"} className="h-8 sm:h-9" />
         </a>
 
@@ -55,7 +67,7 @@ export function NavGioiThieu({ coAnhNen }: { coAnhNen: boolean }) {
           {MUC.map((m) => (
             <a
               key={m.href}
-              href={m.href}
+              href={duong(m.href)}
               className="text-xs tracking-[0.14em] uppercase transition hover:opacity-70"
               style={{ color: noiSang ? "#fff" : "var(--fg-muted)" }}
             >
