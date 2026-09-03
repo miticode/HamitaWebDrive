@@ -463,6 +463,57 @@ album và bìa thư mục là một"*. Sai — khách nhìn thấy **cả hai** 
 ảnh lớn ở đầu trang, và thẻ thư mục ngay bên dưới. **Đừng chặn một tính năng
 bằng suy luận về cách người dùng nhìn màn hình; mở trang ra mà xem.**
 
+**33. Lời mời cài app phải chốt TRƯỚC khi React chạy, và Android không bao giờ
+bị giấu nút.**
+Sửa ngày 03/09/2026 sau khi anh báo khách Android không tạo được app.
+
+Chrome bắn `beforeinstallprompt` đúng **một lần**, ngay khi trang đủ điều kiện —
+không ai nghe lúc đó thì mất luôn. Chỗ nghe cũ nằm trong `useEffect`, tức phải
+đợi React tải và dựng xong. Đo trên trang album đang chạy, **máy bàn mạng cáp
+quang**: `domInteractive` = **2.405ms**; điện thoại Android tầm trung dùng 4G
+còn lâu hơn nhiều. Lần khách vào thứ hai trở đi, service worker đã nằm sẵn nên
+Chrome xét đủ điều kiện gần như tức thì — sự kiện bắn ra lúc React chưa động
+đậy. Nay một đoạn `<script>` nội tuyến trong `g/[slug]/layout.tsx` giữ sự kiện
+lại trên `window.__hamitaCaiApp` rồi báo bằng `hamita:co-the-cai`. Nó **đồng
+bộ**, còn mọi tệp của Next đều `async`, nên nó luôn chạy trước. **Đừng dời chỗ
+nghe này về lại React.**
+
+**Không được giấu nút trên Android vì thiếu sự kiện.** Bản cũ có
+`if (!may.ios && !suKien) return null` — hệ quả là khách iPhone luôn được chỉ
+tận nơi còn khách Android không thấy gì, trong khi sự kiện của Chrome vắng mặt
+ở đủ tình huống thường gặp: mở link ngay trong Zalo/Facebook (trình duyệt nhúng
+không bắn), Firefox, Samsung Internet, hoặc chỉ là bắn trước khi React nghe kịp.
+Số liệu xác nhận: **cả 7 phiếu thông báo trong database đều là `web.push.apple.com`
+— không một máy Android nào**. Nay điện thoại luôn thấy nút; thiếu sự kiện thì
+mở bảng chỉ đường Android ("⋮ → Thêm vào Màn hình chính"), y như iPhone. Chỉ
+**máy bàn** không có lời mời mới giấu nút — ở đó lời chỉ đường kia là chỉ sai.
+
+`prompt()` phải bọc `try/catch`: nó ném thật khi sự kiện đã dùng một lần. Bản
+cũ không bắt, nên lỗi rơi vào khoảng không và khách bấm nút thấy **không có gì
+xảy ra** — không cách nào biết là hỏng. Hỏng thì lùi về bảng chỉ đường.
+
+**34. Thông báo "có ảnh mới" chỉ hỏi MỘT câu: có ai đăng ký nhận không.**
+Điều kiện gửi là `mucMoi.length > 0 && truoc` — **không** xét album trước đó đã
+có thư mục hay chưa.
+
+Bản đầu có thêm `truoc.subfolders.length > 0`, lý do ghi là "lần đồng bộ đầu
+tiên thì chưa ai kịp đăng ký". Lý do đó sai với cách studio thật sự làm việc:
+link được gửi cho khách **trước** khi có ảnh, khách cài app và bật thông báo
+trên album còn rỗng, rồi media mới thả thư mục vào và bấm "Làm mới". Đúng lúc
+đáng báo nhất thì `subfolders` vẫn rỗng nên thông báo bị nuốt — đây là lỗi anh
+báo ngày 03/09/2026. Đo trên database cùng ngày: album `hc-truc-ly-trung-tin`
+có **0 thư mục** mà đã có **một máy khách đăng ký từ 01/09** đang chờ tin.
+
+Không cần điều kiện đó để giữ im lúc vừa tạo album: `guiChoAlbum` tự thoát khi
+chưa có phiếu nào, mà lúc vừa tạo thì không thể có ai — link còn chưa gửi đi.
+**Câu cần hỏi là "có ai muốn nhận tin không"; để chính nó trả lời, đừng đoán
+qua số thư mục cũ.**
+
+*Giới hạn còn lại, biết mà chưa sửa:* thả thêm ảnh vào một thư mục **đã có
+tên trong `subfolders`** thì không báo, vì phép so sánh chỉ nhìn danh sách tên
+thư mục chứ không nhìn số ảnh. Thư mục rỗng không được tính (`loadTree` bỏ thư
+mục không ảnh), nên "tạo sẵn thư mục rỗng rồi mới đổ ảnh" vẫn báo bình thường.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại

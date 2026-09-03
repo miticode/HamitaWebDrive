@@ -95,12 +95,25 @@ export async function syncAndWarm(
     THẬT SỰ có cái mới: studio bấm "Làm mới" mà không thêm gì thì im lặng, chứ
     không làm phiền khách mỗi lần studio kiểm tra lại.
 
-    Lần đồng bộ đầu tiên (truoc.subfolders rỗng vì album vừa tạo) cũng không
-    báo — lúc đó chưa ai kịp đăng ký, và cả album đều là mới.
+    ĐIỀU KIỆN DUY NHẤT là có thư mục mới. KHÔNG xét album trước đó đã có thư
+    mục hay chưa.
+
+    Bản đầu có thêm điều kiện `truoc.subfolders.length > 0`, lý do ghi là "lần
+    đồng bộ đầu tiên thì chưa ai kịp đăng ký". Lý do đó sai với cách studio
+    thật sự làm việc: link được gửi cho khách TRƯỚC khi có ảnh, khách cài app
+    và bật thông báo trên một album còn rỗng, rồi media mới thả thư mục vào và
+    bấm "Làm mới". Đúng lúc đáng báo nhất thì `subfolders` vẫn rỗng, nên điều
+    kiện kia nuốt mất thông báo — 03/09 đo trên database còn thấy album
+    hc-truc-ly-trung-tin (0 thư mục) đã có một máy khách đang chờ tin.
+
+    Không cần điều kiện đó để giữ im lúc vừa tạo album: `guiChoAlbum` tự thoát
+    khi album chưa có phiếu đăng ký nào, mà lúc vừa tạo thì không thể có ai —
+    link còn chưa gửi đi. Câu cần hỏi là "có ai muốn nhận tin không"; để chính
+    nó trả lời, đừng đoán qua số thư mục cũ.
 
     Nuốt lỗi: gửi tin hỏng thì cũng không được làm hỏng việc đồng bộ số liệu.
   */
-  if (mucMoi.length > 0 && truoc && truoc.subfolders.length > 0) {
+  if (mucMoi.length > 0 && truoc) {
     const duongDan = duongDanBaoAnhMoi(truoc.slug, mucMoi);
 
     await guiChoAlbum(
