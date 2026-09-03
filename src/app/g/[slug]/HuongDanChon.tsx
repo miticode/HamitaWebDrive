@@ -42,17 +42,23 @@ export function HuongDanChon({
       so: "01",
       ten: "Thả tim tấm mình thương",
       mo: "Thấy tấm nào ưng, anh chị bấm trái tim để Hamita in ra nhé. Còn dấu tick dành cho những tấm anh chị muốn giữ riêng cho mình.",
-      them: soAnhTrongGoi
-        ? `Gói của anh chị có ${soAnhTrongGoi} tấm in. Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái, mỗi tấm ${tien(giaAnhThem)}đ đã gồm cả chỉnh sửa và in ạ.`
-        : null,
-      icon: <path d="M12 20s-7-4.6-7-9.5A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.5c0 4.9-7 9.5-7 9.5Z" />,
+      /*
+        Thông tin gói ảnh KHÔNG còn nằm ở đây nữa — nó đã ra thành một khối
+        riêng bên dưới. Xem chú thích ở khối đó để biết vì sao.
+      */
+      them: null,
+      icon: (
+        <path d="M12 20s-7-4.6-7-9.5A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.5c0 4.9-7 9.5-7 9.5Z" />
+      ),
     },
     {
       so: "02",
       ten: "Dặn dò Hamita",
       mo: "Muốn ảnh sáng hơn, muốn chỉnh chỗ nào — anh chị cứ ghi ngay dưới tấm đó, đừng ngại nhé.",
       them: "Hamita đọc kỹ từng dòng anh chị dặn trước khi bắt tay chỉnh sửa.",
-      icon: <path d="M20 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z" />,
+      icon: (
+        <path d="M20 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z" />
+      ),
     },
     {
       so: "03",
@@ -145,7 +151,9 @@ export function HuongDanChon({
               <h3 className="mt-3.5 text-xs font-medium tracking-[0.12em] uppercase">
                 {b.ten}
               </h3>
-              <p className="mt-2.5 text-[13px] leading-relaxed text-fg-muted">{b.mo}</p>
+              <p className="mt-2.5 text-[13px] leading-relaxed text-fg-muted">
+                {b.mo}
+              </p>
 
               {b.them && (
                 <p className="mt-auto pt-3.5 text-[12px] leading-relaxed text-fg-faint">
@@ -157,6 +165,72 @@ export function HuongDanChon({
           ))}
         </div>
       </details>
+
+      {/*
+        Gói ảnh: khối riêng, NẰM NGOÀI phần thu gọn được.
+
+        Trước đây đoạn này là dòng chữ nhỏ nhất và nhạt nhất trên thẻ bước 01
+        (12px, màu fg-faint, nằm dưới một gạch mảnh) — tức là thứ duy nhất trên
+        trang dính tới TIỀN của khách lại được trình bày mờ nhất. Studio yêu cầu
+        làm nổi bật ngày 03/09/2026.
+
+        Ba thay đổi, cái nào cũng có lý do riêng:
+
+        - RA KHỎI `<details>`. Khách đã chọn lần nào rồi thì phần ba bước tự thu
+          lại (nguyên tắc 30), mà thu lại là nuốt luôn thông tin gói. Trong khi
+          đó gói ảnh mới là thứ khách cần đúng lúc đang chọn — tới tấm thứ mười
+          lăm mới nảy ra câu hỏi "quá gói mấy tấm rồi, bao nhiêu tiền". Nằm
+          ngoài thì lần nào mở album cũng thấy.
+
+        - RỘNG HẾT HÀNG thay vì nằm trong một ô của lưới ba cột. Trên máy tính,
+          ô cũ chỉ rộng chừng một phần ba trang; nay khối chiếm trọn chiều
+          ngang. Trên điện thoại vốn đã một cột, cái làm nên khác biệt là nền
+          màu nhấn và cỡ chữ.
+
+        - HAI CON SỐ IN ĐẬM và tô màu nhấn. Khách đọc lướt chỉ cần bắt được hai
+          thứ: gói bao nhiêu tấm, và thêm một tấm thì bao nhiêu tiền.
+
+        Giữ nguyên câu chữ cũ, chỉ đổi cách trình bày. Đây là lời studio đã nói
+        với khách (nguyên tắc 28) — sửa lại cho "gọn" là nói khác đi.
+      */}
+      {soAnhTrongGoi !== null && (
+        <div className="mt-5 flex items-start gap-4 rounded-md border border-accent bg-accent-soft px-4 py-4 sm:items-center sm:px-6 sm:py-5">
+          <span
+            aria-hidden
+            className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-white sm:size-11"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="size-5 sm:size-[22px]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {/* Hộp quà — đúng thứ khách sẽ cầm về, và nhận ra ngay không cần đọc chữ. */}
+              <path d="M4 9.5h16V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z" />
+              <path d="M3 6.5h18v3H3zM12 6.5V21" />
+              <path d="M12 6.5S10.5 3 8.5 3a2 2 0 0 0 0 3.5Zm0 0S13.5 3 15.5 3a2 2 0 0 1 0 3.5Z" />
+            </svg>
+          </span>
+
+          <div className="min-w-0">
+            <p className="eyebrow text-accent">Gói ảnh của anh chị</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-fg sm:text-[15px]">
+              Gói của anh chị có{" "}
+              <strong className="font-semibold text-accent">
+                {soAnhTrongGoi} tấm in
+              </strong>
+              . Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái, mỗi tấm{" "}
+              <strong className="font-semibold text-accent">
+                {tien(giaAnhThem)}đ
+              </strong>{" "}
+              đã gồm cả chỉnh sửa và in ạ.
+            </p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

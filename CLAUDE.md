@@ -443,6 +443,11 @@ chờ xem ảnh cưới của mình rất dễ hiểu nhầm là studio đã xo�
   phải cuộn **1.506px** — gần hai màn hình — mới thấy tấm ảnh đầu tiên, và
   cuộn lại từng ấy mỗi lần đổi thư mục. Thu lại còn **438px**, tức là ảnh nằm
   ngay trong màn hình đầu.
+  *Đo lại 03/09/2026* sau khi tách khối gói ảnh ra riêng (nguyên tắc 38):
+  mở sẵn **1.394px**, thu lại **670px**. Mở sẵn ngắn đi vì thẻ bước 01 nhẹ bớt
+  một đoạn; thu lại dài thêm vì khối gói nằm ngoài phần gấp. Điều phải giữ
+  không phải con số mà là **ảnh đầu tiên vẫn nằm trong màn hình đầu** — 670 <
+  812. Đổi gì ở khối này thì đo lại mốc đó.
 
 Việc thu/mở dùng **`<details>` của HTML, không phải state React** — và đây là
 phần dễ bị "sửa cho hiện đại" nhất. Lý do không phải ít code hơn: trạng thái
@@ -628,6 +633,33 @@ database đều đi qua, nên gõ tay ra chuỗi như vậy cũng được dọn
 `"Khmer- Y Bình"` có dạng giống hệt mã cộng dấu nối mà `Khmer` không phải mã —
 nhận bừa thì bấm nút gợi ý sẽ nuốt mất một phần tên khách. Cũng phải đòi dấu
 ngăn ngay sau mã, không thì `AB` khớp cả `"Abigail"`.
+
+**38. Thông tin gói ảnh là khối riêng, NẰM NGOÀI phần hướng dẫn thu gọn được.**
+Studio yêu cầu làm nổi bật ngày 03/09/2026.
+
+Trước đó đoạn này là dòng chữ **nhỏ nhất và nhạt nhất** trên thẻ bước 01 — 12px,
+màu `fg-faint`, nằm dưới một gạch mảnh. Tức là thứ duy nhất trên trang dính tới
+**tiền của khách** lại được trình bày mờ nhất.
+
+Ba điều phải giữ:
+
+- **Ngoài `<details>`.** Khách đã chọn lần nào rồi thì ba bước tự thu lại
+  (nguyên tắc 30), mà thu lại là nuốt luôn thông tin gói. Trong khi gói ảnh mới
+  là thứ khách cần **đúng lúc đang chọn** — tới tấm thứ mười lăm mới nảy ra câu
+  hỏi "quá gói mấy tấm rồi, bao nhiêu tiền". Đừng gộp lại vào thẻ bước 01 cho
+  "gọn".
+- **Rộng hết hàng.** Đo ở 1440px: khối rộng **1.120px**, gấp **3,1 lần** một
+  thẻ bước (363px) — đó là chỗ khác biệt lớn nhất trên máy tính. Trên điện
+  thoại vốn đã một cột nên cái làm nên khác biệt là nền màu nhấn và cỡ chữ:
+  14px `text-fg` thay cho 12px `text-fg-faint`.
+- **Hai con số in đậm, tô màu nhấn.** Khách đọc lướt chỉ cần bắt được hai thứ:
+  gói bao nhiêu tấm, thêm một tấm thì bao nhiêu tiền.
+
+**Giữ nguyên câu chữ**, chỉ đổi cách trình bày. Đây là lời studio đã nói với
+khách (nguyên tắc 28); rút gọn thành dạng bảng cho "dễ đọc" là nói khác đi.
+
+`soAnhTrongGoi === null` thì **không vẽ khối này** — album không tính theo gói
+thì tự dựng ra một con số là thu tiền thứ khách không đặt.
 
 ---
 
