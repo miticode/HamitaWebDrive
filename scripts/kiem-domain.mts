@@ -18,25 +18,45 @@ if (!dich || !/^https?:\/\//.test(dich)) {
 const host = new URL(dich).host;
 
 /**
- * Lay mot slug album that tu ban sao luu moi nhat.
+ * Lay danh sach slug album tu ban sao luu moi nhat.
  *
  * Doc tu ban sao luu chu khong goi database: script nay chay duoc ca tren may
  * khong co DATABASE_URL — vi du khi muon nho nguoi khac kiem ho domain moi.
+ *
+ * Tra ve CA DANH SACH chu khong phai mot slug. Ban dau lay cung gallery[0],
+ * nhung ban sao luu la anh chup mot thoi diem — album do co the da bi xoa tu
+ * lau. Ngay 03/09/2026 dung la vay: gallery[0] tro toi mot album khong con,
+ * nen bon phep kiem (trang album, anh hien duoc, manifest, danh sach da chon)
+ * cung bao hong mot luc trong khi web hoan toan khoe. Mot script kiem tra hay
+ * bao dong nham thi chang ai them doc no nua.
  */
-function slugMau(): string | null {
+function dsSlug(): string[] {
   try {
     const tep = readdirSync("data/sao-luu")
       .filter((f) => f.endsWith(".json"))
       .sort()
       .pop();
-    if (!tep) return null;
+    if (!tep) return [];
     const j = JSON.parse(readFileSync(`data/sao-luu/${tep}`, "utf8")) as {
       bang?: { gallery?: { slug: string }[] };
     };
-    return j.bang?.gallery?.[0]?.slug ?? null;
+    return (j.bang?.gallery ?? []).map((g) => g.slug).filter(Boolean);
   } catch {
-    return null;
+    return [];
   }
+}
+
+/** Album dau tien trong ban sao luu ma domain nay con phuc vu that. */
+async function slugConSong(): Promise<string | null> {
+  for (const s of dsSlug()) {
+    try {
+      const { res } = await lay(`/g/${s}`);
+      if (res.status === 200) return s;
+    } catch {
+      /* Goi hong thi thu slug ke tiep. */
+    }
+  }
+  return null;
 }
 
 type KetQua = { ten: string; dat: boolean; chiTiet: string };
@@ -107,9 +127,9 @@ try {
 }
 
 /* 4. Album that: trang khach mo duoc, va anh tai ve duoc qua domain moi. */
-const slug = slugMau();
+const slug = await slugConSong();
 if (!slug) {
-  console.log("  --    Bo qua phan album           chua co ban sao luu de lay slug mau");
+  console.log("  --    Bo qua phan album           khong co album nao trong ban sao luu con song");
 } else {
   try {
     const { res, ms } = await lay(`/g/${slug}`);

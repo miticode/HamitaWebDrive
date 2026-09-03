@@ -47,12 +47,24 @@ async function kiemTra(): Promise<SucKhoe> {
 
     Dùng album thật chứ không phải một mã thư mục bịa: mã bịa thì Drive trả về
     404 ngay cả khi kết nối hoàn toàn khoẻ, không phân biệt được.
+
+    CHỈ LẤY ALBUM ĐÃ CÓ THƯ MỤC (`albumCount > 0`). Studio gửi link cho khách
+    TRƯỚC khi có ảnh — album rỗng là trạng thái bình thường, cố ý, không phải
+    hỏng hóc. Thiếu điều kiện này thì `orderBy` luôn chọn đúng một album rỗng
+    (0 là nhỏ nhất), đọc ra cây không có thư mục nào, rồi kết luận Drive hỏng.
+
+    Đã xảy ra thật: ngày 03/09/2026 đường này trả 503 suốt trong khi Drive
+    hoàn toàn khoẻ — ảnh vẫn tải về 77 KB trong 1,9 giây và cả ba trang album
+    đều mở 200. Kiểu báo nhầm này còn tệ hơn không có phép kiểm nào: dịch vụ
+    theo dõi sẽ kêu liên tục cho tới lúc studio tắt nó đi, đúng lúc đó thì hỏng
+    thật cũng không ai biết.
   */
   let folderId: string | null = null;
 
   if (databaseIsConfigured()) {
     try {
       const g = await getPrisma().gallery.findFirst({
+        where: { albumCount: { gt: 0 } },
         orderBy: { albumCount: "asc" },
         select: { driveFolderId: true },
       });
@@ -73,9 +85,10 @@ async function kiemTra(): Promise<SucKhoe> {
     }
   } else if (database) {
     /*
-      Database khoẻ nhưng chưa có album nào — không có gì để thử Drive. Coi là
-      khoẻ chứ không phải hỏng: một studio vừa dựng web chưa tạo album nào thì
-      không có gì sai cả.
+      Database khoẻ nhưng không có album nào ĐỦ ĐIỀU KIỆN để thử — chưa tạo
+      album nào, hoặc mọi album đang còn rỗng chờ media đổ ảnh vào. Không có gì
+      để thử thì coi là khoẻ chứ không phải hỏng: cả hai trường hợp đều là
+      trạng thái bình thường, không có gì sai.
     */
     drive = true;
   }
