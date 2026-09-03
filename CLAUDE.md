@@ -597,6 +597,38 @@ Ba quyết định trong `LocTheoThang.tsx`, đều có lý do đo được:
 Chỉ dựng những năm và tháng **thật sự có album**. Liệt kê đủ mười hai tháng thì
 hơn nửa cây là số 0, nhân viên phải đọc lướt một đống dòng chết để tìm dòng sống.
 
+**37. Bộ mã đầu tên album có MỘT nguồn duy nhất: `src/lib/maAlbum.ts`.**
+Hai chỗ đọc từ đó — hàng nút gợi ý ở ô "Tên khách" lúc tạo link, và hàng nút
+lọc ở danh sách album. Trước đây danh sách có bảng riêng gõ tay; thêm mã mới mà
+quên sửa một chỗ là nhân viên đặt tên bằng mã đó rồi lọc không ra.
+
+Hiện có mười mã: `HC` (hình cổng) · `AB` (album) · `ĐH` (đính hôn) · `HIS`
+(nhà trai) · `HER` (nhà gái) · `Baby` (chụp bé) · `GD` (gia đình) · `NS`
+(nhà Su) · `DN` · `TET`.
+
+**`nghia` để `null` khi không biết chắc mã viết tắt của gì** — `DN` và `TET`
+đang vậy. Chú thích bịa còn hại hơn để trống: nhân viên đọc rồi đặt tên theo
+cái nghĩa sai đó. Tám mã còn lại đều có căn cứ (studio nói, hoặc đọc được từ
+tên thư mục Drive của chính album mang mã ấy).
+
+**Hai hàng nút giống nhau nhưng hỏi hai câu khác nhau, đừng gộp:**
+- Ô tạo link hiện **đủ bộ**, kể cả mã chưa album nào dùng — câu hỏi là "được
+  phép đặt những mã nào". Ẩn mã chưa dùng thì mã mới không bao giờ có album
+  đầu tiên; `GD` và `NS` lúc thêm vào đúng ở tình trạng đó.
+- Danh sách **ẩn mã không có album** — câu hỏi là "đang có gì để xem".
+
+**Bấm mã trên ô trống phải chèn kèm dấu nối** (`"ĐH - "`, không phải `"ĐH"`).
+Thứ tự nhân viên hay làm nhất là bấm mã trước rồi gõ tên; trả về mã trơn thì họ
+gõ tiếp ra `"ĐHTrúc Mai & Minh Tiến"` dính liền — đã thử trên trình duyệt và ra
+đúng chuỗi đó. Dấu nối lửng khi chưa gõ gì thì `createGalleryAction` dọn trước
+khi ghi database, chứ không dọn ở giao diện: đó là chỗ duy nhất mọi đường vào
+database đều đi qua, nên gõ tay ra chuỗi như vậy cũng được dọn.
+
+`maDangCo()` **so với bộ mã đã biết**, không nhận bừa cụm chữ đầu tiên. Tên
+`"Khmer- Y Bình"` có dạng giống hệt mã cộng dấu nối mà `Khmer` không phải mã —
+nhận bừa thì bấm nút gợi ý sẽ nuốt mất một phần tên khách. Cũng phải đòi dấu
+ngăn ngay sau mã, không thì `AB` khớp cả `"Abigail"`.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại

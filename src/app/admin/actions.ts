@@ -98,7 +98,15 @@ export async function createGalleryAction(
     };
   }
 
-  const clientName = String(formData.get("clientName") ?? "").trim();
+  /*
+    Don dau noi con lung lo o cuoi: nut goi y ma chen san "ĐH - " de nhan vien
+    go tiep ten, nhung neu ho bam Tao link ngay luc do thi ten khach thanh
+    "ĐH -". Don o day chu khong phai o giao dien, vi day la cho DUY NHAT moi
+    duong vao database deu di qua — go tay ra chuoi nhu vay cung duoc don.
+  */
+  const clientName = String(formData.get("clientName") ?? "")
+    .replace(/[\s\-–—]+$/, "")
+    .trim();
 
   const gallery = await createGallery({
     title: folderName,

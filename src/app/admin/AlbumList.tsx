@@ -1,12 +1,18 @@
 "use client";
 
 import { useDeferredValue, useMemo, useState } from "react";
+import { MA_ALBUM } from "@/lib/maAlbum";
 import type { BiaMuc, Gallery, ListCount, MucXong } from "@/lib/store";
 import { GalleryCard } from "./GalleryCard";
 import { LocTheoThang, hopMoc, type MocLoc } from "./LocTheoThang";
 
-/** Bo ma nhan hay dung o dau ten album — bam mot cai la loc ngay. */
-const NHAN = ["HC", "AB", "HER", "HIS", "ĐH", "DN", "TET"];
+/*
+  Bo ma nhan lay tu MOT nguon dung chung voi o tao link (src/lib/maAlbum.ts).
+
+  Truoc day o day co bang rieng, gõ tay. Them ma moi thi phai nho sua ca hai
+  cho — quen mot cho la nhan vien dat ten bang ma moi ma loc lai khong ra.
+*/
+const NHAN = MA_ALBUM.map((m) => m.ma);
 
 /** Hien bao nhieu the truoc khi phai bam "xem them". */
 const TRANG = 24;
