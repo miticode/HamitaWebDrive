@@ -554,6 +554,49 @@ tên trong `subfolders`** thì không báo, vì phép so sánh chỉ nhìn danh 
 thư mục chứ không nhìn số ảnh. Thư mục rỗng không được tính (`loadTree` bỏ thư
 mục không ảnh), nên "tạo sẵn thư mục rỗng rồi mới đổ ảnh" vẫn báo bình thường.
 
+**35. Mọi phép chia theo NGÀY THÁNG đều tính theo giờ studio, không theo giờ máy.**
+Dùng `MUI_GIO` trong `constants.ts` (`Asia/Ho_Chi_Minh`) với
+`Intl.DateTimeFormat`, đừng dùng `getFullYear()`/`getMonth()` của `Date`.
+
+Hai lý do, cái nào cũng đủ để bắt buộc. Thứ nhất là **lỗi thật**: hàm chạy trên
+Vercel dùng UTC, trình duyệt ở Long An dùng UTC+7, nên album tạo lúc 0h30 ngày
+1/1 giờ Việt Nam bị máy chủ xếp vào năm cũ còn máy khách xếp vào năm mới —
+React báo lệch giữa bản dựng sẵn và bản dựng lại. Thứ hai là **đúng về nghiệp
+vụ**: "album này tạo tháng 9" phải tính theo lịch của studio, không đổi theo
+nơi người đang xem ngồi. Đã kiểm bằng một mốc đặt đúng 17h30 UTC 31/12 — cây
+lọc xếp nó vào tháng 1 năm sau, đúng như tờ lịch treo ở studio.
+
+**36. Bộ lọc theo tháng ở trang quản lý xếp theo NGÀY TẠO LINK.**
+Ngày chụp không tồn tại ở đâu cả — ảnh nằm trên Drive, database chỉ giữ mốc
+studio tạo link, mà hai mốc đó thực tế sát nhau. Đây cũng đúng con số ngày in
+dưới mỗi thẻ album, nên bấm tháng nào thì ra đúng những thẻ mang ngày tháng đó.
+
+Ba quyết định trong `LocTheoThang.tsx`, đều có lý do đo được:
+
+- **Chỉ thành cột riêng từ 1536px**, không phải 1024px như phần lớn bố cục
+  khác trong dự án. Cây rộng 13rem, cộng khoảng cách là 228px lấy thẳng từ
+  phần dành cho thẻ album. Đo ở 1700px: thẻ vẫn 325px (trước khi thêm cây là
+  327px) — gần như không đổi. Nhưng ở 1024px thẻ tụt xuống còn 182px, chật tới
+  mức các hàng "Hạn giữ ảnh", "Gói ảnh" tràn dòng. Dưới mốc đó cây nằm ngang
+  phía trên. Bề rộng trang cũng nới từ `90rem` lên `104rem` để bù đúng chỗ cây
+  chiếm.
+- **Trạng thái mở/thu giữ bằng state React**, khác hẳn nguyên tắc 30. Ở đây
+  `<details>` tự lo KHÔNG chạy được: `open` là thuộc tính React kiểm soát, nên
+  mỗi lần bấm lọc là component vẽ lại và React ghi đè `open` về giá trị ban
+  đầu — mở năm 2025 ra rồi bấm một tháng thì nó tự gấp lại ngay trước mắt, đã
+  thử và thấy đúng vậy. Vẫn không nháy như nguyên tắc 30 lo, vì giá trị đầu
+  tính thẳng từ props bằng hàm khởi tạo của `useState`.
+- **Bấm vào năm thì LUÔN mở ra, không bao giờ gấp lại.** Nút năm nằm trong
+  `<summary>` nên một cú bấm mang hai ý nghĩa. Bấm một năm còn thu mà nó vẫn
+  thu thì không có đường nào thấy các tháng bên trong; bấm một năm đang mở mà
+  nó gấp lại thì đúng thứ vừa lọc ra biến mất. Cả hai chiều đều dẫn về "mở" —
+  muốn gấp thì bấm mũi tên. *Cách làm sai đã thử:* `stopPropagation()` trong
+  nút — nó chặn luôn cả việc mở, vì `<summary>` gấp/mở dựa trên cú bấm đi qua
+  nó.
+
+Chỉ dựng những năm và tháng **thật sự có album**. Liệt kê đủ mười hai tháng thì
+hơn nửa cây là số 0, nhân viên phải đọc lướt một đống dòng chết để tìm dòng sống.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại

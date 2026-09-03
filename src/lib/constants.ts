@@ -61,6 +61,23 @@ export const GIA_ANH_THEM_MAC_DINH = 12_000;
  */
 export const SO_NGAY_GIU_ANH_MAC_DINH = 90;
 
+/**
+ * Mui gio cua studio.
+ *
+ * Moc thoi gian trong database la UTC. Muon biet mot album duoc tao NGAY NAO
+ * thi phai quy ve mot mui gio cu the, va mui gio dung o day la cua studio chu
+ * khong phai cua may dang mo trang:
+ *
+ * - Ham chay tren Vercel dung UTC, trinh duyet o Long An dung UTC+7. Album tao
+ *   luc 0h30 ngay 1/1 gio Viet Nam la 17h30 ngay 31/12 theo UTC — hai ben se
+ *   xep no vao HAI NAM khac nhau, va React bao loi lech giua ban may chu dung
+ *   san voi ban may khach dung lai.
+ * - Ghim mui gio thi ca hai ben ra cung mot ket qua, va con dung ve nghiep vu:
+ *   "album nay tao thang 9" phai tinh theo lich cua studio, khong doi theo noi
+ *   nguoi xem dang dung.
+ */
+export const MUI_GIO = "Asia/Ho_Chi_Minh";
+
 /** Moc het han mac dinh cho album vua tao: hom nay cong so ngay giu anh. */
 export function hanMacDinh(): Date {
   const d = new Date();

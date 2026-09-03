@@ -3,6 +3,7 @@
 import { useDeferredValue, useMemo, useState } from "react";
 import type { BiaMuc, Gallery, ListCount, MucXong } from "@/lib/store";
 import { GalleryCard } from "./GalleryCard";
+import { LocTheoThang, hopMoc, type MocLoc } from "./LocTheoThang";
 
 /** Bo ma nhan hay dung o dau ten album — bam mot cai la loc ngay. */
 const NHAN = ["HC", "AB", "HER", "HIS", "ĐH", "DN", "TET"];
@@ -26,7 +27,7 @@ function bo_dau(s: string): string {
 /** Chuoi de doi chieu cho mot album: ten khach, ten thu muc goc, duong dan, ten cac thu muc con. */
 function kho_chu(g: Gallery): string {
   return bo_dau(
-    [g.clientName ?? "", g.title, g.slug, ...g.subfolders].join(" ")
+    [g.clientName ?? "", g.title, g.slug, ...g.subfolders].join(" "),
   );
 }
 
@@ -58,6 +59,7 @@ export function AlbumList({
 }) {
   const [tuKhoa, setTuKhoa] = useState("");
   const [nhan, setNhan] = useState<string | null>(null);
+  const [moc, setMoc] = useState<MocLoc>(null);
   const [hienBaoNhieu, setHienBaoNhieu] = useState(TRANG);
 
   // Go nhanh tren danh sach dai thi de giat; deferred cho phan go muot truoc,
@@ -66,21 +68,29 @@ export function AlbumList({
 
   const chiMuc = useMemo(
     () => galleries.map((g) => ({ g, chu: kho_chu(g), tu: cac_tu(g) })),
-    [galleries]
+    [galleries],
   );
+
+  const ngayTao = useMemo(() => galleries.map((g) => g.createdAt), [galleries]);
 
   // Chi hien nhung ma nhan that su co album, kem so luong.
   const nhanCoDung = useMemo(
     () =>
       NHAN.map((ma) => {
         const key = bo_dau(ma);
-        return { ma, key, so: chiMuc.filter((m) => m.tu.some((t) => t.startsWith(key))).length };
+        return {
+          ma,
+          key,
+          so: chiMuc.filter((m) => m.tu.some((t) => t.startsWith(key))).length,
+        };
       }).filter((n) => n.so > 0),
-    [chiMuc]
+    [chiMuc],
   );
 
   const ketQua = useMemo(() => {
     let ds = chiMuc;
+
+    if (moc) ds = ds.filter((m) => hopMoc(m.g.createdAt, moc));
 
     if (nhan) {
       // So khop theo dau tu, khong phai chuoi con: "hc" khop "hc Ngọc Thơ"
@@ -96,125 +106,171 @@ export function AlbumList({
     }
 
     return ds.map((m) => m.g);
-  }, [chiMuc, nhan, tuKhoaCho]);
+  }, [chiMuc, moc, nhan, tuKhoaCho]);
 
-  const countsOf = (galleryId: string) => counts.filter((c) => c.galleryId === galleryId);
-  const dangLoc = Boolean(nhan) || tuKhoa.trim().length > 0;
+  const countsOf = (galleryId: string) =>
+    counts.filter((c) => c.galleryId === galleryId);
+  const dangLoc = Boolean(nhan) || Boolean(moc) || tuKhoa.trim().length > 0;
 
+  const doiMoc = (m: MocLoc) => {
+    setMoc(m);
+    setHienBaoNhieu(TRANG);
+  };
+
+  /*
+    Cây lọc theo tháng đứng thành MỘT CỘT RIÊNG bên trái danh sách.
+
+    Trang này vốn chia hai cột: danh sách album bên trái, ô "Tạo link mới" bên
+    phải. Trên màn hình rộng, hai cột đó dồn về giữa và chừa một dải trống dài
+    dọc mép trái — đúng chỗ anh chỉ.
+
+    CHỈ thành cột riêng từ 1536px trở lên, không phải 1024px. Cây lọc rộng
+    13rem, cộng khoảng cách là 228px lấy thẳng từ phần dành cho thẻ album. Đo
+    trên màn 1024px: mỗi thẻ tụt từ 306px xuống còn 182px — chật tới mức mã
+    chọn ảnh và mấy hàng "Hạn giữ ảnh", "Gói ảnh" tràn dòng hết. Từ 1536px thì
+    thẻ còn 296px, gần như không đổi, nên đó mới là chỗ đặt được.
+
+    Dưới mốc đó cây nằm NGANG phía trên danh sách. Studio chỉ có vài năm nên
+    nó cao chừng chục dòng, không đẩy thẻ đi xa.
+  */
   return (
-    <>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="eyebrow">
-          Album đã tạo · {dangLoc ? `${ketQua.length}/${galleries.length}` : galleries.length}
-        </h2>
-      </div>
+    <div className="grid items-start gap-5 2xl:grid-cols-[13rem_minmax(0,1fr)]">
+      <aside className="2xl:sticky 2xl:top-6">
+        <LocTheoThang ngayTao={ngayTao} moc={moc} doiMoc={doiMoc} />
+      </aside>
 
-      <div className="relative mt-3">
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden
-          className="pointer-events-none absolute top-1/2 left-3 size-[18px] -translate-y-1/2 text-fg-faint"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.5-3.5" />
-        </svg>
-        <input
-          value={tuKhoa}
-          onChange={(e) => {
-            setTuKhoa(e.target.value);
-            setHienBaoNhieu(TRANG);
-          }}
-          placeholder="Tìm theo tên cô dâu chú rể, hoặc mã HC, ĐH…"
-          aria-label="Tìm album"
-          className="input pl-10"
-        />
-        {tuKhoa && (
-          <button
-            type="button"
-            onClick={() => setTuKhoa("")}
-            aria-label="Xoá ô tìm"
-            className="absolute top-1/2 right-2 grid size-8 -translate-y-1/2 place-items-center rounded-full text-fg-faint transition hover:bg-bg-soft hover:text-fg"
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="eyebrow">
+            Album đã tạo ·{" "}
+            {dangLoc
+              ? `${ketQua.length}/${galleries.length}`
+              : galleries.length}
+          </h2>
+        </div>
+
+        <div className="relative mt-3">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 left-3 size-[18px] -translate-y-1/2 text-fg-faint"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
           >
-            ✕
-          </button>
-        )}
-      </div>
-
-      {nhanCoDung.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {nhanCoDung.map((n) => {
-            const dang = nhan === n.key;
-            return (
-              <button
-                key={n.ma}
-                type="button"
-                onClick={() => {
-                  setNhan(dang ? null : n.key);
-                  setHienBaoNhieu(TRANG);
-                }}
-                className={`min-h-8 rounded-full border px-3 text-xs tracking-wide transition ${
-                  dang
-                    ? "border-transparent bg-fg text-bg"
-                    : "border-line-strong bg-bg-raised text-fg-muted hover:border-accent hover:text-fg"
-                }`}
-              >
-                {n.ma} <span className="opacity-60">{n.so}</span>
-              </button>
-            );
-          })}
-          {dangLoc && (
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+          <input
+            value={tuKhoa}
+            onChange={(e) => {
+              setTuKhoa(e.target.value);
+              setHienBaoNhieu(TRANG);
+            }}
+            placeholder="Tìm theo tên cô dâu chú rể, hoặc mã HC, ĐH…"
+            aria-label="Tìm album"
+            className="input pl-10"
+          />
+          {tuKhoa && (
             <button
               type="button"
-              onClick={() => {
-                setNhan(null);
-                setTuKhoa("");
-              }}
-              className="min-h-8 px-2 text-xs text-fg-faint underline underline-offset-2 hover:text-accent"
+              onClick={() => setTuKhoa("")}
+              aria-label="Xoá ô tìm"
+              className="absolute top-1/2 right-2 grid size-8 -translate-y-1/2 place-items-center rounded-full text-fg-faint transition hover:bg-bg-soft hover:text-fg"
             >
-              bỏ lọc
+              ✕
             </button>
           )}
         </div>
-      )}
 
-      {ketQua.length === 0 ? (
-        <div className="mt-10 text-center">
-          <p className="font-display text-2xl">Không tìm thấy album nào</p>
-          <p className="mt-2 text-sm text-fg-muted">
-            Thử gõ ít chữ hơn, hoặc bỏ mã lọc. Ô tìm không cần gõ dấu.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {ketQua.slice(0, hienBaoNhieu).map((g) => (
-              <GalleryCard
-                key={g.id}
-                gallery={g}
-                counts={countsOf(g.id)}
-                mucXong={mucXong.filter((m) => m.galleryId === g.id)}
-                biaMuc={biaMuc.filter((b) => b.galleryId === g.id)}
-              />
-            ))}
-          </div>
-
-          {ketQua.length > hienBaoNhieu && (
-            <div className="mt-6 text-center">
+        {nhanCoDung.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {nhanCoDung.map((n) => {
+              const dang = nhan === n.key;
+              return (
+                <button
+                  key={n.ma}
+                  type="button"
+                  onClick={() => {
+                    setNhan(dang ? null : n.key);
+                    setHienBaoNhieu(TRANG);
+                  }}
+                  className={`min-h-8 rounded-full border px-3 text-xs tracking-wide transition ${
+                    dang
+                      ? "border-transparent bg-fg text-bg"
+                      : "border-line-strong bg-bg-raised text-fg-muted hover:border-accent hover:text-fg"
+                  }`}
+                >
+                  {n.ma} <span className="opacity-60">{n.so}</span>
+                </button>
+              );
+            })}
+            {dangLoc && (
               <button
                 type="button"
-                onClick={() => setHienBaoNhieu((n) => n + TRANG)}
-                className="btn"
+                onClick={() => {
+                  setNhan(null);
+                  setTuKhoa("");
+                  doiMoc(null);
+                }}
+                className="min-h-8 px-2 text-xs text-fg-faint underline underline-offset-2 hover:text-accent"
               >
-                Xem thêm {ketQua.length - hienBaoNhieu} album
+                bỏ lọc
               </button>
+            )}
+          </div>
+        )}
+
+        {ketQua.length === 0 ? (
+          <div className="mt-10 text-center">
+            <p className="font-display text-2xl">Không tìm thấy album nào</p>
+            <p className="mt-2 text-sm text-fg-muted">
+              Thử gõ ít chữ hơn, bỏ mã lọc, hoặc chọn tháng khác. Ô tìm không
+              cần gõ dấu.
+            </p>
+            {dangLoc && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNhan(null);
+                  setTuKhoa("");
+                  doiMoc(null);
+                }}
+                className="btn mt-5"
+              >
+                Bỏ hết bộ lọc
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {ketQua.slice(0, hienBaoNhieu).map((g) => (
+                <GalleryCard
+                  key={g.id}
+                  gallery={g}
+                  counts={countsOf(g.id)}
+                  mucXong={mucXong.filter((m) => m.galleryId === g.id)}
+                  biaMuc={biaMuc.filter((b) => b.galleryId === g.id)}
+                />
+              ))}
             </div>
-          )}
-        </>
-      )}
-    </>
+
+            {ketQua.length > hienBaoNhieu && (
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  onClick={() => setHienBaoNhieu((n) => n + TRANG)}
+                  className="btn"
+                >
+                  Xem thêm {ketQua.length - hienBaoNhieu} album
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
 }
