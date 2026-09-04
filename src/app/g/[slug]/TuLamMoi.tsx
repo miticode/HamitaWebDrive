@@ -19,17 +19,39 @@ const NGUONG_AN = 20_000;
  * khác vài giây rồi quay lại thì không việc gì phải tải lại — vừa tốn vừa làm
  * giật trang đang xem dở.
  */
+/**
+ * Xoá con số đỏ trên biểu tượng app.
+ *
+ * Khách đang mở album ra xem thì con số không còn nghĩa gì nữa. Phải làm HAI
+ * việc chứ không phải một: xoá con số đang hiện, và nhắn cho service worker
+ * xoá luôn bộ đếm của nó — bộ đếm nằm bên đó, không xoá thì thông báo kế tiếp
+ * cộng tiếp từ số cũ và khách thấy "3" trong khi chỉ có một tin mới.
+ */
+function xoaSoDo() {
+  try {
+    navigator.clearAppBadge?.();
+    navigator.serviceWorker?.controller?.postMessage({ kieu: "xoaSoDo" });
+  } catch {
+    // Máy không hỗ trợ số đỏ thì thôi, không phải lỗi.
+  }
+}
+
 export function TuLamMoi() {
   const router = useRouter();
 
   useEffect(() => {
     let lucRoiDi = 0;
 
+    // Mở trang ra là đã xem, xoá ngay chứ không đợi khách làm gì thêm.
+    xoaSoDo();
+
     const khiDoiTrangThai = () => {
       if (document.visibilityState === "hidden") {
         lucRoiDi = Date.now();
         return;
       }
+      // Quay lại app cũng là đã xem — kể cả khi chưa tới ngưỡng tải lại.
+      xoaSoDo();
       if (lucRoiDi && Date.now() - lucRoiDi > NGUONG_AN) {
         router.refresh();
         lucRoiDi = 0;

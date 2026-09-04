@@ -99,11 +99,24 @@ export function quyetDinhBao(input: {
 }): LyDoBao {
   const { mucMoi, soAnhTruoc, soAnhSau, baoLanCuoi, bayGio } = input;
 
-  // Còn trong khoảng lặng thì im, dù có gì mới đi nữa.
-  if (baoLanCuoi && bayGio - baoLanCuoi.getTime() < IM_LANG_MS) return null;
+  /*
+    THƯ MỤC MỚI thì báo ngay, không xét khoảng lặng.
 
+    Bản đầu đặt khoảng lặng lên trên cùng nên nó chặn cả thư mục mới — studio
+    thử ngày 04/09/2026 và gặp đúng lỗi đó: thêm thư mục thứ nhất, bấm "Làm
+    mới" thì khách nhận tin; thêm tiếp thư mục thứ hai vài phút sau thì im bặt.
+
+    Khoảng lặng sinh ra để chống MỘT chuyện: media đang đổ ảnh dở, studio bấm
+    "Làm mới" mấy lần liên tiếp xem đã lên chưa. Đó là chuyện của "thêm ảnh".
+    Còn tạo hẳn một thư mục mới là hành động có chủ đích, mỗi lần một sự kiện —
+    thư mục "Ảnh cưới" và "Ảnh cổng" là hai bộ ảnh khác nhau, khách xứng đáng
+    biết cả hai.
+  */
   if (mucMoi.length > 0)
     return { kieu: "mucMoi", ten: mucMoi.map((m) => m.name) };
+
+  // Còn khoảng lặng thì CHỈ chặn việc báo "vừa thêm ảnh".
+  if (baoLanCuoi && bayGio - baoLanCuoi.getTime() < IM_LANG_MS) return null;
 
   const soThem = soAnhSau - soAnhTruoc;
   if (soThem > 0) return { kieu: "themAnh", soThem };

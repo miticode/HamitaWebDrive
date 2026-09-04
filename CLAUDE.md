@@ -570,13 +570,46 @@ vào thư mục cũ" là **cùng một việc**: có ảnh mới để xem. Phâ
 **Ảnh BỚT đi thì không báo.** Studio dọn bớt ảnh là việc nội bộ; nhắn "vừa có
 thay đổi" chỉ làm khách lo.
 
-**Khoảng lặng 6 tiếng cho mỗi album** (`IM_LANG_MS`), mốc lưu trong bảng `Moc`
-với khoá `bao-anh-moi:<galleryId>`. Không có nó thì tính năng này thành thứ gây
-phiền: media đang đổ ảnh dở, studio bấm "Làm mới" ba bốn lần liên tiếp để xem
-đã lên chưa — mỗi lần là một lần điện thoại khách rung.
+**Khoảng lặng 6 tiếng** (`IM_LANG_MS`) **CHỈ áp cho lẽ thứ hai**, mốc lưu trong
+bảng `Moc` với khoá `bao-anh-moi:<galleryId>`. Thư mục mới thì **báo ngay, mọi
+lần**.
+
+Vì sao phải phân biệt: khoảng lặng sinh ra để chống đúng MỘT chuyện — media đang
+đổ ảnh dở, studio bấm "Làm mới" mấy lần liên tiếp xem đã lên chưa, mỗi lần là
+một lần điện thoại khách rung. Đó là chuyện của "thêm ảnh". Còn tạo hẳn một thư
+mục mới là hành động có chủ đích, mỗi lần một sự kiện — "Ảnh cưới" và "Ảnh cổng"
+là hai bộ ảnh khác nhau, khách xứng đáng biết cả hai.
+
+*Đã vấp:* bản đầu (04/09/2026) đặt khoảng lặng lên trên cùng nên nó chặn cả thư
+mục mới. Studio thử ngay hôm đó và gặp: thêm thư mục thứ nhất, bấm "Làm mới" thì
+khách nhận tin; thêm tiếp thư mục thứ hai vài phút sau thì im bặt. **Thứ tự hai
+phép kiểm trong `quyetDinhBao()` chính là chỗ dễ làm sai nhất — thư mục mới phải
+đứng TRƯỚC khoảng lặng.**
 
 **Chỉ ghi mốc khi THẬT SỰ có gửi** (`daGui > 0`). Ghi cả những lần im lặng thì
 khoảng lặng tự gia hạn mãi và khách không bao giờ nhận được tin nào nữa.
+
+**41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
+Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên
+biểu tượng tới khi khách mở album ra.
+
+Chỉ chạy trên máy đã **cài app ra màn hình chính** — trình duyệt thường không có
+chỗ nào để vẽ con số. Máy không hỗ trợ thì lặng lẽ bỏ qua.
+
+Bộ đếm **cộng dồn**, giữ trong Cache API (`hamita-so-do`), không phải biến trong
+bộ nhớ: hệ điều hành tắt service worker giữa hai thông báo là biến mất sạch, mà
+studio thêm ba thư mục trong một buổi thì khách phải thấy số 3.
+
+*Điều này KHÔNG phá nguyên tắc 21.* Nguyên tắc đó cấm cache **nội dung** — ảnh
+và trang — vì thế sẽ phá "link sống". Ở đây kho chỉ giữ đúng một con số. **Đừng
+mở rộng kho đó ra để giữ thêm thứ gì khác.**
+
+Xoá số phải làm **hai việc**, thiếu một là sai: xoá con số đang hiện
+(`clearAppBadge`) và nhắn service worker xoá **bộ đếm** của nó
+(`postMessage({kieu:"xoaSoDo"})`). Bộ đếm nằm bên service worker — không xoá thì
+tin kế tiếp cộng tiếp từ số cũ, khách thấy "4" trong khi chỉ có một tin mới.
+Xoá ở hai chỗ: khách mở/quay lại album (`TuLamMoi.tsx`) và khách bấm vào chính
+thông báo (`notificationclick` trong `sw.js`).
 
 *Bẫy về thứ tự khi vá dữ liệu cũ:* `npm run db:sync` chỉ gọi `updateGalleryMeta`,
 **không** gọi `syncAndWarm` nên **không gửi thông báo**. Chạy nó trước là
