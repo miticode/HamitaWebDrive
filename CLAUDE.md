@@ -722,6 +722,33 @@ Cả dòng thông báo là liên kết tới `/admin/[slug]`: đọc xong thì v
 luôn là mở album ra sửa, bắt đi tìm lại tên trong danh sách mười sáu thẻ là
 thừa một bước.
 
+**40. Khung xem ảnh to ở trang quản lý dùng ĐÚNG bộ phím của khung phía khách.**
+`Esc` đóng, mũi tên trái/phải chuyển tấm, vuốt ngang trên điện thoại — giống
+hệt `PhotoGrid.tsx`. Hai khung viết riêng nhưng cùng một người dùng: studio mở
+album của khách xem thử rồi quay lại trang này, tay quen phím nào thì phím đó
+phải chạy.
+
+Ba điểm khác với khung phía khách, đều có lý do:
+
+- **Mũi tên chỉ chạy trong MỘT thư mục.** Lưới nhận ảnh theo từng nhóm thư mục
+  chứ không cả danh sách, nên lướt hết một thư mục là dừng — không trôi sang
+  thư mục khác lúc nào không hay.
+- **Lời dặn của khách hiện dưới ảnh** trong khung to. Đây mới là chỗ studio đọc
+  nó: đang nhìn kỹ đúng tấm đó để quyết chỉnh sửa thế nào.
+- **Nền đen cố định**, không theo tông sáng/tối của trang quản lý — cùng lý do
+  với ngoại lệ ở nguyên tắc 12: nền kem hắt màu lên ảnh thì không đánh giá được
+  màu da và màu váy.
+
+*Bẫy đã vấp, ghi để khỏi lặp:* hàm chuyển tấm phải tính từ vị trí CŨ do React
+đưa vào (`setState(cu => …)`), **không đọc `viTri` trong closure**. Giữ mũi tên
+cho phím tự lặp thì nhiều sự kiện rơi vào cùng một nhịp, React chưa kịp vẽ lại
+nên lần nào cũng tính từ đúng một vị trí. Đo trước khi sửa: đang ở tấm 2, bấm
+trái hai lần ra tấm 1 thay vì tấm 10 — nuốt mất một bước. Sau khi sửa: từ 1/10
+bấm trái hai lần ra 9/10, bấm phải ba lần ra 2/10, đúng từng bước.
+
+Ảnh trong lưới bọc trong `<button>` chứ không gắn `onClick` thẳng lên thẻ ảnh:
+có nút thì bàn phím Tab tới được và Enter mở được.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại

@@ -2,11 +2,17 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
-import { getGalleryBySlug, getLists, getSelections, type Selection } from "@/lib/store";
+import {
+  getGalleryBySlug,
+  getLists,
+  getSelections,
+  type Selection,
+} from "@/lib/store";
 import { maSoFile } from "@/lib/anhIn";
 import { LoginForm } from "../LoginForm";
 import { NutDoiTong } from "../NutDoiTong";
 import { ExportButton } from "./ExportButton";
+import { LuoiAnhChon } from "./LuoiAnhChon";
 
 export const dynamic = "force-dynamic";
 
@@ -94,7 +100,9 @@ export default async function ResultsPage({ params }: Props) {
                   }`}
                 />
                 {list.name}
-                <span className="ml-2 text-lg text-fg-muted">{anh.length} ảnh</span>
+                <span className="ml-2 text-lg text-fg-muted">
+                  {anh.length} ảnh
+                </span>
                 {/*
                   So tam co loi dan, dat ngay canh so anh.
 
@@ -125,43 +133,21 @@ export default async function ResultsPage({ params }: Props) {
                 <h3 className="eyebrow">
                   {album} · {rows.length} ảnh
                 </h3>
-                <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-6">
-                  {rows.map((row) => (
-                    <figure
-                      key={row.id}
-                      className="skeleton overflow-hidden rounded-sm bg-bg-raised"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={`/api/img/${row.driveFileId}?w=320`}
-                        alt={row.fileName}
-                        loading="lazy"
-                        className="aspect-[3/4] w-full object-cover"
-                      />
-                      {/*
-                        Loi dan hien DAY DU, khong cat bot bang truncate nhu ten
-                        file. Ten file cat mat mot doan van doan duoc; loi dan
-                        cat mat mot doan la doc sai y khach — "in cỡ 40x60" cat
-                        con "in cỡ 40..." thi ben in lam sao biet.
-
-                        Hien o CA HAI danh sach, khong rieng "Ảnh in". Don giao
-                        in chi lay danh sach trai tim (nguyen tac 28) nen loi
-                        dan khach ghi tren tam giu rieng truoc day khong hien o
-                        dau ca — go xong roi khong ai doc.
-                      */}
-                      <figcaption className="px-1.5 py-1.5">
-                        <span className="block truncate text-[11px] text-fg-faint">
-                          {row.fileName}
-                        </span>
-                        {row.note && (
-                          <span className="mt-1 block rounded-sm bg-amber-100 px-1.5 py-1 text-[11px] leading-snug text-amber-900">
-                            {row.note}
-                          </span>
-                        )}
-                      </figcaption>
-                    </figure>
-                  ))}
-                </div>
+                {/*
+                  Lưới tách ra component riêng vì bấm xem to cần chạy ở máy
+                  khách. Truyền theo TỪNG NHÓM thư mục chứ không phải cả danh
+                  sách: mũi tên trái/phải trong khung xem to chạy trong đúng
+                  nhóm đang mở, nên studio lướt hết một thư mục là dừng, không
+                  trôi sang thư mục khác lúc nào không hay.
+                */}
+                <LuoiAnhChon
+                  anh={rows.map((r) => ({
+                    id: r.id,
+                    driveFileId: r.driveFileId,
+                    fileName: r.fileName,
+                    note: r.note,
+                  }))}
+                />
               </div>
             ))}
           </section>
