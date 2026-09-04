@@ -661,6 +661,42 @@ khách (nguyên tắc 28); rút gọn thành dạng bảng cho "dễ đọc" là
 `soAnhTrongGoi === null` thì **không vẽ khối này** — album không tính theo gói
 thì tự dựng ra một con số là thu tiền thứ khách không đặt.
 
+**39. Khung "Thông báo" ở trang quản lý chỉ chứa VIỆC CỦA STUDIO.**
+Thêm 04/09/2026 theo yêu cầu. Ranh giới với ba chỗ báo sẵn có — nhầm là cùng
+một tin hiện hai nơi:
+
+| Chỗ báo | Lo việc gì |
+|---|---|
+| Khung **Kho ảnh** đầu trang | Drive sắp đầy, album quá hạn giữ ảnh |
+| Cạnh nút **Sao lưu ngay** | Lần sao lưu gần nhất cách đây bao lâu |
+| Trang **thống kê** | **Nhắc khách** — chưa mở link, chưa chọn, chọn dở rồi dừng |
+| Khung **Thông báo** (mới) | **Việc studio tự làm** — không ai gọi điện thay được |
+
+Ba loại đang canh, mỗi loại đều từ một lỗi đo được trong lượt rà soát 04/09:
+
+- **Chưa đặt gói ảnh.** Tách hai mức, đừng gộp: đã có khách thả tim là **gấp**
+  (đơn giao in không tính được tiền, tới ngày giao mới lộ ra); chưa ai thả tim
+  thì chỉ là lời nhắc. Đo trên dữ liệu thật: 2 album gấp, 2 album nhắc.
+- **Khách chọn thêm sau khi đã báo xong.** So với mốc báo xong **sớm nhất** của
+  album. Đây là kiểu lỗi im lặng nhất: studio thấy "đã báo xong" thì đem đi in,
+  khách còn thêm mấy tấm sau đó, tới ngày giao mới biết thiếu mà không ai lần
+  ra vì sao. Thật: Tú Trinh thêm 10 tấm sau khi báo.
+- **Album mất mã bảo vệ.** `daMoKhoa()` trả `true` khi album không có mã, nghĩa
+  là ai cầm link cũng chọn được. Giao diện chặn mã dưới 4 ký tự nên không xảy
+  ra từ đó, nhưng nếu xảy ra bằng đường khác thì phải thấy ngay.
+
+**KHÔNG gọi Drive** (nguyên tắc 9). Vì vậy khung này **không thể** biết media
+vừa đổ thêm ảnh vào một thư mục cũ — thứ chỉ lộ ra khi đọc lại Drive. Đừng thêm
+phép kiểm kiểu đó vào đây; nó sẽ làm trang quản lý chậm hẳn.
+
+**Không tự ẩn khi rỗng**, và khi rỗng thì **nói rõ đang canh những gì**. Khung
+lặng lẽ biến mất thì studio không phân biệt được "hôm nay không có việc" với
+"cái khung đó hỏng rồi" — đúng bẫy đã ghi ở nguyên tắc 27 với khung kho ảnh.
+
+Cả dòng thông báo là liên kết tới `/admin/[slug]`: đọc xong thì việc tiếp theo
+luôn là mở album ra sửa, bắt đi tìm lại tên trong danh sách mười sáu thẻ là
+thừa một bước.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại

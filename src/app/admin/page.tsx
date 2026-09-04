@@ -15,12 +15,14 @@ import {
   type Gallery,
 } from "@/lib/store";
 import { docMoc } from "@/lib/moc";
+import { docThongBao } from "@/lib/thongBao";
 import { logoutAction } from "./actions";
 import { NutSaoLuu } from "./NutSaoLuu";
 import { KhoAnh } from "./KhoAnh";
 import { DriveConnection } from "./DriveConnection";
 import { AlbumList } from "./AlbumList";
 import { GalleryForm } from "./GalleryForm";
+import { ThongBao } from "./ThongBao";
 import { LoginForm } from "./LoginForm";
 
 export const dynamic = "force-dynamic";
@@ -110,6 +112,16 @@ export default async function AdminPage() {
 
   const onJsonStore = storageKind() === "json";
 
+  /*
+    Thông báo đọc thẳng từ Prisma nên chỉ có khi chạy trên Postgres, giống
+    trang thống kê. Chạy ở máy bằng kho JSON thì khung báo trống — chấp nhận
+    được, vì đó là chế độ chỉ dùng lúc phát triển.
+
+    Nuốt lỗi: đây là khung phụ trợ, hỏng thì cũng không được kéo cả trang quản
+    lý chết theo.
+  */
+  const tinThongBao = onJsonStore ? [] : await docThongBao().catch(() => []);
+
   const { quaHan, sapHetHan } = xepTheoHan(galleries);
   const saoLuuCachDay = cachDayMayNgay(await docMoc("saoLuu"));
 
@@ -191,6 +203,7 @@ export default async function AdminPage() {
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="lg:order-2">
           <GalleryForm />
+          <ThongBao tin={tinThongBao} />
         </div>
 
         <div className="lg:order-1">

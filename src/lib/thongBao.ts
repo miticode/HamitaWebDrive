@@ -1,0 +1,145 @@
+import { getPrisma } from "@/lib/db";
+
+/**
+ * Nhung viec STUDIO phai tu lam, gom vao mot cho tren trang quan ly.
+ *
+ * Ranh gioi voi trang thong ke, dung nham thi hai cho se lap nhau:
+ *
+ * - `/admin/thong-ke` lo viec NHAC KHACH — nha nao chua mo link, chua chon tam
+ *   nao, chon do roi dung. Do la nhung cu dien thoai studio nen goi.
+ * - Khung nay lo viec CUA CHINH STUDIO — chua dat goi anh, khach chon them sau
+ *   khi da bao xong, album khong con ma bao ve. Khong ai goi dien duoc cho
+ *   nhung viec nay ca, phai tu mo ra sua.
+ *
+ * Doc thang bang getPrisma() nhu thongKe.ts, va cung chi chay khi co database.
+ *
+ * KHONG GOI DRIVE (nguyen tac 9). Vi vay khung nay khong the biet media vua do
+ * them anh vao mot thu muc cu hay chua — do la thu chi lo ra khi doc lai Drive.
+ * Dung them mot phep kiem kieu do vao day; no se lam trang quan ly cham han.
+ */
+
+export type MucDo = "gap" | "nen";
+
+export type ThongBao = {
+  /** Khoa de React phan biet cac dong. */
+  id: string;
+  mucDo: MucDo;
+  /** Viec can lam, viet ngan gon. */
+  tieuDe: string;
+  /** Vi sao dang de y — noi ro HAU QUA, dung chi mo ta hien trang. */
+  chiTiet: string;
+  /** Album lien quan, de bam thang toi do. */
+  slug?: string;
+  tenAlbum?: string;
+};
+
+/** Nang truoc, trong cung mot muc thi giu thu tu tu nhien. */
+const THU_TU: Record<MucDo, number> = { gap: 0, nen: 1 };
+
+export async function docThongBao(): Promise<ThongBao[]> {
+  const prisma = getPrisma();
+
+  const [galleries, lists, selections, mucXong] = await Promise.all([
+    prisma.gallery.findMany({ orderBy: { createdAt: "desc" } }),
+    prisma.selectionList.findMany(),
+    prisma.selection.findMany({ select: { listId: true, driveFileId: true, createdAt: true } }),
+    prisma.mucXong.findMany(),
+  ]);
+
+  const galleryCuaList = new Map(lists.map((l) => [l.id, l.galleryId]));
+  const listTim = new Set(lists.filter((l) => l.icon === "heart").map((l) => l.id));
+
+  const ra: ThongBao[] = [];
+
+  for (const g of galleries) {
+    const ten = g.clientName ?? g.title;
+    const cuaNo = selections.filter((s) => galleryCuaList.get(s.listId) === g.id);
+    const soTim = new Set(
+      cuaNo.filter((s) => listTim.has(s.listId)).map((s) => s.driveFileId)
+    ).size;
+
+    /*
+      1. Chua dat goi anh.
+
+      Hai muc do khac han nhau nen tach ra, khong gop mot dong chung:
+
+      - Da co khach tha tim: don giao in KHONG TINH DUOC TIEN. Thieu con so nay
+        thi den luc giao anh moi phat hien, luc do doi tien thi ngai ma khong
+        doi thi studio chiu. Day la viec gap.
+      - Chua ai tha tim: moi la loi nhac. Khach mo album ra khong thay khoi goi
+        anh, nhung sua truoc khi ho chon thi khong mat gi.
+    */
+    if (g.soAnhTrongGoi === null) {
+      ra.push(
+        soTim > 0
+          ? {
+              id: `goi-${g.id}`,
+              mucDo: "gap",
+              tieuDe: "Chưa đặt gói ảnh",
+              chiTiet: `Khách đã thả tim ${soTim} tấm mà album chưa có gói — đơn giao in không tính được tiền.`,
+              slug: g.slug,
+              tenAlbum: ten,
+            }
+          : {
+              id: `goi-${g.id}`,
+              mucDo: "nen",
+              tieuDe: "Chưa đặt gói ảnh",
+              chiTiet:
+                "Khách mở album sẽ không thấy phần gói ảnh. Nên đặt trước khi gửi link.",
+              slug: g.slug,
+              tenAlbum: ten,
+            }
+      );
+    }
+
+    /*
+      2. Khach chon them SAU khi da bam "Báo cho Hamita".
+
+      Chuyen nay da xay ra that va la kieu loi im lang nhat: studio thay bao
+      xong thi dem danh sach di in, ma khach van con them may tam nua sau do.
+      Toi ngay giao moi biet thieu, khong ai lan ra vi sao.
+
+      So voi moc bao xong SOM NHAT cua album: khach bao xong thu muc dau roi
+      chon tiep o thu muc thu hai la chuyen binh thuong, nhung studio van can
+      biet de doi chieu lai truoc khi in.
+    */
+    const xongCuaNo = mucXong.filter((m) => m.galleryId === g.id);
+    if (xongCuaNo.length > 0) {
+      const somNhat = Math.min(...xongCuaNo.map((m) => m.xongLuc.getTime()));
+      const themSau = cuaNo.filter((s) => s.createdAt.getTime() > somNhat).length;
+      if (themSau > 0) {
+        ra.push({
+          id: `them-${g.id}`,
+          mucDo: "gap",
+          tieuDe: "Khách chọn thêm sau khi báo xong",
+          chiTiet: `${themSau} tấm được chọn sau lúc khách bấm báo xong. Mở lại đơn giao in đối chiếu trước khi in.`,
+          slug: g.slug,
+          tenAlbum: ten,
+        });
+      }
+    }
+
+    /*
+      3. Album mat lop bao ve.
+
+      `daMoKhoa()` trong access.ts tra ve true khi album khong co ma — nghia la
+      ai cam link cung tha tim, ghi chu, bao xong duoc. Trang quan ly khong cho
+      dat ma duoi 4 ky tu nen chuyen nay khong xay ra tu giao dien, nhung neu
+      no xay ra bang duong khac thi phai thay ngay chu khong de am tham.
+    */
+    const ma = g.accessCode?.trim() ?? "";
+    if (ma.length < 4) {
+      ra.push({
+        id: `ma-${g.id}`,
+        mucDo: "gap",
+        tieuDe: "Album không có mã bảo vệ",
+        chiTiet:
+          "Ai cầm link cũng chọn ảnh và ghi chú được. Đặt lại mã cho album này.",
+        slug: g.slug,
+        tenAlbum: ten,
+      });
+    }
+  }
+
+  return ra.sort((a, b) => THU_TU[a.mucDo] - THU_TU[b.mucDo]);
+}
