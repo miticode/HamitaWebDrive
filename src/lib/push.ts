@@ -17,7 +17,7 @@ import { STUDIO_NAME } from "@/lib/constants";
 export function pushDaBat(): boolean {
   return Boolean(
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() &&
-      process.env.VAPID_PRIVATE_KEY?.trim()
+    process.env.VAPID_PRIVATE_KEY?.trim(),
   );
 }
 
@@ -27,7 +27,7 @@ function chuanBi(): boolean {
     // Địa chỉ liên hệ, để dịch vụ đẩy tin biết tìm ai khi có sự cố.
     `mailto:hamita.studio@gmail.com`,
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!.trim(),
-    process.env.VAPID_PRIVATE_KEY!.trim()
+    process.env.VAPID_PRIVATE_KEY!.trim(),
   );
   return true;
 }
@@ -85,7 +85,7 @@ export type NoiDung = {
  */
 export async function guiChoAlbum(
   galleryId: string,
-  noiDung: NoiDung
+  noiDung: NoiDung,
 ): Promise<{ daGui: number; daXoa: number }> {
   if (!databaseIsConfigured() || !chuanBi()) return { daGui: 0, daXoa: 0 };
 
@@ -105,13 +105,13 @@ export async function guiChoAlbum(
             endpoint: s.endpoint,
             keys: { p256dh: s.p256dh, auth: s.auth },
           },
-          goi
+          goi,
         );
         daGui++;
       } catch (err) {
         if (phieuChet(err)) hong.push(s.endpoint);
       }
-    })
+    }),
   );
 
   if (hong.length > 0) {
@@ -125,6 +125,23 @@ export async function guiChoAlbum(
 export async function demNguoiNhan(galleryId: string): Promise<number> {
   if (!databaseIsConfigured() || !pushDaBat()) return 0;
   return getPrisma().pushSub.count({ where: { galleryId } });
+}
+
+/**
+ * Lời nhắn khi studio đổ thêm ảnh vào thư mục ĐÃ CÓ, không tạo thư mục mới.
+ *
+ * Nói thẳng SỐ TẤM chứ không chỉ "có ảnh mới": khách nhìn con số mới quyết
+ * được có đáng mở ra xem ngay không — thêm ba tấm khác hẳn thêm một nghìn tấm.
+ *
+ * Dẫn về trang bìa album chứ không vào thẳng thư mục nào: ảnh mới nằm rải
+ * trong những thư mục sẵn có, không có một chỗ cụ thể nào để chỉ tới.
+ */
+export function tinThemAnh(soThem: number, duongDan: string): NoiDung {
+  return {
+    tieuDe: `${STUDIO_NAME} vừa thêm ảnh mới`,
+    loi: `Vừa có thêm ${soThem.toLocaleString("vi-VN")} tấm ảnh mới. Anh chị vào xem nhé ạ.`,
+    duongDan,
+  };
 }
 
 /** Lời mặc định khi studio thả thêm thư mục ảnh mới vào album. */

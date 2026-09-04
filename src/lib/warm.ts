@@ -2,7 +2,8 @@ import { ROOT_ALBUM, siteUrl } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
 import { mapLimit } from "@/lib/drive";
 import { getGalleryById, updateGalleryMeta } from "@/lib/store";
-import { guiChoAlbum, tinCoAnhMoi } from "@/lib/push";
+import { guiChoAlbum, tinCoAnhMoi, tinThemAnh } from "@/lib/push";
+import { docMoc, ghiMoc } from "@/lib/moc";
 
 /**
  * Dung san nhung tam anh khach nhin thay dau tien.
@@ -42,16 +43,81 @@ type Job = { fileId: string; size: number };
  */
 export function duongDanBaoAnhMoi(
   slug: string,
-  mucMoi: { id: string }[]
+  mucMoi: { id: string }[],
 ): string {
   if (mucMoi.length !== 1) return `/g/${slug}`;
   // id rỗng nghĩa là ảnh nằm ngay thư mục gốc, có mã riêng thay thế trên URL.
   return `/g/${slug}/${mucMoi[0].id || ROOT_ALBUM}`;
 }
 
+/** Khoá mốc "lần cuối báo khách album này có ảnh mới". */
+export function khoaMocBao(galleryId: string): string {
+  return `bao-anh-moi:${galleryId}`;
+}
+
+/**
+ * Khoảng lặng tối thiểu giữa hai lần báo CÙNG một album.
+ *
+ * Không có nó thì tính năng này thành thứ gây phiền: media đang đổ ảnh dở,
+ * studio bấm "Làm mới" ba bốn lần liên tiếp để xem đã lên chưa — mỗi lần là
+ * một lần điện thoại khách rung. Sáu tiếng đủ để một buổi upload lắng xuống,
+ * mà vẫn kịp báo trong ngày.
+ */
+export const IM_LANG_MS = 6 * 60 * 60 * 1000;
+
+/** Vì sao đáng báo cho khách. null = lần này im lặng. */
+export type LyDoBao =
+  | { kieu: "mucMoi"; ten: string[] }
+  | { kieu: "themAnh"; soThem: number }
+  | null;
+
+/**
+ * Có nên báo khách lần này không, và báo vì lẽ gì.
+ *
+ * Tách thành hàm THUẦN để kiểm chứng được mọi nhánh mà không phải đọc Drive và
+ * cũng không bắn tin thật vào điện thoại khách — cùng lý do đã tách
+ * `duongDanBaoAnhMoi` ra khỏi `syncAndWarm`.
+ *
+ * Hai lẽ đáng báo, xếp theo thứ tự ưu tiên:
+ *
+ * - Có thư mục mới. Rõ ràng nhất, và dẫn khách vào thẳng được.
+ * - Số ảnh tăng dù không có thư mục nào mới — media đổ thêm vào thư mục cũ.
+ *   Bản đầu bỏ qua trường hợp này và đó là lỗi: đo ngày 03/09/2026 thấy nhà
+ *   Thuý An có 1.353 tấm đổ vào thư mục "file gốc ab" đã có sẵn, nhà Như Ý
+ *   1.154 tấm — cả hai đều có khách đang bật thông báo mà máy họ im lặng.
+ *   Với khách thì "thư mục mới" hay "thêm ảnh vào thư mục cũ" là cùng một
+ *   việc: có ảnh mới để xem.
+ */
+export function quyetDinhBao(input: {
+  /** Thư mục vừa xuất hiện lần này. */
+  mucMoi: { name: string }[];
+  soAnhTruoc: number;
+  soAnhSau: number;
+  /** Lần cuối đã báo album này. null = chưa lần nào. */
+  baoLanCuoi: Date | null;
+  bayGio: number;
+}): LyDoBao {
+  const { mucMoi, soAnhTruoc, soAnhSau, baoLanCuoi, bayGio } = input;
+
+  // Còn trong khoảng lặng thì im, dù có gì mới đi nữa.
+  if (baoLanCuoi && bayGio - baoLanCuoi.getTime() < IM_LANG_MS) return null;
+
+  if (mucMoi.length > 0)
+    return { kieu: "mucMoi", ten: mucMoi.map((m) => m.name) };
+
+  const soThem = soAnhSau - soAnhTruoc;
+  if (soThem > 0) return { kieu: "themAnh", soThem };
+
+  /*
+    Ảnh bị BỚT đi thì không báo. Studio dọn bớt ảnh trong thư mục là việc nội
+    bộ, nhắn cho khách "vừa có thay đổi" chỉ làm họ lo.
+  */
+  return null;
+}
+
 export async function syncAndWarm(
   galleryId: string,
-  folderId: string
+  folderId: string,
 ): Promise<void> {
   const tree = await loadTree(folderId);
   const tenMuc = tree.albums.map((a) => a.name);
@@ -79,7 +145,7 @@ export async function syncAndWarm(
   */
   const tongByte = tree.albums.reduce(
     (tong, a) => tong + a.photos.reduce((s, p) => s + (p.size || 0), 0),
-    0
+    0,
   );
 
   await updateGalleryMeta(galleryId, {
@@ -91,38 +157,48 @@ export async function syncAndWarm(
   });
 
   /*
-    Có thư mục mới thì báo cho những khách đã đăng ký nhận tin. Chỉ báo khi
-    THẬT SỰ có cái mới: studio bấm "Làm mới" mà không thêm gì thì im lặng, chứ
-    không làm phiền khách mỗi lần studio kiểm tra lại.
+    Báo cho những khách đã đăng ký nhận tin.
 
-    ĐIỀU KIỆN DUY NHẤT là có thư mục mới. KHÔNG xét album trước đó đã có thư
-    mục hay chưa.
+    HAI lẽ đáng báo — có thư mục mới, HOẶC số ảnh tăng dù thư mục vẫn thế. Xem
+    `quyetDinhBao()` để biết vì sao lẽ thứ hai là bắt buộc.
 
-    Bản đầu có thêm điều kiện `truoc.subfolders.length > 0`, lý do ghi là "lần
-    đồng bộ đầu tiên thì chưa ai kịp đăng ký". Lý do đó sai với cách studio
-    thật sự làm việc: link được gửi cho khách TRƯỚC khi có ảnh, khách cài app
-    và bật thông báo trên một album còn rỗng, rồi media mới thả thư mục vào và
-    bấm "Làm mới". Đúng lúc đáng báo nhất thì `subfolders` vẫn rỗng, nên điều
-    kiện kia nuốt mất thông báo — 03/09 đo trên database còn thấy album
-    hc-truc-ly-trung-tin (0 thư mục) đã có một máy khách đang chờ tin.
+    Không cần tự chặn lúc vừa tạo album: `guiChoAlbum` tự thoát khi album chưa
+    có phiếu đăng ký nào, mà lúc vừa tạo thì không thể có ai — link còn chưa
+    gửi đi. Câu cần hỏi là "có ai muốn nhận tin không"; để chính nó trả lời,
+    đừng đoán qua số thư mục cũ.
 
-    Không cần điều kiện đó để giữ im lúc vừa tạo album: `guiChoAlbum` tự thoát
-    khi album chưa có phiếu đăng ký nào, mà lúc vừa tạo thì không thể có ai —
-    link còn chưa gửi đi. Câu cần hỏi là "có ai muốn nhận tin không"; để chính
-    nó trả lời, đừng đoán qua số thư mục cũ.
+    Ghi mốc NGAY SAU khi gửi, và chỉ ghi khi thật sự có gửi: mốc là thứ giữ
+    khoảng lặng sáu tiếng, ghi cả những lần im lặng thì khoảng lặng tự gia hạn
+    mãi và khách không bao giờ nhận được tin nào nữa.
 
     Nuốt lỗi: gửi tin hỏng thì cũng không được làm hỏng việc đồng bộ số liệu.
   */
-  if (mucMoi.length > 0 && truoc) {
-    const duongDan = duongDanBaoAnhMoi(truoc.slug, mucMoi);
+  if (truoc) {
+    const lyDo = quyetDinhBao({
+      mucMoi,
+      soAnhTruoc: truoc.photoCount,
+      soAnhSau: tree.totalPhotos,
+      baoLanCuoi: await docMoc(khoaMocBao(galleryId)).catch(() => null),
+      bayGio: Date.now(),
+    });
 
-    await guiChoAlbum(
-      galleryId,
-      tinCoAnhMoi(
-        mucMoi.map((a) => a.name),
-        duongDan
-      )
-    ).catch(() => ({ daGui: 0, daXoa: 0 }));
+    if (lyDo) {
+      const duongDan =
+        lyDo.kieu === "mucMoi"
+          ? duongDanBaoAnhMoi(truoc.slug, mucMoi)
+          : `/g/${truoc.slug}`;
+
+      const kq = await guiChoAlbum(
+        galleryId,
+        lyDo.kieu === "mucMoi"
+          ? tinCoAnhMoi(lyDo.ten, duongDan)
+          : tinThemAnh(lyDo.soThem, duongDan),
+      ).catch(() => ({ daGui: 0, daXoa: 0 }));
+
+      if (kq.daGui > 0) {
+        await ghiMoc(khoaMocBao(galleryId), new Date()).catch(() => {});
+      }
+    }
   }
 
   await warmGallery(folderId);

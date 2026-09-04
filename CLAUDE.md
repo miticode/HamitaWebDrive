@@ -554,10 +554,35 @@ chưa có phiếu nào, mà lúc vừa tạo thì không thể có ai — link c
 **Câu cần hỏi là "có ai muốn nhận tin không"; để chính nó trả lời, đừng đoán
 qua số thư mục cũ.**
 
-*Giới hạn còn lại, biết mà chưa sửa:* thả thêm ảnh vào một thư mục **đã có
-tên trong `subfolders`** thì không báo, vì phép so sánh chỉ nhìn danh sách tên
-thư mục chứ không nhìn số ảnh. Thư mục rỗng không được tính (`loadTree` bỏ thư
-mục không ảnh), nên "tạo sẵn thư mục rỗng rồi mới đổ ảnh" vẫn báo bình thường.
+**Giới hạn đó đã sửa ngày 04/09/2026 — nay có HAI lẽ đáng báo**, quyết định
+trong hàm thuần `quyetDinhBao()`:
+
+1. **Có thư mục mới.** Dẫn khách vào thẳng thư mục đó.
+2. **Số ảnh tăng dù thư mục vẫn thế** — media đổ thêm vào thư mục cũ. Dẫn về
+   trang bìa, vì ảnh mới nằm rải trong những thư mục sẵn có.
+
+Vì sao phải có lẽ thứ hai: đo ngày 03/09 thấy nhà **Thuý An 1.353 tấm** đổ vào
+thư mục "file gốc ab" đã có sẵn, nhà **Như Ý 1.154 tấm** — cả hai đều có khách
+đang bật thông báo mà máy họ im lặng. Với khách thì "thư mục mới" hay "thêm ảnh
+vào thư mục cũ" là **cùng một việc**: có ảnh mới để xem. Phân biệt hai chuyện
+đó là chuyện kỹ thuật bên trong, đừng bắt khách gánh.
+
+**Ảnh BỚT đi thì không báo.** Studio dọn bớt ảnh là việc nội bộ; nhắn "vừa có
+thay đổi" chỉ làm khách lo.
+
+**Khoảng lặng 6 tiếng cho mỗi album** (`IM_LANG_MS`), mốc lưu trong bảng `Moc`
+với khoá `bao-anh-moi:<galleryId>`. Không có nó thì tính năng này thành thứ gây
+phiền: media đang đổ ảnh dở, studio bấm "Làm mới" ba bốn lần liên tiếp để xem
+đã lên chưa — mỗi lần là một lần điện thoại khách rung.
+
+**Chỉ ghi mốc khi THẬT SỰ có gửi** (`daGui > 0`). Ghi cả những lần im lặng thì
+khoảng lặng tự gia hạn mãi và khách không bao giờ nhận được tin nào nữa.
+
+*Bẫy về thứ tự khi vá dữ liệu cũ:* `npm run db:sync` chỉ gọi `updateGalleryMeta`,
+**không** gọi `syncAndWarm` nên **không gửi thông báo**. Chạy nó trước là
+`photoCount` nhảy lên số mới, lần "Làm mới" sau không còn thấy chênh lệch, và
+khách vĩnh viễn mất đợt tin đó. Muốn khách nhận được thì phải đi qua nút **"Làm
+mới"** ở trang quản lý (hoặc gọi thẳng `syncAndWarm`).
 
 **35. Mọi phép chia theo NGÀY THÁNG đều tính theo giờ studio, không theo giờ máy.**
 Dùng `MUI_GIO` trong `constants.ts` (`Asia/Ho_Chi_Minh`) với
