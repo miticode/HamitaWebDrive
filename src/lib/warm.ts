@@ -1,9 +1,8 @@
-import { ROOT_ALBUM, siteUrl } from "@/lib/constants";
+import { siteUrl } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
 import { mapLimit } from "@/lib/drive";
-import { getGalleryById, updateGalleryMeta } from "@/lib/store";
-import { guiChoAlbum, tinCoAnhMoi, tinThemAnh } from "@/lib/push";
-import { docMoc, ghiMoc } from "@/lib/moc";
+import { updateGalleryMeta } from "@/lib/store";
+import { guiChoAlbum, tinAnhMoiChung } from "@/lib/push";
 
 /**
  * Dung san nhung tam anh khach nhin thay dau tien.
@@ -28,127 +27,34 @@ type Job = { fileId: string; size: number };
  * Chup lai so lieu cua album vao database: anh bia, so anh, ten cac thu muc con.
  * Trang quan tri doc thang tu day nen khong phai goi Drive lan nao.
  */
-/**
- * Bấm vào thông báo "có ảnh mới" thì mở tới đâu.
- *
- * Chỉ MỘT thư mục mới thì dẫn thẳng vào đó — khách bấm là thấy ảnh ngay, không
- * phải về trang bìa rồi tự dò xem cái nào mới.
- *
- * Nhiều thư mục cùng lúc thì đưa về trang bìa, vì không có cơ sở nào để chọn
- * giúp khách cái nào; ở trang bìa chúng đều mang chấm "Mới" nên vẫn nhận ra
- * ngay.
- *
- * Tách riêng khỏi syncAndWarm để kiểm chứng được mà không phải chạy cả một
- * lượt đọc Drive.
- */
-export function duongDanBaoAnhMoi(
-  slug: string,
-  mucMoi: { id: string }[],
-): string {
-  if (mucMoi.length !== 1) return `/g/${slug}`;
-  // id rỗng nghĩa là ảnh nằm ngay thư mục gốc, có mã riêng thay thế trên URL.
-  return `/g/${slug}/${mucMoi[0].id || ROOT_ALBUM}`;
-}
+/*
+  Ở đây từng có `quyetDinhBao()` — hàm tự đoán xem lần đồng bộ này có đáng báo
+  cho khách không (thư mục mới, hay số ảnh tăng), kèm khoảng lặng sáu tiếng
+  chống bấm "Làm mới" liên tục.
 
-/** Khoá mốc "lần cuối báo khách album này có ảnh mới". */
-export function khoaMocBao(galleryId: string): string {
-  return `bao-anh-moi:${galleryId}`;
-}
+  Bỏ hết ngày 04/09/2026 khi tách thành hai nút. Không phải vì nó sai, mà vì
+  câu hỏi nó trả lời không còn ai hỏi nữa: studio tự quyết lúc nào gửi tin, nên
+  máy không phải đoán. Giữ lại một cỗ máy đoán mà không ai dùng thì lần sau đọc
+  code sẽ tưởng "Làm mới" vẫn gửi tin — đúng cái nhầm lẫn đang muốn dẹp.
+
+  Lịch sử vẫn nằm trong git nếu cần dựng lại.
+*/
 
 /**
- * Khoảng lặng tối thiểu giữa hai lần báo CÙNG một album.
+ * Đọc lại Drive, chụp lại số liệu, dựng sẵn ảnh đầu.
  *
- * Không có nó thì tính năng này thành thứ gây phiền: media đang đổ ảnh dở,
- * studio bấm "Làm mới" ba bốn lần liên tiếp để xem đã lên chưa — mỗi lần là
- * một lần điện thoại khách rung. Sáu tiếng đủ để một buổi upload lắng xuống,
- * mà vẫn kịp báo trong ngày.
+ * KHÔNG gửi thông báo cho khách. Việc đó nay là một nút riêng ở trang quản lý
+ * (`guiThongBaoAction`), tách ra theo yêu cầu ngày 04/09/2026: gộp chung thì
+ * nhân viên bấm "Làm mới" để xem ảnh đã lên chưa mà không ngờ mỗi cú bấm là
+ * một lần điện thoại khách rung. Hai việc khác hẳn nhau về hậu quả — một cái
+ * chỉ đụng số liệu trong nhà, một cái chạm tới khách — nên phải là hai nút.
  */
-export const IM_LANG_MS = 6 * 60 * 60 * 1000;
-
-/** Vì sao đáng báo cho khách. null = lần này im lặng. */
-export type LyDoBao =
-  | { kieu: "mucMoi"; ten: string[] }
-  | { kieu: "themAnh"; soThem: number }
-  | null;
-
-/**
- * Có nên báo khách lần này không, và báo vì lẽ gì.
- *
- * Tách thành hàm THUẦN để kiểm chứng được mọi nhánh mà không phải đọc Drive và
- * cũng không bắn tin thật vào điện thoại khách — cùng lý do đã tách
- * `duongDanBaoAnhMoi` ra khỏi `syncAndWarm`.
- *
- * Hai lẽ đáng báo, xếp theo thứ tự ưu tiên:
- *
- * - Có thư mục mới. Rõ ràng nhất, và dẫn khách vào thẳng được.
- * - Số ảnh tăng dù không có thư mục nào mới — media đổ thêm vào thư mục cũ.
- *   Bản đầu bỏ qua trường hợp này và đó là lỗi: đo ngày 03/09/2026 thấy nhà
- *   Thuý An có 1.353 tấm đổ vào thư mục "file gốc ab" đã có sẵn, nhà Như Ý
- *   1.154 tấm — cả hai đều có khách đang bật thông báo mà máy họ im lặng.
- *   Với khách thì "thư mục mới" hay "thêm ảnh vào thư mục cũ" là cùng một
- *   việc: có ảnh mới để xem.
- */
-export function quyetDinhBao(input: {
-  /** Thư mục vừa xuất hiện lần này. */
-  mucMoi: { name: string }[];
-  soAnhTruoc: number;
-  soAnhSau: number;
-  /** Lần cuối đã báo album này. null = chưa lần nào. */
-  baoLanCuoi: Date | null;
-  bayGio: number;
-}): LyDoBao {
-  const { mucMoi, soAnhTruoc, soAnhSau, baoLanCuoi, bayGio } = input;
-
-  /*
-    THƯ MỤC MỚI thì báo ngay, không xét khoảng lặng.
-
-    Bản đầu đặt khoảng lặng lên trên cùng nên nó chặn cả thư mục mới — studio
-    thử ngày 04/09/2026 và gặp đúng lỗi đó: thêm thư mục thứ nhất, bấm "Làm
-    mới" thì khách nhận tin; thêm tiếp thư mục thứ hai vài phút sau thì im bặt.
-
-    Khoảng lặng sinh ra để chống MỘT chuyện: media đang đổ ảnh dở, studio bấm
-    "Làm mới" mấy lần liên tiếp xem đã lên chưa. Đó là chuyện của "thêm ảnh".
-    Còn tạo hẳn một thư mục mới là hành động có chủ đích, mỗi lần một sự kiện —
-    thư mục "Ảnh cưới" và "Ảnh cổng" là hai bộ ảnh khác nhau, khách xứng đáng
-    biết cả hai.
-  */
-  if (mucMoi.length > 0)
-    return { kieu: "mucMoi", ten: mucMoi.map((m) => m.name) };
-
-  // Còn khoảng lặng thì CHỈ chặn việc báo "vừa thêm ảnh".
-  if (baoLanCuoi && bayGio - baoLanCuoi.getTime() < IM_LANG_MS) return null;
-
-  const soThem = soAnhSau - soAnhTruoc;
-  if (soThem > 0) return { kieu: "themAnh", soThem };
-
-  /*
-    Ảnh bị BỚT đi thì không báo. Studio dọn bớt ảnh trong thư mục là việc nội
-    bộ, nhắn cho khách "vừa có thay đổi" chỉ làm họ lo.
-  */
-  return null;
-}
-
 export async function syncAndWarm(
   galleryId: string,
   folderId: string,
 ): Promise<void> {
   const tree = await loadTree(folderId);
   const tenMuc = tree.albums.map((a) => a.name);
-
-  /*
-    Đọc số liệu CŨ trước khi ghi đè, để biết lần này có thư mục nào vừa xuất
-    hiện. So sánh phải làm ở đây — sau khi ghi thì bản cũ mất, không còn gì để
-    đối chiếu.
-  */
-  const truoc = await getGalleryById(galleryId);
-  /*
-    Giữ cả thư mục chứ không chỉ tên: thông báo cần MÃ thư mục để dẫn khách
-    vào thẳng chỗ ảnh mới, chứ thả họ ở trang bìa rồi bắt tự dò xem cái nào
-    mới thì mất hết ý nghĩa của việc báo.
-  */
-  const mucMoi = truoc
-    ? tree.albums.filter((a) => !truoc.subfolders.includes(a.name))
-    : [];
 
   /*
     Cong dung luong ngay tai day. Cay thu muc vua doc da mang san kich thuoc
@@ -169,52 +75,35 @@ export async function syncAndWarm(
     subfolders: tenMuc,
   });
 
-  /*
-    Báo cho những khách đã đăng ký nhận tin.
-
-    HAI lẽ đáng báo — có thư mục mới, HOẶC số ảnh tăng dù thư mục vẫn thế. Xem
-    `quyetDinhBao()` để biết vì sao lẽ thứ hai là bắt buộc.
-
-    Không cần tự chặn lúc vừa tạo album: `guiChoAlbum` tự thoát khi album chưa
-    có phiếu đăng ký nào, mà lúc vừa tạo thì không thể có ai — link còn chưa
-    gửi đi. Câu cần hỏi là "có ai muốn nhận tin không"; để chính nó trả lời,
-    đừng đoán qua số thư mục cũ.
-
-    Ghi mốc NGAY SAU khi gửi, và chỉ ghi khi thật sự có gửi: mốc là thứ giữ
-    khoảng lặng sáu tiếng, ghi cả những lần im lặng thì khoảng lặng tự gia hạn
-    mãi và khách không bao giờ nhận được tin nào nữa.
-
-    Nuốt lỗi: gửi tin hỏng thì cũng không được làm hỏng việc đồng bộ số liệu.
-  */
-  if (truoc) {
-    const lyDo = quyetDinhBao({
-      mucMoi,
-      soAnhTruoc: truoc.photoCount,
-      soAnhSau: tree.totalPhotos,
-      baoLanCuoi: await docMoc(khoaMocBao(galleryId)).catch(() => null),
-      bayGio: Date.now(),
-    });
-
-    if (lyDo) {
-      const duongDan =
-        lyDo.kieu === "mucMoi"
-          ? duongDanBaoAnhMoi(truoc.slug, mucMoi)
-          : `/g/${truoc.slug}`;
-
-      const kq = await guiChoAlbum(
-        galleryId,
-        lyDo.kieu === "mucMoi"
-          ? tinCoAnhMoi(lyDo.ten, duongDan)
-          : tinThemAnh(lyDo.soThem, duongDan),
-      ).catch(() => ({ daGui: 0, daXoa: 0 }));
-
-      if (kq.daGui > 0) {
-        await ghiMoc(khoaMocBao(galleryId), new Date()).catch(() => {});
-      }
-    }
-  }
-
   await warmGallery(folderId);
+}
+
+/**
+ * Gửi tin "có ảnh mới" cho những khách đã đăng ký của một album.
+ *
+ * Đứng riêng khỏi `syncAndWarm` — đây là nút thứ hai ở trang quản lý.
+ *
+ * Lời nhắn CỐ ĐỊNH và dẫn về TRANG BÌA album, không nêu tên thư mục nào. Bản
+ * trước tự dò xem thư mục nào vừa xuất hiện rồi dẫn khách vào thẳng đó, nhưng
+ * cách ấy chỉ chạy được khi việc gửi tin đi kèm việc đồng bộ. Tách hai nút ra
+ * thì lúc studio bấm gửi, số liệu đã cập nhật xong từ đời nào — không còn gì
+ * để so nữa. Dựng lại một kho trạng thái riêng chỉ để giữ "lần trước đã báo
+ * tới đâu" là thêm một thứ có thể sai, đổi lấy một dòng chữ.
+ *
+ * Khách vẫn nhận ra thư mục mới: ở trang bìa, thư mục họ chưa từng mở mang sẵn
+ * chấm "Mới" (xem `DauMoi.tsx`).
+ *
+ * Trả về số máy đã nhận để trang quản lý báo lại cho studio biết tin có đi
+ * được hay không — gửi xong mà im lặng thì không ai dám tin là nó đã chạy.
+ */
+export async function guiThongBaoAnhMoi(
+  galleryId: string,
+  slug: string,
+): Promise<{ daGui: number; daXoa: number }> {
+  return guiChoAlbum(galleryId, tinAnhMoiChung(`/g/${slug}`)).catch(() => ({
+    daGui: 0,
+    daXoa: 0,
+  }));
 }
 
 export async function warmGallery(folderId: string): Promise<number> {

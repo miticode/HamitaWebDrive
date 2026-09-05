@@ -128,30 +128,34 @@ export async function demNguoiNhan(galleryId: string): Promise<number> {
 }
 
 /**
- * Lời nhắn khi studio đổ thêm ảnh vào thư mục ĐÃ CÓ, không tạo thư mục mới.
+ * Đếm máy đang chờ cho MỌI album một lượt, trả về bảng tra theo id.
  *
- * Nói thẳng SỐ TẤM chứ không chỉ "có ảnh mới": khách nhìn con số mới quyết
- * được có đáng mở ra xem ngay không — thêm ba tấm khác hẳn thêm một nghìn tấm.
- *
- * Dẫn về trang bìa album chứ không vào thẳng thư mục nào: ảnh mới nằm rải
- * trong những thư mục sẵn có, không có một chỗ cụ thể nào để chỉ tới.
+ * Trang quản lý cần con số này cho từng thẻ. Gọi `demNguoiNhan` mười sáu lần
+ * là mười sáu lượt hỏi database cho một con số nhỏ — một phép gộp là đủ.
  */
-export function tinThemAnh(soThem: number, duongDan: string): NoiDung {
-  return {
-    tieuDe: `${STUDIO_NAME} vừa thêm ảnh mới`,
-    loi: `Vừa có thêm ${soThem.toLocaleString("vi-VN")} tấm ảnh mới. Anh chị vào xem nhé ạ.`,
-    duongDan,
-  };
+export async function demNguoiNhanMoiAlbum(): Promise<Record<string, number>> {
+  if (!databaseIsConfigured() || !pushDaBat()) return {};
+  const gom = await getPrisma().pushSub.groupBy({
+    by: ["galleryId"],
+    _count: { _all: true },
+  });
+  return Object.fromEntries(gom.map((g) => [g.galleryId, g._count._all]));
 }
 
-/** Lời mặc định khi studio thả thêm thư mục ảnh mới vào album. */
-export function tinCoAnhMoi(tenThuMuc: string[], duongDan: string): NoiDung {
-  const nhieu = tenThuMuc.length > 1;
+/**
+ * Lời nhắn duy nhất gửi khách khi studio thêm ảnh.
+ *
+ * Cố ý KHÔNG nêu tên thư mục hay số tấm. Nút gửi tin nay đứng riêng khỏi nút
+ * làm mới, nên lúc studio bấm gửi thì số liệu đã cập nhật xong — không còn gì
+ * để so ra "thư mục nào vừa thêm". Xem `guiThongBaoAnhMoi` trong warm.ts.
+ *
+ * Khách vẫn nhận ra chỗ mới: ở trang bìa, thư mục họ chưa từng mở mang sẵn
+ * chấm "Mới".
+ */
+export function tinAnhMoiChung(duongDan: string): NoiDung {
   return {
     tieuDe: `${STUDIO_NAME} vừa thêm ảnh mới`,
-    loi: nhieu
-      ? `Có ${tenThuMuc.length} thư mục mới: ${tenThuMuc.slice(0, 2).join(", ")}${tenThuMuc.length > 2 ? "…" : ""}. Anh chị vào xem nhé ạ.`
-      : `Thư mục "${tenThuMuc[0]}" vừa được thêm. Anh chị vào xem nhé ạ.`,
+    loi: "Anh chị vào xem ảnh mới nhé ạ.",
     duongDan,
   };
 }

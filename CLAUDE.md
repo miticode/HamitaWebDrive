@@ -537,57 +537,62 @@ mở bảng chỉ đường Android ("⋮ → Thêm vào Màn hình chính"), y 
 cũ không bắt, nên lỗi rơi vào khoảng không và khách bấm nút thấy **không có gì
 xảy ra** — không cách nào biết là hỏng. Hỏng thì lùi về bảng chỉ đường.
 
-**34. Thông báo "có ảnh mới" chỉ hỏi MỘT câu: có ai đăng ký nhận không.**
-Điều kiện gửi là `mucMoi.length > 0 && truoc` — **không** xét album trước đó đã
-có thư mục hay chưa.
+**34. "Làm mới" và "Gửi thông báo" là HAI NÚT TÁCH BẠCH.**
+Tách ngày 04/09/2026 theo yêu cầu. **Đừng gộp lại.**
 
-Bản đầu có thêm `truoc.subfolders.length > 0`, lý do ghi là "lần đồng bộ đầu
-tiên thì chưa ai kịp đăng ký". Lý do đó sai với cách studio thật sự làm việc:
-link được gửi cho khách **trước** khi có ảnh, khách cài app và bật thông báo
-trên album còn rỗng, rồi media mới thả thư mục vào và bấm "Làm mới". Đúng lúc
-đáng báo nhất thì `subfolders` vẫn rỗng nên thông báo bị nuốt — đây là lỗi anh
-báo ngày 03/09/2026. Đo trên database cùng ngày: album `hc-truc-ly-trung-tin`
-có **0 thư mục** mà đã có **một máy khách đăng ký từ 01/09** đang chờ tin.
+| Nút | Làm gì | Chạm tới ai |
+|---|---|---|
+| **Làm mới** | đọc lại Drive, chụp số liệu, dựng sẵn ảnh đầu | chỉ dữ liệu trong nhà |
+| **Gửi thông báo** | nhắn cho khách đã bật nhận tin | điện thoại khách |
 
-Không cần điều kiện đó để giữ im lúc vừa tạo album: `guiChoAlbum` tự thoát khi
-chưa có phiếu nào, mà lúc vừa tạo thì không thể có ai — link còn chưa gửi đi.
-**Câu cần hỏi là "có ai muốn nhận tin không"; để chính nó trả lời, đừng đoán
-qua số thư mục cũ.**
+Vì sao phải tách: gộp chung thì nhân viên bấm "Làm mới" để xem ảnh đã lên chưa
+mà **không ngờ mỗi cú bấm là một lần điện thoại khách rung**. Hai việc khác hẳn
+nhau về hậu quả — một cái sai thì sửa lại được, một cái sai thì không thu hồi.
 
-**Giới hạn đó đã sửa ngày 04/09/2026 — nay có HAI lẽ đáng báo**, quyết định
-trong hàm thuần `quyetDinhBao()`:
+Nút gửi có **bước hỏi lại**, cho xem trước đúng câu khách sẽ đọc và nói rõ sẽ
+gửi tới mấy máy. Album chưa ai đăng ký thì nút vẫn **hiện nhưng mờ** kèm lý do,
+không giấu đi — giấu thì studio tưởng tính năng hỏng.
 
-1. **Có thư mục mới.** Dẫn khách vào thẳng thư mục đó.
-2. **Số ảnh tăng dù thư mục vẫn thế** — media đổ thêm vào thư mục cũ. Dẫn về
-   trang bìa, vì ảnh mới nằm rải trong những thư mục sẵn có.
+Không chạy trong `after()` như "Làm mới": studio cần biết ngay tin đã tới mấy
+máy. Gửi xong mà im lặng thì lần sau không ai dám bấm.
 
-Vì sao phải có lẽ thứ hai: đo ngày 03/09 thấy nhà **Thuý An 1.353 tấm** đổ vào
-thư mục "file gốc ab" đã có sẵn, nhà **Như Ý 1.154 tấm** — cả hai đều có khách
-đang bật thông báo mà máy họ im lặng. Với khách thì "thư mục mới" hay "thêm ảnh
-vào thư mục cũ" là **cùng một việc**: có ảnh mới để xem. Phân biệt hai chuyện
-đó là chuyện kỹ thuật bên trong, đừng bắt khách gánh.
+**Lời nhắn CỐ ĐỊNH, dẫn về trang bìa album**, không nêu tên thư mục. Tách hai
+nút ra thì lúc studio bấm gửi, số liệu đã cập nhật xong từ đời nào — không còn
+gì để so ra "thư mục nào vừa thêm". Dựng một kho trạng thái riêng chỉ để giữ
+"lần trước đã báo tới đâu" là thêm một thứ có thể sai, đổi lấy một dòng chữ.
+Khách vẫn nhận ra chỗ mới: ở trang bìa, thư mục họ chưa từng mở mang sẵn chấm
+"Mới" (`DauMoi.tsx`).
 
-**Ảnh BỚT đi thì không báo.** Studio dọn bớt ảnh là việc nội bộ; nhắn "vừa có
-thay đổi" chỉ làm khách lo.
+*Lịch sử, ghi để đừng dựng lại:* trước đó `syncAndWarm` tự đoán có đáng báo
+không — thư mục mới, hay số ảnh tăng — kèm khoảng lặng sáu tiếng chống bấm liên
+tục. Cỗ máy đoán ấy đã bỏ hết khi tách nút, không phải vì sai mà vì **câu hỏi
+nó trả lời không còn ai hỏi nữa**: studio tự quyết lúc nào gửi. Giữ lại một cỗ
+máy đoán mà không ai dùng thì lần sau đọc code sẽ tưởng "Làm mới" vẫn gửi tin —
+đúng cái nhầm lẫn đang muốn dẹp.
 
-**Khoảng lặng 6 tiếng** (`IM_LANG_MS`) **CHỈ áp cho lẽ thứ hai**, mốc lưu trong
-bảng `Moc` với khoá `bao-anh-moi:<galleryId>`. Thư mục mới thì **báo ngay, mọi
-lần**.
+Riêng bài học từ nó thì giữ: **thứ tự các phép kiểm là chỗ dễ sai nhất.** Bản
+đầu đặt khoảng lặng lên trên cùng nên nó chặn cả thư mục mới; studio thử và gặp
+ngay — thêm thư mục thứ nhất thì khách nhận tin, thêm thư mục thứ hai vài phút
+sau thì im bặt.
 
-Vì sao phải phân biệt: khoảng lặng sinh ra để chống đúng MỘT chuyện — media đang
-đổ ảnh dở, studio bấm "Làm mới" mấy lần liên tiếp xem đã lên chưa, mỗi lần là
-một lần điện thoại khách rung. Đó là chuyện của "thêm ảnh". Còn tạo hẳn một thư
-mục mới là hành động có chủ đích, mỗi lần một sự kiện — "Ảnh cưới" và "Ảnh cổng"
-là hai bộ ảnh khác nhau, khách xứng đáng biết cả hai.
+**42. Không tìm thấy thư mục thì ĐỌC LẠI Drive rồi mới kết luận `notFound()`.**
+Cache cây thư mục là một `Map` trong bộ nhớ của **từng máy chạy hàm**, mà Vercel
+chạy nhiều máy song song. Studio bấm "Làm mới" thì chỉ máy nhận cú bấm đó xoá
+cache; máy khác vẫn giữ cây cũ thêm tới năm phút.
 
-*Đã vấp:* bản đầu (04/09/2026) đặt khoảng lặng lên trên cùng nên nó chặn cả thư
-mục mới. Studio thử ngay hôm đó và gặp: thêm thư mục thứ nhất, bấm "Làm mới" thì
-khách nhận tin; thêm tiếp thư mục thứ hai vài phút sau thì im bặt. **Thứ tự hai
-phép kiểm trong `quyetDinhBao()` chính là chỗ dễ làm sai nhất — thư mục mới phải
-đứng TRƯỚC khoảng lặng.**
+Đã xảy ra thật (04/09/2026): studio thêm thư mục mới, khách bấm thông báo vào
+thẳng thư mục đó, request rơi vào một máy còn giữ cây cũ — trang trả về **"không
+tìm thấy trang"**. Thử lại lần nữa thì được, vì rơi vào máy khác. Đúng lúc khách
+vừa được mời vào xem thì lại gặp trang lỗi.
 
-**Chỉ ghi mốc khi THẬT SỰ có gửi** (`daGui > 0`). Ghi cả những lần im lặng thì
-khoảng lặng tự gia hạn mãi và khách không bao giờ nhận được tin nào nữa.
+`loadTreeMoi()` trong `gallery.ts` xoá cache rồi đọc lại. **Chỉ gọi khi đã tìm
+mà không thấy**, không gọi cho mọi lượt xem — một lần đọc Drive đắt hơn nhiều so
+với đọc cache. Thư mục thật sự không tồn tại thì tốn một lần đọc rồi vẫn về
+`notFound()`; chấp nhận được vì đó là trường hợp hiếm.
+
+*Cùng bản chất với bẫy đã ghi ở `rateLimit`:* đếm trong bộ nhớ trên Vercel không
+đáng tin. Bất cứ chỗ nào dựa vào bộ nhớ của một máy để quyết định điều mà máy
+khác cũng phải biết, đều sẽ sai kiểu này.
 
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên

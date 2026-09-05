@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 import { ROOT_ALBUM } from "@/lib/constants";
-import { loadTree } from "@/lib/gallery";
-import { getGalleryBySlug, getLists, getMucXong, getSelections } from "@/lib/store";
+import { loadTree, loadTreeMoi } from "@/lib/gallery";
+import {
+  getGalleryBySlug,
+  getLists,
+  getMucXong,
+  getSelections,
+} from "@/lib/store";
 import { daMoKhoa } from "@/lib/access";
 import { DriveLoi } from "@/components/DriveLoi";
 import { AlbumView } from "../AlbumView";
@@ -39,8 +44,32 @@ export default async function AlbumPage({ params }: Props) {
   }
 
   const wanted = albumId === ROOT_ALBUM ? "" : albumId;
-  const album = tree.albums.find((a) => a.id === wanted);
-  if (!album) notFound();
+  let album = tree.albums.find((a) => a.id === wanted);
+
+  /*
+    Khong thay thi ĐỌC LẠI Drive một lần nữa rồi mới kết luận.
+
+    Cache cây thư mục là một Map trong bộ nhớ của TỪNG máy chạy hàm, mà Vercel
+    chạy nhiều máy song song. Studio bấm "Làm mới" thì chỉ máy nhận cú bấm đó
+    xoá cache; máy khác vẫn giữ cây cũ thêm tới năm phút.
+
+    Đã xảy ra thật (04/09/2026): studio thêm thư mục mới, khách bấm thông báo
+    vào thẳng thư mục đó, request rơi vào một máy còn giữ cây cũ — trang trả về
+    "không tìm thấy". Thử lại lần nữa thì được, vì rơi vào máy khác. Đúng lúc
+    khách vừa được mời vào xem thì lại gặp trang lỗi.
+
+    Chỉ đọc lại khi ĐÃ TÌM MÀ KHÔNG THẤY, nên lượt xem bình thường không tốn
+    thêm lời gọi Drive nào. Thư mục thật sự không tồn tại (khách giữ link cũ
+    của thư mục đã xoá) thì tốn một lần đọc rồi vẫn về notFound — chấp nhận
+    được, vì đó là trường hợp hiếm còn cái trên thì đang xảy ra.
+  */
+  if (!album) {
+    const moi = await loadTreeMoi(gallery.driveFolderId).catch(() => null);
+    const timLai = moi?.albums.find((a) => a.id === wanted);
+    if (!moi || !timLai) notFound();
+    tree = moi;
+    album = timLai;
+  }
 
   /*
     Trạng thái "đã chọn xong" của RIÊNG thư mục này. Khách chọn xong thư mục

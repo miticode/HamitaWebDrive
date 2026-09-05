@@ -55,6 +55,7 @@ export function AlbumList({
   counts,
   mucXong,
   biaMuc,
+  soMayChoTin,
 }: {
   galleries: Gallery[];
   counts: ListCount[];
@@ -62,6 +63,8 @@ export function AlbumList({
   mucXong: MucXong[];
   /** Ảnh bìa riêng của từng thư mục, của mọi album. */
   biaMuc: BiaMuc[];
+  /** So may dang cho nhan thong bao, tra theo id album. */
+  soMayChoTin: Record<string, number>;
 }) {
   const [tuKhoa, setTuKhoa] = useState("");
   const [nhan, setNhan] = useState<string | null>(null);
@@ -259,6 +262,7 @@ export function AlbumList({
                   counts={countsOf(g.id)}
                   mucXong={mucXong.filter((m) => m.galleryId === g.id)}
                   biaMuc={biaMuc.filter((b) => b.galleryId === g.id)}
+                  soMayChoTin={soMayChoTin[g.id] ?? 0}
                 />
               ))}
             </div>

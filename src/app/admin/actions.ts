@@ -31,13 +31,13 @@ import {
   setFeatured,
   setMessage,
 } from "@/lib/store";
-import { syncAndWarm } from "@/lib/warm";
+import { guiThongBaoAnhMoi, syncAndWarm } from "@/lib/warm";
 
 export type ActionState = { error?: string; ok?: string };
 
 export async function loginAction(
   _prev: ActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionState> {
   const ip = await clientIp();
 
@@ -71,7 +71,7 @@ export async function logoutAction() {
 
 export async function createGalleryAction(
   _prev: ActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionState> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
 
@@ -155,6 +155,29 @@ export async function refreshGalleryAction(formData: FormData) {
   revalidatePath("/admin");
 }
 
+/**
+ * Gui tin "co anh moi" cho khach da dang ky nhan thong bao cua mot album.
+ *
+ * NUT RIENG, khong dinh vao "Lam moi" (yeu cau 04/09/2026). Truoc day gop
+ * chung nen nhan vien bam "Lam moi" de xem anh da len chua ma khong ngo moi cu
+ * bam la mot lan dien thoai khach rung. Hai viec khac han nhau ve hau qua —
+ * mot cai chi dung so lieu trong nha, mot cai cham toi khach.
+ *
+ * KHONG chay trong `after()` nhu Lam moi: studio can biet ngay tin da di duoc
+ * toi may may. Gui xong ma im lang thi lan sau khong ai dam bam nua.
+ */
+export async function guiThongBaoAction(
+  galleryId: string,
+): Promise<{ error?: string; daGui?: number }> {
+  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+
+  const g = await getGalleryById(galleryId);
+  if (!g) return { error: "Không tìm thấy album." };
+
+  const kq = await guiThongBaoAnhMoi(galleryId, g.slug);
+  return { daGui: kq.daGui };
+}
+
 /** Ngat ket noi Google Drive — web quay ve dung service account. */
 export async function disconnectDriveAction() {
   if (!(await isAdmin())) return;
@@ -175,7 +198,7 @@ export async function setCoverAction(galleryId: string, fileId: string | null) {
 /** Doi ma chon anh cua album. */
 export async function setAccessAction(
   galleryId: string,
-  code: string
+  code: string,
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
 
@@ -195,7 +218,7 @@ export async function setAccessAction(
  */
 export async function setMessageAction(
   galleryId: string,
-  message: string
+  message: string,
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
 
@@ -221,7 +244,7 @@ export async function setMessageAction(
  */
 export async function setGoiAnhAction(
   galleryId: string,
-  soAnh: string
+  soAnh: string,
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
 
@@ -253,7 +276,7 @@ export async function setGoiAnhAction(
  */
 export async function setClientNameAction(
   galleryId: string,
-  ten: string
+  ten: string,
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
 
@@ -275,7 +298,7 @@ export async function setClientNameAction(
  */
 export async function setFeaturedAction(
   galleryId: string,
-  featured: boolean
+  featured: boolean,
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
   await setFeatured(galleryId, featured);
@@ -299,7 +322,7 @@ export async function setFeaturedAction(
  */
 export async function setKhuAction(
   galleryId: string,
-  khu: KhuGioiThieu
+  khu: KhuGioiThieu,
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
   await setKhuGioiThieu(galleryId, khu);
@@ -319,7 +342,7 @@ export async function setKhuAction(
  */
 export async function setExpiryAction(
   galleryId: string,
-  expiresAt: string | null
+  expiresAt: string | null,
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
 
@@ -340,7 +363,7 @@ export async function setExpiryAction(
 export async function setBiaMucAction(
   galleryId: string,
   albumId: string,
-  fileId: string | null
+  fileId: string | null,
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
 

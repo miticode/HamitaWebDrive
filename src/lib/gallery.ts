@@ -1,8 +1,5 @@
-import { cached } from "@/lib/cache";
-import {
-  getGalleryTree,
-  type GalleryTree,
-} from "@/lib/drive";
+import { cached, invalidate } from "@/lib/cache";
+import { getGalleryTree, type GalleryTree } from "@/lib/drive";
 
 /**
  * Doc cay thu muc cua gallery, co cache ngan.
@@ -15,4 +12,23 @@ export function loadTree(folderId: string): Promise<GalleryTree> {
   return cached(`tree:${folderId}`, TTL_MS, () => getGalleryTree(folderId));
 }
 
-
+/**
+ * Doc lai cay tu Drive, BO QUA cache dang co.
+ *
+ * Vi sao can: cache o tren la mot Map trong bo nho cua TUNG may chay ham, ma
+ * Vercel chay nhieu may song song. Studio bam "Lam moi" thi chi may nhan cu bam
+ * do moi xoa cache; nhung may khac van giu cay cu them toi nam phut nua.
+ *
+ * Hau qua da xay ra that (04/09/2026): studio them thu muc moi, khach bam thong
+ * bao vao thang thu muc do, request roi vao mot may con giu cay cu — khong thay
+ * thu muc nen tra ve "khong tim thay trang". Thu lai lan nua thi duoc, vi roi
+ * vao may khac. Cung ban chat voi bay da ghi o rateLimit: dem trong bo nho tren
+ * Vercel khong dang tin.
+ *
+ * Chi goi khi da tim ma KHONG THAY, khong goi cho moi luot xem: mot lan doc
+ * Drive dat hon nhieu so voi doc cache.
+ */
+export function loadTreeMoi(folderId: string): Promise<GalleryTree> {
+  invalidate(`tree:${folderId}`);
+  return loadTree(folderId);
+}

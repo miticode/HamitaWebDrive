@@ -11,6 +11,7 @@ import { LoiNhan } from "./LoiNhan";
 import { TenAlbum } from "./TenAlbum";
 import { GoiAnh } from "./GoiAnh";
 import { NutLamMoi } from "./NutLamMoi";
+import { NutGuiThongBao } from "./NutGuiThongBao";
 import { AnhTieuBieu } from "./AnhTieuBieu";
 import { ThoiHan } from "./ThoiHan";
 import { XoaAlbumDialog } from "./XoaAlbumDialog";
@@ -61,6 +62,7 @@ export function GalleryCard({
   counts,
   mucXong,
   biaMuc,
+  soMayChoTin,
 }: {
   gallery: Gallery;
   counts: ListCount[];
@@ -68,6 +70,8 @@ export function GalleryCard({
   mucXong: MucXong[];
   /** Ảnh bìa riêng từng thư mục của album này. */
   biaMuc: BiaMuc[];
+  /** Số máy khách đang chờ nhận thông báo của album này. */
+  soMayChoTin: number;
 }) {
   const title = gallery.clientName ?? gallery.title;
   const chuaDongBo = gallery.syncedAt === null;
@@ -112,7 +116,15 @@ export function GalleryCard({
         title="Đổi ảnh bìa"
         className="absolute top-2 right-2 flex min-h-8 items-center gap-1.5 rounded-full bg-black/55 px-3 text-xs text-white backdrop-blur transition hover:bg-black/75"
       >
-        <svg viewBox="0 0 24 24" className="size-[14px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          viewBox="0 0 24 24"
+          className="size-[14px]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M3 5h18v14H3z M3 16l5-5 4 4 3-3 6 6" />
         </svg>
         Đổi bìa
@@ -139,7 +151,7 @@ export function GalleryCard({
                 <span
                   key={m.albumId}
                   title={`Khách báo xong thư mục "${m.tenMuc}" lúc ${new Date(
-                    m.xongLuc
+                    m.xongLuc,
                   ).toLocaleString("vi-VN", {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -148,7 +160,10 @@ export function GalleryCard({
                   })}`}
                   className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700"
                 >
-                  <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />
+                  <span
+                    aria-hidden
+                    className="size-1.5 rounded-full bg-emerald-500"
+                  />
                   {/*
                     Nhan PHAI mang chu "Da chon xong", khong chi ten thu muc.
 
@@ -163,7 +178,9 @@ export function GalleryCard({
                     tra loi "xong CAI NAO trong tam cai".
                   */}
                   <span className="max-w-[12rem] truncate">
-                    {gallery.albumCount > 1 ? `Xong · ${m.tenMuc}` : "Đã chọn xong"}
+                    {gallery.albumCount > 1
+                      ? `Xong · ${m.tenMuc}`
+                      : "Đã chọn xong"}
                   </span>
                 </span>
               ))}
@@ -173,7 +190,11 @@ export function GalleryCard({
 
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-fg-muted">
           <Stat icon="photo" value={gallery.photoCount} label="Số ảnh" />
-          <Stat icon="folder" value={gallery.albumCount} label="Số thư mục con" />
+          <Stat
+            icon="folder"
+            value={gallery.albumCount}
+            label="Số thư mục con"
+          />
           {counts.map((c) => (
             <Stat
               key={c.listId}
@@ -218,7 +239,8 @@ export function GalleryCard({
         </div>
 
         <p className="mt-3 truncate text-xs text-fg-faint">
-          /g/{gallery.slug} · {new Date(gallery.createdAt).toLocaleDateString("vi-VN")}
+          /g/{gallery.slug} ·{" "}
+          {new Date(gallery.createdAt).toLocaleDateString("vi-VN")}
         </p>
 
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3">
@@ -233,11 +255,23 @@ export function GalleryCard({
           </Link>
 
           <form action={refreshGalleryAction}>
-            <input type="hidden" name="folderId" value={gallery.driveFolderId} />
+            <input
+              type="hidden"
+              name="folderId"
+              value={gallery.driveFolderId}
+            />
             <input type="hidden" name="galleryId" value={gallery.id} />
             {/* Nút nằm trong component riêng để đọc được trạng thái của form. */}
             <NutLamMoi />
           </form>
+
+          {/*
+            Nút gửi tin đứng NGAY CẠNH nút "Làm mới" nhưng là hai nút tách bạch.
+            Đặt cạnh nhau vì hai việc thường đi liền: đọc lại Drive xong, thấy
+            ảnh đã lên đủ thì mới nhắn khách. Tách ra vì hậu quả khác hẳn nhau —
+            một cái chỉ đụng số liệu trong nhà, một cái chạm tới điện thoại khách.
+          */}
+          <NutGuiThongBao galleryId={gallery.id} soMay={soMayChoTin} />
 
           <button
             type="button"

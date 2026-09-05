@@ -16,6 +16,7 @@ import {
 } from "@/lib/store";
 import { docMoc } from "@/lib/moc";
 import { docThongBao } from "@/lib/thongBao";
+import { demNguoiNhanMoiAlbum } from "@/lib/push";
 import { logoutAction } from "./actions";
 import { NutSaoLuu } from "./NutSaoLuu";
 import { KhoAnh } from "./KhoAnh";
@@ -122,6 +123,17 @@ export default async function AdminPage() {
   */
   const tinThongBao = onJsonStore ? [] : await docThongBao().catch(() => []);
 
+  /*
+    Số máy đang chờ nhận thông báo của từng album — nút "Gửi thông báo" trên
+    mỗi thẻ cần con số này để biết có ai để gửi không.
+
+    Đếm MỘT LẦN cho cả trang rồi tra theo id, không gọi mỗi thẻ một lần: mười
+    sáu album là mười sáu lần hỏi database cho một con số nhỏ.
+  */
+  const soMayChoTin = onJsonStore
+    ? {}
+    : await demNguoiNhanMoiAlbum().catch(() => ({}));
+
   const { quaHan, sapHetHan } = xepTheoHan(galleries);
   const saoLuuCachDay = cachDayMayNgay(await docMoc("saoLuu"));
 
@@ -134,7 +146,9 @@ export default async function AdminPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-6">
         <div className="flex items-center gap-4">
           <Logo size="sm" />
-          <h1 className="font-display text-2xl font-light sm:text-3xl">Quản lý album</h1>
+          <h1 className="font-display text-2xl font-light sm:text-3xl">
+            Quản lý album
+          </h1>
         </div>
         {/*
           Theo dõi khách chọn ảnh trong lúc trang đang mở. Không vẽ ra gì cho
@@ -143,13 +157,18 @@ export default async function AdminPage() {
         <TheoDoiKhach />
 
         <div className="flex items-center gap-5">
-          <Link href="/admin/thong-ke" className="eyebrow transition hover:text-accent">
+          <Link
+            href="/admin/thong-ke"
+            className="eyebrow transition hover:text-accent"
+          >
             Thống kê
           </Link>
           <NutDoiTong toiBanDau={tongToi} />
           {adminPasswordIsSet() && (
             <form action={logoutAction}>
-              <button className="eyebrow transition hover:text-accent">Đăng xuất</button>
+              <button className="eyebrow transition hover:text-accent">
+                Đăng xuất
+              </button>
             </form>
           )}
         </div>
@@ -187,14 +206,16 @@ export default async function AdminPage() {
         <div className="mt-4 space-y-2">
           {!adminPasswordIsSet() && (
             <p className="notice bg-amber-100 text-amber-900">
-              Chưa đặt <code>ADMIN_PASSWORD</code> trong <code>.env.local</code> — trang
-              này đang mở tự do. Bắt buộc phải đặt trước khi đưa lên mạng.
+              Chưa đặt <code>ADMIN_PASSWORD</code> trong <code>.env.local</code>{" "}
+              — trang này đang mở tự do. Bắt buộc phải đặt trước khi đưa lên
+              mạng.
             </p>
           )}
           {onJsonStore && (
             <p className="notice bg-amber-100 text-amber-900">
-              Dữ liệu đang lưu trong file trên máy này. Đặt <code>DATABASE_URL</code> trỏ
-              tới Neon Postgres trước khi deploy, nếu không lựa chọn của khách sẽ mất.
+              Dữ liệu đang lưu trong file trên máy này. Đặt{" "}
+              <code>DATABASE_URL</code> trỏ tới Neon Postgres trước khi deploy,
+              nếu không lựa chọn của khách sẽ mất.
             </p>
           )}
         </div>
@@ -218,6 +239,7 @@ export default async function AdminPage() {
               counts={counts}
               mucXong={mucXong}
               biaMuc={biaMuc}
+              soMayChoTin={soMayChoTin}
             />
           )}
         </div>
