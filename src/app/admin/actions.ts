@@ -32,6 +32,8 @@ import {
   setMessage,
 } from "@/lib/store";
 import { guiThongBaoAnhMoi, syncAndWarm } from "@/lib/warm";
+import { ghiMoc } from "@/lib/moc";
+import { khoaDaDoc } from "@/lib/thongBao";
 
 export type ActionState = { error?: string; ok?: string };
 
@@ -176,6 +178,28 @@ export async function guiThongBaoAction(
 
   const kq = await guiThongBaoAnhMoi(galleryId, g.slug);
   return { daGui: kq.daGui };
+}
+
+/**
+ * Danh dau mot thong bao la da doc — no bien mat khoi khung.
+ *
+ * Ghi vao bang `Moc` voi khoa mang tien to rieng (xem khoaDaDoc). Ghi vao
+ * DATABASE chu khong phai trong trinh duyet: studio mo trang quan ly tren ca
+ * may tinh lan dien thoai, danh dau o may nay ma may kia van con hien thi la
+ * doc hai lan cho cung mot viec.
+ *
+ * KHONG revalidate lai trang: khung thong bao tu bo dong do o phia trinh duyet
+ * ngay khi bam, con lan tai trang sau thi `docThongBao` da loc san. Goi
+ * revalidatePath o day chi lam ca trang ve lai vi mot dong bien mat.
+ */
+export async function danhDauDaDocAction(
+  id: string,
+): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!id.trim()) return { error: "Thiếu mã thông báo." };
+
+  await ghiMoc(khoaDaDoc(id), new Date());
+  return {};
 }
 
 /** Ngat ket noi Google Drive — web quay ve dung service account. */

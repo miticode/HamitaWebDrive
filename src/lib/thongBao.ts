@@ -36,26 +36,63 @@ export type ThongBao = {
 /** Nang truoc, trong cung mot muc thi giu thu tu tu nhien. */
 const THU_TU: Record<MucDo, number> = { gap: 0, nen: 1 };
 
+/**
+ * Tien to khoa luu "studio da doc thong bao nay".
+ *
+ * Muon bang `Moc` thay vi dung bang moi: `Moc` von de ghi "lan cuoi lam viec
+ * X" — o day viec X la "da xem thong bao id nay", dung hinh dang do, ma khoi
+ * phai doi schema cho mot cot chi chua dau tich.
+ */
+const TIEN_TO_DA_DOC = "da-doc-tb:";
+
+export function khoaDaDoc(id: string): string {
+  return TIEN_TO_DA_DOC + id;
+}
+
 export async function docThongBao(): Promise<ThongBao[]> {
   const prisma = getPrisma();
 
-  const [galleries, lists, selections, mucXong] = await Promise.all([
+  const [galleries, lists, selections, mucXong, daDoc] = await Promise.all([
     prisma.gallery.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.selectionList.findMany(),
-    prisma.selection.findMany({ select: { listId: true, driveFileId: true, createdAt: true } }),
+    prisma.selection.findMany({
+      select: { listId: true, driveFileId: true, createdAt: true },
+    }),
     prisma.mucXong.findMany(),
+    /*
+      Doc mot luot moi dau tich da doc roi loc trong bo nho, khong hoi tung
+      thong bao mot: nam thong bao la nam luot hoi database cho mot phep kiem
+      co/khong.
+
+      Nuot loi: bang Moc them sau nen mot ban deploy cu co the chua co — luc do
+      coi nhu chua doc cai nao, van hon la ca khung thong bao chet.
+    */
+    prisma.moc
+      .findMany({
+        where: { ten: { startsWith: TIEN_TO_DA_DOC } },
+        select: { ten: true },
+      })
+      .catch(() => [] as { ten: string }[]),
   ]);
 
+  const daDocSet = new Set(
+    daDoc.map((m) => m.ten.slice(TIEN_TO_DA_DOC.length)),
+  );
+
   const galleryCuaList = new Map(lists.map((l) => [l.id, l.galleryId]));
-  const listTim = new Set(lists.filter((l) => l.icon === "heart").map((l) => l.id));
+  const listTim = new Set(
+    lists.filter((l) => l.icon === "heart").map((l) => l.id),
+  );
 
   const ra: ThongBao[] = [];
 
   for (const g of galleries) {
     const ten = g.clientName ?? g.title;
-    const cuaNo = selections.filter((s) => galleryCuaList.get(s.listId) === g.id);
+    const cuaNo = selections.filter(
+      (s) => galleryCuaList.get(s.listId) === g.id,
+    );
     const soTim = new Set(
-      cuaNo.filter((s) => listTim.has(s.listId)).map((s) => s.driveFileId)
+      cuaNo.filter((s) => listTim.has(s.listId)).map((s) => s.driveFileId),
     ).size;
 
     /*
@@ -88,7 +125,7 @@ export async function docThongBao(): Promise<ThongBao[]> {
                 "Khách mở album sẽ không thấy phần gói ảnh. Nên đặt trước khi gửi link.",
               slug: g.slug,
               tenAlbum: ten,
-            }
+            },
       );
     }
 
@@ -106,10 +143,21 @@ export async function docThongBao(): Promise<ThongBao[]> {
     const xongCuaNo = mucXong.filter((m) => m.galleryId === g.id);
     if (xongCuaNo.length > 0) {
       const somNhat = Math.min(...xongCuaNo.map((m) => m.xongLuc.getTime()));
-      const themSau = cuaNo.filter((s) => s.createdAt.getTime() > somNhat).length;
+      const themSau = cuaNo.filter(
+        (s) => s.createdAt.getTime() > somNhat,
+      ).length;
       if (themSau > 0) {
         ra.push({
-          id: `them-${g.id}`,
+          /*
+            SO TAM nam trong id.
+
+            Studio danh dau da doc la tat thong bao nay di — nhung neu khach
+            chon THEM nua sau do thi phai bao lai, khong thi lai giao in thieu
+            ma khong ai biet. So tam doi thi id doi, dau tich cu khong con khop
+            va thong bao hien tro lai. Hai thong bao kia khong can vay: chung
+            noi ve mot trang thai dung yen, khong phai mot con so lon dan.
+          */
+          id: `them-${g.id}-${themSau}`,
           mucDo: "gap",
           tieuDe: "Khách chọn thêm sau khi báo xong",
           chiTiet: `${themSau} tấm được chọn sau lúc khách bấm báo xong. Mở lại đơn giao in đối chiếu trước khi in.`,
@@ -141,5 +189,14 @@ export async function docThongBao(): Promise<ThongBao[]> {
     }
   }
 
-  return ra.sort((a, b) => THU_TU[a.mucDo] - THU_TU[b.mucDo]);
+  /*
+    Bo nhung cai studio da danh dau da doc.
+
+    Loc o BUOC CUOI chu khong bo qua tu dau vong lap: cach nay giu nguyen phan
+    tinh toan, nen them mot loai thong bao moi cung tu dong duoc loc theo, khong
+    phai nho cai gi.
+  */
+  return ra
+    .filter((t) => !daDocSet.has(t.id))
+    .sort((a, b) => THU_TU[a.mucDo] - THU_TU[b.mucDo]);
 }

@@ -816,9 +816,31 @@ phép kiểm kiểu đó vào đây; nó sẽ làm trang quản lý chậm hẳn
 lặng lẽ biến mất thì studio không phân biệt được "hôm nay không có việc" với
 "cái khung đó hỏng rồi" — đúng bẫy đã ghi ở nguyên tắc 27 với khung kho ảnh.
 
-Cả dòng thông báo là liên kết tới `/admin/[slug]`: đọc xong thì việc tiếp theo
-luôn là mở album ra sửa, bắt đi tìm lại tên trong danh sách mười sáu thẻ là
-thừa một bước.
+**Bấm vào dòng = đánh dấu ĐÃ ĐỌC, dòng biến mất ngay** (yêu cầu 06/09/2026).
+Bản đầu để cả dòng là liên kết tới `/admin/[slug]`, nhưng việc studio làm nhiều
+nhất là **đọc rồi dẹp** chứ không phải mở album ra ngay — ba trong năm thông
+báo lúc đó là "chưa đặt gói ảnh" cho album của chính studio, đọc xong biết là
+bỏ qua được. Đường sang album vẫn còn, là một liên kết nhỏ **"mở album"** đặt
+đè lên góc dưới phải.
+
+Hai thẻ đó phải là **anh em, không lồng nhau**: `<a>` nằm trong `<button>` là
+HTML sai và mỗi trình duyệt xử lý một kiểu. Đặt tuyệt đối lên trên thì bấm vào
+liên kết không chạm tới nút bên dưới.
+
+Dấu tích lưu ở **DATABASE**, không phải trong trình duyệt: studio mở trang quản
+lý trên cả máy tính lẫn điện thoại, đánh dấu ở máy này mà máy kia vẫn hiện là
+đọc hai lần cho cùng một việc. Mượn bảng `Moc` với tiền tố `da-doc-tb:` — bảng
+đó vốn ghi "lần cuối làm việc X", đúng hình dạng, khỏi đổi schema.
+
+Dòng biến mất **ngay khi bấm**, không đợi máy chủ trả lời: cùng lắm là ghi hụt
+một dấu tích và thông báo hiện lại ở lần tải sau, không đáng để studio ngồi
+nhìn một vòng xoay.
+
+**Id của thông báo "khách chọn thêm" mang theo SỐ TẤM** (`them-<id>-<soTam>`).
+Đánh dấu đã đọc là tắt nó đi, nhưng nếu khách chọn **thêm nữa** thì phải báo
+lại — không thì lại giao in thiếu mà không ai biết. Số tấm đổi thì id đổi, dấu
+tích cũ không khớp và thông báo hiện trở lại. Hai loại kia không cần vậy: chúng
+nói về một trạng thái đứng yên, không phải một con số lớn dần.
 
 **40. Khung xem ảnh to ở trang quản lý dùng ĐÚNG bộ phím của khung phía khách.**
 `Esc` đóng, mũi tên trái/phải chuyển tấm, vuốt ngang trên điện thoại — giống
