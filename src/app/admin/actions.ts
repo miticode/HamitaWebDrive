@@ -272,12 +272,20 @@ export async function setGoiAnhAction(
 ): Promise<{ error?: string }> {
   if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
 
+  /*
+    Nhan CA SO 0, khong chi tu 1 tro len.
+
+    0 khong phai "chua dat" — no la mot goi that: goi chi lay file anh, khong
+    kem tam in nao. Khach van tha tim binh thuong, chi la tam nao cung tinh
+    tien in. Phan biet voi de TRONG (null = album khong tinh theo goi, phia
+    khach bo han doan gia ca).
+  */
   const soSach = soAnh.trim();
   let so: number | null = null;
   if (soSach) {
     so = Number(soSach);
-    if (!Number.isInteger(so) || so < 1) {
-      return { error: "Số ảnh trong gói phải là số nguyên từ 1 trở lên." };
+    if (!Number.isInteger(so) || so < 0) {
+      return { error: "Số ảnh trong gói phải là số nguyên từ 0 trở lên." };
     }
   }
 

@@ -784,6 +784,27 @@ khách (nguyên tắc 28); rút gọn thành dạng bảng cho "dễ đọc" là
 `soAnhTrongGoi === null` thì **không vẽ khối này** — album không tính theo gói
 thì tự dựng ra một con số là thu tiền thứ khách không đặt.
 
+**`soAnhTrongGoi` có BA trạng thái, không phải hai** (thêm 06/09/2026):
+
+| Giá trị | Nghĩa | Khách thấy gì |
+|---|---|---|
+| `null` | không tính theo gói | không có khối gói ảnh |
+| `0` | **gói chỉ lấy file, không kèm ảnh in** | "gói chỉ lấy file ảnh… tấm nào muốn in thì 12.000đ" |
+| `N > 0` | gói có N tấm in | "gói của anh chị có N tấm in…" |
+
+**Phải so với `null`, không được viết `soAnhTrongGoi ? …`** — số 0 cũng là giá
+trị "sai" trong JavaScript nên gói 0 tấm sẽ bị đọc nhầm thành chưa đặt, và
+khách mua gói chỉ lấy file sẽ không thấy dòng nào về giá in. Đã sửa ba chỗ mắc
+bẫy này lúc thêm trạng thái 0.
+
+Phần tính tiền **không phải sửa gì**: `tinhTienIn(soTam, 0, gia)` cho ra
+`vuotGoi = soTam` — đúng nghiệp vụ, vì gói không kèm tấm in nào thì tấm nào
+khách thả tim cũng là in thêm. Đo: 5 tấm → 60.000đ, 100 tấm → 1.200.000đ.
+
+Đơn giao in bỏ hàng "Trong gói 0/0" khi gói là 0 — hàng đó không nói được gì mà
+còn làm người cầm tờ đơn tưởng studio quên điền số; thay bằng một dòng nói thẳng
+bản chất của gói, và đổi nhãn "Vượt gói" thành "In thêm".
+
 **39. Khung "Thông báo" ở trang quản lý chỉ chứa VIỆC CỦA STUDIO.**
 Thêm 04/09/2026 theo yêu cầu. Ranh giới với ba chỗ báo sẵn có — nhầm là cùng
 một tin hiện hai nơi:

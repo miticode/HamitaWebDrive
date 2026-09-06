@@ -77,15 +77,24 @@ export function GoiAnh({
         */}
         <span
           className={`min-w-0 flex-1 leading-relaxed ${
-            soAnhTrongGoi ? "" : "text-fg-faint"
+            soAnhTrongGoi === null ? "text-fg-faint" : ""
           }`}
         >
-          {soAnhTrongGoi ? (
+          {/*
+            BA trạng thái, không phải hai. Phải so với null chứ không dùng
+            `soAnhTrongGoi ? …` như trước: số 0 cũng là giá trị "sai" trong
+            JavaScript nên gói 0 tấm sẽ bị đọc nhầm thành chưa đặt.
+          */}
+          {soAnhTrongGoi === null ? (
+            "chưa đặt — khách không thấy khối gói ảnh"
+          ) : soAnhTrongGoi === 0 ? (
+            <>
+              <b>chỉ lấy file</b> · in thêm {tien(giaAnhThem)}đ/ảnh
+            </>
+          ) : (
             <>
               <b>{soAnhTrongGoi}</b> ảnh · thêm {tien(giaAnhThem)}đ/ảnh
             </>
-          ) : (
-            "chưa đặt — khách không thấy khối gói ảnh"
           )}
         </span>
         <button
@@ -104,7 +113,7 @@ export function GoiAnh({
       <label className="eyebrow block">Số ảnh in có sẵn trong gói</label>
       <input
         type="number"
-        min={1}
+        min={0}
         value={soAnh}
         autoFocus
         onChange={(e) => setSoAnh(e.target.value)}
@@ -112,14 +121,24 @@ export function GoiAnh({
           if (e.key === "Enter") luu();
           if (e.key === "Escape") huy();
         }}
-        placeholder="để trống nếu không tính theo gói"
+        placeholder="0 = chỉ lấy file · để trống = không tính theo gói"
         className="input mt-1.5"
       />
 
+      {/*
+        Cho xem trước ĐÚNG câu khách sẽ đọc, theo cả ba trạng thái.
+
+        So bằng chuỗi rỗng chứ không viết `soAnh ? …`: gõ "0" vào ô thì `soAnh`
+        là chuỗi "0" — vẫn là chuỗi có nội dung nên nhánh này chạy đúng, nhưng
+        nếu ai đó đổi sang so với số thì 0 sẽ rơi nhầm sang nhánh "để trống".
+        Ba trạng thái viết rõ ba nhánh cho khỏi vấp.
+      */}
       <p className="mt-2 text-xs leading-relaxed text-fg-faint">
-        {soAnh
-          ? `Khách sẽ đọc: "Gói của anh chị gồm ${soAnh} ảnh in. Thích thêm tấm nào ngoài gói vẫn chọn thoải mái — mỗi tấm ${tien(giaAnhThem)}đ, đã gồm chỉnh sửa và in."`
-          : "Để trống thì phần hướng dẫn cho khách bỏ hẳn đoạn giá cả, chỉ nói cách chọn ảnh."}
+        {soAnh.trim() === ""
+          ? "Để trống thì phần hướng dẫn cho khách bỏ hẳn đoạn giá cả, chỉ nói cách chọn ảnh."
+          : soAnh.trim() === "0"
+            ? `Khách sẽ đọc: "Gói của anh chị là gói chỉ lấy file ảnh, không kèm ảnh in. Tấm nào anh chị muốn Hamita in ra thì mỗi tấm ${tien(giaAnhThem)}đ, đã gồm cả chỉnh sửa và in ạ."`
+            : `Khách sẽ đọc: "Gói của anh chị có ${soAnh} tấm in. Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái, mỗi tấm ${tien(giaAnhThem)}đ đã gồm cả chỉnh sửa và in ạ."`}
       </p>
 
       <p className="mt-2 text-[11px] leading-relaxed text-fg-faint">

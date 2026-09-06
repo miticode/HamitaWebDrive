@@ -88,17 +88,19 @@ export default async function DonInPage({ params }: Props) {
     .sort(
       (a, b) =>
         a.albumName.localeCompare(b.albumName, "vi") ||
-        a.fileName.localeCompare(b.fileName, "vi")
+        a.fileName.localeCompare(b.fileName, "vi"),
     );
 
   const soGiuRieng = new Set(
-    selections.filter((s) => s.listId === dsGiuRieng?.id).map((s) => s.driveFileId)
+    selections
+      .filter((s) => s.listId === dsGiuRieng?.id)
+      .map((s) => s.driveFileId),
   ).size;
 
   const tinh = tinhTienIn(
     anhIn.length,
     gallery.soAnhTrongGoi,
-    gallery.giaAnhThem
+    gallery.giaAnhThem,
   );
 
   const tenKhach = gallery.clientName ?? gallery.title;
@@ -111,17 +113,28 @@ export default async function DonInPage({ params }: Props) {
     `${STUDIO_NAME} · ${ngay}`,
     "",
     `Tổng số tấm in: ${anhIn.length}`,
+    /*
+      Goi 0 tam ("chi lay file") thi bo dong "Trong goi: 0/0" — no khong noi
+      duoc gi ma con lam nguoi doc tuong studio quen dien so. Noi thang la goi
+      khong kem tam in nao, roi liet ke tien nhu thuong.
+    */
     ...(tinh.thanhTien !== null
-      ? [
-          `Trong gói: ${tinh.trongGoi}/${gallery.soAnhTrongGoi}`,
-          `Vượt gói: ${tinh.vuotGoi} tấm × ${tien(gallery.giaAnhThem)}đ = ${tien(tinh.thanhTien)}đ`,
-        ]
+      ? gallery.soAnhTrongGoi === 0
+        ? [
+            "Gói chỉ lấy file — không kèm tấm in nào",
+            `In thêm: ${tinh.vuotGoi} tấm × ${tien(gallery.giaAnhThem)}đ = ${tien(tinh.thanhTien)}đ`,
+          ]
+        : [
+            `Trong gói: ${tinh.trongGoi}/${gallery.soAnhTrongGoi}`,
+            `Vượt gói: ${tinh.vuotGoi} tấm × ${tien(gallery.giaAnhThem)}đ = ${tien(tinh.thanhTien)}đ`,
+          ]
       : []),
     "",
     ...nhom.flatMap(([thuMuc, ds]) => [
       `--- ${thuMuc} (${ds.length} tấm) ---`,
       ...ds.map(
-        (a) => `${maSoFile(a.fileName)}  ${a.fileName}${a.note ? `  [${a.note}]` : ""}`
+        (a) =>
+          `${maSoFile(a.fileName)}  ${a.fileName}${a.note ? `  [${a.note}]` : ""}`,
       ),
       "",
     ]),
@@ -130,7 +143,10 @@ export default async function DonInPage({ params }: Props) {
   return (
     <main className="trang-don-in mx-auto w-full max-w-3xl px-5 py-10 sm:px-6 sm:py-12">
       <div className="khong-in flex flex-wrap items-center justify-between gap-3">
-        <Link href={`/admin/${slug}`} className="eyebrow transition hover:text-accent">
+        <Link
+          href={`/admin/${slug}`}
+          className="eyebrow transition hover:text-accent"
+        >
           ← Ảnh khách chọn
         </Link>
         <NutDonIn chu={banChu} />
@@ -168,15 +184,28 @@ export default async function DonInPage({ params }: Props) {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-baseline justify-between px-4 py-2.5">
-                    <dt className="text-fg-muted">Trong gói</dt>
-                    <dd className="tabular-nums">
-                      {tinh.trongGoi}/{gallery.soAnhTrongGoi} tấm
-                    </dd>
-                  </div>
+                  {/*
+                    Gói 0 tấm thì hàng "Trong gói 0/0" không nói được gì mà còn
+                    làm người đọc tưởng studio quên điền số — thay bằng một
+                    dòng nói thẳng bản chất của gói.
+                  */}
+                  {gallery.soAnhTrongGoi === 0 ? (
+                    <div className="px-4 py-2.5 text-xs text-fg-muted">
+                      Gói chỉ lấy file — không kèm tấm in nào, mọi tấm khách thả
+                      tim đều tính tiền in.
+                    </div>
+                  ) : (
+                    <div className="flex items-baseline justify-between px-4 py-2.5">
+                      <dt className="text-fg-muted">Trong gói</dt>
+                      <dd className="tabular-nums">
+                        {tinh.trongGoi}/{gallery.soAnhTrongGoi} tấm
+                      </dd>
+                    </div>
+                  )}
                   <div className="flex items-baseline justify-between px-4 py-2.5">
                     <dt className="text-fg-muted">
-                      Vượt gói · {tien(gallery.giaAnhThem)}đ mỗi tấm
+                      {gallery.soAnhTrongGoi === 0 ? "In thêm" : "Vượt gói"} ·{" "}
+                      {tien(gallery.giaAnhThem)}đ mỗi tấm
                     </dt>
                     <dd className="tabular-nums">{tinh.vuotGoi} tấm</dd>
                   </div>
@@ -214,7 +243,9 @@ export default async function DonInPage({ params }: Props) {
                       <td className="py-2 align-top font-medium tabular-nums">
                         {maSoFile(a.fileName)}
                       </td>
-                      <td className="py-2 align-top text-fg-muted">{a.fileName}</td>
+                      <td className="py-2 align-top text-fg-muted">
+                        {a.fileName}
+                      </td>
                       <td className="py-2 align-top">{a.note ?? ""}</td>
                     </tr>
                   ))}

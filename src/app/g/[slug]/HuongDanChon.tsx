@@ -218,15 +218,41 @@ export function HuongDanChon({
           <div className="min-w-0">
             <p className="eyebrow text-accent">Gói ảnh của anh chị</p>
             <p className="mt-1.5 text-sm leading-relaxed text-fg sm:text-[15px]">
-              Gói của anh chị có{" "}
-              <strong className="font-semibold text-accent">
-                {soAnhTrongGoi} tấm in
-              </strong>
-              . Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái, mỗi tấm{" "}
-              <strong className="font-semibold text-accent">
-                {tien(giaAnhThem)}đ
-              </strong>{" "}
-              đã gồm cả chỉnh sửa và in ạ.
+              {/*
+                Gói 0 tấm là một gói THẬT, không phải "chưa đặt": khách mua gói
+                chỉ lấy file, không kèm tấm in nào. Nói thẳng ra như vậy thay vì
+                để khách đọc "gói có 0 tấm in" — câu đó nghe như studio quên
+                điền số.
+
+                Vẫn mời khách in thêm: họ có quyền đổi ý, và giá thì đã rõ sẵn.
+              */}
+              {soAnhTrongGoi === 0 ? (
+                <>
+                  Gói của anh chị là gói{" "}
+                  <strong className="font-semibold text-accent">
+                    chỉ lấy file ảnh
+                  </strong>
+                  , không kèm ảnh in. Tấm nào anh chị muốn Hamita in ra thì mỗi
+                  tấm{" "}
+                  <strong className="font-semibold text-accent">
+                    {tien(giaAnhThem)}đ
+                  </strong>
+                  , đã gồm cả chỉnh sửa và in ạ.
+                </>
+              ) : (
+                <>
+                  Gói của anh chị có{" "}
+                  <strong className="font-semibold text-accent">
+                    {soAnhTrongGoi} tấm in
+                  </strong>
+                  . Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái, mỗi
+                  tấm{" "}
+                  <strong className="font-semibold text-accent">
+                    {tien(giaAnhThem)}đ
+                  </strong>{" "}
+                  đã gồm cả chỉnh sửa và in ạ.
+                </>
+              )}
             </p>
           </div>
         </div>
