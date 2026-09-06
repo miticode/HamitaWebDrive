@@ -33,6 +33,8 @@ type GalleryRow = {
   luotXem: number;
   xemLanDau: Date | null;
   xemLanCuoi: Date | null;
+  luotTai: number;
+  taiLanCuoi: Date | null;
   coverFileId: string | null;
   coverPinned: boolean;
   photoCount: number;
@@ -57,6 +59,7 @@ function toGallery(row: GalleryRow): Gallery {
     selectionsDoneAt: row.selectionsDoneAt?.toISOString() ?? null,
     xemLanDau: row.xemLanDau?.toISOString() ?? null,
     xemLanCuoi: row.xemLanCuoi?.toISOString() ?? null,
+    taiLanCuoi: row.taiLanCuoi?.toISOString() ?? null,
   };
 }
 
@@ -296,6 +299,23 @@ export const prismaStore: Store = {
       SET "luotXem" = "luotXem" + 1,
           "xemLanDau" = COALESCE("xemLanDau", ${luc}),
           "xemLanCuoi" = ${luc}
+      WHERE "id" = ${galleryId}
+    `;
+  },
+
+  async ghiLuotTai(galleryId: string, soTam: number) {
+    /*
+      Cong SO TAM chu khong phai cong 1: nut "Tai ca thu muc" tai tung tam mot
+      qua cung duong nay, nen cong theo luot goi la con so dung — nhung goi
+      ham nay tu mot cho khac voi so tam lon hon 1 thi van phai cong dung.
+
+      Viet bang SQL thang, cung ly do voi ghiLuotXem: mot luot thay vi doc rooi
+      ghi, de hai khach tai cung luc khong dem thieu.
+    */
+    await getPrisma().$executeRaw`
+      UPDATE "Gallery"
+      SET "luotTai" = "luotTai" + ${soTam},
+          "taiLanCuoi" = ${new Date()}
       WHERE "id" = ${galleryId}
     `;
   },

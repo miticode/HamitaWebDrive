@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
+import { after } from "next/server";
 import sharp from "sharp";
 import { downloadFile, getFileMeta } from "@/lib/drive";
 import { boMetadataJpeg } from "@/lib/jpeg";
 import { loadTree } from "@/lib/gallery";
-import { getGalleryBySlug } from "@/lib/store";
+import { getGalleryBySlug, ghiLuotTai } from "@/lib/store";
 import { TRAN_DIEM_ANH } from "@/lib/constants";
 
 export const runtime = "nodejs";
@@ -51,6 +52,19 @@ export async function GET(
     ]);
 
     const cleaned = await donDep(original, meta.mimeType);
+
+    /*
+      Dem mot tam khach vua tai ve.
+
+      Trong `after()` nen khach khong phai doi mot lan ghi database moi nhan
+      duoc file; nuot loi vi cung ly do voi dem luot xem (nguyen tac 29) —
+      khong dem duoc thi cung lam thieu mot con so thong ke, con lam hong viec
+      tai anh thi khong chap nhan duoc.
+
+      Dat SAU khi da don dep xong va truoc khi tra ve: den day la chac chan co
+      file de giao, khong dem nham nhung lan Drive tra loi.
+    */
+    after(() => ghiLuotTai(gallery.id, 1).catch(() => {}));
 
     return new Response(new Uint8Array(cleaned), {
       headers: {

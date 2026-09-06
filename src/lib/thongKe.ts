@@ -21,6 +21,19 @@ import { getPrisma } from "@/lib/db";
  */
 export const MOC_DEM_LUOT_XEM = new Date("2026-08-26T00:00:00Z");
 
+/*
+  MOC_DEM_LUOT_TAI khong nam o day ma o constants.ts, du no cung loai voi
+  MOC_DEM_LUOT_XEM ngay tren.
+
+  Ly do: the album (`GalleryCard.tsx`) can hang so do, ma the album chay o MAY
+  KHACH. Nhap tu file nay la keo theo `getPrisma` vao goi phia khach, va
+  Turbopack do thang xuong luc build — "the chunking context does not support
+  external modules (request: node:module)". Da vap that ngay 06/09/2026.
+
+  Quy tac rut ra: hang so ma ca hai phia cung dung thi de o constants.ts; file
+  nao co dinh toi database thi chi server duoc nhap.
+*/
+
 /** Bao nhieu ngay khong dong tinh thi coi la khach dang do dang. */
 const NGAY_COI_LA_BO_DO = 3;
 
@@ -46,6 +59,8 @@ export type ThongKe = {
     soTamDaChon: number;
     soAlbumCoKhachChon: number;
     soAlbumDaXongHet: number;
+    /** Tong so tam khach da tai ve tren moi album. */
+    soTamDaTai: number;
   };
   thoiGian: {
     /** Trung binh so ngay tu luc tao link toi tam anh dau tien khach chon. */
@@ -196,6 +211,7 @@ export async function docThongKe(bayGio = new Date()): Promise<ThongKe> {
         .size,
       soAlbumCoKhachChon,
       soAlbumDaXongHet,
+      soTamDaTai: galleries.reduce((t, g) => t + (g.luotTai ?? 0), 0),
     },
     thoiGian: {
       ngayToiTamDau: trungBinh(ngayToiTamDau),

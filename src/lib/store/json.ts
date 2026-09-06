@@ -132,6 +132,8 @@ export const jsonStore: Store = {
         luotXem: 0,
         xemLanDau: null,
         xemLanCuoi: null,
+        luotTai: 0,
+        taiLanCuoi: null,
         subfolders: [],
         syncedAt: null,
         expiresAt: hanMacDinh().toISOString(),
@@ -308,6 +310,17 @@ export const jsonStore: Store = {
       // Lan dau chi dat mot lan roi giu nguyen mai.
       g.xemLanDau = g.xemLanDau ?? luc;
       g.xemLanCuoi = luc;
+      await writeToDisk(db);
+    });
+  },
+
+  ghiLuotTai(galleryId: string, soTam: number) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const g = db.galleries.find((x) => x.id === galleryId);
+      if (!g) return;
+      g.luotTai = (g.luotTai ?? 0) + soTam;
+      g.taiLanCuoi = new Date().toISOString();
       await writeToDisk(db);
     });
   },

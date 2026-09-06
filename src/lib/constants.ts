@@ -78,6 +78,21 @@ export const SO_NGAY_GIU_ANH_MAC_DINH = 90;
  */
 export const MUI_GIO = "Asia/Ho_Chi_Minh";
 
+/**
+ * Moc bat dau dem so anh khach tai ve.
+ *
+ * Cot `luotTai` mac dinh la 0, nen album tao TRUOC moc nay cung mang so 0 du
+ * khach da tai het ve tu lau. Khong phan biet thi trang quan ly se bao "khach
+ * chua lay anh" cho nhung nha da lay xong — roi studio giu Drive day mai vi
+ * tuong chua ai tai. The album so bang ngay tao de biet co nen hien so hay
+ * giau di.
+ *
+ * De o day chu KHONG phai thongKe.ts (noi co MOC_DEM_LUOT_XEM cung loai): the
+ * album chay o may khach, ma thongKe.ts nhap `getPrisma` — nhap qua do la keo
+ * ca Prisma vao goi phia khach va vo build.
+ */
+export const MOC_DEM_LUOT_TAI = new Date("2026-09-06T00:00:00Z");
+
 /** Moc het han mac dinh cho album vua tao: hom nay cong so ngay giu anh. */
 export function hanMacDinh(): Date {
   const d = new Date();

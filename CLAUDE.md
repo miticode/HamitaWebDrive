@@ -606,6 +606,37 @@ với đọc cache. Thư mục thật sự không tồn tại thì tốn một l
 đáng tin. Bất cứ chỗ nào dựa vào bộ nhớ của một máy để quyết định điều mà máy
 khác cũng phải biết, đều sẽ sai kiểu này.
 
+**43. Đếm lượt tải theo SỐ TẤM, không theo số lần bấm.**
+Thêm 06/09/2026 theo yêu cầu. Cột `luotTai` + `taiLanCuoi` trên `Gallery`.
+
+Nút "Tải cả thư mục" tải **từng tấm một** qua chính `/api/download`, nên đếm
+theo lượt bấm sẽ ra con số vô nghĩa — một lần bấm có thể là 600 tấm. Đếm theo
+tấm thì con số trả lời đúng câu cần hỏi: **khách đã lấy ảnh về chưa.** Album hết
+hạn giữ ảnh mà khách chưa tải tấm nào thì studio còn phải nhắc; tải hết rồi thì
+dọn Drive được yên tâm.
+
+Ghi trong `after()` và nuốt lỗi, y như đếm lượt xem (nguyên tắc 29): không đếm
+được thì cùng lắm thiếu một con số, còn làm hỏng việc tải ảnh thì không.
+
+Đặt lệnh đếm **sau khi đã dọn dẹp xong ảnh, trước khi trả về** — tới đó mới chắc
+chắn có file để giao, không đếm nhầm những lần Drive trả lỗi.
+
+Cộng bằng SQL `"luotTai" + N` chứ không đọc-rồi-ghi. Đo thật: bốn lượt tải cùng
+lúc trên một album cho ra đúng 7 (3 + 4), không đếm thiếu.
+
+**Ô số liệu trên thẻ album tự giấu ở hai trường hợp**, đừng bỏ:
+- Album **không cho tải** — con số luôn 0, hiện ra chỉ thành ô rỗng làm nhiễu.
+- Album **tạo trước `MOC_DEM_LUOT_TAI`** — 0 ở đó nghĩa là "hồi đó chưa đếm",
+  không phải "khách chưa tải", mà nhìn số 0 thì không phân biệt được. Cùng cách
+  trang thống kê xử lý lượt xem.
+
+*Bẫy đã vấp khi làm:* `MOC_DEM_LUOT_TAI` để ở `constants.ts` chứ **không** ở
+`thongKe.ts` (nơi có `MOC_DEM_LUOT_XEM` cùng loại). Thẻ album chạy ở máy khách;
+nhập hằng số từ `thongKe.ts` là kéo theo `getPrisma` vào gói phía khách và
+Turbopack đổ ngay lúc build — *"the chunking context does not support external
+modules (request: node:module)"*. **Hằng số cả hai phía cùng dùng thì để
+`constants.ts`; file nào có dính tới database thì chỉ server được nhập.**
+
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên
 biểu tượng tới khi khách mở album ra.

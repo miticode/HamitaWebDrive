@@ -66,6 +66,8 @@ export const setGoiAnh: Store["setGoiAnh"] = (id, so, gia) =>
 export const setExpiry: Store["setExpiry"] = (id, expiresAt) =>
   store.setExpiry(id, expiresAt);
 export const ghiLuotXem: Store["ghiLuotXem"] = (id) => store.ghiLuotXem(id);
+export const ghiLuotTai: Store["ghiLuotTai"] = (id, soTam) =>
+  store.ghiLuotTai(id, soTam);
 
 export const setSelectionsDone: Store["setSelectionsDone"] = (id, xong) =>
   store.setSelectionsDone(id, xong);

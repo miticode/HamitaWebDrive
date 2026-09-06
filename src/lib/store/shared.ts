@@ -28,6 +28,10 @@ export type Gallery = {
   /** Lan mo dau tien / gan nhat (ISO). null = chua ai mo. */
   xemLanDau: string | null;
   xemLanCuoi: string | null;
+  /** So tam anh khach da tai ve. Xem chu thich o schema.prisma. */
+  luotTai: number;
+  /** Lan tai gan nhat (ISO). null = chua ai tai. */
+  taiLanCuoi: string | null;
   driveFolderId: string;
   allowDownload: boolean;
   createdAt: string;
@@ -207,6 +211,8 @@ export type Store = {
    * database chi de studio co so lieu.
    */
   ghiLuotXem(galleryId: string): Promise<void>;
+  /** Cong them so tam khach vua tai ve tu album nay. */
+  ghiLuotTai(galleryId: string, soTam: number): Promise<void>;
 
   /** Khach bao da chon xong hay chua. */
   setSelectionsDone(galleryId: string, xong: boolean): Promise<void>;

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { BiaMuc, Gallery, ListCount, MucXong } from "@/lib/store";
+import { MOC_DEM_LUOT_TAI } from "@/lib/constants";
 import { refreshGalleryAction } from "./actions";
 import { AccessControl } from "./AccessControl";
 import { CopyLink } from "./CopyLink";
@@ -21,7 +22,7 @@ function Stat({
   value,
   label,
 }: {
-  icon: "photo" | "folder" | "heart" | "check";
+  icon: "photo" | "folder" | "heart" | "check" | "tai";
   value: number;
   label: string;
 }) {
@@ -31,12 +32,15 @@ function Stat({
     heart:
       "M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z",
     check: "M20 6.5 9.2 17.3 4 12.1",
+    // Mui ten di xuong cham vao mot vach — bieu tuong tai ve ai cung nhan ra.
+    tai: "M12 4v11m0 0 4-4m-4 4-4-4M4 19h16",
   };
   const colors = {
     photo: "text-fg-faint",
     folder: "text-fg-faint",
     heart: "text-rose-500",
     check: "text-accent",
+    tai: "text-fg-faint",
   };
 
   return (
@@ -75,6 +79,13 @@ export function GalleryCard({
 }) {
   const title = gallery.clientName ?? gallery.title;
   const chuaDongBo = gallery.syncedAt === null;
+
+  /*
+    Album tạo trước mốc bắt đầu đếm thì cột `luotTai` luôn là 0 dù khách đã tải
+    hết từ lâu. So bằng ngày tạo để phân biệt "chưa ai tải" với "hồi đó chưa
+    đếm" — cùng cách trang thống kê phân biệt lượt xem (nguyên tắc 29).
+  */
+  const demDuocLuotTai = new Date(gallery.createdAt) >= MOC_DEM_LUOT_TAI;
   const [moChonBia, setMoChonBia] = useState(false);
   const [moXoa, setMoXoa] = useState(false);
 
@@ -203,6 +214,35 @@ export function GalleryCard({
               label={`${c.name} khách đã chọn`}
             />
           ))}
+
+          {/*
+            So tam khach da tai ve.
+
+            Chi hien khi album CHO TAI: album da tat quyen tai thi con so luon
+            bang 0, hien ra chi thanh mot o rong lam nhieu hang so lieu.
+
+            Album tao truoc mốc bắt đầu đếm cũng giấu đi thay vì hiện số 0 —
+            0 ở đó không có nghĩa "khách chưa tải" mà là "hồi đó chưa đếm", mà
+            studio nhìn số 0 thì đâu biết phân biệt (xem MOC_DEM_LUOT_TAI).
+          */}
+          {gallery.allowDownload && demDuocLuotTai && (
+            <Stat
+              icon="tai"
+              value={gallery.luotTai}
+              label={
+                gallery.taiLanCuoi
+                  ? `Khách đã tải ${gallery.luotTai} tấm · lần cuối ${new Date(
+                      gallery.taiLanCuoi
+                    ).toLocaleString("vi-VN", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      day: "2-digit",
+                      month: "2-digit",
+                    })}`
+                  : "Khách chưa tải tấm nào"
+              }
+            />
+          )}
         </div>
 
         {gallery.subfolders.length > 0 && (

@@ -101,12 +101,16 @@ export default async function ThongKePage() {
       {/* ── Tổng quan ─────────────────────────────────────────────────── */}
       <section className="mt-12">
         <h2 className="eyebrow">Tổng quan</h2>
-        <div className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-4">
+        <div className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-5">
           {[
             { so: tk.tongQuan.soAlbum, nhan: "Album" },
             { so: tk.tongQuan.soAnh.toLocaleString("vi-VN"), nhan: "Ảnh trên Drive" },
             { so: tk.tongQuan.soTamDaChon, nhan: "Lượt khách chọn" },
             { so: tk.tongQuan.soAlbumDaXongHet, nhan: "Album xong hẳn" },
+            {
+              so: tk.tongQuan.soTamDaTai.toLocaleString("vi-VN"),
+              nhan: "Tấm khách đã tải",
+            },
           ].map((o) => (
             <div key={o.nhan} className="bg-bg-raised px-4 py-3.5">
               <p className="font-display text-2xl font-light tabular-nums">{o.so}</p>

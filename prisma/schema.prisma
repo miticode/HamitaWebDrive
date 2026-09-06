@@ -98,6 +98,23 @@ model Gallery {
   xemLanDau     DateTime?
   xemLanCuoi    DateTime?
 
+  /// So TAM ANH khach da tai ve tu album nay.
+  ///
+  /// Dem theo TAM, khong theo luot bam: nut "Tai ca thu muc" tai tung tam mot
+  /// qua cung mot duong, nen dem luot bam se ra mot con so vo nghia — mot lan
+  /// bam co the la 600 tam.
+  ///
+  /// Muc dich: tra loi "khach da lay anh ve chua". Album da het han giu anh ma
+  /// khach chua tai tam nao thi studio con phai nhac; tai het roi thi don Drive
+  /// duoc yen tam. Truoc day khong co cach nao biet.
+  ///
+  /// Chi dem, KHONG luu ai tai hay tai tam nao — cung ly do voi luotXem.
+  ///
+  /// 0 co the nghia la CHUA AI TAI, ma cung co the la album tao truoc ngay
+  /// 06/09/2026 (luc do chua co cot nay). Phan biet bang MOC_DEM_LUOT_TAI.
+  luotTai       Int      @default(0)
+  taiLanCuoi    DateTime?
+
   syncedAt      DateTime?
 
   /// Moc studio du dinh xoa anh khoi Drive. Khach thay dem nguoc de tranh thu
