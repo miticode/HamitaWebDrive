@@ -7,9 +7,9 @@ import { getPrisma } from "@/lib/db";
  *
  * - `/admin/thong-ke` lo viec NHAC KHACH — nha nao chua mo link, chua chon tam
  *   nao, chon do roi dung. Do la nhung cu dien thoai studio nen goi.
- * - Khung nay lo viec CUA CHINH STUDIO — chua dat goi anh, khach chon them sau
- *   khi da bao xong, album khong con ma bao ve. Khong ai goi dien duoc cho
- *   nhung viec nay ca, phai tu mo ra sua.
+ * - Khung nay lo viec CUA CHINH STUDIO — khach da bao chon xong, chua dat goi
+ *   anh, khach chon them sau khi da bao xong, album khong con ma bao ve. Khong
+ *   ai goi dien duoc cho nhung viec nay ca, phai tu mo ra lam.
  *
  * Doc thang bang getPrisma() nhu thongKe.ts, va cung chi chay khi co database.
  *
@@ -129,19 +129,64 @@ export async function docThongBao(): Promise<ThongBao[]> {
       );
     }
 
-    /*
-      2. Khach chon them SAU khi da bam "Báo cho Hamita".
-
-      Chuyen nay da xay ra that va la kieu loi im lang nhat: studio thay bao
-      xong thi dem danh sach di in, ma khach van con them may tam nua sau do.
-      Toi ngay giao moi biet thieu, khong ai lan ra vi sao.
-
-      So voi moc bao xong SOM NHAT cua album: khach bao xong thu muc dau roi
-      chon tiep o thu muc thu hai la chuyen binh thuong, nhung studio van can
-      biet de doi chieu lai truoc khi in.
-    */
     const xongCuaNo = mucXong.filter((m) => m.galleryId === g.id);
     if (xongCuaNo.length > 0) {
+      /*
+        2. Khach da bao chon xong — toi luot studio lam.
+
+        Day la tin hieu chuyen viec tu khach sang studio, nen phai la viec GAP:
+        khach da lam xong phan cua ho va dang doi. Truoc day chi co the noi o
+        goc man hinh (`TheoDoiKhach`) hien luc khach vua bam, ma no thoang qua
+        roi mat — mo trang quan ly sau do thi khong con dau vet nao.
+
+        XONG HET hay moi mot phan deu bao, chi khac loi:
+        - Xong het (du so thu muc con) thi studio bat tay lam duoc ngay.
+        - Moi xong mot phan van dang biet: album nam thu muc ma khach xong thu
+          muc dau thi studio in truoc thu muc do duoc, khong phai doi ca bo.
+
+        SO THU MUC XONG nam trong id: khach bao xong them mot thu muc nua thi
+        id doi, dau tich "da doc" cu khong con khop va thong bao hien lai.
+      */
+      const xongHet = g.albumCount > 0 && xongCuaNo.length >= g.albumCount;
+      const conMuc = xongHet
+        ? ""
+        : ` Còn ${g.albumCount - xongCuaNo.length} thư mục chưa báo.`;
+
+      ra.push({
+        id: `xong-${g.id}-${xongCuaNo.length}`,
+        mucDo: "gap",
+        tieuDe: xongHet
+          ? "Khách đã chọn xong"
+          : `Khách xong ${xongCuaNo.length}/${g.albumCount} thư mục`,
+        /*
+          KHONG thả tim tấm nào thì đừng mời studio đi làm đơn giao in — đơn đó
+          sẽ trống trơn. Chuyện này có thật: nhà "baby- Châu" báo xong mà chỉ
+          tick giữ riêng 7 tấm, không thả tim tấm nào. Có thể họ hiểu nhầm hai
+          nút, mà cũng có thể họ chỉ muốn giữ file — đằng nào studio cũng nên
+          hỏi lại một câu trước khi kết sổ, nên nói thẳng ra như vậy.
+        */
+        chiTiet:
+          soTim === 0
+            ? `Khách chưa thả tim tấm nào, chỉ tick giữ riêng — nên hỏi lại xem có tấm nào cần in không.${conMuc}`
+            : `Đã chọn ${soTim} tấm in. Mở ra làm đơn giao in được rồi.${conMuc}`,
+        slug: g.slug,
+        tenAlbum: ten,
+      });
+
+      /*
+        3. Khach chon them SAU khi da bam "Báo cho Hamita".
+
+        Chuyen nay da xay ra that va la kieu loi im lang nhat: studio thay bao
+        xong thi dem danh sach di in, ma khach van con them may tam nua sau do.
+        Toi ngay giao moi biet thieu, khong ai lan ra vi sao.
+
+        Dung chung dieu kien voi muc 2 nen gop mot khoi: khong co moc bao xong
+        thi khong the co "chon them sau khi bao xong".
+
+        So voi moc bao xong SOM NHAT cua album: khach bao xong thu muc dau roi
+        chon tiep o thu muc thu hai la chuyen binh thuong, nhung studio van can
+        biet de doi chieu lai truoc khi in.
+      */
       const somNhat = Math.min(...xongCuaNo.map((m) => m.xongLuc.getTime()));
       const themSau = cuaNo.filter(
         (s) => s.createdAt.getTime() > somNhat,
@@ -154,8 +199,7 @@ export async function docThongBao(): Promise<ThongBao[]> {
             Studio danh dau da doc la tat thong bao nay di — nhung neu khach
             chon THEM nua sau do thi phai bao lai, khong thi lai giao in thieu
             ma khong ai biet. So tam doi thi id doi, dau tich cu khong con khop
-            va thong bao hien tro lai. Hai thong bao kia khong can vay: chung
-            noi ve mot trang thai dung yen, khong phai mot con so lon dan.
+            va thong bao hien tro lai — cung cach voi muc 2 ngay tren.
           */
           id: `them-${g.id}-${themSau}`,
           mucDo: "gap",
@@ -168,7 +212,7 @@ export async function docThongBao(): Promise<ThongBao[]> {
     }
 
     /*
-      3. Album mat lop bao ve.
+      4. Album mat lop bao ve.
 
       `daMoKhoa()` trong access.ts tra ve true khi album khong co ma — nghia la
       ai cam link cung tha tim, ghi chu, bao xong duoc. Trang quan ly khong cho

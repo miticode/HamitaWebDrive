@@ -816,8 +816,19 @@ một tin hiện hai nơi:
 | Trang **thống kê** | **Nhắc khách** — chưa mở link, chưa chọn, chọn dở rồi dừng |
 | Khung **Thông báo** (mới) | **Việc studio tự làm** — không ai gọi điện thay được |
 
-Ba loại đang canh, mỗi loại đều từ một lỗi đo được trong lượt rà soát 04/09:
+Bốn loại đang canh:
 
+- **Khách đã báo chọn xong** (thêm 06/09/2026). Đây là **tín hiệu chuyển việc
+  từ khách sang studio** nên luôn là mức gấp: khách làm xong phần của họ và
+  đang đợi. Trước đó chỉ có thẻ nổi ở góc (`TheoDoiKhach`) hiện đúng lúc khách
+  vừa bấm — thoáng qua rồi mất, mở trang quản lý sau đó thì không còn dấu vết.
+  Xong hết hay mới một phần **đều báo**, chỉ khác lời: album năm thư mục mà
+  khách xong thư mục đầu thì studio in trước thư mục đó được, không phải đợi cả
+  bộ.
+  *Khách báo xong mà KHÔNG thả tim tấm nào thì đừng mời đi làm đơn giao in* —
+  đơn đó sẽ trống trơn. Có thật: nhà "baby- Châu" báo xong mà chỉ tick giữ
+  riêng 7 tấm. Có thể họ hiểu nhầm hai nút, cũng có thể chỉ muốn giữ file;
+  đằng nào studio cũng nên hỏi lại trước khi kết sổ, nên câu chữ nói thẳng vậy.
 - **Chưa đặt gói ảnh.** Tách hai mức, đừng gộp: đã có khách thả tim là **gấp**
   (đơn giao in không tính được tiền, tới ngày giao mới lộ ra); chưa ai thả tim
   thì chỉ là lời nhắc. Đo trên dữ liệu thật: 2 album gấp, 2 album nhắc.

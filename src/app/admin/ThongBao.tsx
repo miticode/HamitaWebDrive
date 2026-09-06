@@ -80,8 +80,8 @@ export function ThongBao({ tin }: { tin: Tin[] }) {
             trống ở trên và không biết nó đang canh cái gì để mà tin.
           */}
           <p className="mt-2 text-xs leading-relaxed text-fg-faint">
-            Đang canh: album chưa đặt gói ảnh, khách chọn thêm sau khi đã báo
-            xong, album mất mã bảo vệ.
+            Đang canh: khách đã báo chọn xong, album chưa đặt gói ảnh, khách
+            chọn thêm sau khi đã báo xong, album mất mã bảo vệ.
           </p>
         </div>
       ) : (
