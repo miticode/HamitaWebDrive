@@ -125,6 +125,23 @@ trang album cũng ghép được link tải bản gốc dù studio đã tắt qu
 Mã chỉ có 33.856 tổ hợp (2 chữ + 2 số) — không khoá thì máy dò hết trong vài
 phút. Sai 8 lần/15 phút thì khoá, giống hệt trang đăng nhập admin.
 
+**Ô nhập mã phía KHÁCH tuyệt đối không được ghi mã mẫu.** Chỗ đó từng để sẵn
+`placeholder="123456"` cho khách dễ hình dung — mà đó đúng là `MA_MAC_DINH` của
+mọi album. Ô nhập tự khai luôn đáp án: ai cầm được link chỉ cần gõ lại dòng chữ
+mờ đang hiện là chọn ảnh được, vô hiệu hoá cả lớp mã sinh ra để chặn đúng
+chuyện đó (nguyên tắc 1). Anh phát hiện ngày 06/09/2026.
+
+Nay ghi `"Mã studio gửi anh chị"`. **Đổi mã mặc định rồi cũng đừng đặt lại mẫu
+ở đây** — mã nào rồi cũng có ngày trùng với thứ ai đó đoán ra.
+
+Chữ hoa và giãn ký tự chỉ áp cho mã khách gõ vào, không áp cho dòng gợi ý
+(`placeholder:normal-case placeholder:tracking-normal`): mã dạng `HAMITA-AB12`
+viết hoa giãn ra thì dễ đọc, còn một câu tiếng Việt bị kéo giãn thì vừa dài vừa
+khó đọc.
+
+*Riêng ô đổi mã ở TRANG QUẢN LÝ vẫn giữ mẫu `123456`* — trang đó có mật khẩu,
+và nhân viên cần biết mã mặc định là gì để đọc cho khách.
+
 **15. Tên studio chỉ có MỘT nguồn duy nhất: `STUDIO_NAME` trong
 `src/lib/constants.ts`.**
 `src/lib/studio.ts` (trang giới thiệu) lấy lại từ đây (`ten: STUDIO_NAME`)
