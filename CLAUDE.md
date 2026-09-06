@@ -553,6 +553,18 @@ Nút gửi có **bước hỏi lại**, cho xem trước đúng câu khách sẽ
 gửi tới mấy máy. Album chưa ai đăng ký thì nút vẫn **hiện nhưng mờ** kèm lý do,
 không giấu đi — giấu thì studio tưởng tính năng hỏng.
 
+**Nhãn trên nút luôn là `Gửi thông báo · N máy`**, kể cả khi N = 0. Hai điều
+đừng đổi:
+
+- **Đừng bỏ chữ "máy".** Bản đầu chỉ in số trần (`Gửi thông báo 3`) và studio
+  phải hỏi lại nó là gì — số ảnh mới? số lần đã gửi? Một con số đứng một mình
+  cạnh chữ thì đọc kiểu nào cũng được.
+- **Đừng viết dài hơn** cho trường hợp 0. Đã thử `· chưa ai đăng ký`: đo trong
+  thẻ album thật (325px) thì nút phình lên **236px** và hàng nút vỡ thành **ba
+  dòng**, mà 13/22 album đang ở trạng thái đó nên đa số thẻ sẽ rối. Dạng
+  `· N máy` giữ nút ở **172–181px** cho mọi giá trị từ 0 tới 10, hàng nút gọn
+  hai dòng, các thẻ cao bằng nhau. Lý do đầy đủ để trong chú thích khi rê chuột.
+
 Không chạy trong `after()` như "Làm mới": studio cần biết ngay tin đã tới mấy
 máy. Gửi xong mà im lặng thì lần sau không ai dám bấm.
 

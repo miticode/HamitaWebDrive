@@ -32,13 +32,26 @@ export function NutGuiThongBao({
   const [ketQua, setKetQua] = useState<string | null>(null);
   const [dangGui, start] = useTransition();
 
+  /*
+    Chưa ai đăng ký vẫn ghi "· 0 máy", CÙNG MỘT DẠNG với lúc có máy.
+
+    Bản đầu viết hẳn "· chưa ai đăng ký" cho rõ nghĩa, nhưng đo trong thẻ album
+    thật (325px) thì nút phình lên 236px và hàng nút vỡ thành ba dòng — mà
+    13/22 album đang ở trạng thái này, tức là đa số thẻ sẽ rối. Dạng "· N máy"
+    giữ nút ở 172–181px và hàng nút gọn hai dòng.
+
+    Nhất quán còn quan trọng hơn: mắt đọc cùng một chỗ, cùng một dạng, chỉ đổi
+    con số. Nút mờ đi đã nói rõ là bấm không được, còn lý do đầy đủ nằm trong
+    chú thích khi rê chuột.
+  */
   if (soMay === 0) {
     return (
       <span
         className="btn cursor-not-allowed opacity-45"
-        title="Chưa khách nào bật nhận thông báo trong app của album này"
+        title="Chưa ai đăng ký. Khách phải cài album ra màn hình chính rồi bấm “Báo em khi có ảnh mới” thì mới nhận được tin."
       >
         Gửi thông báo
+        <span className="ml-1.5 whitespace-nowrap">· 0 máy</span>
       </span>
     );
   }
@@ -67,8 +80,17 @@ export function NutGuiThongBao({
         className="btn"
         title={`Nhắn cho ${soMay} máy khách đang chờ rằng album có ảnh mới`}
       >
+        {/*
+          Ghi rõ "· N máy", không để con số trần.
+
+          Bản đầu chỉ in số ("Gửi thông báo 3") và studio phải hỏi nó là gì —
+          số ảnh mới? số lần đã gửi? Một con số đứng một mình cạnh chữ thì đọc
+          kiểu nào cũng được. Thêm đúng một chữ là hết đoán.
+        */}
         Gửi thông báo
-        <span className="ml-1.5 opacity-60">{soMay}</span>
+        <span className="ml-1.5 whitespace-nowrap opacity-60">
+          · {soMay} máy
+        </span>
       </button>
 
       {/*
