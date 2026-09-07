@@ -1,15 +1,17 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { downloadZip } from "client-zip";
-import { coKhayChiaSe, giaoTepChoKhach, laIOS } from "./taiAnh";
+import {
+  coKhayChiaSe,
+  giaoTepChoKhach,
+  laAndroid,
+  laIOS,
+  type AnhTrongFolder,
+} from "./taiAnh";
+import { TaiTungTam } from "./TaiTungTam";
 
-export type AnhTrongFolder = {
-  id: string;
-  name: string;
-  /** Ten thu muc con chua anh — dung lam thu muc trong file nen. */
-  section: string | null;
-};
+export type { AnhTrongFolder };
 
 type TrangThai =
   | "san-sang"
@@ -78,17 +80,57 @@ type LuuTep = (tuyChon: {
   types?: { description: string; accept: Record<string, string[]> }[];
 }) => Promise<{ createWritable: () => Promise<WritableStream<unknown>> }>;
 
-export function NutTaiFolder({
-  slug,
-  ten,
-  anh,
-  tongByte,
-}: {
+type Props = {
   slug: string;
   ten: string;
   anh: AnhTrongFolder[];
   tongByte: number;
-}) {
+};
+
+/**
+ * Nút tải cả thư mục. Chọn cách tải theo máy của khách.
+ *
+ * ĐIỆN THOẠI tải từng tấm ảnh rời (xem `TaiTungTam`) — khách chỉ có điện thoại
+ * thì file nén là một tệp họ mở ra không xem được. MÁY TÍNH vẫn tải file nén:
+ * ở đó khách biết giải nén, và một thư mục 772 tấm mà rơi lẻ vào Downloads thì
+ * lẫn hết vào những thứ khác, lại mất luôn cách sắp xếp thư mục con của studio.
+ *
+ * Nhận dạng máy trong `useEffect` chứ không đọc thẳng lúc dựng giao diện: máy
+ * chủ không có `navigator`, đọc lúc dựng là hai bên ra hai kết quả khác nhau.
+ * Nhịp đầu tiên hiện bản file nén — hai bản có cùng một nút "Tải tất cả · dung
+ * lượng" nên khách không thấy giao diện nhấp nháy.
+ */
+export function NutTaiFolder(props: Props) {
+  const [may, setMay] = useState<"chua-biet" | "ios" | "android" | "may-tinh">(
+    "chua-biet"
+  );
+
+  /*
+    Qua setTimeout: đặt state thẳng trong thân effect sẽ kéo theo một lượt vẽ
+    lại ngay sau lượt vừa xong (xem mục bẫy ESLint trong CLAUDE.md) — cùng cách
+    làm với NutLuuApp.
+  */
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setMay(laIOS() ? "ios" : laAndroid() ? "android" : "may-tinh");
+    }, 0);
+    return () => clearTimeout(id);
+  }, []);
+
+  if (may === "ios" || may === "android") {
+    return (
+      <TaiTungTam
+        slug={props.slug}
+        anh={props.anh}
+        tongByte={props.tongByte}
+        may={may}
+      />
+    );
+  }
+  return <TaiFileNen {...props} />;
+}
+
+function TaiFileNen({ slug, ten, anh, tongByte }: Props) {
   const [trangThai, setTrangThai] = useState<TrangThai>("san-sang");
   const [xong, setXong] = useState(0);
   const huy = useRef<AbortController | null>(null);

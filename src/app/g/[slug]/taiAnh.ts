@@ -9,6 +9,14 @@
   duyệt, khách phải nhấn giữ rồi chọn "Lưu vào Ảnh" — ba bước.
 */
 
+/** Một tấm ảnh trong thư mục, đủ thông tin để tải về và đặt tên. */
+export type AnhTrongFolder = {
+  id: string;
+  name: string;
+  /** Tên thư mục con chứa ảnh — dùng làm thư mục trong file nén. */
+  section: string | null;
+};
+
 const DUOI_THEO_MIME: Record<string, string> = {
   "image/jpeg": ".jpg",
   "image/png": ".png",
@@ -22,8 +30,16 @@ function tenAnh(ten: string, mime: string): string {
   return ten + (DUOI_THEO_MIME[mime] ?? ".jpg");
 }
 
-export async function taiTep(fileId: string, ten: string, slug: string): Promise<File> {
-  const res = await fetch(`/api/download/${fileId}?slug=${encodeURIComponent(slug)}`);
+export async function taiTep(
+  fileId: string,
+  ten: string,
+  slug: string,
+  /** Cho phép người gọi dừng giữa chừng — dùng khi khách bấm "dừng tải". */
+  signal?: AbortSignal
+): Promise<File> {
+  const res = await fetch(`/api/download/${fileId}?slug=${encodeURIComponent(slug)}`, {
+    signal,
+  });
   // fetch không ném lỗi khi máy chủ trả về 4xx/5xx — phải tự kiểm tra res.ok,
   // bỏ qua là nút báo tải xong trong khi khách không nhận được gì.
   if (!res.ok) throw new Error(`Máy chủ trả về ${res.status}`);
@@ -34,18 +50,34 @@ export async function taiTep(fileId: string, ten: string, slug: string): Promise
 
 /** Máy này có mở được khay chia sẻ kèm tệp không (iPhone, Android đời mới). */
 export function coKhayChiaSe(file: File): boolean {
+  return coKhayChiaSeNhieu([file]);
+}
+
+/**
+ * Khay chia sẻ có nhận được CẢ CHỤM tệp này không.
+ *
+ * Phải hỏi đúng chụm sắp gửi chứ không hỏi một tệp mẫu: `canShare` còn xét cả
+ * số lượng và tổng dung lượng, nên một tệp lọt không có nghĩa hai mươi tệp
+ * cũng lọt.
+ */
+export function coKhayChiaSeNhieu(files: File[]): boolean {
   return (
     typeof navigator !== "undefined" &&
     typeof navigator.canShare === "function" &&
-    navigator.canShare({ files: [file] })
+    files.length > 0 &&
+    navigator.canShare({ files })
   );
 }
 
 export type KetQuaChiaSe = "xong" | "khach-huy" | "het-han-cham" | "khong-ho-tro";
 
 export async function moKhayChiaSe(file: File): Promise<KetQuaChiaSe> {
+  return moKhayChiaSeNhieu([file]);
+}
+
+export async function moKhayChiaSeNhieu(files: File[]): Promise<KetQuaChiaSe> {
   try {
-    await navigator.share({ files: [file] });
+    await navigator.share({ files });
     return "xong";
   } catch (err) {
     const ten = (err as Error)?.name;
@@ -61,8 +93,14 @@ export async function moKhayChiaSe(file: File): Promise<KetQuaChiaSe> {
   }
 }
 
-/** Cách tải thông thường — máy tính và Android. Trên iPhone ảnh vào app Tệp. */
-export function luuQuaThe(file: File): void {
+/**
+ * Cách tải thông thường — máy tính và Android. Trên iPhone ảnh vào app Tệp.
+ *
+ * `giuMs`: giữ đường dẫn tạm bao lâu rồi mới thu hồi. Mặc định 10 giây cho một
+ * tấm lẻ. Khi tải cả thư mục thì hạ xuống, vì lúc đó hàng chục tấm nối đuôi
+ * nhau: giữ lâu là bấy nhiêu tấm cùng nằm trong bộ nhớ điện thoại một lúc.
+ */
+export function luuQuaThe(file: File, giuMs = 10_000): void {
   const url = URL.createObjectURL(file);
   const a = document.createElement("a");
   a.href = url;
@@ -71,7 +109,19 @@ export function luuQuaThe(file: File): void {
   a.click();
   a.remove();
   // Thu hồi trễ một nhịp, thu hồi ngay thì trình duyệt chưa kịp đọc xong tệp.
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  setTimeout(() => URL.revokeObjectURL(url), giuMs);
+}
+
+/**
+ * Máy Android.
+ *
+ * Ngược hẳn với iPhone: ở đây thẻ tải xuống chạy tốt, ảnh rơi vào thư mục Tải
+ * về và các app xem ảnh (Google Photos, Thư viện của máy) đều liệt kê thư mục
+ * đó — nên tải lần lượt từng tấm là ảnh vào thẳng album của khách.
+ */
+export function laAndroid(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android/i.test(navigator.userAgent);
 }
 
 /** Máy iPhone/iPad — nơi thẻ tải xuống không có tác dụng. */

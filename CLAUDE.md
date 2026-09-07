@@ -654,6 +654,55 @@ Turbopack đổ ngay lúc build — *"the chunking context does not support exte
 modules (request: node:module)"*. **Hằng số cả hai phía cùng dùng thì để
 `constants.ts`; file nào có dính tới database thì chỉ server được nhập.**
 
+**44. Điện thoại tải TỪNG TẤM ẢNH, máy tính tải FILE NÉN.**
+Studio yêu cầu 07/09/2026: *"tệp khách hàng của a dùng đt nhiều và không biết gì
+về file zip"*. Khách chỉ có điện thoại mà nhận về một tệp .zip là nhận về một
+thứ mở ra không xem được, phải đi tìm app giải nén — trong khi đích đến họ muốn
+chỉ là ảnh nằm trong app Ảnh của máy.
+
+**Hai hệ điều hành đi hai đường khác nhau vì khả năng của chúng khác nhau
+thật**, không phải chọn cho vui:
+
+- **Android** — thẻ tải xuống chạy đúng, ảnh rơi vào thư mục Tải về và các app
+  xem ảnh (Google Photos, Thư viện) đều liệt kê thư mục đó thành một album. Nên
+  cứ tải lần lượt từng tấm, khách không phải chạm thêm cái nào. Nghỉ 250ms giữa
+  hai tấm: không nghỉ thì trình duyệt xếp hàng chục lượt tải chồng lên nhau
+  trong một nhịp, máy yếu dễ bỏ sót.
+- **iPhone** — KHÔNG có API nào cho trang web ghi vào app Ảnh, và thẻ tải xuống
+  cũng không chạy. Đây là giới hạn của iOS, không phải chỗ chưa làm. Đường duy
+  nhất là khay chia sẻ kèm tệp: khách bấm "Lưu N ảnh" là cả chụm vào thẳng app
+  Ảnh. Khay không ôm nổi vài trăm tấm, và Safari chỉ cho mở khay trong vài giây
+  kể từ cú chạm của khách — nên phải **chia đợt**: mỗi đợt tải trước vào bộ nhớ
+  rồi mời khách chạm một cái để lưu.
+
+**Máy tính vẫn giữ file nén, đừng đổi.** Ở đó khách biết giải nén; còn một thư
+mục 772 tấm rơi lẻ vào Downloads thì lẫn hết vào những thứ khác, lại mất luôn
+cách sắp xếp thư mục con của studio. Đường ghi thẳng xuống ổ đĩa
+(`showSaveFilePicker`) cũng chỉ máy tính mới có, và đó mới là đường tải nổi vài
+GB mà không phình bộ nhớ.
+
+Số tấm mỗi đợt lấy **cái nào chặt hơn** giữa 20 tấm và 100 MB. Ảnh gốc ở đây
+trung bình 1–2 MB nên thường chạm trần số tấm; trần dung lượng để chặn những thư
+mục toàn ảnh in khổ lớn vài chục MB một tấm.
+
+**Lời mời chuyển sang máy tính đứng sẵn dưới nút** với thư mục từ 300 MB (studio
+yêu cầu), không đợi khách bấm mới hiện: đọc trước khi bấm thì còn kịp đổi ý, đọc
+sau khi bấm thì họ đã bắt đầu chờ rồi.
+
+**Nhận dạng máy trong `useEffect`, không đọc `navigator` lúc dựng giao diện** —
+máy chủ không có `navigator`, đọc lúc dựng là hai bên ra hai kết quả khác nhau.
+Đặt state qua `setTimeout` như `NutLuuApp`, không thì ESLint chặn.
+
+**Đừng nói chắc điều mình không đo được.** Khay chia sẻ đóng lại chỉ có nghĩa hệ
+điều hành báo xong; khách bấm "Lưu ảnh" hay gửi đi đâu khác thì trang web không
+hề biết. Nên câu báo xong trên iPhone là *"anh chị mở app Ảnh xem lại giúp"*,
+không phải *"ảnh đã nằm trong app Ảnh"*.
+
+*Chưa đo được trên máy thật:* khay chia sẻ nhiều tệp của iPhone, và lời hỏi
+"Tải nhiều tệp?" của Chrome trên Android. Máy Windows chạy thử trả `canShare`
+bằng false nên rơi vào nhánh dự phòng — **cần studio thử bằng một iPhone và một
+máy Android thật.**
+
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên
 biểu tượng tới khi khách mở album ra.
