@@ -3,14 +3,16 @@
 Tài liệu này để dán vào đầu một cuộc trò chuyện mới, giúp phía hỗ trợ nắm được
 toàn bộ bối cảnh mà không phải hỏi lại từ đầu.
 
-Cập nhật: **28/08/2026**. Web đã lên tên miền riêng
-**https://www.hamitastudio.com** và gói Vercel **Pro**. Hai rủi ro đỏ cũ đã
-hết. Trong hai ngày 27–28/08 làm 20 việc: vá một lỗ rò rỉ, đổi tên miền, sửa
-mười chỗ giao diện điện thoại, và thêm ba công cụ cho studio.
+Cập nhật: **07/09/2026**. Web chạy tại **https://www.hamitastudio.com** trên
+gói Vercel **Pro**, đang phục vụ **25 album** với **1.017 lựa chọn** của khách.
+Hạ tầng khoẻ: 16/16 phép kiểm domain đạt, không còn việc nào ở mức đỏ hay cam.
 
-Bản cũ (26/08): vá lỗ hổng mất lựa chọn khi hai máy cùng chọn, rà soát toàn hệ
-thống, viết lại trang giới thiệu theo lối kể chuyện, và làm năm công cụ mới
-(kho ảnh, sao lưu, kiểm tra sức khoẻ, đơn giao in, thống kê).
+**Đợt 03–07/09** sửa ba lỗi thật ảnh hưởng khách (Android không cài được app,
+link rỗng không báo khi thêm ảnh, đường kiểm sức khoẻ báo nhầm), tách "Làm mới"
+khỏi "Gửi thông báo", và thêm năm công cụ quan sát cho studio — xem mục 6.
+
+*Bản cũ (27–28/08):* lên tên miền riêng và gói Pro, vá một lỗ rò rỉ danh sách
+khách đã chọn, sửa mười chỗ giao diện điện thoại — xem mục 6b.
 
 ---
 
@@ -119,7 +121,89 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 
 ---
 
-## 6. Việc lớn đã làm trong đợt này (22–28/08/2026)
+## 6. Việc lớn đã làm trong đợt này (03–07/09/2026)
+
+Đợt này chủ yếu là **sửa lỗi tìm ra bằng đo đạc** và **thêm công cụ quan sát cho
+studio**. Chi tiết từng quyết định nằm trong `CLAUDE.md` — dưới đây chỉ là bản
+đồ để biết chỗ nào đã đụng tới.
+
+### Ba lỗi thật ảnh hưởng khách, tìm ra khi rà soát (03/09)
+
+**Khách Android không cài được app.** Hai nguyên nhân chồng nhau: nút bị giấu
+khi Chrome chưa mời cài (Zalo/Facebook, Firefox, Samsung Internet đều không bắn
+lời mời), và lời mời của Chrome bắn ra **trước khi React kịp nghe** — đo trên
+máy bàn mạng cáp quang đã mất 2.405ms mới hydrate xong. Bằng chứng: cả 7 phiếu
+thông báo trong database lúc đó đều là iPhone, **không một máy Android nào**.
+Nay một `<script>` nội tuyến chốt lời mời trước khi React chạy, và điện thoại
+luôn thấy nút — thiếu lời mời thì mở bảng chỉ đường thủ công. Nguyên tắc 33.
+
+**Gửi link rỗng rồi thêm ảnh thì khách không được báo.** Điều kiện gửi có vế
+"chỉ báo nếu album trước đó đã có thư mục", sai với cách studio làm việc (gửi
+link trước khi có ảnh). Đo được nạn nhân đang chờ: album `hc-truc-ly-trung-tin`
+0 thư mục mà đã có một máy đăng ký từ 01/09.
+
+**`/api/suc-khoe` trả 503 liên tục trong khi Drive hoàn toàn khoẻ** — nó chọn
+album "ít thư mục nhất" nên luôn vớ đúng một album rỗng rồi kết luận Drive chết.
+Báo nhầm còn tệ hơn không có phép kiểm nào. Nguyên tắc 27.
+
+### Thông báo cho khách: tách hai nút (04/09)
+
+Trước đây bấm "Làm mới" là **vừa đọc lại Drive vừa nhắn cho khách** — nhân viên
+bấm để xem ảnh đã lên chưa mà không ngờ mỗi cú bấm là một lần điện thoại khách
+rung. Nay là **hai nút tách bạch**, nút gửi có bước hỏi lại và hiện rõ số máy sẽ
+nhận. Nguyên tắc 34.
+
+Kèm theo: **số đỏ trên biểu tượng app** (Badging API), cộng dồn, tự xoá khi
+khách mở album. Nguyên tắc 41.
+
+Đợt đồng bộ 5 album lệch ngày 04/09 đã gửi tin thật tới 3 máy — có bằng chứng
+khách nhà Như Ý **mở album 28 giây sau khi nhận tin**.
+
+### Công cụ mới cho studio (04–07/09)
+
+| Thứ | Ở đâu | Nguyên tắc |
+|---|---|---|
+| **Bộ lọc theo tháng** | cột trái danh sách album | 36 |
+| **Khung "Thông báo"** — việc studio phải tự làm | cột phải, dưới ô tạo link | 39 |
+| **Khung xem ảnh to** ở trang "Ảnh khách chọn" | bấm vào ảnh | 40 |
+| **Thống kê lượt tải ảnh** từng album | thẻ album + trang thống kê | 43 |
+| **Gợi ý mã đầu tên album** (HC, AB, ĐH, Baby, GD, NS…) | ô "Tên khách" | 37 |
+
+Khung Thông báo canh bốn loại: khách đã báo chọn xong, album chưa đặt gói ảnh,
+khách chọn thêm sau khi đã báo xong, album mất mã bảo vệ. Bấm vào một thông báo
+là đánh dấu đã đọc, dấu tích lưu trong database nên máy nào cũng thấy như nhau.
+
+### Trang giới thiệu: khu Phim trường (03/09)
+
+Thư mục Drive của album phim trường cũ **không còn tồn tại** (404) nên cả khu
+biến mất khỏi trang giới thiệu. Anh tạo album mới "All View HamitaGarden" 60
+tấm, em gắn lên và làm thêm **trang `/phim-truong`** xem đủ mọi góc chụp.
+
+Album mới **trộn cả ảnh dọc lẫn ngang** (đo 20 tấm: 12 dọc, 8 ngang, tỉ lệ từ
+0,563 tới 1,499) — khác hẳn album cũ toàn ảnh dọc. Trang chủ giữ khung 2:3 và
+chỉ lấy ảnh dọc; trang xem đủ dùng lưới cột báo giữ nguyên tỉ lệ từng tấm.
+Nguyên tắc 24.
+
+### Theo yêu cầu của studio (03–07/09)
+
+- **Khối gói ảnh** phía khách tách ra khỏi phần hướng dẫn thu gọn được, chữ to
+  và rõ hơn — trước đó nó là dòng nhỏ nhất, nhạt nhất trên trang dù nói về tiền
+  (nguyên tắc 38).
+- **Gói ảnh nhận số 0** = gói chỉ lấy file, không kèm ảnh in.
+- **Bỏ mã mẫu `123456`** khỏi ô nhập mã phía khách — ô nhập đang tự khai đáp án
+  (nguyên tắc 14).
+- Bộ lọc thêm mã **Baby, GD, NS**.
+- Nút gửi thông báo ghi rõ **"· N máy"** thay vì số trần.
+
+### Bản hướng dẫn dùng trang quản lý (03/09)
+
+`docs/huong-dan-admin.html` → PDF 13 trang A4 cho nhân viên. Dựng lại bằng
+`npm run pdf:huong-dan`. Hình minh hoạ là **giao diện vẽ bằng HTML/CSS**, không
+phải ảnh chụp thật — trang quản lý đòi mật khẩu mà không được phép gỡ.
+
+---
+
+## 6b. Lịch sử các đợt trước (22–28/08/2026)
 
 Tóm tắt theo nhóm, mới nhất trước — chi tiết kỹ thuật nằm trong lịch sử commit
 Git (mỗi commit đều giải thích lý do dài, có số liệu đo thật).
@@ -570,51 +654,40 @@ Hai rủi ro **đỏ** tồn từ đầu dự án đã hết ngày 27/08: gói V
 thương mại (đã lên **Pro**), và màn hình chấp thuận OAuth còn ở chế độ Testing
 khiến phiếu Google chết sau 7 ngày (anh đã **Publish app**).
 
-**🟠 Chỗ chứa trên Google Drive.**
-Đo 28/08: **1.947 / 2.048 GB — 95,1%, còn 100,89 GB**. Sáng 26/08 từng chạm
-**99,5%** (chỉ còn 9,97 GB), anh dọn trong ngày mới nhẹ đi.
+**Hiện KHÔNG còn việc nào ở mức đỏ hay cam.** Đo 07/09/2026: 0 album quá hạn
+giữ ảnh, 0 album mất mã bảo vệ, Drive và database đều đọc được, 16/16 phép kiểm
+domain đạt.
 
-Điều đáng nhớ: chín album đang phục vụ khách chỉ chiếm **10,4 GB**. Phần còn
-lại là ảnh của những buổi chụp xong từ lâu. Nguyên nhân gốc là *không có ai
-nhắc dọn* — khung "Kho ảnh" ở đầu trang quản lý sinh ra để chữa đúng chỗ đó,
-nhưng nó chỉ **nhắc**, không tự xoá gì cả.
+**🟡 Chỗ chứa trên Google Drive.**
+Từng chạm **99,5%** sáng 26/08 (còn 9,97 GB) rồi anh dọn trong ngày. Con số hiện
+tại xem ở khung "Kho ảnh" đầu trang quản lý — đọc ở đây thì lỗi thời ngay.
 
-Hệ quả nếu để đầy hẳn: Google dùng chung một kho cho Drive, Gmail và Photos,
-nên đầy là **Gmail cũng ngừng nhận thư** trên `hamita.studio@gmail.com` — tài
-khoản của cả Neon lẫn Vercel. Mất thư là mất đường khôi phục mật khẩu.
+Điều đáng nhớ: phần lớn dung lượng là ảnh của những buổi chụp **xong từ lâu**,
+không phải album đang phục vụ. Nguyên nhân gốc là *không có ai nhắc dọn* — khung
+"Kho ảnh" sinh ra để chữa đúng chỗ đó, nhưng nó chỉ **nhắc**, không tự xoá gì.
 
-**🟡 Một album còn mã `00000`.**
-`HC- Vũ Phương & Kim Tiên`. Từ 28/08, album mới tạo mặc định mang mã `123456`
-theo yêu cầu của studio — đánh đổi đã ghi ở mục 6. Nhưng `00000` thì ngay cả
-theo chuẩn mới cũng nên đổi.
-
-Chưa sửa vì đổi mã là mọi phiếu mở khoá cũ hết hiệu lực — nhà đó đang chọn dở
-sẽ bị hỏi mã lại, nên cần anh quyết và báo lại cho họ.
-
-**🟡 Chưa nối dịch vụ theo dõi vào `/api/suc-khoe`.**
-Đường kiểm tra đã làm xong và chạy đúng, nhưng phần gọi thử mỗi vài phút rồi
-nhắn tin thì phải để dịch vụ ngoài lo (lý do kiến trúc — xem nguyên tắc 27).
-Anh chưa tạo monitor. Hướng dẫn bốn dòng nằm trong `README.md`.
+Hệ quả nếu để đầy hẳn: Google dùng chung một kho cho Drive, Gmail và Photos, nên
+đầy là **Gmail cũng ngừng nhận thư** trên `hamita.studio@gmail.com` — tài khoản
+của cả Neon lẫn Vercel. Mất thư là mất đường khôi phục mật khẩu.
 
 **🟡 Sao lưu chưa chạy tự động.**
-Lệnh và nút đều có, mốc trên trang quản lý giờ cập nhật đúng cho cả hai đường
-(sửa 28/08). Lịch tự động thì anh chưa đặt — lệnh PowerShell nằm trong
-`README.md`; giới hạn của nó là chỉ chạy khi máy bật.
+Đo 07/09: lần gần nhất **9 ngày trước**. Lệnh và nút đều có, mốc trên trang quản
+lý cập nhật đúng cho cả hai đường. Lịch tự động thì chưa đặt — lệnh PowerShell
+nằm trong `README.md`; giới hạn của nó là chỉ chạy khi máy bật.
+
+**🟡 Chưa nối dịch vụ theo dõi vào `/api/suc-khoe`.**
+Đường kiểm tra chạy đúng, nhưng phần gọi thử mỗi vài phút rồi nhắn tin phải để
+dịch vụ ngoài lo (lý do kiến trúc — nguyên tắc 27). Hướng dẫn bốn dòng trong
+`README.md`.
 
 **🟡 Tên thư mục trên Drive là chữ của thợ, không phải chữ của khách.**
-Khách đang nhìn thấy "File gốc nhà trai", "file gốc hc", "hamita14a 60x120 mica
-titan". Sau các thay đổi 28/08 thì tên này còn xuất hiện ở hai chỗ nữa: hàng
-thư mục ngang, và câu hỏi *"Anh chị chọn xong thư mục ... chưa ạ?"*.
-
-Đây là việc anh làm trên **Drive**, không cần code.
-
-**🟡 "HC-" đứng trước tên cô dâu chú rể.**
-`HC- Vũ Phương & Kim Tiên` — khách không biết HC là gì (hình cổng, tiếng lóng
-trong nghề). Ô "sửa" tên album đã có sẵn.
+Khách đang nhìn thấy "File gốc nhà trai", "file gốc hc", "file gốcc". Tên này
+xuất hiện ở ba chỗ: thẻ thư mục, hàng thư mục ngang, và câu hỏi *"Anh chị chọn
+xong thư mục ... chưa ạ?"*. Đây là việc anh làm trên **Drive**, không cần code.
 
 **🟡 Ảnh nhớ theo mã file suốt một năm.**
-Anh chỉnh sửa lại một tấm rồi thay bản mới trên Drive mà giữ nguyên file thì
-khách vẫn xem bản cũ. Cách tránh: xoá tấm cũ, tải tấm mới lên thành file mới.
+Chỉnh sửa lại một tấm rồi thay bản mới trên Drive mà giữ nguyên file thì khách
+vẫn xem bản cũ. Cách tránh: xoá tấm cũ, tải tấm mới lên thành file mới.
 
 **🟡 Trang album không còn đường liên hệ nào.**
 Sau khi bỏ khối "Phân vân quá…" theo yêu cầu (28/08), trang album hiện **0 liên
@@ -632,49 +705,54 @@ nếu có nhà nào bỏ dở im lặng thì đây là chỗ đầu tiên đáng
 | 1.350 | 5 | 4 | 0,3% |
 | **707** | **19** | **0** | **0,0%** |
 
-Album 707 ảnh: khách **mở 19 lần** trong 15 tiếng mà chưa chốt được tấm nào.
+Khách **không chọn một lèo** — có nhà chọn qua **3 buổi trong 46 tiếng**. Web
+chưa có gì đánh dấu "đã xem tới đây" ở mức ảnh (mới có ở mức thư mục, là chấm
+"Mới"). Quay lại lần hai trong 707 tấm là mất dấu hoàn toàn. Hàng thư mục ngang
+đỡ được một phần; vạch "xem tiếp từ đây" thì **chưa làm**.
 
-Và khách **không chọn một lèo** — nhà Vũ Phương chọn qua **3 buổi trong 46
-tiếng**. Nhưng web chưa có gì đánh dấu "đã xem tới đây" ở mức ảnh (mới có ở mức
-thư mục, là chấm "Mới"). Quay lại lần hai trong 707 tấm là mất dấu hoàn toàn.
+**🟡 Số liệu Drive chỉ đúng sau khi bấm "Làm mới".**
+Trang quản lý không gọi Drive (nguyên tắc 9) nên nó hiện con số đã chụp lại.
+Media đổ thêm ảnh mà chưa ai bấm "Làm mới" thì trang vẫn hiện số cũ — 03/09 từng
+lệch tới **1.353 ảnh** ở một album. Khung Thông báo **không phát hiện được** việc
+này vì nó cũng không gọi Drive. Đo 07/09: còn 1 album lệch (baby- Châu, DB 81 /
+Drive 88).
 
-Hàng thư mục ngang (28/08) đỡ được một phần. Phần còn lại — vạch "xem tiếp từ
-đây" — chưa làm.
-
-**🟡 Studio không biết khi khách chọn thêm sau lúc đã báo xong.**
-Nhà Vũ Phương bấm "Báo cho Hamita" rồi **chọn thêm 3 tấm sau đó**. Nếu nhận báo
-xong là bắt tay làm ngay thì ba tấm đó rơi ra ngoài. Studio cũng chỉ biết khách
-báo xong khi **đang mở sẵn** trang quản lý.
+**🟡 Khách bấm "Báo cho Hamita" mà không thả tim tấm nào.**
+Nhà "baby- Châu" báo xong với 0 tấm tim, chỉ tick giữ riêng 7 tấm. Có thể họ
+hiểu nhầm hai nút tim/tick. Khung Thông báo đã nói rõ trường hợp này để studio
+hỏi lại, nhưng **giao diện chọn ảnh chưa làm gì để tránh nhầm lẫn từ đầu**.
 
 
-## 9. Trạng thái hiện tại (đo thật 28/08/2026)
+## 9. Trạng thái hiện tại (đo thật 07/09/2026)
 
-**9 album**, 6.364 ảnh, **10,4 GB** trên Drive. Database 8,3 MB / 512 MB.
-41 lựa chọn của khách, 4 lời dặn, 3 thư mục đã báo chọn xong, 2 ảnh bìa thư mục
-do studio tự chọn, 4 máy đăng ký nhận thông báo đẩy.
-
-**Google Drive: 1.947 / 2.048 GB — đã dùng 95,1%, còn 100,89 GB.**
-
-| Album | Mã chọn ảnh |
-|---|---|
-| `hc-vu-phuong-kim-tien-2e4kqn` | ⚠ `00000` |
-| `his-dong-trieu-thuy-tien-kiqvtm` | `HAMITA-GS76` |
-| `hc-her-his-ngoc-tho-ba-ben-93r9gb` | `HAMITA-ZT35` |
-| `baby-thuy-tien-qwsc4p` | `HAMITA-KG45` |
-| `sn-duyen-ngo-xn4hj7` | `123456` |
-| `hamita-garden-w399t5` | `HAMITA-QY29` |
-| `his-kim-chi-thiemta-phanpaphon-34vcka` | `123456` |
-| `concept-thanh-ngan-ds8aqu` | `123456` |
-| `ab-thanh-dong-yen-linh-5bc2yh` | `123456` |
+| Số liệu | Giá trị |
+|---|---:|
+| Album | **25** |
+| Ảnh (số đã chụp lại trong database) | **16.046** |
+| Lựa chọn của khách | **1.017** |
+| Máy đăng ký nhận thông báo đẩy | **20** |
+| Tấm khách đã tải về | **1.707** |
+| Album khách đã báo chọn xong | **10** |
+| Album chưa đặt gói ảnh | **1** (tiệc sn Ngọc Trinh) |
+| Album quá hạn giữ ảnh | **0** |
+| Album mất mã bảo vệ | **0** |
+| Sao lưu gần nhất | **9 ngày trước** |
 
 Số ảnh, dung lượng và khu trên trang giới thiệu của từng album xem trong trang
 quản lý — đọc ở đây thì lỗi thời ngay sau lần "Làm mới" kế tiếp.
 
-**Lượt xem bắt đầu đếm từ 26/08.** Album tạo trước mốc đó không kết luận được
-"khách chưa mở" — trang thống kê tự phân biệt.
+**Ba mốc bắt đầu đếm, đừng kết luận sai với album cũ hơn mốc:**
 
-Bản sao lưu gần nhất: xem `data/sao-luu/` (thư mục đã gitignore). Mốc trên
-trang quản lý cập nhật đúng cho cả nút bấm lẫn lệnh.
+| Mốc | Từ ngày | Album cũ hơn mang số 0 nhưng KHÔNG có nghĩa "chưa có" |
+|---|---|---|
+| Lượt xem | 26/08/2026 | `MOC_DEM_LUOT_XEM` trong `thongKe.ts` |
+| Lượt tải | 06/09/2026 | `MOC_DEM_LUOT_TAI` trong `constants.ts` |
+
+**Mã chọn ảnh:** mọi album mới mặc định `123456` (yêu cầu studio, 28/08). Muốn
+mã riêng thì gõ tay hoặc bấm "Sinh mã mới" ở trang quản lý. Danh sách mã hiện
+tại đọc thẳng trên trang quản lý, không chép ra đây.
+
+Bản sao lưu gần nhất: xem `data/sao-luu/` (thư mục đã gitignore).
 
 ### Ba tên miền cùng phục vụ
 
