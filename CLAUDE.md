@@ -913,7 +913,7 @@ thì tự dựng ra một con số là thu tiền thứ khách không đặt.
 |---|---|---|
 | `null` | không tính theo gói | không có khối gói ảnh |
 | `0` | **gói chỉ lấy file, không kèm ảnh in** | "gói chỉ lấy file ảnh… tấm nào muốn in thì 12.000đ" |
-| `N > 0` | gói có N tấm in | "gói của anh chị có N tấm in…" |
+| `N > 0` | gói có N tấm in | ba gạch đầu dòng, mở đầu bằng "Gói của anh chị cần tim N tấm" |
 
 **Phải so với `null`, không được viết `soAnhTrongGoi ? …`** — số 0 cũng là giá
 trị "sai" trong JavaScript nên gói 0 tấm sẽ bị đọc nhầm thành chưa đặt, và

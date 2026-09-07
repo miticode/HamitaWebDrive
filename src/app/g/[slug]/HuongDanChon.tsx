@@ -267,12 +267,11 @@ export function HuongDanChon({
                     Ghi chú vào ảnh: ảnh cổng, ảnh bàn, ảnh bìa,…
                   </>,
                   <>
-                    Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái, mỗi
-                    tấm{" "}
+                    Chi phí phát sinh thêm trên mỗi tấm ảnh là{" "}
                     <strong className="font-semibold text-accent">
                       {tien(giaAnhThem)}đ
                     </strong>{" "}
-                    đã gồm cả chỉnh sửa và in ạ.
+                    đã gồm chỉnh sửa và in ạ.
                   </>,
                 ].map((dong, i) => (
                   <li key={i} className="flex gap-2.5">
