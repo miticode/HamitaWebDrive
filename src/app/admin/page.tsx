@@ -142,7 +142,24 @@ export default async function AdminPage() {
   const tongToi = (await cookies()).get("admin-tong")?.value === "toi";
 
   return (
-    <main className="mx-auto w-full max-w-[104rem] px-5 py-10 sm:px-6 sm:py-12">
+    /*
+      Từ 1536px trở lên, TRANG KHÔNG CUỘN — chỉ lưới thẻ album cuộn (studio yêu
+      cầu 07/09/2026).
+
+      Lý do: mọi thứ còn lại trên trang này đều là thứ phải luôn nhìn thấy —
+      khung kho ảnh trên Drive, ô tạo link mới, cây lọc theo tháng, khung thông
+      báo. Cuộn xuống xem album thứ hai mươi là mất sạch, mà đó lại chính là
+      lúc cần chúng nhất.
+
+      Chỉ áp dụng từ `2xl` (1536px) — đúng chỗ ba cột thật sự đứng cạnh nhau.
+      Đo ở 1280px: cột trái lúc đó nằm NGANG phía trên danh sách, khoá chiều cao
+      lại thì phần lưới thẻ chỉ còn một dải chừng 40px, gần như không thấy album
+      nào. Dưới 1536px cứ để trang cuộn như cũ.
+
+      `h-dvh` chứ không `h-screen`: thanh địa chỉ của trình duyệt di động co ra
+      giãn vào, `h-screen` sẽ để một dải nội dung nằm dưới mép màn hình.
+    */
+    <main className="mx-auto w-full max-w-[104rem] px-5 py-10 sm:px-6 sm:py-12 2xl:flex 2xl:h-dvh 2xl:flex-col 2xl:overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-6">
         <div className="flex items-center gap-4">
           <Logo size="sm" />
@@ -221,25 +238,37 @@ export default async function AdminPage() {
         </div>
       )}
 
-      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="lg:order-2">
+      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px] 2xl:min-h-0 2xl:flex-1 2xl:items-stretch">
+        {/*
+          Cột phải cũng cuộn riêng: ô tạo link cao hơn màn hình 13 inch, khoá
+          chiều cao mà không cho nó cuộn là nhân viên không tới được nút "Tạo
+          link".
+        */}
+        <div className="lg:order-2 2xl:min-h-0 2xl:overflow-y-auto">
           <GalleryForm />
-          <ThongBao tin={tinThongBao} />
         </div>
 
-        <div className="lg:order-1">
+        <div className="lg:order-1 2xl:min-h-0">
           {galleries.length === 0 ? (
             <>
               <h2 className="eyebrow">Album đã tạo · 0</h2>
               <p className="mt-4 text-sm text-fg-muted">Chưa có album nào.</p>
             </>
           ) : (
+            /*
+              Khung thông báo truyền XUỐNG AlbumList chứ không đứng ở đây, vì
+              chỗ của nó giờ là cột trái cạnh cây lọc theo tháng (studio yêu cầu
+              07/09/2026) — mà cây lọc thì phải nằm trong AlbumList để dùng
+              chung state lọc. Truyền sẵn phần tử đã dựng ở máy chủ thì AlbumList
+              vẫn là component phía khách, không phải biết gì về database.
+            */
             <AlbumList
               galleries={galleries}
               counts={counts}
               mucXong={mucXong}
               biaMuc={biaMuc}
               soMayChoTin={soMayChoTin}
+              thongBao={<ThongBao tin={tinThongBao} />}
             />
           )}
         </div>

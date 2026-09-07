@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState, type ReactNode } from "react";
 import { MA_ALBUM } from "@/lib/maAlbum";
 import type { BiaMuc, Gallery, ListCount, MucXong } from "@/lib/store";
 import { GalleryCard } from "./GalleryCard";
@@ -56,6 +56,7 @@ export function AlbumList({
   mucXong,
   biaMuc,
   soMayChoTin,
+  thongBao,
 }: {
   galleries: Gallery[];
   counts: ListCount[];
@@ -65,6 +66,14 @@ export function AlbumList({
   biaMuc: BiaMuc[];
   /** So may dang cho nhan thong bao, tra theo id album. */
   soMayChoTin: Record<string, number>;
+  /**
+   * Khung "Thông báo", dựng sẵn ở máy chủ rồi truyền xuống.
+   *
+   * Nhận thành phần đã dựng chứ không nhận dữ liệu thô: nó đọc thẳng database,
+   * mà file này chạy ở máy khách — nhập vào đây là kéo Prisma sang phía khách
+   * và Turbopack đổ ngay lúc build (nguyên tắc 43).
+   */
+  thongBao: ReactNode;
 }) {
   const [tuKhoa, setTuKhoa] = useState("");
   const [nhan, setNhan] = useState<string | null>(null);
@@ -127,28 +136,38 @@ export function AlbumList({
   };
 
   /*
-    Cây lọc theo tháng đứng thành MỘT CỘT RIÊNG bên trái danh sách.
+    Cây lọc theo tháng VÀ khung thông báo đứng chung MỘT CỘT RIÊNG bên trái.
 
     Trang này vốn chia hai cột: danh sách album bên trái, ô "Tạo link mới" bên
     phải. Trên màn hình rộng, hai cột đó dồn về giữa và chừa một dải trống dài
-    dọc mép trái — đúng chỗ anh chỉ.
+    dọc mép trái — đúng chỗ anh chỉ. Khung thông báo dọn sang đây ngày
+    07/09/2026 theo yêu cầu studio; trước đó nó nằm dưới ô "Tạo link mới".
 
-    CHỈ thành cột riêng từ 1536px trở lên, không phải 1024px. Cây lọc rộng
-    13rem, cộng khoảng cách là 228px lấy thẳng từ phần dành cho thẻ album. Đo
-    trên màn 1024px: mỗi thẻ tụt từ 306px xuống còn 182px — chật tới mức mã
-    chọn ảnh và mấy hàng "Hạn giữ ảnh", "Gói ảnh" tràn dòng hết. Từ 1536px thì
-    thẻ còn 296px, gần như không đổi, nên đó mới là chỗ đặt được.
+    CHỈ thành cột riêng từ 1536px trở lên, không phải 1024px. Cột rộng 17rem,
+    cộng khoảng cách là 292px lấy thẳng từ phần dành cho thẻ album. Đo trên màn
+    1024px: mỗi thẻ tụt từ 306px xuống còn 182px — chật tới mức mã chọn ảnh và
+    mấy hàng "Hạn giữ ảnh", "Gói ảnh" tràn dòng hết. Từ 1536px thì thẻ vẫn còn
+    trên 290px, gần như không đổi, nên đó mới là chỗ đặt được.
 
-    Dưới mốc đó cây nằm NGANG phía trên danh sách. Studio chỉ có vài năm nên
-    nó cao chừng chục dòng, không đẩy thẻ đi xa.
+    Dưới mốc đó cột này nằm NGANG phía trên danh sách, cây lọc và khung thông
+    báo chia đôi hàng, và cả dải tự cuộn khi cao quá 18rem — không thì một hôm
+    có mười thông báo là thẻ album bị đẩy khuất hết. Dưới 1536px trang vẫn cuộn
+    bình thường như cũ, chỉ từ 1536px mới khoá chiều cao lại.
   */
   return (
-    <div className="grid items-start gap-5 2xl:grid-cols-[13rem_minmax(0,1fr)]">
-      <aside className="2xl:sticky 2xl:top-6">
+    <div className="grid items-start gap-5 2xl:h-full 2xl:min-h-0 2xl:grid-cols-[17rem_minmax(0,1fr)] 2xl:items-stretch">
+      <aside className="grid max-h-72 content-start gap-4 overflow-y-auto sm:grid-cols-2 2xl:h-full 2xl:max-h-none 2xl:min-h-0 2xl:grid-cols-1">
         <LocTheoThang ngayTao={ngayTao} moc={moc} doiMoc={doiMoc} />
+        {/*
+          Bọc trong một thẻ chứ không thả `{thongBao}` trần: hai thẻ con tĩnh
+          của `<aside>` biên dịch thành một MẢNG, mà phần tử dựng sẵn từ trang
+          cha rơi vào vị trí mảng thì React đòi `key` — cảnh báo hiện thật trong
+          console lúc chạy thử.
+        */}
+        <div className="min-w-0">{thongBao}</div>
       </aside>
 
-      <div className="min-w-0">
+      <div className="min-w-0 2xl:flex 2xl:min-h-0 2xl:flex-col">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="eyebrow">
             Album đã tạo ·{" "}
@@ -231,55 +250,67 @@ export function AlbumList({
           </div>
         )}
 
-        {ketQua.length === 0 ? (
-          <div className="mt-10 text-center">
-            <p className="font-display text-2xl">Không tìm thấy album nào</p>
-            <p className="mt-2 text-sm text-fg-muted">
-              Thử gõ ít chữ hơn, bỏ mã lọc, hoặc chọn tháng khác. Ô tìm không
-              cần gõ dấu.
-            </p>
-            {dangLoc && (
-              <button
-                type="button"
-                onClick={() => {
-                  setNhan(null);
-                  setTuKhoa("");
-                  doiMoc(null);
-                }}
-                className="btn mt-5"
-              >
-                Bỏ hết bộ lọc
-              </button>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {ketQua.slice(0, hienBaoNhieu).map((g) => (
-                <GalleryCard
-                  key={g.id}
-                  gallery={g}
-                  counts={countsOf(g.id)}
-                  mucXong={mucXong.filter((m) => m.galleryId === g.id)}
-                  biaMuc={biaMuc.filter((b) => b.galleryId === g.id)}
-                  soMayChoTin={soMayChoTin[g.id] ?? 0}
-                />
-              ))}
-            </div>
+        {/*
+          ĐÂY là ô cuộn duy nhất của trang từ 1536px trở lên.
 
-            {ketQua.length > hienBaoNhieu && (
-              <div className="mt-6 text-center">
+          Ô tìm và hàng mã lọc nằm NGOÀI nó: chúng là công cụ để lọc lưới bên
+          dưới, cuộn mất công cụ đi trong lúc đang xem kết quả thì phải cuộn
+          ngược lên mới sửa được từ khoá.
+
+          `pr-1` chừa chỗ cho thanh cuộn khỏi đè lên mép thẻ; `pb-2` để hàng
+          thẻ cuối không dính sát đáy.
+        */}
+        <div className="2xl:min-h-0 2xl:flex-1 2xl:overflow-y-auto 2xl:pr-1 2xl:pb-2">
+          {ketQua.length === 0 ? (
+            <div className="mt-10 text-center">
+              <p className="font-display text-2xl">Không tìm thấy album nào</p>
+              <p className="mt-2 text-sm text-fg-muted">
+                Thử gõ ít chữ hơn, bỏ mã lọc, hoặc chọn tháng khác. Ô tìm không
+                cần gõ dấu.
+              </p>
+              {dangLoc && (
                 <button
                   type="button"
-                  onClick={() => setHienBaoNhieu((n) => n + TRANG)}
-                  className="btn"
+                  onClick={() => {
+                    setNhan(null);
+                    setTuKhoa("");
+                    doiMoc(null);
+                  }}
+                  className="btn mt-5"
                 >
-                  Xem thêm {ketQua.length - hienBaoNhieu} album
+                  Bỏ hết bộ lọc
                 </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {ketQua.slice(0, hienBaoNhieu).map((g) => (
+                  <GalleryCard
+                    key={g.id}
+                    gallery={g}
+                    counts={countsOf(g.id)}
+                    mucXong={mucXong.filter((m) => m.galleryId === g.id)}
+                    biaMuc={biaMuc.filter((b) => b.galleryId === g.id)}
+                    soMayChoTin={soMayChoTin[g.id] ?? 0}
+                  />
+                ))}
               </div>
-            )}
-          </>
-        )}
+
+              {ketQua.length > hienBaoNhieu && (
+                <div className="mt-6 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setHienBaoNhieu((n) => n + TRANG)}
+                    className="btn"
+                  >
+                    Xem thêm {ketQua.length - hienBaoNhieu} album
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -703,6 +703,48 @@ không phải *"ảnh đã nằm trong app Ảnh"*.
 bằng false nên rơi vào nhánh dự phòng — **cần studio thử bằng một iPhone và một
 máy Android thật.**
 
+**45. Trang quản lý: từ 1536px thì TRANG KHÔNG CUỘN, chỉ lưới thẻ album cuộn.**
+Studio yêu cầu 07/09/2026. Mọi thứ còn lại trên trang đều là thứ phải luôn nhìn
+thấy — khung kho ảnh trên Drive, ô "Tạo link mới", cây lọc theo tháng, khung
+thông báo. Cuộn xuống tới album thứ hai mươi là mất sạch, mà đó lại đúng lúc
+cần chúng nhất.
+
+**Ô tìm và hàng mã lọc nằm NGOÀI ô cuộn**, dù chúng ở ngay trên lưới thẻ: đó là
+công cụ để lọc chính cái lưới bên dưới. Cuộn mất công cụ đi trong lúc đang xem
+kết quả thì phải cuộn ngược lên mới sửa được từ khoá.
+
+**Mốc là `2xl` (1536px), KHÔNG phải `lg`.** Bản đầu em đặt ở `lg` và đo ở
+1280px thì hỏng hẳn: dưới 1536px cột trái nằm ngang phía trên danh sách, khoá
+chiều cao lại thì phần lưới thẻ chỉ còn một dải chừng **40px**. Dưới 1536px cứ
+để trang cuộn như cũ — cùng mốc với chỗ ba cột thật sự đứng cạnh nhau
+(nguyên tắc 36).
+
+Chuỗi lớp phải đủ cả bốn tầng, thiếu một tầng là ô cuộn không có chiều cao và
+trang lại dài ra như cũ: `2xl:h-dvh 2xl:overflow-hidden` ở `<main>` →
+`2xl:min-h-0 2xl:flex-1` ở lưới ba cột → `2xl:flex 2xl:min-h-0 2xl:flex-col` ở
+cột giữa → `2xl:min-h-0 2xl:flex-1 2xl:overflow-y-auto` ở ô cuộn. `min-h-0` là
+tầng hay quên nhất: mặc định `min-height:auto` của flex/grid không cho con co
+nhỏ hơn nội dung, nên `overflow` bên trong không bao giờ kích hoạt.
+
+`h-dvh` chứ không `h-screen`. Cột phải cũng phải cuộn được: ô "Tạo link mới"
+cao hơn màn hình 13 inch, khoá chiều cao mà không cho cuộn là không tới được
+nút "Tạo link".
+
+**Khung "Thông báo" dọn sang cột trái, đứng dưới cây lọc theo tháng** (cùng yêu
+cầu). Cột trái hợp hơn vì cả hai thứ ở đó đều là cách **nhìn vào** danh sách
+album, còn cột phải là chỗ **tạo ra** album mới — việc khác hẳn.
+
+Nó được truyền xuống `AlbumList` dưới dạng **phần tử đã dựng sẵn ở máy chủ**
+(`thongBao: ReactNode`), không phải dữ liệu thô: `AlbumList` chạy ở máy khách,
+mà `docThongBao()` đọc thẳng database — nhập vào đó là kéo Prisma sang phía
+khách và Turbopack đổ lúc build (cùng bẫy ở nguyên tắc 43). Phải nằm trong
+`AlbumList` vì cây lọc dùng chung state lọc với danh sách.
+
+*Bẫy đã vấp:* thả `{thongBao}` trần cạnh `<LocTheoThang/>` thì React kêu
+*"Each child in a list should have a unique key prop"* — hai thẻ con tĩnh biên
+dịch thành một **mảng**, mà phần tử dựng từ trang cha rơi vào vị trí mảng thì
+bị đòi `key`. Bọc nó trong một thẻ là hết.
+
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên
 biểu tượng tới khi khách mở album ra.
@@ -751,12 +793,13 @@ dưới mỗi thẻ album, nên bấm tháng nào thì ra đúng những thẻ m
 Ba quyết định trong `LocTheoThang.tsx`, đều có lý do đo được:
 
 - **Chỉ thành cột riêng từ 1536px**, không phải 1024px như phần lớn bố cục
-  khác trong dự án. Cây rộng 13rem, cộng khoảng cách là 228px lấy thẳng từ
-  phần dành cho thẻ album. Đo ở 1700px: thẻ vẫn 325px (trước khi thêm cây là
-  327px) — gần như không đổi. Nhưng ở 1024px thẻ tụt xuống còn 182px, chật tới
-  mức các hàng "Hạn giữ ảnh", "Gói ảnh" tràn dòng. Dưới mốc đó cây nằm ngang
-  phía trên. Bề rộng trang cũng nới từ `90rem` lên `104rem` để bù đúng chỗ cây
-  chiếm.
+  khác trong dự án. Cột rộng **17rem** (nới từ 13rem ngày 07/09/2026 khi khung
+  thông báo dọn sang đứng cùng), cộng khoảng cách là 292px lấy thẳng từ phần
+  dành cho thẻ album. Đo ở 1920px: thẻ còn **298px** — vẫn đủ rộng, mọi hàng
+  trong thẻ nằm gọn. Nhưng ở 1024px thẻ tụt xuống còn 182px, chật tới mức các
+  hàng "Hạn giữ ảnh", "Gói ảnh" tràn dòng. Dưới mốc đó cột này nằm ngang phía
+  trên, cây lọc và thông báo chia đôi hàng. Bề rộng trang cũng nới từ `90rem`
+  lên `104rem` để bù đúng chỗ cột chiếm.
 - **Trạng thái mở/thu giữ bằng state React**, khác hẳn nguyên tắc 30. Ở đây
   `<details>` tự lo KHÔNG chạy được: `open` là thuộc tính React kiểm soát, nên
   mỗi lần bấm lọc là component vẽ lại và React ghi đè `open` về giá trị ban

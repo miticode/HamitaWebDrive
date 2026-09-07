@@ -8,8 +8,13 @@ import { danhDauDaDocAction } from "./actions";
 /**
  * Khung thông báo trên trang quản lý — những việc studio phải tự làm.
  *
- * Đặt ở cột phải, ngay dưới ô "Tạo link mới": chỗ đó vốn để trống, mà đây lại
- * là thứ nên đập vào mắt ngay khi mở trang chứ không phải cuộn mới thấy.
+ * Đặt ở CỘT TRÁI, ngay dưới cây lọc theo tháng (studio yêu cầu 07/09/2026).
+ * Trước đó nó nằm ở cột phải dưới ô "Tạo link mới". Cột trái hợp hơn vì cả hai
+ * thứ ở đó đều là cách nhìn vào danh sách album — lọc theo tháng và những album
+ * đang có việc — còn cột phải là chỗ TẠO ra album mới, một việc khác hẳn.
+ *
+ * Từ 1024px trở lên trang không cuộn nữa (chỉ lưới thẻ cuộn), nên khung này
+ * luôn nằm trong tầm mắt, không còn phải cuộn mới thấy.
  *
  * KHÔNG tự ẩn khi không có việc gì. Một khung lặng lẽ biến mất thì studio
  * không phân biệt được "hôm nay không có việc" với "cái khung đó hỏng rồi" —
@@ -41,7 +46,7 @@ export function ThongBao({ tin }: { tin: Tin[] }) {
   const soGap = conLai.filter((t) => t.mucDo === "gap").length;
 
   return (
-    <section className="card mt-6 p-5 sm:p-6">
+    <section className="card p-4 sm:p-5">
       <div className="flex items-center gap-2.5">
         <svg
           viewBox="0 0 24 24"
@@ -111,7 +116,7 @@ export function ThongBao({ tin }: { tin: Tin[] }) {
                 >
                   <div className="flex items-baseline gap-2">
                     {/* Chấm màu thay cho chữ "gấp/nên": đọc nhanh hơn, và không
-                        chiếm mất chỗ của tên khách trên cột hẹp 340px. */}
+                        chiếm mất chỗ của tên khách trên cột hẹp 17rem. */}
                     <span
                       aria-hidden
                       className={`mt-1 size-1.5 shrink-0 rounded-full ${
