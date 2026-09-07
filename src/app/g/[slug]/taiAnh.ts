@@ -144,15 +144,37 @@ export function laIOS(): boolean {
 export async function giaoTepChoKhach(
   file: File
 ): Promise<"xong" | "cho-cham" | "khong-ho-tro"> {
-  if (coKhayChiaSe(file)) {
-    const kq = await moKhayChiaSe(file);
-    if (kq === "het-han-cham") return "cho-cham";
-    if (kq !== "khong-ho-tro") return "xong";
-  }
+  /*
+    KHAY CHIA SẺ CHỈ DÀNH CHO iPHONE. Đừng bỏ điều kiện `laIOS()` này.
 
-  // Tren iOS the tai xuong khong chay: trinh duyet mo thang tep ra xem, file
-  // nen thanh mot man hinh ky tu rac. Tha bao that con hon.
-  if (laIOS()) return "khong-ho-tro";
+    Bản cũ hỏi "máy có khay chia sẻ không" rồi mở luôn, với giả định đã ghi
+    thành chú thích: "máy tính và Android không dùng khay chia sẻ". Giả định đó
+    SAI — Chrome trên Windows có `navigator.share` kèm tệp, nên anh bấm nút tải
+    trên máy bàn thì hiện ra bảng "Share using: Nearby Sharing, Paint, Discord…"
+    thay vì tải file về. Anh gặp thật ngày 07/09/2026.
+
+    Trên máy tính, tải xuống là việc đã chạy tốt sẵn và đúng thứ khách muốn;
+    hỏi họ muốn gửi tấm ảnh đi đâu là chen thêm một câu không ai hỏi. Android
+    cũng vậy: ảnh rơi vào thư mục Tải về và app xem ảnh liệt kê ngay
+    (nguyên tắc 44). Chỉ iPhone mới thật sự cần khay, vì ở đó thẻ tải xuống
+    không chạy.
+
+    *Vì sao lỗi này lọt qua buổi kiểm hôm đó:* trình duyệt nhúng dùng để chạy
+    thử **không có Web Share API** — đo lại thấy `navigator.share` là
+    `undefined` ngay trên localhost dù `isSecureContext` bằng true. Nên nhánh
+    khay chia sẻ không bao giờ chạy trong lúc thử, còn Chrome thật của anh thì
+    có. **Đừng kết luận "máy tính không hỗ trợ" từ trình duyệt nhúng.**
+  */
+  if (laIOS()) {
+    if (coKhayChiaSe(file)) {
+      const kq = await moKhayChiaSe(file);
+      if (kq === "het-han-cham") return "cho-cham";
+      if (kq !== "khong-ho-tro") return "xong";
+    }
+    // Tren iOS the tai xuong khong chay: trinh duyet mo thang tep ra xem, file
+    // nen thanh mot man hinh ky tu rac. Tha bao that con hon.
+    return "khong-ho-tro";
+  }
 
   luuQuaThe(file);
   return "xong";

@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelection, type ClientList } from "./Selection";
-import { coKhayChiaSe, luuQuaThe, moKhayChiaSe, taiTep } from "./taiAnh";
+import { coKhayChiaSe, laIOS, luuQuaThe, moKhayChiaSe, taiTep } from "./taiAnh";
 
 export type ClientPhoto = {
   id: string;
@@ -607,8 +607,13 @@ type TrangThaiTai = "san-sang" | "dang-tai" | "cho-cham" | "loi";
  * mở khay chia sẻ của máy để khách bấm "Lưu vào Ảnh" — một chạm, thay vì phải
  * mở ảnh ra rồi nhấn giữ như trước.
  *
- * Máy tính và Android không dùng khay chia sẻ thì rơi xuống cách tải thường,
- * ảnh vào thẳng thư mục Tải xuống.
+ * Máy tính và Android đi thẳng cách tải thường, ảnh vào thư mục Tải xuống.
+ *
+ * Điều kiện `laIOS()` dưới đây là BẮT BUỘC, đừng gỡ. Chrome trên Windows CÓ
+ * khay chia sẻ kèm tệp, nên bản cũ chỉ hỏi "máy có khay không" đã khiến nút
+ * tải trên máy bàn mở ra bảng "Share using: Nearby Sharing, Paint, Discord…"
+ * thay vì tải file — anh gặp thật ngày 07/09/2026. Xem chú thích đầy đủ ở
+ * `giaoTepChoKhach` trong `taiAnh.ts`.
  */
 function NutTai({ photo }: { photo: ClientPhoto }) {
   const { slug } = useSelection();
@@ -616,7 +621,7 @@ function NutTai({ photo }: { photo: ClientPhoto }) {
   const tepSan = useRef<File | null>(null);
 
   const giaoTep = useCallback(async (file: File) => {
-    if (coKhayChiaSe(file)) {
+    if (laIOS() && coKhayChiaSe(file)) {
       const kq = await moKhayChiaSe(file);
       if (kq === "het-han-cham") {
         setTrangThai("cho-cham");

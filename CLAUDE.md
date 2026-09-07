@@ -699,9 +699,14 @@ hề biết. Nên câu báo xong trên iPhone là *"anh chị mở app Ảnh xem
 không phải *"ảnh đã nằm trong app Ảnh"*.
 
 *Chưa đo được trên máy thật:* khay chia sẻ nhiều tệp của iPhone, và lời hỏi
-"Tải nhiều tệp?" của Chrome trên Android. Máy Windows chạy thử trả `canShare`
-bằng false nên rơi vào nhánh dự phòng — **cần studio thử bằng một iPhone và một
-máy Android thật.**
+"Tải nhiều tệp?" của Chrome trên Android. **Cần studio thử bằng một iPhone và
+một máy Android thật.**
+
+**Trình duyệt nhúng dùng để chạy thử KHÔNG có Web Share API** — đo lại ngày
+07/09/2026: `navigator.share` và `navigator.canShare` đều là `undefined` ngay
+trên localhost dù `isSecureContext` bằng true. Nên mọi nhánh khay chia sẻ không
+bao giờ chạy trong lúc thử. **Đừng kết luận "máy này không hỗ trợ khay" từ nó** —
+em đã kết luận sai đúng kiểu đó và bỏ lọt lỗi ở nguyên tắc 46.
 
 **45. Trang quản lý: từ 1536px thì TRANG KHÔNG CUỘN, chỉ lưới thẻ album cuộn.**
 Studio yêu cầu 07/09/2026. Mọi thứ còn lại trên trang đều là thứ phải luôn nhìn
@@ -744,6 +749,32 @@ khách và Turbopack đổ lúc build (cùng bẫy ở nguyên tắc 43). Phải
 *"Each child in a list should have a unique key prop"* — hai thẻ con tĩnh biên
 dịch thành một **mảng**, mà phần tử dựng từ trang cha rơi vào vị trí mảng thì
 bị đòi `key`. Bọc nó trong một thẻ là hết.
+
+**46. Khay chia sẻ CHỈ dành cho iPhone — máy tính và Android tải thẳng.**
+Anh phát hiện ngày 07/09/2026: bấm nút tải một tấm ảnh trên **máy bàn Windows**
+thì hiện ra bảng *"Share using: Nearby Sharing, Paint, Discord, Feedback Hub…"*
+thay vì tải file về.
+
+Nguyên nhân là một **giả định sai đã viết thành chú thích** trong code cũ:
+*"máy tính và Android không dùng khay chia sẻ"*. Nên `giaoTepChoKhach` và
+`NutTai` chỉ hỏi `coKhayChiaSe(file)` rồi mở luôn. Chrome trên Windows **có**
+`navigator.share` kèm tệp, nên điều kiện đó đúng và khay bật lên.
+
+Trên máy tính, tải xuống vốn đã chạy tốt và đúng thứ khách muốn — hỏi họ muốn
+gửi tấm ảnh đi đâu là chen thêm một câu không ai hỏi, lại còn dẫn tới chỗ khách
+bấm nhầm "Discord" rồi mất luôn tấm ảnh. Android cũng vậy: ảnh rơi vào thư mục
+Tải về và app xem ảnh liệt kê ngay (nguyên tắc 44). **Chỉ iPhone mới thật sự
+cần khay**, vì ở đó thẻ tải xuống không chạy.
+
+Nay cả hai chỗ đều bọc trong `laIOS()`. **Đừng bỏ điều kiện đó ra** với lý do
+"máy nào có khay thì cứ dùng cho tiện".
+
+*Vì sao lỗi này lọt qua buổi kiểm cùng ngày:* trình duyệt nhúng dùng để chạy
+thử **không có Web Share API** — `navigator.share` là `undefined`. Nhánh khay
+không bao giờ chạy trong lúc thử, còn Chrome thật của anh thì có. Bài học chung:
+**thiếu một API trong môi trường thử KHÔNG chứng minh môi trường thật cũng
+thiếu.** Muốn biết chắc thì hỏi máy thật, hoặc đọc bảng hỗ trợ của trình duyệt,
+đừng suy từ kết quả `undefined` của một trình duyệt nhúng.
 
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên
