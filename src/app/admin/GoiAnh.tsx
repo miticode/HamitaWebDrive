@@ -138,7 +138,7 @@ export function GoiAnh({
           ? "Để trống thì phần hướng dẫn cho khách bỏ hẳn đoạn giá cả, chỉ nói cách chọn ảnh."
           : soAnh.trim() === "0"
             ? `Khách sẽ đọc: "Gói của anh chị là gói chỉ lấy file ảnh, không kèm ảnh in. Tấm nào anh chị muốn Hamita in ra thì mỗi tấm ${tien(giaAnhThem)}đ, đã gồm cả chỉnh sửa và in ạ."`
-            : `Khách sẽ đọc: "Gói của anh chị có ${soAnh} tấm in. Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái, mỗi tấm ${tien(giaAnhThem)}đ đã gồm cả chỉnh sửa và in ạ."`}
+            : `Khách sẽ đọc 3 dòng: "Gói của anh chị cần tim ${soAnh} tấm." · "Ghi chú vào ảnh: ảnh cổng, ảnh bàn, ảnh bìa,…" · "Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái, mỗi tấm ${tien(giaAnhThem)}đ đã gồm cả chỉnh sửa và in ạ."`}
       </p>
 
       <p className="mt-2 text-[11px] leading-relaxed text-fg-faint">

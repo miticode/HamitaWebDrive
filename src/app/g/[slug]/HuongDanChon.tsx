@@ -217,43 +217,80 @@ export function HuongDanChon({
 
           <div className="min-w-0">
             <p className="eyebrow text-accent">Gói ảnh của anh chị</p>
-            <p className="mt-1.5 text-sm leading-relaxed text-fg sm:text-[15px]">
-              {/*
-                Gói 0 tấm là một gói THẬT, không phải "chưa đặt": khách mua gói
-                chỉ lấy file, không kèm tấm in nào. Nói thẳng ra như vậy thay vì
-                để khách đọc "gói có 0 tấm in" — câu đó nghe như studio quên
-                điền số.
 
-                Vẫn mời khách in thêm: họ có quyền đổi ý, và giá thì đã rõ sẵn.
-              */}
-              {soAnhTrongGoi === 0 ? (
-                <>
-                  Gói của anh chị là gói{" "}
-                  <strong className="font-semibold text-accent">
-                    chỉ lấy file ảnh
-                  </strong>
-                  , không kèm ảnh in. Tấm nào anh chị muốn Hamita in ra thì mỗi
-                  tấm{" "}
-                  <strong className="font-semibold text-accent">
-                    {tien(giaAnhThem)}đ
-                  </strong>
-                  , đã gồm cả chỉnh sửa và in ạ.
-                </>
-              ) : (
-                <>
-                  Gói của anh chị có{" "}
-                  <strong className="font-semibold text-accent">
-                    {soAnhTrongGoi} tấm in
-                  </strong>
-                  . Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái, mỗi
-                  tấm{" "}
-                  <strong className="font-semibold text-accent">
-                    {tien(giaAnhThem)}đ
-                  </strong>{" "}
-                  đã gồm cả chỉnh sửa và in ạ.
-                </>
-              )}
-            </p>
+            {/*
+              Gói 0 tấm là một gói THẬT, không phải "chưa đặt": khách mua gói
+              chỉ lấy file, không kèm tấm in nào. Nói thẳng ra như vậy thay vì
+              để khách đọc "gói có 0 tấm in" — câu đó nghe như studio quên
+              điền số.
+
+              Vẫn mời khách in thêm: họ có quyền đổi ý, và giá thì đã rõ sẵn.
+
+              Gói này giữ MỘT câu, không tách thành ba gạch đầu dòng như gói
+              có ảnh in: cả ba dòng kia đều nói về việc in (tim đủ số tấm, ghi
+              chú tấm này treo ở đâu), mà gói chỉ lấy file thì chưa in tấm nào.
+            */}
+            {soAnhTrongGoi === 0 ? (
+              <p className="mt-1.5 text-sm leading-relaxed text-fg sm:text-[15px]">
+                Gói của anh chị là gói{" "}
+                <strong className="font-semibold text-accent">
+                  chỉ lấy file ảnh
+                </strong>
+                , không kèm ảnh in. Tấm nào anh chị muốn Hamita in ra thì mỗi
+                tấm{" "}
+                <strong className="font-semibold text-accent">
+                  {tien(giaAnhThem)}đ
+                </strong>
+                , đã gồm cả chỉnh sửa và in ạ.
+              </p>
+            ) : (
+              /*
+                Ba gạch đầu dòng chứ không phải một đoạn văn (studio yêu cầu
+                07/09/2026). Ba dòng là ba việc khác nhau — tim đủ số tấm, ghi
+                chú tấm nào treo ở đâu, và giá tấm in thêm — trước đây chỉ có
+                dòng một và dòng ba, dính liền nhau trong một câu.
+
+                Dòng "ghi chú" nằm ở đây chứ không chỉ ở bước 02: bước 02 tự
+                thu lại khi khách đã chọn lần nào rồi, mà đúng lúc đang thả tim
+                mới là lúc khách cần nhớ ghi "tấm này ảnh cổng".
+              */
+              <ul className="mt-2 flex flex-col gap-1.5 text-sm leading-relaxed text-fg sm:text-[15px]">
+                {[
+                  <>
+                    Gói của anh chị cần tim{" "}
+                    <strong className="font-semibold text-accent">
+                      {soAnhTrongGoi} tấm
+                    </strong>
+                    .
+                  </>,
+                  <>
+                    Ghi chú vào ảnh: ảnh cổng, ảnh bàn, ảnh bìa,…
+                  </>,
+                  <>
+                    Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái, mỗi
+                    tấm{" "}
+                    <strong className="font-semibold text-accent">
+                      {tien(giaAnhThem)}đ
+                    </strong>{" "}
+                    đã gồm cả chỉnh sửa và in ạ.
+                  </>,
+                ].map((dong, i) => (
+                  <li key={i} className="flex gap-2.5">
+                    {/*
+                      Chấm tròn vẽ tay chứ không dùng list-disc: chấm mặc định
+                      của trình duyệt nằm ngoài lề, khi dòng dài xuống hàng thì
+                      chữ hàng dưới thụt về sát chấm. Flex + chấm cố định giữ
+                      cả khối chữ thẳng một mép.
+                    */}
+                    <span
+                      aria-hidden
+                      className="mt-[0.6em] size-1.5 shrink-0 rounded-full bg-accent"
+                    />
+                    <span>{dong}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}
