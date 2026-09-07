@@ -14,7 +14,7 @@ import {
   storageKind,
   type Gallery,
 } from "@/lib/store";
-import { docMoc } from "@/lib/moc";
+import { docLanBaoTinMoiAlbum, docMoc } from "@/lib/moc";
 import { docThongBao } from "@/lib/thongBao";
 import { demNguoiNhanMoiAlbum } from "@/lib/push";
 import { logoutAction } from "./actions";
@@ -133,6 +133,26 @@ export default async function AdminPage() {
   const soMayChoTin = onJsonStore
     ? {}
     : await demNguoiNhanMoiAlbum().catch(() => ({}));
+
+  /*
+    Lần cuối studio bấm "Gửi thông báo" của từng album (yêu cầu 07/09/2026).
+
+    Studio bấm gửi rải rác cả ngày trên hai mươi bảy album rồi không nhớ đã bấm
+    cho nhà nào — hoặc bỏ sót một nhà, hoặc gửi lại lần hai làm điện thoại họ
+    rung vô cớ. Đọc MỘT LẦN cho cả trang rồi tra theo id, cùng lý do với
+    `soMayChoTin` ngay trên.
+
+    Đưa xuống thẻ dưới dạng chuỗi ISO chứ không phải đối tượng `Date`: thẻ album
+    chạy ở máy khách, và mọi phép chia theo ngày tháng đều phải đi qua `MUI_GIO`
+    (nguyên tắc 35) chứ không dựa vào múi giờ của máy đang mở trang.
+  */
+  const baoTinLuc: Record<string, string> = {};
+  if (!onJsonStore) {
+    const moc = await docLanBaoTinMoiAlbum().catch(() => ({}));
+    for (const [id, luc] of Object.entries(moc)) {
+      baoTinLuc[id] = luc.toISOString();
+    }
+  }
 
   const { quaHan, sapHetHan } = xepTheoHan(galleries);
   const saoLuuCachDay = cachDayMayNgay(await docMoc("saoLuu"));
@@ -268,6 +288,7 @@ export default async function AdminPage() {
               mucXong={mucXong}
               biaMuc={biaMuc}
               soMayChoTin={soMayChoTin}
+              baoTinLuc={baoTinLuc}
               thongBao={<ThongBao tin={tinThongBao} />}
             />
           )}

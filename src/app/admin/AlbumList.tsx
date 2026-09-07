@@ -56,6 +56,7 @@ export function AlbumList({
   mucXong,
   biaMuc,
   soMayChoTin,
+  baoTinLuc,
   thongBao,
 }: {
   galleries: Gallery[];
@@ -66,6 +67,12 @@ export function AlbumList({
   biaMuc: BiaMuc[];
   /** So may dang cho nhan thong bao, tra theo id album. */
   soMayChoTin: Record<string, number>;
+  /**
+   * Lan cuoi bam "Gui thong bao" cua tung album (chuoi ISO), tra theo id.
+   * Khong co khoa nghia la chua ghi duoc lan gui nao — xem GalleryCard de biet
+   * vi sao khong the doc thang do la "chua gui bao gio".
+   */
+  baoTinLuc: Record<string, string>;
   /**
    * Khung "Thông báo", dựng sẵn ở máy chủ rồi truyền xuống.
    *
@@ -293,6 +300,7 @@ export function AlbumList({
                     mucXong={mucXong.filter((m) => m.galleryId === g.id)}
                     biaMuc={biaMuc.filter((b) => b.galleryId === g.id)}
                     soMayChoTin={soMayChoTin[g.id] ?? 0}
+                    baoTinLuc={baoTinLuc[g.id] ?? null}
                   />
                 ))}
               </div>

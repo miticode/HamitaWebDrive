@@ -116,3 +116,16 @@ export function laBot(userAgent: string | null): boolean {
     userAgent
   );
 }
+
+/**
+ * Moc bat dau ghi lai "da bam Gui thong bao cho album nay".
+ *
+ * Truoc moc nay khong co gi ghi lai ca, nen album khong co dong nao trong bang
+ * `Moc` co the la "chua gui lan nao" MA CUNG co the la "gui roi, hoi do chua
+ * ghi". The album phai noi ro hai truong hop do la hai thu khac nhau — bao
+ * "chua gui" cho mot nha da nhan tin la lam studio gui lai lan hai, dien thoai
+ * khach rung vo co.
+ *
+ * Cung ly do va cung cach dung voi MOC_DEM_LUOT_TAI trong chinh file nay.
+ */
+export const MOC_GHI_LAN_BAO = new Date("2026-09-07T00:00:00Z");

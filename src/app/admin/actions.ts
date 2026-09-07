@@ -32,7 +32,7 @@ import {
   setMessage,
 } from "@/lib/store";
 import { guiThongBaoAnhMoi, syncAndWarm } from "@/lib/warm";
-import { ghiMoc } from "@/lib/moc";
+import { ghiMoc, khoaBaoTin } from "@/lib/moc";
 import { khoaDaDoc } from "@/lib/thongBao";
 
 export type ActionState = { error?: string; ok?: string };
@@ -177,6 +177,27 @@ export async function guiThongBaoAction(
   if (!g) return { error: "Không tìm thấy album." };
 
   const kq = await guiThongBaoAnhMoi(galleryId, g.slug);
+
+  /*
+    Ghi lai MOC DA GUI cho album nay (yeu cau 07/09/2026).
+
+    Van de studio gap: hai muoi bay album, bam gui rai rac ca ngay, roi khong
+    ai nho da bam cho nha nao. Khong nho thi hoac bo sot mot nha, hoac gui lai
+    lan hai lam dien thoai ho rung vo co.
+
+    CHI ghi khi that su co may nhan duoc. `daGui = 0` nghia la moi phieu deu
+    chet (khach go app) — khong mot ai nhan duoc gi, ghi "da gui" luc do la
+    dan cho studio yen tam ve mot viec chua xay ra.
+
+    Nuot loi qua `.catch`: ghi moc hong thi cung khong duoc bao la gui that
+    bai, vi tin da roi vao dien thoai khach roi. Cung ly do voi `ghiMoc` o
+    duong sao luu.
+  */
+  if (kq.daGui > 0) {
+    await ghiMoc(khoaBaoTin(galleryId), new Date()).catch(() => {});
+    revalidatePath("/admin");
+  }
+
   return { daGui: kq.daGui };
 }
 

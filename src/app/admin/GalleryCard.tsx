@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { BiaMuc, Gallery, ListCount, MucXong } from "@/lib/store";
-import { MOC_DEM_LUOT_TAI } from "@/lib/constants";
+import { MOC_DEM_LUOT_TAI, MOC_GHI_LAN_BAO, MUI_GIO } from "@/lib/constants";
 import { refreshGalleryAction } from "./actions";
 import { AccessControl } from "./AccessControl";
 import { CopyLink } from "./CopyLink";
@@ -61,12 +61,87 @@ function Stat({
   );
 }
 
+/**
+ * "7/9 17:40" — theo giờ studio, không theo giờ máy đang mở trang (nguyên tắc 35).
+ *
+ * Ghép từ `formatToParts` chứ không dùng thẳng chuỗi `format()` trả về: bản
+ * tiếng Việt xếp giờ lên TRƯỚC ngày ("17:40 7/9"), đọc ngược với cách người ta
+ * nói. Ghép tay thì thứ tự do mình quyết, mà múi giờ vẫn do Intl lo.
+ */
+function lucGon(iso: string): string {
+  const phan = new Intl.DateTimeFormat("vi-VN", {
+    timeZone: MUI_GIO,
+    day: "numeric",
+    month: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date(iso));
+
+  const lay = (loai: string) =>
+    phan.find((p) => p.type === loai)?.value ?? "";
+
+  return `${lay("day")}/${lay("month")} ${lay("hour")}:${lay("minute")}`;
+}
+
+/**
+ * Dòng "đã gửi thông báo chưa" dưới hàng nút.
+ *
+ * Studio yêu cầu 07/09/2026: hai mươi bảy album, bấm gửi rải rác cả ngày, rồi
+ * không nhớ đã bấm cho nhà nào. Không nhớ thì hoặc bỏ sót một nhà đang chờ,
+ * hoặc gửi lại lần hai làm điện thoại họ rung vô cớ.
+ *
+ * BA trạng thái chứ không phải hai — đây là chỗ dễ làm sai nhất:
+ *
+ * - Có mốc → nói thẳng đã gửi lúc nào.
+ * - Không có mốc, album tạo TỪ mốc bắt đầu ghi trở đi → chắc chắn chưa gửi.
+ * - Không có mốc, album tạo TRƯỚC mốc đó → **chưa rõ**. Hồi ấy chưa ghi lại gì
+ *   cả, nên "không có dòng nào" không chứng minh được là chưa gửi. Viết đại là
+ *   "chưa gửi" thì studio gửi lại cho một nhà đã nhận rồi — đúng cái phiền
+ *   đang muốn dẹp. Cùng cách trang thống kê phân biệt lượt xem (nguyên tắc 29).
+ *
+ * Trả `null` khi chưa có mốc VÀ không máy nào chờ tin: album đó không gửi được
+ * cho ai, nói "chưa gửi" chỉ thành một dòng nhiễu trên hai phần ba số thẻ.
+ */
+function trangThaiTin(
+  baoTinLuc: string | null,
+  ngayTao: string,
+  soMay: number,
+): { chu: string; giaiThich: string; mau: "xong" | "chua" } | null {
+  if (baoTinLuc) {
+    return {
+      chu: `Đã gửi thông báo · ${lucGon(baoTinLuc)}`,
+      giaiThich:
+        "Lần gần nhất bấm nút gửi cho album này, tính theo giờ Việt Nam. Chỉ ghi khi thật sự có máy nhận được.",
+      mau: "xong",
+    };
+  }
+
+  if (soMay === 0) return null;
+
+  if (new Date(ngayTao) >= MOC_GHI_LAN_BAO) {
+    return {
+      chu: "Chưa gửi thông báo lần nào",
+      giaiThich: `Có ${soMay} máy đang chờ tin của album này mà chưa lần nào bấm gửi.`,
+      mau: "chua",
+    };
+  }
+
+  return {
+    chu: "Chưa rõ đã gửi tin chưa",
+    giaiThich:
+      "Album tạo trước ngày web bắt đầu ghi lại việc gửi tin, nên không biết chắc. Bấm gửi một lần là từ đó có mốc rõ ràng.",
+    mau: "chua",
+  };
+}
+
 export function GalleryCard({
   gallery,
   counts,
   mucXong,
   biaMuc,
   soMayChoTin,
+  baoTinLuc,
 }: {
   gallery: Gallery;
   counts: ListCount[];
@@ -76,9 +151,16 @@ export function GalleryCard({
   biaMuc: BiaMuc[];
   /** Số máy khách đang chờ nhận thông báo của album này. */
   soMayChoTin: number;
+  /** Lần cuối bấm "Gửi thông báo" (chuỗi ISO). null = chưa ghi được lần nào. */
+  baoTinLuc: string | null;
 }) {
   const title = gallery.clientName ?? gallery.title;
   const chuaDongBo = gallery.syncedAt === null;
+  const trangThaiBaoTin = trangThaiTin(
+    baoTinLuc,
+    gallery.createdAt,
+    soMayChoTin,
+  );
 
   /*
     Album tạo trước mốc bắt đầu đếm thì cột `luotTai` luôn là 0 dù khách đã tải
@@ -322,6 +404,17 @@ export function GalleryCard({
             Xoá
           </button>
         </div>
+
+        {trangThaiBaoTin && (
+          <p
+            className={`mt-2 text-[11px] leading-relaxed ${
+              trangThaiBaoTin.mau === "xong" ? "text-accent" : "text-fg-faint"
+            }`}
+            title={trangThaiBaoTin.giaiThich}
+          >
+            {trangThaiBaoTin.chu}
+          </p>
+        )}
       </div>
 
       {moXoa && (

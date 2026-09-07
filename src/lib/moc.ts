@@ -36,6 +36,40 @@ export async function ghiMoc(ten: string, luc: Date): Promise<void> {
   }
 }
 
+/*
+  Khoa ghi "da bam Gui thong bao cho album nay", moi album mot dong.
+
+  Muon lai bang Moc voi mot tien to rieng, y het cach khung Thong bao ghi dau
+  da doc (nguyen tac 39): bang do von de ghi "lan cuoi lam viec X", dung hinh
+  dang, khoi phai them cot vao Gallery.
+*/
+const TIEN_TO_BAO_TIN = "bao-tin:";
+
+export function khoaBaoTin(galleryId: string): string {
+  return TIEN_TO_BAO_TIN + galleryId;
+}
+
+/**
+ * Lan cuoi gui tin cua TUNG album, tra theo id.
+ *
+ * Doc mot lan cho ca trang roi tra theo id, khong hoi tung the mot: hai muoi
+ * bay album la hai muoi bay lan hoi database cho mot con so nho.
+ */
+export async function docLanBaoTinMoiAlbum(): Promise<Record<string, Date>> {
+  if (!databaseIsConfigured()) return {};
+  try {
+    const ds = await getPrisma().moc.findMany({
+      where: { ten: { startsWith: TIEN_TO_BAO_TIN } },
+    });
+    const ra: Record<string, Date> = {};
+    for (const m of ds) ra[m.ten.slice(TIEN_TO_BAO_TIN.length)] = m.luc;
+    return ra;
+  } catch {
+    // Cung ly do voi docMoc: ban deploy cu co the chua co bang Moc.
+    return {};
+  }
+}
+
 /** Lan cuoi lam viec nay la luc nao. null = chua lan nao. */
 export async function docMoc(ten: string): Promise<Date | null> {
   if (!databaseIsConfigured()) return null;

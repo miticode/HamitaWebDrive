@@ -776,6 +776,51 @@ không bao giờ chạy trong lúc thử, còn Chrome thật của anh thì có.
 thiếu.** Muốn biết chắc thì hỏi máy thật, hoặc đọc bảng hỗ trợ của trình duyệt,
 đừng suy từ kết quả `undefined` của một trình duyệt nhúng.
 
+**47. Thẻ album nói rõ ĐÃ GỬI THÔNG BÁO CHƯA, và có BA trạng thái.**
+Studio yêu cầu 07/09/2026: *"a không biết cái nào đã ấn gửi thông báo cho
+khách"*. Hai mươi bảy album, bấm gửi rải rác cả ngày, rồi không nhớ đã bấm cho
+nhà nào — hoặc bỏ sót một nhà đang chờ, hoặc gửi lại lần hai làm điện thoại họ
+rung vô cớ.
+
+Mốc ghi vào bảng `Moc` với tiền tố `bao-tin:<galleryId>`, y cách khung Thông
+báo ghi dấu đã đọc (nguyên tắc 39) — bảng đó vốn để ghi "lần cuối làm việc X",
+đúng hình dạng, khỏi thêm cột vào `Gallery`.
+
+**CHỈ ghi khi `daGui > 0`.** `daGui = 0` nghĩa là mọi phiếu đều chết (khách gỡ
+app) — không một ai nhận được gì. Ghi "đã gửi" lúc đó là dán cho studio yên tâm
+về một việc chưa xảy ra.
+
+**Ba trạng thái, không phải hai** — chỗ dễ làm sai nhất:
+
+| Tình trạng | Thẻ hiện |
+|---|---|
+| Có mốc | **Đã gửi thông báo · 7/9 17:40** (màu nhấn) |
+| Không mốc, album tạo TỪ `MOC_GHI_LAN_BAO` trở đi | Chưa gửi thông báo lần nào |
+| Không mốc, album tạo TRƯỚC mốc đó | **Chưa rõ đã gửi tin chưa** |
+| Không mốc, **0 máy chờ tin** | không hiện gì |
+
+Dòng "chưa rõ" là bắt buộc, đừng gộp vào "chưa gửi": trước `MOC_GHI_LAN_BAO`
+web không ghi lại gì cả, nên "không có dòng nào" **không chứng minh** được là
+chưa gửi. Viết đại là "chưa gửi" thì studio gửi lại cho một nhà đã nhận rồi —
+đúng cái phiền đang muốn dẹp. Cùng cách trang thống kê phân biệt lượt xem
+(nguyên tắc 29) và thẻ album phân biệt lượt tải (nguyên tắc 43).
+
+Đo trên dữ liệu thật lúc làm: 10/27 album có máy chờ tin — 1 album tạo hôm nay
+ra "chưa gửi lần nào", 9 album cũ ra "chưa rõ", 17 album còn lại không hiện gì.
+
+**Ẩn hẳn khi chưa có mốc VÀ không máy nào chờ tin.** Album đó không gửi được
+cho ai; nói "chưa gửi" chỉ thành một dòng nhiễu trên hai phần ba số thẻ. Đây là
+ngoại lệ có chủ đích với thói quen "không tự ẩn" ở nguyên tắc 39 — khung Thông
+báo ẩn đi thì studio mất một chỗ canh việc, còn dòng này ẩn đi chỉ vì **không
+có câu hỏi nào để trả lời**.
+
+`lucGon()` ghép từ `formatToParts` chứ không dùng thẳng `format()`: bản tiếng
+Việt xếp giờ lên TRƯỚC ngày ("17:40 7/9"), đọc ngược với cách người ta nói.
+Múi giờ vẫn để `Intl` lo qua `MUI_GIO` (nguyên tắc 35).
+
+`MOC_GHI_LAN_BAO` để ở `constants.ts`, **không** ở `moc.ts` — thẻ album chạy ở
+máy khách mà `moc.ts` nhập `getPrisma` (cùng bẫy build ở nguyên tắc 43).
+
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên
 biểu tượng tới khi khách mở album ra.
