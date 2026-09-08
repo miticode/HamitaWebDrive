@@ -12,6 +12,8 @@ import { CodeDialog } from "./CodeDialog";
 import { ChonThuMuc } from "./ChonThuMuc";
 import { XacNhanXong } from "./XacNhanXong";
 import { SelectionProvider } from "./Selection";
+import { HopHoiDap } from "./HopHoiDap";
+import { ngayGon } from "@/lib/hoiDap";
 
 /**
  * Luoi anh cua mot muc.
@@ -141,6 +143,18 @@ export function AlbumView({
         <Logo size="sm" className="mx-auto opacity-60" />
         <p className="eyebrow mt-4">{STUDIO_NAME}</p>
       </footer>
+
+      {/*
+        Khung hỏi đáp nổi ở góc trái dưới. Cần ở ĐÂY chứ không chỉ trang bìa:
+        đây mới là trang khách ngồi lâu nhất và là lúc thắc mắc nảy ra —
+        "tim với tick khác gì nhau", "chọn xong rồi làm gì".
+      */}
+      <HopHoiDap
+        soAnhTrongGoi={gallery.soAnhTrongGoi}
+        giaAnhThem={gallery.giaAnhThem}
+        choTaiAnh={gallery.allowDownload}
+        hanGiuAnh={ngayGon(gallery.expiresAt)}
+      />
     </SelectionProvider>
   );
 }

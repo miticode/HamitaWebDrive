@@ -821,6 +821,65 @@ Múi giờ vẫn để `Intl` lo qua `MUI_GIO` (nguyên tắc 35).
 `MOC_GHI_LAN_BAO` để ở `constants.ts`, **không** ở `moc.ts` — thẻ album chạy ở
 máy khách mà `moc.ts` nhập `getPrisma` (cùng bẫy build ở nguyên tắc 43).
 
+**48. Khung "Hỏi Hamita" trên trang album KHÔNG DÙNG AI, và khách BẤM chứ không GÕ.**
+Studio yêu cầu 07/09/2026. Cả hai vế đều là quyết định, không phải bước đệm
+chờ làm tiếp.
+
+**Không dùng AI**, ba lý do:
+- Mọi câu trả lời ở đây đều dính tới **tiền và ngày tháng** của khách. Câu chữ
+  dựng thẳng từ dữ liệu album nên không có đường nào ra một con số khác với con
+  số đang hiện trên trang.
+- Không gọi mạng lần nào sau khi trang đã tải: không tốn tiền, không chậm,
+  không hỏng khi mạng trục trặc.
+- Đã cân nhắc bản có AI (Claude API) và **hoãn có chủ đích** — ước tính
+  50–250k/tháng cho ~350 cuộc, tiền không phải rào cản; rào cản là chưa biết
+  khách có dùng khung này không. Làm bản tĩnh trước để đo.
+
+**Khách bấm, không gõ.** Đây là điểm mấu chốt, **đừng đổi thành ô nhập chữ**.
+Studio nói thẳng: tệp khách của họ *"ít đọc chữ trên web"*. Một ô trống bắt họ
+tự nghĩ ra câu hỏi rồi gõ — phần lớn sẽ bỏ qua. Danh sách nút bấm thì đọc lướt
+là thấy ngay câu mình đang thắc mắc.
+
+**MÃ CHỌN ẢNH KHÔNG BAO GIỜ ĐƯỢC ĐƯA VÀO KHUNG NÀY.** Ai cầm link cũng mở được
+nó; có mã trong đó là bất kỳ ai cũng hỏi ra được, vô hiệu hoá đúng lớp bảo vệ
+mà nguyên tắc 1 và 14 dựng lên. Câu "bấm tim mà không được" chỉ đường tới nút
+"Nhập mã" và tới Zalo studio, không đọc mã ra. Đã kiểm trên trang thật: chuỗi
+`123456` không xuất hiện ở đâu trong khung.
+
+**Câu chữ phải KHỚP với thứ đang hiện trên trang** (nguyên tắc 28). Đoạn
+tim/tick lấy đúng ý bước 01 phần hướng dẫn; số tấm trong gói và giá ảnh thêm
+lấy thẳng từ `Gallery`; ngày giữ ảnh dùng chung cách viết với thanh đếm ngược
+(`05/12/2026`) — hai chỗ nói cùng một ngày mà viết hai kiểu thì khách tưởng là
+hai mốc khác nhau. Gói ảnh vẫn phải xử đủ **ba trạng thái** `null`/`0`/`N`
+(nguyên tắc 38).
+
+**Nút nổi ở góc TRÁI dưới, không phải góc phải.** Góc phải dưới đã có nút "lên
+đầu trang" của lưới ảnh (`fixed right-4 bottom-4`); hai nút tròn chồng chỗ thì
+khách bấm nhầm, mà dời nút cũ đi là đụng vào thứ đang chạy tốt. Đo ở 375px:
+nút hỏi đáp chiếm 16→150px tính từ mép trái, nút lên đầu trang chiếm từ 315px —
+không chạm nhau.
+
+**Tầng z phải là 30.** Trên nội dung trang nhưng **dưới** khung xem ảnh to
+(z-50) và hộp nhập mã (z-60): khách đang ngắm ảnh toàn màn hình thì không có
+nút nào nổi lên che ảnh. Đã kiểm đúng thứ tự đó trên trang thật.
+
+**Đường sang người thật luôn đứng sẵn ở đáy khung**, không đợi khách bấm hết
+các câu mới hiện. Khung chỉ trả lời được chừng ấy việc; thứ nó không biết thì
+giao lại cho studio ngay. Đây cũng là **đường liên hệ duy nhất** trên trang
+album — trước đó trang không có lấy một liên kết gọi điện nào kể từ khi bỏ khối
+"Phân vân quá…" ngày 28/08/2026.
+
+Mọi câu chữ nằm trong `src/lib/hoiDap.ts`, **không viết thẳng vào JSX** — sửa
+giọng văn thì không phải mở file giao diện (cùng lý do với `studio.ts`,
+nguyên tắc 25). File đó chạy cả ở máy khách nên **không được nhập gì dính tới
+Prisma** (nguyên tắc 43).
+
+*Còn thiếu, cần studio bổ sung:* bộ câu hỏi hiện tại chỉ gồm những câu **web
+tự trả lời được**. Những câu khách hay hỏi nhân viên sale (giá chụp, gói dịch
+vụ, đặt lịch, có váy không…) **chưa có trong đây** — em không biết và không
+được bịa. Studio đưa danh sách thì thêm vào `hoiDap.ts`, không cần đụng giao
+diện.
+
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên
 biểu tượng tới khi khách mở album ra.

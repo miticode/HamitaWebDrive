@@ -16,6 +16,8 @@ import { NutThongBao } from "./NutThongBao";
 import { TuLamMoi } from "./TuLamMoi";
 import { DauMoi, GhiNhoDaXem } from "./DauMoi";
 import { NutTaiFolder } from "./NutTaiFolder";
+import { HopHoiDap } from "./HopHoiDap";
+import { ngayGon } from "@/lib/hoiDap";
 
 export const dynamic = "force-dynamic";
 
@@ -346,6 +348,17 @@ export default async function GalleryPage({ params }: Props) {
         <Logo size="sm" className="mx-auto opacity-60" />
         <p className="eyebrow mt-4">{STUDIO_NAME}</p>
       </footer>
+
+      {/*
+        Khung hỏi đáp — cùng một khung với trong thư mục con, để khách bấm ở
+        đâu cũng ra đúng bấy nhiêu câu trả lời.
+      */}
+      <HopHoiDap
+        soAnhTrongGoi={gallery.soAnhTrongGoi}
+        giaAnhThem={gallery.giaAnhThem}
+        choTaiAnh={gallery.allowDownload}
+        hanGiuAnh={ngayGon(gallery.expiresAt)}
+      />
     </main>
   );
 }
