@@ -56,8 +56,10 @@ export function TenAlbum({
   if (!mo) {
     return (
       <div className="flex min-w-0 items-baseline gap-2">
+        {/* title: tên dài bị cắt trên thẻ hẹp — rê chuột đọc lại được đủ. */}
         <Link
           href={`/g/${slug}`}
+          title={ten}
           className="truncate font-display text-xl leading-snug transition group-hover:text-accent"
         >
           {ten}

@@ -38,7 +38,11 @@ export function LoiNhan({
     return (
       <div className="flex items-baseline gap-2 py-2 text-xs">
         <span className="w-24 shrink-0 text-fg-muted">Lời nhắn</span>
-        <span className={`min-w-0 flex-1 truncate ${message ? "" : "text-fg-faint"}`}>
+        {/* title: lời nhắn dài bị cắt — rê chuột đọc lại được đủ. */}
+        <span
+          title={message || "đang dùng lời chúc chung"}
+          className={`min-w-0 flex-1 truncate ${message ? "" : "text-fg-faint"}`}
+        >
           {message || "đang dùng lời chúc chung"}
         </span>
         <button

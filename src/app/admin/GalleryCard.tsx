@@ -239,7 +239,16 @@ export function GalleryCard({
             cần biết để bắt tay làm.
           */}
           {mucXong.length > 0 && (
-            <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+            /*
+              `min-w-0`, KHÔNG phải `shrink-0`. Đây là chỗ đã hỏng thật: bản cũ
+              để `shrink-0` nên khối nhãn từ chối co lại, hai nhãn nằm cạnh nhau
+              dài hơn thẻ và nhãn thứ hai chạy hẳn ra ngoài mép rồi bị cắt cụt
+              giữa chữ — anh phát hiện 09/09/2026. Đo trên thẻ 298px: tràn 76px.
+
+              Có `min-w-0` thì khối co được, và `flex-wrap` xếp nhãn xuống dòng
+              thay vì đẩy ra ngoài.
+            */
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
               {mucXong.map((m) => (
                 <span
                   key={m.albumId}
@@ -360,7 +369,12 @@ export function GalleryCard({
           />
         </div>
 
-        <p className="mt-3 truncate text-xs text-fg-faint">
+        {/* title: dòng này bị cắt bằng ba chấm trên thẻ hẹp, mà nó chứa cả
+            đường dẫn lẫn ngày tạo — rê chuột phải đọc lại được đủ. */}
+        <p
+          title={`/g/${gallery.slug} · tạo ngày ${new Date(gallery.createdAt).toLocaleDateString("vi-VN")}`}
+          className="mt-3 truncate text-xs text-fg-faint"
+        >
           /g/{gallery.slug} ·{" "}
           {new Date(gallery.createdAt).toLocaleDateString("vi-VN")}
         </p>

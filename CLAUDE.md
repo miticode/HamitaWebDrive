@@ -1312,6 +1312,28 @@ Chỉ khoá lúc ghi thì request đọc trúng lúc đang ghi sẽ thấy file 
 **Chrome headless không nhúng được phông Bitter khi xuất PDF** — đã thử mọi cách,
 trình duyệt thật thì bình thường. Bản in dùng Be Vietnam Pro đậm cho tiêu đề.
 
+**`shrink-0` trong flex làm chữ TRÀN RA NGOÀI thẻ rồi bị cắt cụt.** Anh phát
+hiện 09/09/2026 trên thẻ album: nhãn "Xong · file hoàn thiện AB" chạy hẳn ra
+ngoài mép thẻ, cắt giữa chữ, không có dấu ba chấm nào — nhìn như chữ bị mất.
+
+Khối nhãn để `flex shrink-0 flex-wrap`. `shrink-0` nghĩa là **cấm co lại**, nên
+hai nhãn nằm cạnh nhau dài hơn thẻ; `flex-wrap` bên trong vô dụng vì khối cha
+không bao giờ hẹp lại để buộc xuống dòng. Đo trên thẻ 298px: tràn **76px**, bị
+`overflow-hidden` của thẻ xén mất.
+
+Đúng phải là **`min-w-0`**: cho khối co được, rồi `flex-wrap` mới xếp nhãn
+xuống dòng. Sửa xong đo lại 24 thẻ: **0 phần tử tràn**.
+
+Luật chung: trong flex, `shrink-0` chỉ dành cho thứ có bề rộng CỐ ĐỊNH và nhỏ
+(biểu tượng, nhãn một hai chữ). Thứ nào chứa chữ do người dùng đặt — tên thư
+mục, tên khách — thì `min-w-0` cộng `truncate` hoặc `flex-wrap`, không bao giờ
+`shrink-0`.
+
+**Chữ bị `truncate` thì phải có `title`.** Ba dòng trên thẻ album bị cắt mà
+không có cách nào xem lại: tên album, lời nhắn, và dòng đường dẫn kèm ngày tạo.
+Cắt cho vừa thẻ là đúng, nhưng cắt xong không cho xem lại là mất thông tin thật —
+nay cả ba đều có chú giải khi rê chuột.
+
 **Tailwind v4 đổi `divide-y` sang dùng `border-bottom`** (trừ phần tử cuối cùng)
 thay vì `border-top` (trừ phần tử đầu) như bản cũ hay nhớ nhầm. Đo
 `border-top-width` sẽ luôn ra `0px` dù class áp đúng — phải đo `border-bottom-width`.
