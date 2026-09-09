@@ -880,6 +880,43 @@ vụ, đặt lịch, có váy không…) **chưa có trong đây** — em không
 được bịa. Studio đưa danh sách thì thêm vào `hoiDap.ts`, không cần đụng giao
 diện.
 
+**49. Thư mục ẢNH ĐÃ CHỈNH XONG hỏi khách một câu khác hẳn thư mục file gốc.**
+Studio yêu cầu 09/09/2026. Hai loại thư mục đòi khách làm hai việc khác nhau,
+nên chữ cũng phải khác:
+
+| Loại thư mục | Khách đang làm gì | Câu hỏi | Nút |
+|---|---|---|---|
+| **File gốc** | CHỌN — lướt vài trăm tấm, thả tim tấm muốn in | "chọn xong thư mục X chưa ạ?" | Báo cho Hamita — đã chọn xong N tấm |
+| **Hoàn thiện / PTS** | DUYỆT — Hamita chỉnh xong rồi, khách gật đầu | "xem thư mục X ưng chưa ạ?" | **Đã ok, báo Hamita để in** |
+
+Hỏi "chọn xong chưa" trong thư mục ảnh đã chỉnh là **hỏi sai việc** — khách
+không chọn gì ở đó, họ duyệt.
+
+**CHỈ ĐỔI CÂU CHỮ, không đổi cách chạy.** Vẫn là một lần bấm báo xong, vẫn ghi
+vào đúng bảng `MucXong` như cũ (nguyên tắc 20). Đừng dựng thêm trạng thái mới.
+
+**Nhận dạng bằng TÊN THƯ MỤC** (`laMucHoanThien()` trong `constants.ts`): tên
+là thứ duy nhất có sẵn — thư mục con không có bản ghi nào trong database
+(nguyên tắc 4 và 32), mà bắt studio đánh dấu tay từng thư mục thì sẽ có ngày
+quên. Đổi lại phải chấp nhận: **studio đổi tên thư mục trên Drive là đổi luôn
+chữ khách đọc.**
+
+Khớp sau khi bỏ dấu và hạ chữ thường, nên `Hoàn thiện` · `hoan thien` ·
+`HOÀN THIỆN` · `Pts` · `pts` đều ăn như nhau. `\b` hai đầu của `pts` là **cố
+ý**: thiếu nó thì một tên như `scripts` cũng khớp. Đã thử 16 tên thật và tên
+bẫy — `photobook hoàn thiện` khớp, `photobooks` và `scripts` không.
+
+**Tính MỘT LẦN ở `AlbumView` rồi truyền xuống cả hai chỗ** (thanh trên cùng và
+khối cuối trang). Để hai nơi tự nhận dạng riêng là có ngày một nơi đổi luật mà
+nơi kia không — khách đọc trên một kiểu, đọc dưới một kiểu về đúng một việc.
+
+*Bẫy đã vấp khi làm:* sửa bằng `perl -pi -e 's|...|...|'` mà trong phần thay
+thế có `${tongSoDaChon}` — perl coi đó là **biến của chính nó** và thay bằng
+chuỗi rỗng, nên câu hỏi ra "Anh chị chọn xong  tấm rồi phải không ạ?", mất con
+số mà TypeScript lẫn ESLint đều không kêu (chuỗi vẫn hợp lệ). Chỉ mở trang thật
+lên đọc mới thấy. **Đừng dùng perl thay chuỗi có `${...}`; dùng công cụ sửa tệp
+hoặc đọc lại đúng dòng vừa sửa.**
+
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên
 biểu tượng tới khi khách mở album ra.

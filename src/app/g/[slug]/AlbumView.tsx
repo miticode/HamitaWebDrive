@@ -1,5 +1,5 @@
 import type { Album } from "@/lib/drive";
-import { STUDIO_NAME } from "@/lib/constants";
+import { STUDIO_NAME, laMucHoanThien } from "@/lib/constants";
 import type { Gallery, SelectionList } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { GalleryHeader } from "./GalleryHeader";
@@ -53,6 +53,14 @@ export function AlbumView({
 
   const galleryTitle = gallery.clientName ?? gallery.title;
 
+  /*
+    Thư mục ảnh ĐÃ CHỈNH XONG thì khách duyệt để in, không phải chọn — chữ ở
+    thanh trên và khối cuối trang đổi theo (studio yêu cầu 09/09/2026). Tính
+    MỘT LẦN ở đây rồi truyền xuống cả hai chỗ: hai nơi tự nhận dạng riêng là
+    có ngày một nơi đổi luật mà nơi kia không.
+  */
+  const hoanThien = laMucHoanThien(album.name);
+
   return (
     <SelectionProvider
       slug={slug}
@@ -74,6 +82,7 @@ export function AlbumView({
         backHref={backHref}
         backLabel={galleryTitle}
         total={photos.length}
+        hoanThien={hoanThien}
       />
 
       <main className="mx-auto w-full max-w-[1700px] px-2 pb-24 sm:px-6">
@@ -134,7 +143,7 @@ export function AlbumView({
           luc khac nhau: thanh tren cho nguoi dang o giua trang muon bao ngay,
           khoi nay cho nguoi vua cuon het thu muc va khong con viec gi khac.
         */}
-        <XacNhanXong tenMuc={album.name} />
+        <XacNhanXong tenMuc={album.name} hoanThien={hoanThien} />
       </main>
 
       <CodeDialog />

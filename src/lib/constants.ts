@@ -146,3 +146,50 @@ export function laBot(userAgent: string | null): boolean {
  * Cung ly do va cung cach dung voi MOC_DEM_LUOT_TAI trong chinh file nay.
  */
 export const MOC_GHI_LAN_BAO = new Date("2026-09-07T00:00:00Z");
+
+/**
+ * Bo dau tieng Viet: "Hoàn thiện" → "hoan thien".
+ *
+ * Dung chung cho o tim album o trang quan ly (go khong dau van tim ra) va cho
+ * `laMucHoanThien()` ngay duoi. De o day vi CA HAI PHIA cung dung va file nay
+ * khong nhap gi ca (nguyen tac 43).
+ */
+export function boDau(s: string): string {
+  return s
+    .replace(/[đĐ]/g, "d")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
+/*
+  Dau hieu mot thu muc chua ANH DA CHINH XONG, khong phai file goc.
+
+  `\b` hai dau cua "pts" la co y: thieu no thi mot ten nhu "scripts" cung khop.
+  Con "hoan thien" thi khong can vi khong tu tieng Viet nao chua no ma mang
+  nghia khac.
+*/
+const DAU_HIEU_HOAN_THIEN = /(hoan thien|\bpts\b)/;
+
+/**
+ * Thu muc nay la anh DA CHINH XONG hay file goc?
+ *
+ * Studio yeu cau 09/09/2026. Hai loai thu muc doi hoi khach lam hai viec khac
+ * han nhau, nen chu cung phai khac:
+ *
+ * - **File goc** — khach CHON: luot qua vai tram tam, tha tim tam nao muon in.
+ *   Cau hoi dung la "chon xong chua ạ?".
+ * - **Hoan thien / PTS** — khach DUYET: Hamita da chinh xong roi, khach xem
+ *   lai va gat dau de mang di in. Hoi "chon xong chua" o day la hoi sai viec.
+ *
+ * Nhan dang bang TEN THU MUC vi do la thu duy nhat co san — thu muc con khong
+ * co ban ghi nao trong database (nguyen tac 4, 32), va bat studio danh dau tay
+ * tung thu muc thi se co ngay quen.
+ *
+ * Doi lai phai chap nhan: studio doi ten thu muc tren Drive la doi luon chu
+ * khach doc. Do cung la ly do bo dau va khong phan biet hoa thuong — "Hoàn
+ * thiện", "hoan thien", "HOÀN THIỆN", "Pts", "pts" deu phai an nhu nhau.
+ */
+export function laMucHoanThien(tenMuc: string): boolean {
+  return DAU_HIEU_HOAN_THIEN.test(boDau(tenMuc));
+}

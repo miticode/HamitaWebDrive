@@ -16,11 +16,18 @@ export function GalleryHeader({
   backHref,
   backLabel,
   total,
+  hoanThien = false,
 }: {
   title: string;
   backHref: string | null;
   backLabel: string;
   total: number;
+  /**
+   * Thư mục ảnh đã chỉnh xong — khách DUYỆT chứ không chọn, nên câu hỏi khác.
+   * Phải đổi cùng lúc với khối cuối trang (XacNhanXong): hai chỗ nói về đúng
+   * một việc, để lệch nhau là khách đọc trên một kiểu, đọc dưới một kiểu.
+   */
+  hoanThien?: boolean;
 }) {
   const {
     lists,
@@ -97,12 +104,14 @@ export function GalleryHeader({
   } else if (tongSoDaChon > 0) {
     muc.push(
       <span key="hoi">
-        Anh chị chọn xong {tongSoDaChon} tấm rồi phải không ạ?{" "}
+        {hoanThien
+          ? `Anh chị ưng ${tongSoDaChon} tấm này rồi phải không ạ? `
+          : `Anh chị chọn xong ${tongSoDaChon} tấm rồi phải không ạ? `}
         <button
           onClick={() => baoDaXong(true)}
           className="font-medium text-accent underline underline-offset-2 hover:text-fg"
         >
-          Báo cho Hamita
+          {hoanThien ? "Đã ok, báo Hamita để in" : "Báo cho Hamita"}
         </button>
       </span>
     );

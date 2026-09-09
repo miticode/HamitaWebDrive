@@ -17,8 +17,26 @@ import { useSelection } from "./Selection";
  * Noi RO TEN THU MUC dang bao. Trang thai "da chon xong" tinh rieng tung thu
  * muc (nguyen tac 20), nen mot khoi chi noi chung chung "da xong" se lam khach
  * tuong minh vua bao xong ca album — roi khong quay lai nhung thu muc con lai.
+ *
+ * HAI BO CHU cho hai loai thu muc (studio yeu cau 09/09/2026), xem
+ * `laMucHoanThien()` trong constants.ts:
+ *
+ * - Thu muc FILE GOC — khach dang CHON: "chọn xong thư mục X chưa ạ?"
+ * - Thu muc HOAN THIEN / PTS — anh da chinh xong, khach dang DUYET:
+ *   "xem thư mục X ưng chưa ạ?" va nut "Đã ok, báo Hamita để in".
+ *
+ * Chi doi CAU CHU, khong doi cach chay: van la mot lan bam bao xong, van ghi
+ * vao dung bang MucXong nhu cu. Hoi sai viec moi la cai lam khach ngap ngung,
+ * chu khong phai co che.
  */
-export function XacNhanXong({ tenMuc }: { tenMuc: string }) {
+export function XacNhanXong({
+  tenMuc,
+  hoanThien,
+}: {
+  tenMuc: string;
+  /** Thư mục ảnh đã chỉnh xong — khách duyệt để in, không phải chọn. */
+  hoanThien: boolean;
+}) {
   const { unlocked, tongSoDaChon, daBaoXong, baoXongLuc, baoDaXong } = useSelection();
 
   /*
@@ -53,7 +71,8 @@ export function XacNhanXong({ tenMuc }: { tenMuc: string }) {
             Hamita đã nhận được rồi ạ
           </p>
           <p className="mt-1.5 text-[13px] leading-relaxed text-emerald-800">
-            Anh chị đã báo xong thư mục <strong className="font-medium">{tenMuc}</strong>
+            {hoanThien ? "Anh chị đã duyệt thư mục " : "Anh chị đã báo xong thư mục "}
+            <strong className="font-medium">{tenMuc}</strong>
             {baoXongLuc &&
               ` lúc ${new Date(baoXongLuc).toLocaleString("vi-VN", {
                 hour: "2-digit",
@@ -61,7 +80,9 @@ export function XacNhanXong({ tenMuc }: { tenMuc: string }) {
                 day: "2-digit",
                 month: "2-digit",
               })}`}
-            . Hamita bắt tay vào làm liền đây ạ.
+            {hoanThien
+              ? ". Hamita mang đi in liền đây ạ."
+              : ". Hamita bắt tay vào làm liền đây ạ."}
           </p>
 
           <p className="mt-4 text-[13px] leading-relaxed text-emerald-800">
@@ -84,12 +105,22 @@ export function XacNhanXong({ tenMuc }: { tenMuc: string }) {
       <div className="rounded-lg border border-accent/40 bg-bg-raised px-6 py-7 text-center">
         <p className="eyebrow">Bước cuối cùng</p>
         <p className="mt-3 font-display text-xl leading-snug font-light">
-          Anh chị chọn xong thư mục <span className="italic">{tenMuc}</span> chưa ạ?
+          {hoanThien ? (
+            <>
+              Anh chị xem thư mục <span className="italic">{tenMuc}</span> ưng chưa ạ?
+            </>
+          ) : (
+            <>
+              Anh chị chọn xong thư mục <span className="italic">{tenMuc}</span> chưa ạ?
+            </>
+          )}
         </p>
         <p className="mt-2.5 text-[13px] leading-relaxed text-fg-muted">
           Anh chị đang chọn <strong className="font-medium text-fg">{tongSoDaChon} tấm</strong> ở
-          thư mục này. Bấm nút dưới đây báo cho Hamita một tiếng là Hamita nhận được ngay và
-          bắt tay vào làm liền ạ.
+          thư mục này.{" "}
+          {hoanThien
+            ? "Ưng rồi thì bấm nút dưới đây, Hamita mang đi in liền ạ."
+            : "Bấm nút dưới đây báo cho Hamita một tiếng là Hamita nhận được ngay và bắt tay vào làm liền ạ."}
         </p>
 
         {/*
@@ -102,7 +133,9 @@ export function XacNhanXong({ tenMuc }: { tenMuc: string }) {
           onClick={() => baoDaXong(true)}
           className="btn-primary mt-5 w-full text-sm"
         >
-          Báo cho Hamita — đã chọn xong {tongSoDaChon} tấm
+          {hoanThien
+            ? "Đã ok, báo Hamita để in"
+            : `Báo cho Hamita — đã chọn xong ${tongSoDaChon} tấm`}
         </button>
 
         <p className="mt-3 text-xs leading-relaxed text-fg-faint">

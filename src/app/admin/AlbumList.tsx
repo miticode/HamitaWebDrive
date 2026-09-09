@@ -1,6 +1,7 @@
 "use client";
 
 import { useDeferredValue, useMemo, useState, type ReactNode } from "react";
+import { boDau as bo_dau } from "@/lib/constants";
 import { MA_ALBUM } from "@/lib/maAlbum";
 import type { BiaMuc, Gallery, ListCount, MucXong } from "@/lib/store";
 import { GalleryCard } from "./GalleryCard";
@@ -16,19 +17,6 @@ const NHAN = MA_ALBUM.map((m) => m.ma);
 
 /** Hien bao nhieu the truoc khi phai bam "xem them". */
 const TRANG = 24;
-
-/**
- * Bo dau tieng Viet de go khong dau van tim ra.
- * Khong co buoc nay thi go "ngoc tho" se khong khop voi "Ngọc Thơ" — ma nhan
- * vien go dau du thi rat it.
- */
-function bo_dau(s: string): string {
-  return s
-    .replace(/[đĐ]/g, "d")
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase();
-}
 
 /** Chuoi de doi chieu cho mot album: ten khach, ten thu muc goc, duong dan, ten cac thu muc con. */
 function kho_chu(g: Gallery): string {
