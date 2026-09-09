@@ -112,6 +112,33 @@ export async function moKhayChiaSeNhieu(files: File[]): Promise<KetQuaChiaSe> {
 }
 
 /**
+ * Tải THẲNG một tấm từ máy chủ — không đi qua bộ nhớ trang.
+ *
+ * PHẢI gọi NGAY trong cú chạm của khách, không được có `await` nào phía trước.
+ * Đó là cả lý do hàm này tồn tại: Chrome trên Android **chặn im lặng** mọi
+ * lượt tải không gắn với một cú chạm còn hiệu lực. Cách cũ tải ảnh về bộ nhớ
+ * trước (`taiTep`) rồi mới bấm thẻ — mà tải một tấm gốc qua 4G mất vài giây,
+ * tới lúc bấm thì cú chạm đã hết hạn nên máy bỏ qua, khách bấm mà không thấy
+ * gì xảy ra. Anh báo ngày 09/09/2026.
+ *
+ * Trỏ thẳng vào `/api/download` được vì route đó đã trả kèm
+ * `Content-Disposition: attachment` và đúng tên tệp — trình duyệt tự lo phần
+ * còn lại bằng trình quản lý tải của nó, kèm luôn thanh tiến độ và thông báo
+ * khi xong. Nhẹ hơn hẳn: không giữ tấm ảnh nào trong bộ nhớ trang.
+ *
+ * KHÔNG dùng được trên iPhone — ở đó thẻ tải xuống không chạy, phải đi khay
+ * chia sẻ (nguyên tắc 44, 46).
+ */
+export function taiThang(fileId: string, ten: string, slug: string): void {
+  const a = document.createElement("a");
+  a.href = `/api/download/${fileId}?slug=${encodeURIComponent(slug)}`;
+  a.download = ten;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+/**
  * Cách tải thông thường — máy tính và Android. Trên iPhone ảnh vào app Tệp.
  *
  * `giuMs`: giữ đường dẫn tạm bao lâu rồi mới thu hồi. Mặc định 10 giây cho một

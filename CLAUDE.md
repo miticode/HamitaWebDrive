@@ -702,6 +702,32 @@ không phải *"ảnh đã nằm trong app Ảnh"*.
 "Tải nhiều tệp?" của Chrome trên Android. **Cần studio thử bằng một iPhone và
 một máy Android thật.**
 
+**TRÊN ANDROID, THẺ TẢI XUỐNG CHỈ CHẠY TRONG CÚ CHẠM CỦA KHÁCH.** Anh báo ngày
+09/09/2026: bấm nút tải một tấm ảnh trên điện thoại Android thì **không có gì
+xảy ra**, ảnh không lưu được.
+
+Nguyên nhân: nút đó tải cả tấm ảnh về bộ nhớ trước (`taiTep`) rồi mới bấm thẻ
+`<a download>`. Tải một tấm gốc qua 4G mất vài giây — tới lúc bấm thẻ thì cú
+chạm đã hết hiệu lực, và Chrome trên Android **chặn im lặng** những lượt tải
+không gắn với một cú chạm còn hiệu lực. Không báo lỗi, không nhật ký, khách chỉ
+thấy bấm mà không có gì.
+
+Cách chữa là `taiThang()` trong `taiAnh.ts`: trỏ thẻ **thẳng vào
+`/api/download`** và bấm **ngay trong cú chạm**, không `await` gì phía trước.
+Route đó vốn đã trả kèm `Content-Disposition: attachment` và đúng tên tệp nên
+trình duyệt tự lo phần còn lại — kèm luôn thanh tiến độ và thông báo của chính
+nó. Nhẹ hơn hẳn: không giữ tấm ảnh nào trong bộ nhớ trang.
+
+Đo sau khi sửa (giả lập Android): thẻ được bấm **0ms** sau cú chạm, đúng đường
+`/api/download/<id>?slug=…` với `download="TRI02365.jpg"`, và máy chủ nhận thật
+— `luotTai` của album nhích đúng 1 (đã trả lại số cũ sau khi đo).
+
+**Quy tắc rút ra: mọi lượt tải trên điện thoại phải nổ ra trong chính cú chạm.**
+Cần dữ liệu trước khi tải thì đó là dấu hiệu đi sai đường — hãy để máy chủ giao
+thẳng, đừng gom vào bộ nhớ trang rồi giao lại. (Riêng iPhone bắt buộc phải gom
+trước vì đi qua khay chia sẻ; đổi lại chấp nhận cảnh "cho-cham" — mời khách
+chạm thêm một cái.)
+
 **Trình duyệt nhúng dùng để chạy thử KHÔNG có Web Share API** — đo lại ngày
 07/09/2026: `navigator.share` và `navigator.canShare` đều là `undefined` ngay
 trên localhost dù `isSecureContext` bằng true. Nên mọi nhánh khay chia sẻ không

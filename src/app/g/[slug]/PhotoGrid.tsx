@@ -2,7 +2,14 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelection, type ClientList } from "./Selection";
-import { coKhayChiaSe, laIOS, luuQuaThe, moKhayChiaSe, taiTep } from "./taiAnh";
+import {
+  coKhayChiaSe,
+  laIOS,
+  luuQuaThe,
+  moKhayChiaSe,
+  taiTep,
+  taiThang,
+} from "./taiAnh";
 
 export type ClientPhoto = {
   id: string;
@@ -638,6 +645,24 @@ function NutTai({ photo }: { photo: ClientPhoto }) {
 
   const xuLy = useCallback(async () => {
     if (trangThai === "dang-tai") return;
+
+    /*
+      MÁY KHÔNG PHẢI iPHONE: bấm thẻ tải xuống NGAY TRONG CÚ CHẠM này, trỏ
+      thẳng vào máy chủ. Không `await` gì trước đó — đây là điều kiện sống còn
+      trên Android.
+
+      Bản cũ tải cả tấm ảnh về bộ nhớ rồi mới bấm thẻ. Tải một tấm gốc qua 4G
+      mất vài giây, tới lúc bấm thì cú chạm của khách đã hết hiệu lực, và
+      Chrome trên Android CHẶN IM LẶNG những lượt tải như vậy — khách bấm mà
+      không thấy gì xảy ra. Anh báo ngày 09/09/2026.
+
+      Đổi lại còn nhẹ hơn: không giữ tấm nào trong bộ nhớ trang, và khách được
+      dùng thanh tiến độ với thông báo của chính trình duyệt.
+    */
+    if (!laIOS()) {
+      taiThang(photo.id, photo.name, slug);
+      return;
+    }
 
     /*
       Tệp đã tải rồi thì mở khay ngay trong cú chạm này, không chèn thêm await
