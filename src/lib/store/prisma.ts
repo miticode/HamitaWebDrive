@@ -16,6 +16,7 @@ import {
   type ToggleSelectionInput,
 } from "./shared";
 import { hanMacDinh } from "@/lib/constants";
+import { xoaMocCuaAlbum } from "@/lib/moc";
 
 /** Kho du lieu tren Postgres (Neon) — dung khi da dat DATABASE_URL. */
 
@@ -163,6 +164,15 @@ export const prismaStore: Store = {
   async deleteGallery(id: string) {
     // Cac bang con khai bao onDelete: Cascade nen xoa theo day chuyen.
     await getPrisma().gallery.delete({ where: { id } });
+
+    /*
+      Bang `Moc` KHONG nam trong day chuyen do — no khong co quan he nao toi
+      Gallery — nen phai don tay, khong thi dau moc "da gui thong bao" va "da
+      doc thong bao" cua album nay nam lai vinh vien. Xem xoaMocCuaAlbum().
+
+      Dat SAU khi xoa album: xoa album that bai thi khong nen dong dau moc di.
+    */
+    await xoaMocCuaAlbum(id);
   },
 
   async getLists(galleryId: string) {

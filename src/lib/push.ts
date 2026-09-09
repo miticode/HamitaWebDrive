@@ -121,17 +121,12 @@ export async function guiChoAlbum(
   return { daGui, daXoa: hong.length };
 }
 
-/** Đếm xem album này có bao nhiêu máy đang chờ nhận tin. */
-export async function demNguoiNhan(galleryId: string): Promise<number> {
-  if (!databaseIsConfigured() || !pushDaBat()) return 0;
-  return getPrisma().pushSub.count({ where: { galleryId } });
-}
-
 /**
  * Đếm máy đang chờ cho MỌI album một lượt, trả về bảng tra theo id.
  *
- * Trang quản lý cần con số này cho từng thẻ. Gọi `demNguoiNhan` mười sáu lần
- * là mười sáu lượt hỏi database cho một con số nhỏ — một phép gộp là đủ.
+ * Trang quản lý cần con số này cho từng thẻ. Đếm riêng từng album là ba mươi
+ * lượt hỏi database cho một con số nhỏ — một phép gộp là đủ. (Bản đếm-một-album
+ * `demNguoiNhan()` đã gỡ ngày 09/09/2026 vì không còn chỗ nào gọi.)
  */
 export async function demNguoiNhanMoiAlbum(): Promise<Record<string, number>> {
   if (!databaseIsConfigured() || !pushDaBat()) return {};

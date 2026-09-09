@@ -70,6 +70,34 @@ export async function docLanBaoTinMoiAlbum(): Promise<Record<string, Date>> {
   }
 }
 
+/**
+ * Xoa moi dau moc dinh toi mot album, goi khi xoa album do.
+ *
+ * VI SAO PHAI GOI TAY: cac bang con (MucXong, BiaMuc, PushSub...) deu khai
+ * `onDelete: Cascade` nen tu bien mat theo album. Bang `Moc` thi KHONG co quan
+ * he nao toi Gallery — no chi la mot bang khoa/gia tri dung chung — nen dong
+ * cua no nam lai vinh vien sau khi album da xoa.
+ *
+ * Da xay ra that: do ngay 09/09/2026 thay mot dong `bao-tin:` tro toi album
+ * khong con ton tai. Moi dong rac chi vai chuc byte, nhung chung chi tang chu
+ * khong bao gio giam, va lam moi phep dem tren bang Moc sai dan.
+ *
+ * Doi chieu bang `contains` chu khong theo tung tien to: khoa dinh toi album
+ * hien co hai dang — `bao-tin:<id>` (nguyen tac 47) va `da-doc-tb:goi-<id>`,
+ * `da-doc-tb:xong-<id>-<n>`... (nguyen tac 39) — va se con them dang moi. Ma
+ * album la cuid dai 25 ky tu nen khong the trung nham voi khoa nao khac.
+ *
+ * Nuot loi: album da xoa roi thi khong duoc bao that bai chi vi don dep hut.
+ */
+export async function xoaMocCuaAlbum(galleryId: string): Promise<void> {
+  if (!databaseIsConfigured()) return;
+  try {
+    await getPrisma().moc.deleteMany({ where: { ten: { contains: galleryId } } });
+  } catch {
+    // Cung ly do voi docMoc: ban cu co the chua co bang Moc.
+  }
+}
+
 /** Lan cuoi lam viec nay la luc nao. null = chua lan nao. */
 export async function docMoc(ten: string): Promise<Date | null> {
   if (!databaseIsConfigured()) return null;

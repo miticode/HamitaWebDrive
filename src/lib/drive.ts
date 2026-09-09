@@ -107,12 +107,6 @@ async function driveFetch(path: string, params: Record<string, string>) {
 
 const ID_RE = /^[A-Za-z0-9_-]{10,}$/;
 
-/** "root" la bi danh Google dat cho thu muc goc My Drive. */
-const MY_DRIVE_ROOT = "root";
-function isFolderId(value: string): boolean {
-  return value === MY_DRIVE_ROOT || ID_RE.test(value);
-}
-
 /** Tach folder ID tu duong link Drive (hoac nhan luon ID neu dan ID). */
 export function parseFolderId(input: string): string | null {
   const value = input.trim();
@@ -180,38 +174,6 @@ function toPhoto(f: DriveEntry, section: string | null): DrivePhoto {
   };
 }
 
-/**
- * Liet ke toan bo anh trong folder, di vao ca thu muc con.
- * Anh trong thu muc con duoc gan `section` = ten thu muc do, de trang xem
- * chia thanh tung muc cho khach.
- */
-export async function listImages(folderId: string): Promise<DrivePhoto[]> {
-  if (!isFolderId(folderId)) throw new Error("Folder ID khong hop le.");
-
-  const photos: DrivePhoto[] = [];
-
-  async function walk(id: string, section: string | null, depth: number) {
-    if (depth > MAX_DEPTH || photos.length >= MAX_PHOTOS) return;
-
-    const entries = await listChildren(id);
-    const subfolders: DriveEntry[] = [];
-
-    for (const f of entries) {
-      if (f.mimeType === FOLDER_MIME) subfolders.push(f);
-      // Bo qua file rac nhu Thumbs.db, .DS_Store — chi nhan mimeType anh.
-      else if (f.mimeType.startsWith("image/")) photos.push(toPhoto(f, section));
-    }
-
-    for (const sub of subfolders) {
-      // Chi lay ten thu muc con cap 1 lam ten muc, cac cap sau gop vao cung muc
-      // de khong sinh ra qua nhieu tab cho khach.
-      await walk(sub.id, section ?? sub.name, depth + 1);
-    }
-  }
-
-  await walk(folderId, null, 0);
-  return photos.slice(0, MAX_PHOTOS);
-}
 
 export async function getFolderName(folderId: string): Promise<string> {
   const res = await driveFetch(`/files/${encodeURIComponent(folderId)}`, {
@@ -372,22 +334,5 @@ async function mapLimit<T, R>(
   return results;
 }
 
-
-/**
- * Chi liet ke thu muc con cap 1, khong di sau vao trong.
- * Dung cho trang quan tri: chi mot lan goi Drive cho moi gallery, nen danh sach
- * co bao nhieu album cung khong cham. Muon dem ca so anh thi phai duyet het cay,
- * tot kem hon nhieu.
- */
-export async function listSubfolders(
-  folderId: string
-): Promise<Array<{ id: string; name: string }>> {
-  if (!isFolderId(folderId)) throw new Error("Folder ID khong hop le.");
-
-  const entries = await listChildren(folderId);
-  return entries
-    .filter((f) => f.mimeType === FOLDER_MIME)
-    .map((f) => ({ id: f.id, name: f.name }));
-}
 
 export { mapLimit };

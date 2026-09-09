@@ -1095,6 +1095,15 @@ Dòng biến mất **ngay khi bấm**, không đợi máy chủ trả lời: cù
 một dấu tích và thông báo hiện lại ở lần tải sau, không đáng để studio ngồi
 nhìn một vòng xoay.
 
+**BẢNG `Moc` KHÔNG NẰM TRONG DÂY CHUYỀN XOÁ — phải dọn tay.** Mọi bảng con
+(`MucXong`, `BiaMuc`, `PushSub`, `SelectionList`…) đều khai `onDelete: Cascade`
+nên tự biến mất theo album. `Moc` thì không có quan hệ nào tới `Gallery` — nó
+chỉ là một bảng khoá/giá trị dùng chung — nên dòng của nó **nằm lại vĩnh viễn**
+sau khi album đã xoá. Đã xảy ra thật: rà ngày 09/09/2026 thấy một dòng
+`bao-tin:` trỏ tới album không còn tồn tại. `deleteGallery` nay gọi
+`xoaMocCuaAlbum()` ngay sau khi xoá album; đối chiếu bằng `contains` mã album
+nên **thêm tiền tố mới cũng tự được dọn**, không phải nhớ sửa thêm chỗ nào.
+
 **Id của thông báo "khách chọn thêm" mang theo SỐ TẤM** (`them-<id>-<soTam>`).
 Đánh dấu đã đọc là tắt nó đi, nhưng nếu khách chọn **thêm nữa** thì phải báo
 lại — không thì lại giao in thiếu mà không ai biết. Số tấm đổi thì id đổi, dấu
@@ -1231,6 +1240,17 @@ thật chứ không phải khó tính:
   đụng state**, mỗi nơi gọi tự quyết định lúc nào bật đèn "đang tải"
   (`CoverPicker.tsx`). Lưu ý ESLint không phân tích xuyên hàm: gọi một hàm có
   `setState` bên trong từ effect vẫn bị bắt, dù `setState` đó nằm sau `await`.
+
+**Một byte NUL lẫn vào mã nguồn làm CẢ TỆP tàng hình với mọi lệnh tìm kiếm.**
+Tìm ra ngày 09/09/2026: `CoverPicker.tsx` có một byte `0x00` nằm trong chuỗi ở
+dòng 11 (`const CA_ALBUM = "\0ca-album"`). Chương trình vẫn chạy đúng vì hằng số
+đó chỉ so với chính nó, nhưng `file` nhận cả tệp là **nhị phân**, nên `grep`
+và mọi công cụ dò theo dòng đều **bỏ qua tệp này** — chỉ in
+*"Binary file … matches"*. Hệ quả: tìm một đoạn mã trong cả kho sẽ tưởng tệp đó
+không có gì, và một buổi rà soát có thể bỏ sót nguyên một tệp.
+
+Cách phát hiện nhanh: `file src/**/*.tsx` — tệp lành phải là *"Unicode text,
+UTF-8 text"*, tệp hỏng ra *"data"*. Sửa = lọc bỏ byte 0, không cần viết lại gì.
 
 **State cũ trong closure khi vừa set state vừa gọi lại hàm trong cùng lượt
 bấm.** React chưa kịp cập nhật state trước khi hàm chạy lại, đọc phải giá trị
