@@ -1,4 +1,4 @@
-import { MUI_GIO } from "./constants";
+import { MUI_GIO, tien } from "./constants";
 import { STUDIO } from "./studio";
 
 /*
@@ -28,11 +28,6 @@ export type CauHoi = {
   /** Câu trả lời. Xuống dòng bằng "\n", giao diện giữ nguyên. */
   dap: string;
 };
-
-/** Viết 12000 thành "12.000" — cách viết tiền quen thuộc với người Việt. */
-function tien(so: number): string {
-  return so.toLocaleString("vi-VN");
-}
 
 /**
  * "05/12/2026" theo GIỜ STUDIO, không theo giờ máy đang mở trang (nguyên tắc 35).

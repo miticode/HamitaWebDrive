@@ -9,6 +9,24 @@
   duyệt, khách phải nhấn giữ rồi chọn "Lưu vào Ảnh" — ba bước.
 */
 
+/**
+ * Viết dung lượng cho khách đọc: "931 MB", "1,3 GB".
+ *
+ * Dấu PHẨY thập phân, không phải dấu chấm — người Việt đọc "1,3 GB". Dưới 1 GB
+ * thì làm tròn hẳn về MB: khách không cần biết 931,4 MB, và số lẻ ở đó chỉ làm
+ * nút dài thêm.
+ *
+ * Để ở đây vì cả hai nút tải đều dùng — `NutTaiFolder` (máy tính, file nén) và
+ * `TaiTungTam` (điện thoại, từng tấm). Trước ngày 09/09/2026 hàm này bị chép y
+ * hệt ở cả hai; đổi cách viết một bên là hai nút hiện hai kiểu cho cùng một
+ * thư mục.
+ */
+export function dungLuong(byte: number): string {
+  if (byte >= 1024 ** 3)
+    return `${(byte / 1024 ** 3).toFixed(1).replace(".", ",")} GB`;
+  return `${Math.round(byte / 1024 ** 2)} MB`;
+}
+
 /** Một tấm ảnh trong thư mục, đủ thông tin để tải về và đặt tên. */
 export type AnhTrongFolder = {
   id: string;

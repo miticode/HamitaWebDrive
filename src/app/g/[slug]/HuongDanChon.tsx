@@ -1,7 +1,4 @@
-/** Viết 12000 thành "12.000" — cách viết tiền quen thuộc với người Việt. */
-function tien(so: number): string {
-  return so.toLocaleString("vi-VN");
-}
+import { tien } from "@/lib/constants";
 
 /**
  * Ba bước hướng dẫn khách chọn ảnh, đặt ngay trên lưới ảnh.

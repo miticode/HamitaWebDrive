@@ -3,8 +3,8 @@
 Tài liệu này để dán vào đầu một cuộc trò chuyện mới, giúp phía hỗ trợ nắm được
 toàn bộ bối cảnh mà không phải hỏi lại từ đầu.
 
-Cập nhật: **07/09/2026**. Web chạy tại **https://www.hamitastudio.com** trên
-gói Vercel **Pro**, đang phục vụ **25 album** với **1.017 lựa chọn** của khách.
+Cập nhật: **09/09/2026**. Web chạy tại **https://www.hamitastudio.com** trên
+gói Vercel **Pro**, đang phục vụ **30 album** với **1.362 lựa chọn** của khách.
 Hạ tầng khoẻ: 16/16 phép kiểm domain đạt, không còn việc nào ở mức đỏ hay cam.
 
 **Đợt 03–07/09** sửa ba lỗi thật ảnh hưởng khách (Android không cài được app,
@@ -671,7 +671,7 @@ Hệ quả nếu để đầy hẳn: Google dùng chung một kho cho Drive, Gma
 của cả Neon lẫn Vercel. Mất thư là mất đường khôi phục mật khẩu.
 
 **🟡 Sao lưu chưa chạy tự động.**
-Đo 07/09: lần gần nhất **9 ngày trước**. Lệnh và nút đều có, mốc trên trang quản
+Đo 09/09: lần gần nhất **11 ngày trước**. Lệnh và nút đều có, mốc trên trang quản
 lý cập nhật đúng cho cả hai đường. Lịch tự động thì chưa đặt — lệnh PowerShell
 nằm trong `README.md`; giới hạn của nó là chỉ chạy khi máy bật.
 
@@ -723,20 +723,20 @@ hiểu nhầm hai nút tim/tick. Khung Thông báo đã nói rõ trường hợp
 hỏi lại, nhưng **giao diện chọn ảnh chưa làm gì để tránh nhầm lẫn từ đầu**.
 
 
-## 9. Trạng thái hiện tại (đo thật 07/09/2026)
+## 9. Trạng thái hiện tại (đo thật 09/09/2026)
 
 | Số liệu | Giá trị |
 |---|---:|
-| Album | **25** |
-| Ảnh (số đã chụp lại trong database) | **16.046** |
-| Lựa chọn của khách | **1.017** |
-| Máy đăng ký nhận thông báo đẩy | **20** |
-| Tấm khách đã tải về | **1.707** |
-| Album khách đã báo chọn xong | **10** |
+| Album | **30** |
+| Ảnh (số đã chụp lại trong database) | **18.874** |
+| Lựa chọn của khách | **1.362** |
+| Máy đăng ký nhận thông báo đẩy | **27** |
+| Tấm khách đã tải về | **7.097** |
+| Album khách đã báo chọn xong | **16** |
 | Album chưa đặt gói ảnh | **1** (tiệc sn Ngọc Trinh) |
 | Album quá hạn giữ ảnh | **0** |
 | Album mất mã bảo vệ | **0** |
-| Sao lưu gần nhất | **9 ngày trước** |
+| Sao lưu gần nhất | **11 ngày trước** |
 
 Số ảnh, dung lượng và khu trên trang giới thiệu của từng album xem trong trang
 quản lý — đọc ở đây thì lỗi thời ngay sau lần "Làm mới" kế tiếp.

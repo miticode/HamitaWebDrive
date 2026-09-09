@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   coKhayChiaSeNhieu,
+  dungLuong,
   luuQuaThe,
   moKhayChiaSeNhieu,
   taiTep,
@@ -85,12 +86,6 @@ type Trang =
   | "xong"
   | "khong-ho-tro"
   | "loi";
-
-function dungLuong(byte: number): string {
-  if (byte >= 1024 ** 3)
-    return `${(byte / 1024 ** 3).toFixed(1).replace(".", ",")} GB`;
-  return `${Math.round(byte / 1024 ** 2)} MB`;
-}
 
 function nghi(ms: number): Promise<void> {
   return new Promise((xong) => setTimeout(xong, ms));

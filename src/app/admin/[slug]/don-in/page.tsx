@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
-import { STUDIO_NAME } from "@/lib/constants";
-import { maSoFile, tien, tinhTienIn } from "@/lib/anhIn";
+import { STUDIO_NAME, tien } from "@/lib/constants";
+import { maSoFile, tinhTienIn } from "@/lib/anhIn";
 import {
   getGalleryBySlug,
   getLists,

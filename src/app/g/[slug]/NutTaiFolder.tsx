@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { downloadZip } from "client-zip";
 import {
   coKhayChiaSe,
+  dungLuong,
   giaoTepChoKhach,
   laAndroid,
   laIOS,
@@ -68,11 +69,6 @@ function duongDanTrongZip(anh: AnhTrongFolder, daDung: Set<string>): string {
   }
   daDung.add(ten);
   return ten;
-}
-
-function dungLuong(byte: number): string {
-  if (byte >= 1024 ** 3) return `${(byte / 1024 ** 3).toFixed(1).replace(".", ",")} GB`;
-  return `${Math.round(byte / 1024 ** 2)} MB`;
 }
 
 type LuuTep = (tuyChon: {

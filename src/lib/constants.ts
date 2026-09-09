@@ -56,6 +56,23 @@ export const TRAN_DIEM_ANH = 2_000_000_000;
 export const GIA_ANH_THEM_MAC_DINH = 12_000;
 
 /**
+ * Viet 12000 thanh "12.000" — cach viet tien quen thuoc voi nguoi Viet.
+ *
+ * De o day vi CA HAI PHIA cung dung: trang quan ly (o dat goi, don giao in) va
+ * trang khach (khoi goi anh, khung hoi dap). Truoc ngay 09/09/2026 ham nay bi
+ * chep y het ra BON cho — anhIn.ts, GoiAnh.tsx, HuongDanChon.tsx, hoiDap.ts —
+ * moi ban ba dong giong nhau. Doi cach viet tien thi phai nho sua ca bon, ma
+ * quen mot cho la hai trang hien hai kieu so cho cung mot gia (nguyen tac 15).
+ *
+ * `constants.ts` la cho dung: no khong nhap gi ca nen may khach nhap vao cung
+ * an toan (nguyen tac 43), va hang so gia `GIA_ANH_THEM_MAC_DINH` ngay tren
+ * cung mot cap.
+ */
+export function tien(so: number): string {
+  return so.toLocaleString("vi-VN");
+}
+
+/**
  * So ngay giu anh mac dinh — sau moc nay studio du dinh xoa anh khoi Drive.
  * Chi la loi nhac de khach tranh thu tai; het han khong tu chan link.
  */

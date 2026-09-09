@@ -1,14 +1,22 @@
 /**
  * Tinh tien don giao in.
  *
- * QUY TAC LAY TU DUNG LOI DA NOI VOI KHACH, khong duoc tu dat lai. Buoc 02
+ * QUY TAC LAY TU DUNG LOI DA NOI VOI KHACH, khong duoc tu dat lai. Buoc 01
  * trong huong dan chon anh (HuongDanChon.tsx) viet nguyen van:
  *
  *   "Thay tam nao ung, anh chi bam TRAI TIM de Hamita IN RA nhe. Con DAU TICK
  *    danh cho nhung tam anh chi muon GIU RIENG cho minh."
  *
- *   "Goi cua anh chi co N tam in. Lo thuong them tam nao ngoai goi thi cu chon
- *    thoai mai, moi tam 12.000d da gom ca chinh sua lan in."
+ * Va khoi goi anh ngay duoi luoi anh, ba gach dau dong:
+ *
+ *   "Goi cua anh chi can tim N tam."
+ *   "Ghi chu vao anh: anh cong, anh ban, anh bia,..."
+ *   "Chi phi phat sinh them tren moi tam anh la 12.000d da gom chinh sua va in a."
+ *
+ * DOI CAU CHU PHIA KHACH THI PHAI SUA LAI DOAN TRICH NAY. Ca gia tri cua no
+ * nam o cho no la ban sao chinh xac cua loi da noi voi khach — trich sai thi
+ * nguoi doc sau se suy ra quy tac tu mot cau khong con ai thay tren man hinh.
+ * Doan cu o day da lech 2 ngay (studio doi cau chu 07/09, phat hien 09/09).
  *
  * Suy ra ba dieu, va don in phai theo dung ba dieu do:
  *
@@ -62,7 +70,3 @@ export function maSoFile(tenFile: string): string {
   return khongDuoi.replace(/^[^\d]+/, "") || khongDuoi;
 }
 
-/** Viet 12000 thanh "12.000" — cach viet tien quen thuoc voi nguoi Viet. */
-export function tien(so: number): string {
-  return so.toLocaleString("vi-VN");
-}

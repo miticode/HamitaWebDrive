@@ -2,12 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { tien } from "@/lib/constants";
 import { setGoiAnhAction } from "./actions";
-
-/** Viết 12000 thành "12.000" cho dễ đọc, dùng dấu chấm như cách viết tiền Việt. */
-function tien(so: number): string {
-  return so.toLocaleString("vi-VN");
-}
 
 /**
  * Số ảnh in đã bao gồm trong gói khách mua.
