@@ -728,6 +728,37 @@ thẳng, đừng gom vào bộ nhớ trang rồi giao lại. (Riêng iPhone bắ
 trước vì đi qua khay chia sẻ; đổi lại chấp nhận cảnh "cho-cham" — mời khách
 chạm thêm một cái.)
 
+**TRÌNH DUYỆT NHÚNG CỦA MESSENGER/ZALO NUỐT LƯỢT TẢI.** Anh gặp thật ngày
+09/09/2026, và đây là ca nặng nhất trong cả chuỗi lỗi tải ảnh: mở link từ
+Messenger, bấm "Tải tất cả", thanh tiến độ chạy đủ 115 tấm, khung báo **"Đã
+lưu xong 6 tấm ạ"** — mà trong máy **không có lấy một tấm**.
+
+Hai lỗi chồng nhau, và cái thứ hai mới đáng sợ:
+
+1. Trình duyệt nhúng (Messenger, Facebook, Zalo, Instagram) không thực thi
+   lượt tải — nhất là qua đường dẫn tạm `blob:`. Không lỗi, không thông báo.
+2. **Giao diện KHẲNG ĐỊNH một việc nó không hề đo được.** Bản cũ đếm số tấm
+   đã *tải về bộ nhớ trang* rồi ghi "đã lưu xong" — hai chuyện khác hẳn nhau.
+   Khách đọc xong yên tâm đóng máy, tưởng đã có ảnh trong tay.
+
+Ba việc phải giữ, thiếu một là lỗi quay lại:
+
+- **`laTrongUngDungKhac()` trong `taiAnh.ts`** nhận diện trình duyệt nhúng.
+  Trên Android, bấm "Tải tất cả" trong đó thì hiện bảng chỉ đường sang Chrome
+  **trước khi** tải. Phép kiểm này đứng TRƯỚC phép kiểm "bộ nặng" — thứ tự có
+  chủ đích: "trình duyệt này không lưu được gì" là chuyện lớn hơn "bộ này
+  nặng", để sau thì khách ngồi đợi hết 115 tấm rồi mới biết.
+- Vẫn để nút **"Vẫn thử"**. Không phải bản nhúng nào cũng chặn, mà chặn đường
+  của khách khi mình không chắc thì cũng sai.
+- **Câu chữ nói đúng thứ đo được**: "Hamita gửi xong N tấm rồi ạ", không phải
+  "đã lưu xong". Kèm câu chỉ đường khi khách không thấy ảnh. Cùng luật với
+  iPhone ở đoạn ngay trên — web chỉ biết mình đã GIAO, không biết máy đã LƯU.
+
+Đo sau khi sửa (giả lập UA `FB_IAB/Orca-Android`): bảng chỉ đường hiện đúng;
+bấm "Vẫn thử" thì 6 thẻ đầu đều trỏ thẳng `/api/download/<id>?slug=…` kèm đúng
+tên tệp, **không còn một `blob:` nào**, nhãn tiến độ ghi "Đang gửi 6/171 tấm
+về máy".
+
 **Trình duyệt nhúng dùng để chạy thử KHÔNG có Web Share API** — đo lại ngày
 07/09/2026: `navigator.share` và `navigator.canShare` đều là `undefined` ngay
 trên localhost dù `isSecureContext` bằng true. Nên mọi nhánh khay chia sẻ không

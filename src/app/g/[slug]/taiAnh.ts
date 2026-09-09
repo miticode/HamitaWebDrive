@@ -169,6 +169,25 @@ export function laAndroid(): boolean {
   return /Android/i.test(navigator.userAgent);
 }
 
+/**
+ * Đang xem trong trình duyệt NHÚNG của Messenger / Facebook / Zalo / Instagram,
+ * chứ không phải Chrome hay Safari thật.
+ *
+ * Quan trọng với việc tải ảnh: mấy trình duyệt nhúng đó **nuốt lượt tải** —
+ * thẻ `<a download>` bấm xong không có gì xảy ra, không lỗi, không thông báo.
+ * Anh gặp thật ngày 09/09/2026: mở link từ Messenger, thanh tiến độ chạy đủ
+ * 115 tấm, khung báo "Đã lưu xong", mà trong máy không có lấy một tấm.
+ *
+ * Khách của studio mở link từ Zalo/Messenger là chuyện thường ngày, nên đây
+ * KHÔNG phải trường hợp hiếm — phải nói thẳng với khách thay vì để họ chờ.
+ */
+export function laTrongUngDungKhac(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /FBAN|FBAV|FB_IAB|Messenger|Instagram|Zalo|Line\/|MicroMessenger/i.test(
+    navigator.userAgent
+  );
+}
+
 /** Máy iPhone/iPad — nơi thẻ tải xuống không có tác dụng. */
 export function laIOS(): boolean {
   if (typeof navigator === "undefined") return false;

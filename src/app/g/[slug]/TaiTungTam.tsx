@@ -4,9 +4,10 @@ import { useState } from "react";
 import {
   coKhayChiaSeNhieu,
   dungLuong,
-  luuQuaThe,
+  laTrongUngDungKhac,
   moKhayChiaSeNhieu,
   taiTep,
+  taiThang,
   type AnhTrongFolder,
   type KetQuaChiaSe,
 } from "./taiAnh";
@@ -23,9 +24,14 @@ import {
   Hai hệ điều hành đi hai đường khác nhau, vì khả năng của chúng khác nhau
   thật, không phải do chọn cho vui:
 
-  - ANDROID: thẻ tải xuống chạy đúng. Ảnh rơi vào thư mục Tải về, và các app
-    xem ảnh (Google Photos, Thư viện) đều liệt kê thư mục đó thành một album.
-    Nên cứ tải lần lượt từng tấm, khách không phải chạm thêm cái nào.
+  - ANDROID: giao thẳng từng tấm cho trình quản lý tải của máy. Ảnh rơi vào
+    thư mục Tải về, và các app xem ảnh (Google Photos, Thư viện) đều liệt kê
+    thư mục đó thành một album. Khách không phải chạm thêm cái nào.
+
+    HAI ĐIỀU KIỆN, thiếu một là ảnh KHÔNG vào máy mà cũng không báo lỗi:
+    (1) phải trỏ THẲNG vào /api/download, đừng gom vào bộ nhớ rồi giao bằng
+    đường dẫn tạm `blob:`; (2) phải là trình duyệt thật. Trình duyệt nhúng của
+    Messenger/Zalo nuốt luôn lượt tải — xem `laTrongUngDungKhac()`.
 
   - iPHONE: KHÔNG có API nào cho trang web ghi vào app Ảnh, và thẻ tải xuống
     cũng không chạy — đây là giới hạn của iOS chứ không phải chỗ chưa làm.
@@ -67,20 +73,13 @@ const SONG_SONG = 3;
 */
 const NGHI_GIUA_HAI_TAM = 250;
 
-/*
-  Giữ đường dẫn tạm ngắn hơn tấm lẻ (4 giây thay vì 10).
-
-  Ảnh đã nằm sẵn trong bộ nhớ nên trình duyệt lưu xuống gần như tức thì; giữ
-  lâu chỉ khiến hàng chục tấm cùng tồn tại trong bộ nhớ điện thoại một lúc.
-*/
-const GIU_DUONG_DAN_MS = 4000;
-
 /** Từ mức này trở lên thì mời khách chuyển sang máy tính. */
 const NANG_BYTE = 300 * 1024 ** 2;
 
 type Trang =
   | "san-sang"
   | "hoi-nang"
+  | "trong-app"
   | "dang-tai"
   | "cho-cham"
   | "xong"
@@ -153,15 +152,29 @@ export function TaiTungTam({
     return tep;
   }
 
-  /** Android: tải lần lượt, mỗi tấm rơi thẳng vào thư mục Tải về của máy. */
+  /**
+   * Android: giao lần lượt từng tấm cho trình quản lý tải của máy.
+   *
+   * KHÔNG tải về bộ nhớ trang rồi mới giao (cách cũ, hỏng thật ngày
+   * 09/09/2026). Hai lý do đã đo được:
+   *
+   * - Ảnh gom vào bộ nhớ rồi giao bằng đường dẫn tạm (`blob:`) thì trình duyệt
+   *   nhúng của Messenger/Zalo **nuốt luôn**, không lưu gì mà cũng không báo.
+   * - Kể cả Chrome thật cũng chặn lượt tải rơi ra ngoài cú chạm của khách, mà
+   *   tải một tấm gốc qua 4G mất vài giây nên cú chạm luôn hết hạn trước.
+   *
+   * Trỏ thẳng vào `/api/download` thì máy chủ giao file kèm `Content-Disposition`
+   * và trình duyệt tự lo — không giữ tấm nào trong bộ nhớ trang.
+   *
+   * ĐỔI LẠI: không còn biết từng tấm đã lưu xong chưa. Chỉ biết đã GIAO cho máy
+   * bấy nhiêu tấm. Câu chữ phải nói đúng chừng đó, đừng khẳng định "đã lưu".
+   */
   async function chayAndroid(dieuKhien: AbortController) {
     for (let i = 0; i < anh.length; i++) {
-      const tep = await taiTep(anh[i].id, anh[i].name, slug, dieuKhien.signal);
       if (dieuKhien.signal.aborted) return;
-      luuQuaThe(tep, GIU_DUONG_DAN_MS);
+      taiThang(anh[i].id, anh[i].name, slug);
       setXong(i + 1);
       if (i < anh.length - 1) await nghi(NGHI_GIUA_HAI_TAM);
-      if (dieuKhien.signal.aborted) return;
     }
     setTrang("xong");
   }
@@ -221,6 +234,18 @@ export function TaiTungTam({
 
   async function batDau(boQuaCanhBao = false) {
     if (trang === "dang-tai") return;
+
+    /*
+      PHÉP KIỂM NÀY ĐỨNG TRƯỚC phép kiểm "bộ nặng" — thứ tự ở đây quan trọng.
+      "Trình duyệt này không lưu được gì cả" là chuyện lớn hơn "bộ này nặng";
+      để sau thì khách đọc lời cảnh báo về dung lượng, bấm Vẫn tải, ngồi đợi
+      hết 115 tấm rồi mới phát hiện máy không lưu tấm nào.
+    */
+    if (may === "android" && laTrongUngDungKhac() && !boQuaCanhBao) {
+      setTrang("trong-app");
+      return;
+    }
+
     if (nang && !boQuaCanhBao) {
       setTrang("hoi-nang");
       return;
@@ -256,6 +281,41 @@ export function TaiTungTam({
     } catch {
       setTrang("loi");
     }
+  }
+
+  /*
+    Trình duyệt nhúng của Messenger/Zalo NUỐT LƯỢT TẢI: bấm xong không có gì
+    xảy ra, không lỗi, không thông báo. Anh gặp thật ngày 09/09/2026 — thanh
+    tiến độ chạy đủ 115 tấm, khung báo đã lưu xong, mà máy không có tấm nào.
+
+    Nói thẳng ra và chỉ đường sang Chrome, thay vì để khách ngồi đợi một việc
+    không xảy ra. Vẫn để nút "Vẫn thử tải": không phải bản nhúng nào cũng chặn,
+    và chặn đường của khách khi mình không chắc thì cũng sai.
+  */
+  if (trang === "trong-app") {
+    return (
+      <div className="mt-3 max-w-[15rem] rounded-md border border-amber-300 bg-amber-50 p-3 text-left">
+        <p className="text-[0.8125rem] font-medium text-amber-900">
+          Trình duyệt này thường không lưu được ảnh
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-amber-800">
+          Anh chị đang mở link trong Messenger/Zalo. Bấm dấu <b>•••</b> ở góc
+          trên rồi chọn <b>“Mở bằng Chrome”</b>, vào lại link này và tải giúp
+          Hamita nhé — như vậy ảnh mới vào được máy ạ.
+        </p>
+        <div className="mt-3 flex gap-2">
+          <button onClick={() => setTrang("san-sang")} className="btn flex-1">
+            Để sau
+          </button>
+          <button
+            onClick={() => batDau(true)}
+            className="btn flex-1 border-amber-400 bg-amber-100 text-amber-900 hover:bg-amber-200"
+          >
+            Vẫn thử
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (trang === "hoi-nang") {
@@ -313,7 +373,7 @@ export function TaiTungTam({
         >
           {may === "ios"
             ? `Đang lấy đợt ${dot + 1}/${soDot} · ${trongDot}/${Math.min(soMoiDot, anh.length - dot * soMoiDot)} tấm`
-            : `Đang lưu ${xong}/${anh.length} tấm — bấm để dừng`}
+            : `Đang gửi ${xong}/${anh.length} tấm về máy — bấm để dừng`}
         </button>
         <span
           aria-hidden
@@ -336,19 +396,24 @@ export function TaiTungTam({
   if (trang === "xong") {
     return (
       <div className="mt-3 flex flex-col items-center gap-1.5">
+        {/*
+          KHÔNG khẳng định "đã lưu xong" — trang web KHÔNG đo được việc đó.
+
+          Bản cũ ghi "Đã lưu xong N tấm ạ" trong khi máy khách không có lấy
+          một tấm (Messenger nuốt hết lượt tải, 09/09/2026). Nói chắc điều mình
+          không đo được là nói sai với khách, mà sai ở đây còn tai hại hơn im
+          lặng: khách yên tâm đóng máy, tưởng đã có ảnh trong tay.
+
+          Thứ web BIẾT CHẮC là đã giao xong bấy nhiêu tấm cho máy. Nói đúng
+          chừng đó, rồi mời khách tự kiểm và chỉ đường khi không thấy.
+        */}
         <p className="text-[0.8125rem] font-medium text-accent">
-          Đã lưu xong {anh.length} tấm ạ
+          Hamita gửi xong {anh.length} tấm rồi ạ
         </p>
-        <span className="max-w-[13rem] text-[11px] leading-relaxed text-fg-muted">
-          {/*
-            iPhone nói "mở app Ảnh xem giúp" chứ không khẳng định "ảnh đã nằm
-            trong app Ảnh": khay chia sẻ đóng lại là hệ điều hành báo xong, còn
-            khách bấm "Lưu ảnh" hay bấm gửi đi đâu khác thì trang web không hề
-            biết. Nói chắc điều mình không đo được là nói sai với khách.
-          */}
+        <span className="max-w-[14rem] text-[11px] leading-relaxed text-fg-muted">
           {may === "ios"
             ? "Anh chị mở app Ảnh xem lại giúp Hamita nhé."
-            : "Ảnh nằm trong thư mục Tải về, mở app Thư viện là thấy ạ."}
+            : "Anh chị mở app Thư viện, xem thư mục Tải về giúp em nhé. Không thấy ảnh thì trình duyệt đang chặn — mở link bằng Chrome rồi tải lại là được ạ."}
         </span>
         <button onClick={() => setTrang("san-sang")} className="btn mt-1">
           Tải lại bộ này
