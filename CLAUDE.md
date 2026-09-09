@@ -728,6 +728,35 @@ thẳng, đừng gom vào bộ nhớ trang rồi giao lại. (Riêng iPhone bắ
 trước vì đi qua khay chia sẻ; đổi lại chấp nhận cảnh "cho-cham" — mời khách
 chạm thêm một cái.)
 
+**ANDROID CŨNG PHẢI CHIA ĐỢT, VÀ MỖI ĐỢT LÀ MỘT CÚ CHẠM MỚI.** Đo trên máy
+thật ngày 09/09/2026: thư mục 115 tấm, bấm "Tải tất cả" một lần thì máy nhận
+đúng **6 tấm** rồi im — vừa đúng số thẻ bắn ra trong ~1,5 giây đầu. Trình duyệt
+chỉ nhận lượt tải khi cú chạm còn hiệu lực; hết cửa sổ đó thì chặn lặng lẽ,
+không lỗi, không thông báo.
+
+`TRAN_MOT_DOT_ANDROID = 6` lấy thẳng từ con số đo được (6 × 250ms = 1,5 giây).
+**Muốn nâng thì phải đo lại trên máy thật, đừng đoán.**
+
+Hai máy chia đợt vì hai lý do KHÁC HẲN nhau, đừng gộp thành một con số:
+
+| Máy | Cái gì chặn | Mỗi đợt |
+|---|---|---:|
+| iPhone | sức chứa của khay chia sẻ | 20 tấm (hoặc 100 MB) |
+| Android | cửa sổ hiệu lực của cú chạm | **6 tấm** |
+
+Nút đợt kế tiếp trên Android gọi `chayAndroid()` **ngay trong cú chạm**, không
+`await` gì trước — chạy tiếp tự động là quay đúng về lỗi vừa sửa.
+
+**Từ 5 đợt trở lên thì mời khách sang máy tính TRƯỚC KHI bắt đầu.** Thư mục 171
+tấm chia 6 tấm mỗi đợt là **29 lần bấm** — không còn là chuyện nhanh hay chậm
+nữa mà là việc không ai làm hết. Bảng cảnh báo nói thẳng con số đó ("anh chị
+phải bấm 29 lần ạ") để khách tự quyết, chứ đừng để họ bấm tới lần thứ mười mới
+nhận ra. Vì vậy `nang` trên Android tính bằng CẢ số đợt, không chỉ dung lượng.
+
+Đo sau khi sửa: đợt 1 bắn đúng 6 thẻ rồi dừng chờ chạm; bấm "Tải tiếp 6 tấm"
+thì sang đúng 6 tấm kế, không trùng tấm nào, mọi thẻ đều trỏ thẳng
+`/api/download`.
+
 **TRÌNH DUYỆT NHÚNG CỦA MESSENGER/ZALO NUỐT LƯỢT TẢI.** Anh gặp thật ngày
 09/09/2026, và đây là ca nặng nhất trong cả chuỗi lỗi tải ảnh: mở link từ
 Messenger, bấm "Tải tất cả", thanh tiến độ chạy đủ 115 tấm, khung báo **"Đã

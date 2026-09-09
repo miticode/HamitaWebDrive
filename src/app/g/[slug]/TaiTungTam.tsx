@@ -73,6 +73,20 @@ const SONG_SONG = 3;
 */
 const NGHI_GIUA_HAI_TAM = 250;
 
+/*
+  Số tấm giao được trong MỘT cú chạm trên Android.
+
+  Con số này ĐO ĐƯỢC, không phải chọn bừa: ngày 09/09/2026 anh bấm "Tải tất cả"
+  cho thư mục 115 tấm trên máy thật, và máy nhận đúng **6 tấm** rồi im — vừa
+  đúng số thẻ bắn ra trong ~1,5 giây đầu. Trình duyệt chỉ nhận lượt tải khi cú
+  chạm của khách còn hiệu lực, hết hạn thì chặn lặng lẽ.
+
+  Nên Android cũng phải CHIA ĐỢT như iPhone: mỗi đợt một cú chạm mới. Lấy đúng
+  6 cho khớp mức đã đo — 6 tấm × 250ms = 1,5 giây, nằm gọn trong cửa sổ đó.
+  Muốn nâng thì phải đo lại trên máy thật, đừng đoán.
+*/
+const TRAN_MOT_DOT_ANDROID = 6;
+
 /** Từ mức này trở lên thì mời khách chuyển sang máy tính. */
 const NANG_BYTE = 300 * 1024 ** 2;
 
@@ -123,8 +137,23 @@ export function TaiTungTam({
         : TRAN_MOT_DOT_TAM
     )
   );
-  const soDot = Math.max(1, Math.ceil(anh.length / soMoiDot));
-  const nang = tongByte >= NANG_BYTE;
+  /*
+    Số tấm mỗi đợt: iPhone bị chặn bởi sức chứa của khay chia sẻ, Android bị
+    chặn bởi cửa sổ hiệu lực của cú chạm. Hai giới hạn khác hẳn nhau nên hai
+    con số khác nhau — đừng gộp lại thành một.
+  */
+  const soMoiDotThat = may === "android" ? TRAN_MOT_DOT_ANDROID : soMoiDot;
+  const soDot = Math.max(1, Math.ceil(anh.length / soMoiDotThat));
+  const conLai = Math.max(0, anh.length - dot * soMoiDotThat);
+
+  /*
+    "Nặng" không chỉ tính bằng dung lượng — trên Android còn tính bằng SỐ LẦN
+    KHÁCH PHẢI BẤM. Thư mục 171 tấm chia 6 tấm mỗi đợt là 29 lần bấm; đó không
+    còn là chuyện tải nhanh hay chậm nữa mà là việc không ai làm hết. Từ 5 đợt
+    trở lên thì mời khách sang máy tính trước, để họ tự quyết chứ đừng để họ
+    bấm tới lần thứ mười mới nhận ra.
+  */
+  const nang = tongByte >= NANG_BYTE || (may === "android" && soDot > 5);
 
   /** Tải một chụm ảnh về bộ nhớ, tối đa SONG_SONG tấm cùng lúc. */
   async function taiChum(
@@ -169,14 +198,31 @@ export function TaiTungTam({
    * ĐỔI LẠI: không còn biết từng tấm đã lưu xong chưa. Chỉ biết đã GIAO cho máy
    * bấy nhiêu tấm. Câu chữ phải nói đúng chừng đó, đừng khẳng định "đã lưu".
    */
-  async function chayAndroid(dieuKhien: AbortController) {
-    for (let i = 0; i < anh.length; i++) {
+  async function chayAndroid(chiSo: number, dieuKhien: AbortController) {
+    setDot(chiSo);
+    setTrang("dang-tai");
+
+    const batDauDot = chiSo * TRAN_MOT_DOT_ANDROID;
+    const phan = anh.slice(batDauDot, batDauDot + TRAN_MOT_DOT_ANDROID);
+
+    for (let i = 0; i < phan.length; i++) {
       if (dieuKhien.signal.aborted) return;
-      taiThang(anh[i].id, anh[i].name, slug);
-      setXong(i + 1);
-      if (i < anh.length - 1) await nghi(NGHI_GIUA_HAI_TAM);
+      taiThang(phan[i].id, phan[i].name, slug);
+      setXong(batDauDot + i + 1);
+      if (i < phan.length - 1) await nghi(NGHI_GIUA_HAI_TAM);
     }
-    setTrang("xong");
+
+    if (batDauDot + phan.length >= anh.length) {
+      setTrang("xong");
+      return;
+    }
+
+    /*
+      Còn đợt nữa thì DỪNG LẠI chờ khách chạm. Chạy tiếp luôn là quay về đúng
+      cái lỗi vừa sửa: cú chạm cũ đã hết hiệu lực, máy chặn lặng lẽ.
+    */
+    setDot(chiSo + 1);
+    setTrang("cho-cham");
   }
 
   /*
@@ -257,7 +303,7 @@ export function TaiTungTam({
     setTrang("dang-tai");
 
     try {
-      if (may === "android") await chayAndroid(dieuKhien);
+      if (may === "android") await chayAndroid(0, dieuKhien);
       else await chayIOS(0, dieuKhien);
     } catch (err) {
       if ((err as Error)?.name === "AbortError") setTrang("san-sang");
@@ -270,8 +316,22 @@ export function TaiTungTam({
     NGAY trong sự kiện bấm, không được chèn await nào trước đó.
   */
   async function luuDotDaSan() {
-    if (tepSan.length === 0) return;
     const dieuKhien = boHuy ?? new AbortController();
+
+    /*
+      Android: giao ngay đợt kế tiếp TRONG cú chạm này. Không tải trước gì cả
+      nên không có `await` nào phía trước — đúng điều kiện để máy chịu nhận.
+    */
+    if (may === "android") {
+      try {
+        await chayAndroid(dot, dieuKhien);
+      } catch {
+        setTrang("loi");
+      }
+      return;
+    }
+
+    if (tepSan.length === 0) return;
     try {
       await tiepSauKhiChiaSe(
         await moKhayChiaSeNhieu(tepSan),
@@ -325,9 +385,15 @@ export function TaiTungTam({
           Bộ này có {anh.length} tấm, nặng {dungLuong(tongByte)}
         </p>
         <p className="mt-1 text-xs leading-relaxed text-amber-800">
+          {/*
+            Nói THẲNG số đợt cho cả hai máy. Android chia đợt vì máy chỉ nhận
+            vài tấm mỗi cú chạm (đo thật: 6 tấm) — khách cần biết trước là sẽ
+            phải bấm bao nhiêu lần, chứ bấm tới lần thứ mười mới hiểu thì đã
+            bực rồi.
+          */}
           {may === "ios"
-            ? `Điện thoại lưu được mỗi lần ${soMoiDot} tấm, nên sẽ chia thành ${soDot} đợt, mỗi đợt anh chị chạm "Lưu" một cái.`
-            : "Máy sẽ tải lần lượt từng tấm vào thư mục Tải về, mất một lúc và anh chị nên cắm sạc, đừng tắt màn hình ạ."}{" "}
+            ? `Điện thoại lưu được mỗi lần ${soMoiDotThat} tấm, nên sẽ chia thành ${soDot} đợt, mỗi đợt anh chị chạm "Lưu" một cái.`
+            : `Máy chỉ nhận mỗi lần ${soMoiDotThat} tấm, nên sẽ chia thành ${soDot} đợt — anh chị phải bấm ${soDot} lần ạ.`}{" "}
           Nếu tiện, anh chị mở link này trên máy tính thì tải một lần là xong.
         </p>
         <div className="mt-3 flex gap-2">
@@ -349,18 +415,21 @@ export function TaiTungTam({
     return (
       <div className="mt-3 flex flex-col items-center gap-1.5">
         <button onClick={luuDotDaSan} className="btn-primary">
-          Lưu {tepSan.length} tấm vào Ảnh
+          {may === "android"
+            ? `Tải tiếp ${Math.min(soMoiDotThat, conLai)} tấm`
+            : `Lưu ${tepSan.length} tấm vào Ảnh`}
         </button>
-        <span className="text-[11px] leading-relaxed text-fg-muted">
-          Đợt {dot + 1}/{soDot} · bảng hiện ra anh chị chọn “Lưu {tepSan.length}{" "}
-          ảnh” nhé
+        <span className="max-w-[14rem] text-[11px] leading-relaxed text-fg-muted">
+          {may === "android"
+            ? `Đợt ${dot + 1}/${soDot} · máy chỉ nhận mỗi lần vài tấm nên anh chị bấm lại giúp em, còn ${conLai} tấm nữa ạ`
+            : `Đợt ${dot + 1}/${soDot} · bảng hiện ra anh chị chọn “Lưu ${tepSan.length} ảnh” nhé`}
         </span>
       </div>
     );
   }
 
   if (trang === "dang-tai") {
-    const trongDot = xong - dot * soMoiDot;
+    const trongDot = xong - dot * soMoiDotThat;
     return (
       <div className="mt-3 flex flex-col items-center gap-1.5">
         <button
@@ -372,8 +441,8 @@ export function TaiTungTam({
           title="Dừng tải"
         >
           {may === "ios"
-            ? `Đang lấy đợt ${dot + 1}/${soDot} · ${trongDot}/${Math.min(soMoiDot, anh.length - dot * soMoiDot)} tấm`
-            : `Đang gửi ${xong}/${anh.length} tấm về máy — bấm để dừng`}
+            ? `Đang lấy đợt ${dot + 1}/${soDot} · ${trongDot}/${Math.min(soMoiDotThat, anh.length - dot * soMoiDotThat)} tấm`
+            : `Đang gửi đợt ${dot + 1}/${soDot} · ${xong}/${anh.length} tấm`}
         </button>
         <span
           aria-hidden
