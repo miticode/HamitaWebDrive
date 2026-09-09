@@ -40,11 +40,19 @@ export function XacNhanXong({
   const { unlocked, tongSoDaChon, daBaoXong, baoXongLuc, baoDaXong } = useSelection();
 
   /*
-    Chua nhap ma thi khong the chon duoc tam nao, ma chua chon tam nao thi
-    khong co gi de bao. Ca hai truong hop deu khong hien gi — mot khoi lon nam
-    cuoi trang chi de noi "chua co gi" la thu vo ich duy nhat khach phai cuon qua.
+    Chua nhap ma thi khong the bao gi ca — van an nhu cu.
+
+    Con dieu kien "phai chon it nhat mot tam" thi CHI ap cho thu muc FILE GOC
+    (studio yeu cau 09/09/2026). O file goc, chua tha tim tam nao nghia la chua
+    co gi de bao, mot khoi lon noi "chua co gi" chi ton mot man hinh cuon.
+
+    Thu muc HOAN THIEN thi nguoc han: Hamita da chinh xong het roi, viec cua
+    khach chi la xem qua va gat dau. Bat ho tha tim mot tam moi hien nut duyet
+    la bat lam mot buoc thua — ma phan lon se khong lam, roi ngoi doi studio
+    trong khi studio ngoi doi ho.
   */
-  if (!unlocked || (tongSoDaChon === 0 && !daBaoXong)) return null;
+  if (!unlocked) return null;
+  if (!hoanThien && tongSoDaChon === 0 && !daBaoXong) return null;
 
   if (daBaoXong) {
     return (
@@ -86,14 +94,16 @@ export function XacNhanXong({
           </p>
 
           <p className="mt-4 text-[13px] leading-relaxed text-emerald-800">
-            Lỡ quên tấm nào hay đổi ý thì anh chị vẫn chọn lại bình thường nhé.
+            {hoanThien
+              ? "Xem lại thấy cần sửa chỗ nào thì anh chị bấm nút dưới, rồi nhắn Hamita nhé."
+              : "Lỡ quên tấm nào hay đổi ý thì anh chị vẫn chọn lại bình thường nhé."}
           </p>
           <button
             type="button"
             onClick={() => baoDaXong(false)}
             className="mt-3 inline-flex min-h-11 items-center rounded-full border border-emerald-300 bg-white/70 px-5 text-sm font-medium text-emerald-900 transition hover:border-emerald-500"
           >
-            Chọn thêm nữa
+            {hoanThien ? "Chưa ok, xem lại" : "Chọn thêm nữa"}
           </button>
         </div>
       </section>
@@ -115,12 +125,24 @@ export function XacNhanXong({
             </>
           )}
         </p>
+        {/*
+          Thư mục hoàn thiện mà khách chưa thả tim tấm nào thì KHÔNG nói tới
+          con số — "anh chị đang chọn 0 tấm" vừa sai vừa làm khách tưởng mình
+          còn thiếu một bước nào đó chưa làm.
+        */}
         <p className="mt-2.5 text-[13px] leading-relaxed text-fg-muted">
-          Anh chị đang chọn <strong className="font-medium text-fg">{tongSoDaChon} tấm</strong> ở
-          thư mục này.{" "}
-          {hoanThien
-            ? "Ưng rồi thì bấm nút dưới đây, Hamita mang đi in liền ạ."
-            : "Bấm nút dưới đây báo cho Hamita một tiếng là Hamita nhận được ngay và bắt tay vào làm liền ạ."}
+          {hoanThien && tongSoDaChon === 0 ? (
+            "Hamita chỉnh xong cả thư mục này rồi ạ. Anh chị xem qua thấy ổn thì bấm nút dưới đây, Hamita mang đi in liền."
+          ) : (
+            <>
+              Anh chị đang chọn{" "}
+              <strong className="font-medium text-fg">{tongSoDaChon} tấm</strong> ở thư mục
+              này.{" "}
+              {hoanThien
+                ? "Ưng rồi thì bấm nút dưới đây, Hamita mang đi in liền ạ."
+                : "Bấm nút dưới đây báo cho Hamita một tiếng là Hamita nhận được ngay và bắt tay vào làm liền ạ."}
+            </>
+          )}
         </p>
 
         {/*
@@ -139,7 +161,9 @@ export function XacNhanXong({
         </button>
 
         <p className="mt-3 text-xs leading-relaxed text-fg-faint">
-          Báo rồi vẫn chọn thêm hoặc bỏ bớt được, anh chị đừng ngại ạ.
+          {hoanThien
+            ? "Bấm rồi vẫn đổi lại được, anh chị đừng ngại ạ."
+            : "Báo rồi vẫn chọn thêm hoặc bỏ bớt được, anh chị đừng ngại ạ."}
         </p>
       </div>
     </section>

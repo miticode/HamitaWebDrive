@@ -97,16 +97,26 @@ export function GalleryHeader({
           onClick={() => baoDaXong(false)}
           className="underline underline-offset-2 hover:text-accent"
         >
-          chọn thêm nữa
+          {/* Cùng chữ với nút trong khối cuối trang — hai chỗ làm đúng một
+              việc, ghi hai kiểu thì khách tưởng là hai thứ khác nhau. */}
+          {hoanThien ? "chưa ok, xem lại" : "chọn thêm nữa"}
         </button>
       </span>
     );
-  } else if (tongSoDaChon > 0) {
+    /*
+      Thư mục HOÀN THIỆN hỏi cả khi chưa thả tim tấm nào: ở đó khách không
+      chọn, họ chỉ xem rồi gật đầu — bắt tim một tấm mới hiện lời mời là bắt
+      làm một bước thừa (studio yêu cầu 09/09/2026). Thư mục file gốc thì giữ
+      nguyên: chưa chọn tấm nào thì chưa có gì để báo.
+    */
+  } else if (hoanThien || tongSoDaChon > 0) {
     muc.push(
       <span key="hoi">
-        {hoanThien
-          ? `Anh chị ưng ${tongSoDaChon} tấm này rồi phải không ạ? `
-          : `Anh chị chọn xong ${tongSoDaChon} tấm rồi phải không ạ? `}
+        {!hoanThien
+          ? `Anh chị chọn xong ${tongSoDaChon} tấm rồi phải không ạ? `
+          : tongSoDaChon > 0
+            ? `Anh chị ưng ${tongSoDaChon} tấm này rồi phải không ạ? `
+            : "Anh chị xem xong thư mục này chưa ạ? "}
         <button
           onClick={() => baoDaXong(true)}
           className="font-medium text-accent underline underline-offset-2 hover:text-fg"

@@ -892,6 +892,18 @@ nên chữ cũng phải khác:
 Hỏi "chọn xong chưa" trong thư mục ảnh đã chỉnh là **hỏi sai việc** — khách
 không chọn gì ở đó, họ duyệt.
 
+**Thư mục hoàn thiện KHÔNG đòi khách thả tim tấm nào mới hiện nút** (studio
+chốt 09/09/2026). Ở file gốc, chưa chọn tấm nào nghĩa là chưa có gì để báo —
+một khối lớn nói "chưa có gì" chỉ tốn một màn hình cuộn, nên vẫn ẩn. Ở thư mục
+hoàn thiện thì ngược hẳn: Hamita đã chỉnh xong hết, việc của khách chỉ là xem
+qua rồi gật đầu. Bắt họ tim một tấm mới hiện nút duyệt là bắt làm một bước
+thừa — mà phần lớn sẽ không làm, rồi ngồi đợi studio trong khi studio ngồi đợi
+họ. Vẫn giữ điều kiện **đã nhập mã**: chưa có mã thì không báo được gì cả.
+
+Khi chưa thả tim tấm nào thì **đừng nói tới con số** — "anh chị đang chọn 0
+tấm" vừa sai vừa làm khách tưởng mình còn thiếu một bước chưa làm. Câu lúc đó
+là *"Hamita chỉnh xong cả thư mục này rồi ạ…"*.
+
 **CHỈ ĐỔI CÂU CHỮ, không đổi cách chạy.** Vẫn là một lần bấm báo xong, vẫn ghi
 vào đúng bảng `MucXong` như cũ (nguyên tắc 20). Đừng dựng thêm trạng thái mới.
 
