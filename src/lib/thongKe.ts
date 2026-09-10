@@ -70,8 +70,18 @@ export type ThongKe = {
     soMauToiTamDau: number;
     soMauToiBaoXong: number;
   };
-  /** Ten thu muc va so tam khach da tha tim trong do, nhieu nhat truoc. */
-  thuMucHayChon: { ten: string; soTam: number }[];
+  /**
+   * Ten thu muc va so tam khach da tha tim trong do, nhieu nhat truoc.
+   *
+   * Kem danh sach ALBUM ME chua thu muc do, moi album dong gop bao nhieu tam
+   * — nhieu nhat truoc. Studio yeu cau 10/09/2026: doc "file goc nha trai 289
+   * tam" ma khong biet cua nha nao thi khong lam duoc gi tiep.
+   */
+  thuMucHayChon: {
+    ten: string;
+    soTam: number;
+    album: { ten: string; slug: string; soTam: number }[];
+  }[];
   /** 24 o, moi o la so luot chon trong gio do (gio Viet Nam). */
   gioHayChon: number[];
   /** Album chua do duoc luot xem vi tao truoc khi bat dem. */
@@ -188,12 +198,39 @@ export async function docThongKe(bayGio = new Date()): Promise<ThongKe> {
     }
   }
 
-  /* Thu muc khach hay tha tim nhat — gop theo TEN thu muc tren khap moi album. */
-  const theoThuMuc = new Map<string, number>();
+  /*
+    Thu muc khach hay tha tim nhat — gop theo TEN thu muc tren khap moi album.
+
+    Van gop theo ten nhu cu, vi muc dich cua bang nay la thay KIEU CHUP nao
+    khach hay chon de in. Nhung moi dong con mang theo album me cua no: ten
+    thu muc thi nha nao cung dat giong nhau ("file goc", "file goc nha trai"),
+    nen chi mot cai ten thi studio khong lan ra duoc la cua khach nao.
+  */
+  const galleryTheoId = new Map(galleries.map((g) => [g.id, g]));
+  const theoThuMuc = new Map<
+    string,
+    {
+      soTam: number;
+      album: Map<string, { ten: string; slug: string; soTam: number }>;
+    }
+  >();
   for (const s of selections) {
     if (!idListTim.has(s.listId)) continue;
     const ten = s.albumName || "(thư mục gốc)";
-    theoThuMuc.set(ten, (theoThuMuc.get(ten) ?? 0) + 1);
+    const muc = theoThuMuc.get(ten) ?? { soTam: 0, album: new Map() };
+    muc.soTam++;
+
+    const g = galleryTheoId.get(listCuaGallery.get(s.listId)?.galleryId ?? "");
+    if (g) {
+      const a = muc.album.get(g.id) ?? {
+        ten: g.clientName ?? g.title,
+        slug: g.slug,
+        soTam: 0,
+      };
+      a.soTam++;
+      muc.album.set(g.id, a);
+    }
+    theoThuMuc.set(ten, muc);
   }
 
   /* Gio khach hay chon, tinh theo gio Viet Nam. */
@@ -220,7 +257,11 @@ export async function docThongKe(bayGio = new Date()): Promise<ThongKe> {
       soMauToiBaoXong: ngayToiBaoXong.length,
     },
     thuMucHayChon: [...theoThuMuc.entries()]
-      .map(([ten, soTam]) => ({ ten, soTam }))
+      .map(([ten, m]) => ({
+        ten,
+        soTam: m.soTam,
+        album: [...m.album.values()].sort((a, b) => b.soTam - a.soTam),
+      }))
       .sort((a, b) => b.soTam - a.soTam)
       .slice(0, 8),
     gioHayChon,

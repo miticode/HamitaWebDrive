@@ -167,18 +167,54 @@ export default async function ThongKePage() {
           <h2 className="eyebrow">Khách thả tim nhiều nhất ở thư mục nào</h2>
           <ul className="mt-3 divide-y divide-line rounded-md border border-line text-sm">
             {tk.thuMucHayChon.map((t) => (
-              <li
-                key={t.ten}
-                className="flex flex-wrap items-baseline justify-between gap-x-4 px-4 py-2.5"
-              >
-                <span className="min-w-0 truncate">{t.ten}</span>
-                <span className="tabular-nums text-fg-muted">{t.soTam} tấm</span>
+              <li key={t.ten} className="px-4 py-2.5">
+                <div className="flex items-baseline justify-between gap-x-4">
+                  <span className="min-w-0 break-words">{t.ten}</span>
+                  <span className="shrink-0 tabular-nums text-fg-muted">
+                    {t.soTam} tấm
+                  </span>
+                </div>
+
+                {/*
+                  Album mẹ của thư mục (studio yêu cầu 10/09/2026). Tên thư mục
+                  thì nhà nào cũng đặt giống nhau — chỉ một cái tên thì không
+                  lần ra được là của khách nào.
+
+                  XUỐNG DÒNG chứ không cắt cụt: tên album là thứ studio cần đọc
+                  ở đây, cắt đi thì hai nhà tên gần giống nhau nhìn như một.
+
+                  Số tấm riêng từng album chỉ hiện khi có từ hai album trở lên —
+                  một album thì con số đó trùng hệt con số của dòng trên.
+
+                  Bấm vào là tới thẳng trang "Ảnh khách chọn" của album đó.
+                */}
+                <ul className="mt-1 flex flex-col gap-0.5 text-xs text-fg-faint">
+                  {t.album.map((a) => (
+                    <li
+                      key={a.slug}
+                      className="flex items-baseline justify-between gap-x-4"
+                    >
+                      <Link
+                        href={`/admin/${a.slug}`}
+                        className="min-w-0 break-words underline-offset-2 transition hover:text-accent hover:underline"
+                      >
+                        thuộc album {a.ten}
+                      </Link>
+                      {t.album.length > 1 && (
+                        <span className="shrink-0 tabular-nums">
+                          {a.soTam} tấm
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               </li>
             ))}
           </ul>
           <p className="mt-2 text-xs text-fg-faint">
             Gộp theo tên thư mục trên mọi album — thấy được kiểu chụp nào khách
-            hay chọn để in.
+            hay chọn để in. Dòng nhỏ bên dưới là album chứa thư mục đó, bấm vào
+            để xem ảnh khách đã chọn.
           </p>
         </section>
       )}
