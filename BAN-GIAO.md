@@ -3,16 +3,18 @@
 Tài liệu này để dán vào đầu một cuộc trò chuyện mới, giúp phía hỗ trợ nắm được
 toàn bộ bối cảnh mà không phải hỏi lại từ đầu.
 
-Cập nhật: **09/09/2026**. Web chạy tại **https://www.hamitastudio.com** trên
-gói Vercel **Pro**, đang phục vụ **30 album** với **1.362 lựa chọn** của khách.
-Hạ tầng khoẻ: 16/16 phép kiểm domain đạt, không còn việc nào ở mức đỏ hay cam.
+Cập nhật: **10/09/2026**. Web chạy tại **https://www.hamitastudio.com** trên
+gói Vercel **Pro**, đang phục vụ **33 album** với **1.362 lựa chọn** của khách.
+Hạ tầng khoẻ: không còn việc nào ở mức đỏ hay cam.
 
-**Đợt 03–07/09** sửa ba lỗi thật ảnh hưởng khách (Android không cài được app,
-link rỗng không báo khi thêm ảnh, đường kiểm sức khoẻ báo nhầm), tách "Làm mới"
-khỏi "Gửi thông báo", và thêm năm công cụ quan sát cho studio — xem mục 6.
+**Đợt 08–10/09** viết lại toàn bộ cách điện thoại tải ảnh (bỏ file nén, chia đợt
+theo cú chạm cho Android, khay chia sẻ chỉ còn dành cho iPhone), thêm khung "Hỏi
+Hamita" trả lời sẵn không dùng AI, cho thẻ album biết đã gửi thông báo cho khách
+chưa, và dọn rác toàn hệ thống hai đợt — xem mục 6.
 
-*Bản cũ (27–28/08):* lên tên miền riêng và gói Pro, vá một lỗ rò rỉ danh sách
-khách đã chọn, sửa mười chỗ giao diện điện thoại — xem mục 6b.
+*Bản cũ (03–07/09):* sửa ba lỗi thật ảnh hưởng khách, tách "Làm mới" khỏi "Gửi
+thông báo", thêm năm công cụ quan sát — xem mục 6b. *(27–28/08):* lên tên miền
+riêng và gói Pro, vá lỗ rò rỉ danh sách khách đã chọn — xem mục 6c.
 
 ---
 
@@ -40,10 +42,10 @@ tin cậy từ Facebook, bản đồ, và mảng Hami Baby Studio (chụp bé v�
 | Thứ | Ở đâu |
 |---|---|
 | Mã nguồn | `D:\code\photo-gallery` |
-| Web đang chạy | https://hamita-gallery.vercel.app |
-| Trang quản lý | https://hamita-gallery.vercel.app/admin |
-| Kho GitHub | https://github.com/miticode/HamitaWebDrive (**Private**) |
-| Vercel | team `hamita`, project `hamita-gallery`, **gói Hobby** |
+| Web đang chạy | https://www.hamitastudio.com (hai tên miền cũ vẫn chạy — xem mục 9) |
+| Trang quản lý | https://www.hamitastudio.com/admin |
+| Kho GitHub | https://github.com/miticode/HamitaWebDrive (**Private**), nhánh `main` |
+| Vercel | team `hamita`, project `hamita-gallery`, **gói Pro** (lên 27/08) |
 | Database | Neon Postgres, project "Hamita Studio", vùng Singapore |
 | Google Cloud | project `trihamita` |
 | Tài khoản chung | `hamita.studio@gmail.com` (Google, Neon, Vercel) |
@@ -99,7 +101,7 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 - **Cả nhà dùng chung một mã → một danh sách chọn chung.**
 - **`/api/download` bắt buộc kèm `?slug=`** — máy chủ tra ngược gallery, kiểm
   `allowDownload` và ảnh có thật sự thuộc album đó không. (Vá tháng 8/2026 —
-  xem mục 6, đây từng là lỗ hổng thật.)
+  xem mục 6c, đây từng là lỗ hổng thật.)
 - **`/api/img` chặn nhúng từ web khác** (dựa `Sec-Fetch-Site`/`Referer`) nhưng
   **luôn cho qua khi thiếu cả hai header** — đó là cách hệ thống "dựng ảnh sẵn"
   (`warm.ts`) tự gọi từ máy chủ, và cách Facebook/Zalo xem trước link. Chặn
@@ -121,7 +123,112 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 
 ---
 
-## 6. Việc lớn đã làm trong đợt này (03–07/09/2026)
+## 6. Việc lớn đã làm trong đợt này (08–10/09/2026)
+
+Đợt này xoay quanh **khách dùng điện thoại**: tải ảnh về máy phải thật sự lưu
+được, và khách phải tự trả lời được thắc mắc mà không cần nhắn sale. Kèm theo là
+một đợt dọn rác toàn hệ thống. Chi tiết từng quyết định nằm trong `CLAUDE.md`
+(nguyên tắc 44–49) — dưới đây là bản đồ.
+
+### Điện thoại tải ảnh: viết lại toàn bộ (08–09/09)
+
+**Bỏ file nén cho điện thoại.** Studio nói thẳng: *"tệp khách hàng của a dùng đt
+nhiều và không biết gì về file zip"*. Nay bấm "Tải tất cả" trên điện thoại thì
+từng tấm đi thẳng vào album ảnh của máy, không còn file `.zip` nằm trong thư mục
+Tải về mà khách không biết mở. Máy tính vẫn tải file nén như cũ.
+
+**Ba lỗi thật của Android, do khách báo, sửa lần lượt:**
+
+| Khách báo | Nguyên nhân đo được | Cách chữa |
+|---|---|---|
+| Bấm tải một tấm mà máy không lưu | Code tải ảnh về rồi mới bấm thẻ — lúc đó cú chạm đã hết hiệu lực | Bấm thẻ trỏ thẳng `/api/download` **ngay trong cú chạm** |
+| Tải cả thư mục xong mà album ảnh trống | Link `blob:` bị WebView của Messenger nuốt | Bỏ `blob:`, dùng URL thật kèm `Content-Disposition: attachment` |
+| "tải đc nhưng chỉ đc vài tấm" — đúng **6 tấm** | Trình duyệt chỉ nhận lượt tải trong ~1,5 giây sau cú chạm | Chia đợt **6 tấm mỗi cú chạm**, khách bấm "Tải tiếp" |
+
+Hai loại máy chia đợt vì **hai lý do khác hẳn nhau**, đừng gộp: iPhone giới hạn
+**20 tấm/đợt** vì sức chứa khay chia sẻ; Android giới hạn **6 tấm/đợt** vì cửa
+sổ hiệu lực của cú chạm. Con số 6 là **đo trên máy thật của anh**, muốn nâng thì
+phải đo lại chứ đừng đoán.
+
+**Thôi nói dối khách.** Bản cũ hiện "Đã lưu xong 6 tấm ạ" — web **không có cách
+nào biết** máy có lưu thật hay không. Nay chỉ nói điều đo được: *"Hamita gửi
+xong N tấm rồi ạ"*.
+
+**Mời sang máy tính trước khi bắt đầu, không phải sau.** Thư mục 171 tấm chia 6
+tấm mỗi đợt là **29 lần bấm**. Bảng cảnh báo nói thẳng con số đó để khách tự
+quyết, thay vì để họ bấm tới lần thứ mười mới nhận ra.
+
+**Máy tính bấm tải thì tải file, không mở khay chia sẻ.** Anh báo Windows hiện
+hộp "Chia sẻ" thay vì tải. Khay chia sẻ nay **chỉ dành cho iPhone** — nơi nó là
+đường duy nhất đưa ảnh vào album máy.
+
+### Khung "Hỏi Hamita" trên trang album (08/09)
+
+Studio muốn một chatbot vì *"tệp khách hàng của anh là khách ít đọc chữ trên
+web"*. Đã làm bản **không dùng AI**: 10 câu hỏi có sẵn, câu trả lời sinh từ đúng
+dữ liệu của album đó (số ảnh trong gói, giá ảnh thêm, hạn giữ ảnh), kèm nút gọi
+Zalo và điện thoại. Không tốn phí, không bịa, không cần theo dõi.
+
+**Mã chọn ảnh KHÔNG bao giờ nằm trong khung này** (nguyên tắc 48) — ai mở được
+link cũng đọc được khung, mà mã là lớp bảo vệ duy nhất.
+
+*Còn treo:* danh sách 10 câu mới chỉ phủ những gì bản thân trang web trả lời
+được. Studio cần đưa **câu hỏi thật khách hay hỏi sale** để bổ sung.
+
+### Thư mục ảnh đã chỉnh xong (09/09)
+
+Thư mục có tên chứa "hoàn thiện" hoặc "pts" nay hiện nút **"Đã ok, báo Hamita để
+in"** thay vì "đã chọn xong" — vì ảnh trong đó đã chỉnh rồi, việc của khách là
+duyệt chứ không phải chọn. Nút hiện **cả khi khách chưa thả tim tấm nào** (theo
+yêu cầu của anh), khác hẳn thư mục thường.
+
+### Thẻ album nói rõ đã gửi thông báo cho khách chưa (08/09)
+
+Anh nói: *"a không biết cái nào đã ấn gửi thông báo cho khách"*. Thẻ album nay
+có ba trạng thái: **chưa gửi lần nào** / **đã gửi lúc …** / **có ảnh mới sau lần
+gửi cuối**. Trạng thái đọc từ bảng `Moc`, không phải đoán.
+
+### Trang quản lý: chỉ lưới album cuộn (08/09)
+
+Từ màn hình rộng 1536px trở lên, cuộn xuống thì **chỉ lưới album chạy**, khung
+Kho ảnh và bộ lọc đứng yên. Khung Thông báo dọn sang cột trái cạnh bộ lọc theo
+tháng. Màn nhỏ hơn giữ nguyên cách cuộn cũ — thử ở 1280px thì lưới album co còn
+một dải ~40px, không dùng được.
+
+### Dọn rác toàn hệ thống, hai đợt (09/09)
+
+Rà bằng script tự viết. **Hai lỗi thật** tìm ra chứ không phải rác:
+
+- **Một ký tự NUL lọt vào `CoverPicker.tsx`** khiến `file` báo đó là file nhị
+  phân — mọi lệnh `grep` đều **bỏ qua tệp này**. Rác thì không sao, nhưng nó ẩn
+  luôn cả code thật khỏi mọi lần rà soát sau.
+- **Bảng `Moc` không có khoá ngoại về `Gallery`**, nên xoá album thì mốc "đã gửi
+  thông báo" của album đó **ở lại vĩnh viễn**. Đã chứng minh bằng một dòng mồ côi
+  thật, rồi thêm `xoaMocCuaAlbum()` gọi ngay sau lệnh xoá album.
+
+Cùng với đó: bỏ 242 KB tệp tĩnh không ai gọi, 53 dòng hàm chết, 7 dòng dữ liệu
+thừa, gộp 6 bản sao chép của cùng một hàm về `constants.ts`.
+
+**Giữ lại có chủ ý, không phải bỏ sót:** cột `laBaby`/`laPhimTruong`/
+`accessMode`/`selectionsDoneAt` (0 dòng dùng, nhưng xoá cột là thao tác phá huỷ),
+`src/lib/store/json.ts` (453 dòng, là đường lui khi database chết),
+`scripts/build-logo.mts`.
+
+### Theo yêu cầu của studio (08–09/09)
+
+- Khối "Gói ảnh của anh chị" tách thành **ba dòng** thay vì một đoạn văn: số
+  lượng tấm cần tim · ghi chú vào ảnh · chi phí phát sinh mỗi tấm.
+- Sửa lời dòng thứ ba thành *"Chi phí phát sinh thêm trên mỗi tấm ảnh là (giá
+  ảnh) đã gồm chỉnh sửa và in ạ"*.
+- Nhãn "Xong · …" trên thẻ album bị **tràn ra ngoài mép thẻ 76px rồi cắt cụt** —
+  do `shrink-0` cấm khối co lại. Sửa thành `min-w-0`, đo lại 24 thẻ: 0 chỗ tràn.
+  Ba dòng bị cắt ngắn trên thẻ nay đều có chú giải khi rê chuột.
+
+*Còn treo — cần anh thử trên máy Android thật:* nút tải một tấm, việc chia đợt
+khi tải cả thư mục trong Chrome, và liệu WebView của Messenger có nhận đường tải
+thẳng hay không.
+
+## 6b. Đợt trước (03–07/09/2026)
 
 Đợt này chủ yếu là **sửa lỗi tìm ra bằng đo đạc** và **thêm công cụ quan sát cho
 studio**. Chi tiết từng quyết định nằm trong `CLAUDE.md` — dưới đây chỉ là bản
@@ -203,7 +310,7 @@ phải ảnh chụp thật — trang quản lý đòi mật khẩu mà không đ
 
 ---
 
-## 6b. Lịch sử các đợt trước (22–28/08/2026)
+## 6c. Lịch sử các đợt xa hơn (22–28/08/2026)
 
 Tóm tắt theo nhóm, mới nhất trước — chi tiết kỹ thuật nằm trong lịch sử commit
 Git (mỗi commit đều giải thích lý do dài, có số liệu đo thật).
@@ -654,9 +761,8 @@ Hai rủi ro **đỏ** tồn từ đầu dự án đã hết ngày 27/08: gói V
 thương mại (đã lên **Pro**), và màn hình chấp thuận OAuth còn ở chế độ Testing
 khiến phiếu Google chết sau 7 ngày (anh đã **Publish app**).
 
-**Hiện KHÔNG còn việc nào ở mức đỏ hay cam.** Đo 07/09/2026: 0 album quá hạn
-giữ ảnh, 0 album mất mã bảo vệ, Drive và database đều đọc được, 16/16 phép kiểm
-domain đạt.
+**Hiện KHÔNG còn việc nào ở mức đỏ hay cam.** Đo 10/09/2026: 0 album quá hạn
+giữ ảnh, 0 album mất mã bảo vệ, Drive và database đều đọc được.
 
 **🟡 Chỗ chứa trên Google Drive.**
 Từng chạm **99,5%** sáng 26/08 (còn 9,97 GB) rồi anh dọn trong ngày. Con số hiện
@@ -671,7 +777,7 @@ Hệ quả nếu để đầy hẳn: Google dùng chung một kho cho Drive, Gma
 của cả Neon lẫn Vercel. Mất thư là mất đường khôi phục mật khẩu.
 
 **🟡 Sao lưu chưa chạy tự động.**
-Đo 09/09: lần gần nhất **11 ngày trước**. Lệnh và nút đều có, mốc trên trang quản
+Đo 10/09: lần gần nhất **12 ngày trước** — đang là việc treo lâu nhất. Lệnh và nút đều có, mốc trên trang quản
 lý cập nhật đúng cho cả hai đường. Lịch tự động thì chưa đặt — lệnh PowerShell
 nằm trong `README.md`; giới hạn của nó là chỉ chạy khi máy bật.
 
@@ -689,10 +795,24 @@ xong thư mục ... chưa ạ?"*. Đây là việc anh làm trên **Drive**, kh�
 Chỉnh sửa lại một tấm rồi thay bản mới trên Drive mà giữ nguyên file thì khách
 vẫn xem bản cũ. Cách tránh: xoá tấm cũ, tải tấm mới lên thành file mới.
 
-**🟡 Trang album không còn đường liên hệ nào.**
-Sau khi bỏ khối "Phân vân quá…" theo yêu cầu (28/08), trang album hiện **0 liên
-kết gọi điện** — trừ màn hình báo lỗi Drive. Khách nhắn ngược Zalo được, nhưng
-nếu có nhà nào bỏ dở im lặng thì đây là chỗ đầu tiên đáng xem lại.
+**🟡 Đường liên hệ trên trang album mới chỉ nằm trong khung "Hỏi Hamita".**
+Khối "Phân vân quá…" bị bỏ theo yêu cầu (28/08), để trang album **0 liên kết gọi
+điện** suốt mười ngày. Khung "Hỏi Hamita" (08/09) đã trả lại nút Zalo và số điện
+thoại, nhưng khách phải **mở khung ra mới thấy** — chưa đo được có bao nhiêu nhà
+thật sự mở.
+
+**🟡 Khung "Hỏi Hamita" mới chỉ trả lời được điều web tự biết.**
+10 câu hiện có đều sinh từ dữ liệu album (số ảnh trong gói, giá ảnh thêm, hạn
+giữ ảnh). Những câu khách hay hỏi sale — bao giờ có ảnh, in cỡ nào, sửa lại được
+mấy lần — thì **studio phải đưa lời đáp thật** thì mới thêm được. Đây là việc
+của anh, không phải việc code.
+
+**🟡 Ba việc tải ảnh trên Android chưa được thử trên máy thật.**
+Đã sửa theo đúng triệu chứng anh báo và đo được, nhưng chưa xác nhận lại: (1)
+nút tải một tấm, (2) chia đợt 6 tấm khi tải cả thư mục trong Chrome, (3) liệu
+WebView của Messenger có nhận đường tải thẳng hay không. Con số **6 tấm/đợt** là
+đo trên máy anh — máy khác có thể khác, nếu khách vẫn kêu thiếu ảnh thì đo lại
+rồi hạ số xuống, đừng đoán.
 
 **🟡 Album lớn: khách quay lại là mất dấu.**
 Đo 28/08 trên dữ liệu thật — tỉ lệ khách chọn ảnh **giảm thẳng theo số ảnh**:
@@ -723,20 +843,21 @@ hiểu nhầm hai nút tim/tick. Khung Thông báo đã nói rõ trường hợp
 hỏi lại, nhưng **giao diện chọn ảnh chưa làm gì để tránh nhầm lẫn từ đầu**.
 
 
-## 9. Trạng thái hiện tại (đo thật 09/09/2026)
+## 9. Trạng thái hiện tại (đo thật 10/09/2026)
 
 | Số liệu | Giá trị |
 |---|---:|
-| Album | **30** |
-| Ảnh (số đã chụp lại trong database) | **18.874** |
+| Album | **33** |
+| Ảnh (số đã chụp lại trong database) | **20.560** |
 | Lựa chọn của khách | **1.362** |
-| Máy đăng ký nhận thông báo đẩy | **27** |
-| Tấm khách đã tải về | **7.097** |
+| Máy đăng ký nhận thông báo đẩy | **28** |
+| Tấm khách đã tải về | **8.730** |
+| Lượt mở album | **1.751** |
 | Album khách đã báo chọn xong | **16** |
-| Album chưa đặt gói ảnh | **1** (tiệc sn Ngọc Trinh) |
+| Album chưa đặt gói ảnh | **2** (tiệc sn Ngọc Trinh · HC-Her-His-Công Đạt & Tuyết Nhi) |
 | Album quá hạn giữ ảnh | **0** |
 | Album mất mã bảo vệ | **0** |
-| Sao lưu gần nhất | **11 ngày trước** |
+| Sao lưu gần nhất | **12 ngày trước** |
 
 Số ảnh, dung lượng và khu trên trang giới thiệu của từng album xem trong trang
 quản lý — đọc ở đây thì lỗi thời ngay sau lần "Làm mới" kế tiếp.
