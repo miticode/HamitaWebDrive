@@ -93,6 +93,21 @@ export type BiaMuc = {
   fileId: string;
 };
 
+/**
+ * So anh trong goi cua RIENG mot thu muc con.
+ *
+ * Khong co dong nao cho mot thu muc = thu muc do dung con so chung cua album.
+ * Xem model GoiMuc trong schema de biet vi sao can.
+ */
+export type GoiMuc = {
+  galleryId: string;
+  /** Chuoi rong = anh nam ngay thu muc goc. */
+  albumId: string;
+  tenMuc: string;
+  /** 0 la mot goi THAT (goi chi lay file), khong phai "chua dat". */
+  soAnh: number;
+};
+
 export type MucXong = {
   galleryId: string;
   /** Chuoi rong = anh nam ngay thu muc goc. */
@@ -245,6 +260,25 @@ export type Store = {
 
   /** Bia thu muc cua MOI album — trang quan ly doc mot lan, giong listMucXong. */
   listBiaMuc(): Promise<BiaMuc[]>;
+
+  /**
+   * Dat so anh trong goi cho RIENG mot thu muc con.
+   *
+   * soAnh = null nghia la BO dat rieng — thu muc quay ve dung con so chung
+   * cua album. Khong dung 0 cho viec do: 0 la mot goi that (goi chi lay file).
+   */
+  setGoiMuc(
+    galleryId: string,
+    albumId: string,
+    tenMuc: string,
+    soAnh: number | null
+  ): Promise<void>;
+
+  /** Goi rieng cua tung thu muc trong mot album. */
+  getGoiMuc(galleryId: string): Promise<GoiMuc[]>;
+
+  /** Goi rieng cua MOI album — trang quan ly doc mot lan, giong listBiaMuc. */
+  listGoiMuc(): Promise<GoiMuc[]>;
   listCounts(): Promise<ListCount[]>;
   /**
    * Chon hoac bo chon mot anh.

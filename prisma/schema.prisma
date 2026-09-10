@@ -139,6 +139,7 @@ model Gallery {
   pushSubs PushSub[]
   mucXong  MucXong[]
   biaMuc   BiaMuc[]
+  goiMuc   GoiMuc[]
 
   @@index([driveFolderId])
 }
@@ -207,6 +208,38 @@ model BiaMuc {
   albumId   String
   /// Ma tam anh duoc chon lam bia.
   fileId    String
+
+  gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  @@unique([galleryId, albumId])
+  @@index([galleryId])
+}
+
+/// So anh trong goi cua RIENG mot thu muc con.
+///
+/// Vi sao can: mot nha khach co the chup lam nhieu dot cach nhau ca thang —
+/// chup cong truoc, it lau sau moi chup cuoi — va moi dot la mot goi rieng voi
+/// so tam in khac nhau. Truoc day ca album chi co MOT con so (Gallery.
+/// soAnhTrongGoi), nen dot thu hai bat buoc phai dung chung goi cua dot dau.
+///
+/// KHONG co dong nao cho mot thu muc = thu muc do dung con so chung cua album.
+/// Nho vay phan lon album (chi mot goi duy nhat) khong sinh them dong nao ca,
+/// va studio khong phai dat lai tung thu muc mot.
+///
+/// Chi luu SO TAM, khong luu gia: gia moi tam vuot goi la con so co dinh cua
+/// studio, giong nhau o moi goi (xem GoiAnh.tsx).
+///
+/// Giu ca ten thu muc luc dat — cung ly do voi MucXong: don giao in gom anh
+/// theo TEN thu muc (Selection.albumName) chu khong theo ma, ma trang do khong
+/// duoc goi Drive de tra ma ra ten (nguyen tac 9).
+model GoiMuc {
+  id        String @id @default(cuid())
+  galleryId String
+  /// Ma thu muc con. Chuoi rong nghia la anh nam ngay thu muc goc.
+  albumId   String
+  tenMuc    String
+  /// So anh in co san trong goi cua rieng thu muc nay. 0 = goi chi lay file.
+  soAnh     Int
 
   gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
 

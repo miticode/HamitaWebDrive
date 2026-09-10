@@ -7,6 +7,7 @@ import {
   type BiaMuc,
   type CreateGalleryInput,
   type Gallery,
+  type GoiMuc,
   type MucXong,
   type KhuGioiThieu,
   type Selection,
@@ -105,6 +106,20 @@ function toMucXong(row: {
  */
 function toBiaMuc(row: { galleryId: string; albumId: string; fileId: string }): BiaMuc {
   return { galleryId: row.galleryId, albumId: row.albumId, fileId: row.fileId };
+}
+
+function toGoiMuc(row: {
+  galleryId: string;
+  albumId: string;
+  tenMuc: string;
+  soAnh: number;
+}): GoiMuc {
+  return {
+    galleryId: row.galleryId,
+    albumId: row.albumId,
+    tenMuc: row.tenMuc,
+    soAnh: row.soAnh,
+  };
 }
 
 function toSelection(row: SelectionRow): Selection {
@@ -401,6 +416,41 @@ export const prismaStore: Store = {
   async listBiaMuc() {
     const rows = await getPrisma().biaMuc.findMany();
     return rows.map(toBiaMuc);
+  },
+
+  async setGoiMuc(
+    galleryId: string,
+    albumId: string,
+    tenMuc: string,
+    soAnh: number | null
+  ) {
+    const prisma = getPrisma();
+
+    if (soAnh === null) {
+      /*
+        deleteMany chu khong delete: bo dat rieng khi chua tung dat thi khong
+        co dong nao, va do khong phai loi — cung ly do voi setBiaMuc.
+      */
+      await prisma.goiMuc.deleteMany({ where: { galleryId, albumId } });
+      return;
+    }
+
+    await prisma.goiMuc.upsert({
+      where: { galleryId_albumId: { galleryId, albumId } },
+      create: { galleryId, albumId, tenMuc, soAnh },
+      // Cap nhat luon ten neu thu muc da doi ten tren Drive.
+      update: { tenMuc, soAnh },
+    });
+  },
+
+  async getGoiMuc(galleryId: string) {
+    const rows = await getPrisma().goiMuc.findMany({ where: { galleryId } });
+    return rows.map(toGoiMuc);
+  },
+
+  async listGoiMuc() {
+    const rows = await getPrisma().goiMuc.findMany();
+    return rows.map(toGoiMuc);
   },
 
   async toggleSelection(input: ToggleSelectionInput) {

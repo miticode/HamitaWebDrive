@@ -63,6 +63,17 @@ export function danhSachHoiDap(album: {
   choTaiAnh: boolean;
   /** Ngày studio dự định dọn ảnh, đã định dạng sẵn ("5/12/2026"). null = không đặt hạn. */
   hanGiuAnh: string | null;
+  /**
+   * Các thư mục có gói riêng, kèm số tấm — chỉ truyền ở TRANG BÌA.
+   *
+   * Trang bìa trải trên mọi thư mục, mà từ 10/09/2026 mỗi thư mục có thể mang
+   * một gói khác nhau (nhà chụp nhiều đợt). Lúc đó một con số duy nhất là nói
+   * sai với khách, nên câu trả lời liệt kê ra từng thư mục.
+   *
+   * Trong một thư mục thì KHÔNG truyền: ở đó đã biết chắc gói nào đang áp
+   * dụng, liệt kê cả nhà chỉ làm khách phải tự dò lại xem mình đang ở đâu.
+   */
+  goiTungMuc?: { tenMuc: string; soAnh: number }[];
 }): CauHoi[] {
   const ds: CauHoi[] = [];
 
@@ -79,7 +90,31 @@ export function danhSachHoiDap(album: {
     THẬT — gói chỉ lấy file — chứ không phải "chưa đặt gói", nên phải so với
     `null` chứ không viết `soAnhTrongGoi ? …`.
   */
-  if (album.soAnhTrongGoi === null) {
+  const goiTungMuc = album.goiTungMuc ?? [];
+
+  if (goiTungMuc.length > 0) {
+    /*
+      Nhiều gói thì LIỆT KÊ THẲNG RA, không gộp thành một con số.
+
+      Gộp lại (cộng dồn chẳng hạn) là kiểu sai nguy hiểm nhất: khách đọc ra một
+      con số tròn trịa rồi thả tim theo nó, tới lúc nhận đơn in mới biết mình
+      vượt gói ở thư mục này mà còn thiếu ở thư mục kia.
+    */
+    ds.push({
+      hoi: "Anh chị được chọn bao nhiêu tấm ạ?",
+      dap:
+        "Nhà mình chụp nhiều đợt nên mỗi thư mục có một gói riêng ạ:\n\n" +
+        goiTungMuc
+          .map((g) =>
+            g.soAnh === 0
+              ? `• ${g.tenMuc}: gói chỉ lấy file, không kèm ảnh in`
+              : `• ${g.tenMuc}: cần thả tim ${g.soAnh} tấm`,
+          )
+          .join("\n") +
+        "\n\nAnh chị mở thư mục nào thì ngay đầu thư mục đó có ghi rõ gói của đợt ấy ạ.\n\n" +
+        `Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái — chi phí phát sinh thêm trên mỗi tấm ảnh là ${tien(album.giaAnhThem)}đ, đã gồm chỉnh sửa và in ạ.`,
+    });
+  } else if (album.soAnhTrongGoi === null) {
     ds.push({
       hoi: "Anh chị được chọn bao nhiêu tấm ạ?",
       dap: "Album này Hamita không tính theo gói, anh chị cứ thả tim thoải mái những tấm mình thương ạ. Cần rõ hơn về số lượng thì nhắn Zalo cho bên em nhé.",

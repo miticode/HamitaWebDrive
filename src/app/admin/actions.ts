@@ -26,6 +26,7 @@ import {
   setKhuGioiThieu,
   setClientName,
   setGoiAnh,
+  setGoiMuc,
   setCover,
   setExpiry,
   setFeatured,
@@ -313,6 +314,44 @@ export async function setGoiAnhAction(
   await setGoiAnh(galleryId, so, GIA_ANH_THEM_MAC_DINH);
   revalidatePath("/admin");
   // So nay hien o trang khach xem nen phai lam moi ca duong do.
+  revalidatePath("/", "layout");
+  return {};
+}
+
+/**
+ * Dat so anh trong goi cho RIENG mot thu muc con cua album.
+ *
+ * Vi sao co: mot nha khach chup lam nhieu dot cach nhau ca thang — chup cong
+ * truoc, it lau sau moi chup cuoi — moi dot mot goi voi so tam in khac nhau
+ * (studio yeu cau 10/09/2026). Truoc do ca album chi co mot con so.
+ *
+ * De TRONG nghia la BO dat rieng: thu muc quay ve dung con so chung cua album.
+ * Khong dung 0 cho viec do — 0 la mot goi that (goi chi lay file), giong het
+ * cach phan biet o setGoiAnhAction.
+ *
+ * Ten thu muc luu kem de don giao in doc duoc ma khong phai goi Drive
+ * (nguyen tac 9) — xem model GoiMuc trong schema.
+ */
+export async function setGoiMucAction(
+  galleryId: string,
+  albumId: string,
+  tenMuc: string,
+  soAnh: string,
+): Promise<{ error?: string }> {
+  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!tenMuc.trim()) return { error: "Thiếu tên thư mục." };
+
+  const soSach = soAnh.trim();
+  let so: number | null = null;
+  if (soSach) {
+    so = Number(soSach);
+    if (!Number.isInteger(so) || so < 0) {
+      return { error: "Số ảnh trong gói phải là số nguyên từ 0 trở lên." };
+    }
+  }
+
+  await setGoiMuc(galleryId, albumId, tenMuc.trim(), so);
+  revalidatePath("/admin");
   revalidatePath("/", "layout");
   return {};
 }

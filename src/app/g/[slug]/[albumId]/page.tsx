@@ -3,11 +3,13 @@ import { ROOT_ALBUM } from "@/lib/constants";
 import { loadTree, loadTreeMoi } from "@/lib/gallery";
 import {
   getGalleryBySlug,
+  getGoiMuc,
   getLists,
   getMucXong,
   getSelections,
 } from "@/lib/store";
 import { daMoKhoa } from "@/lib/access";
+import { goiCuaMuc } from "@/lib/anhIn";
 import { DriveLoi } from "@/components/DriveLoi";
 import { AlbumView } from "../AlbumView";
 
@@ -93,10 +95,29 @@ export default async function AlbumPage({ params }: Props) {
   */
   const daTungChon = (await getSelections(gallery.id)).length > 0;
 
+  /*
+    Goi anh cua RIENG thu muc nay.
+
+    Mot nha khach co the chup lam nhieu dot — chup cong truoc, it lau sau moi
+    chup cuoi — moi dot mot goi voi so tam in khac nhau (studio yeu cau
+    10/09/2026). Thu muc khong dat rieng thi dung con so chung cua album, nen
+    phan lon album khong doi gi.
+
+    Doc o day roi truyen xuong, khong de AlbumView tu tra: khoi "Goi anh cua
+    anh chi" va khung hoi dap deu can dung mot con so, ma hai cho tu tra rieng
+    thi co ngay mot cho lech.
+  */
+  const soAnhTrongGoi = goiCuaMuc(
+    await getGoiMuc(gallery.id),
+    wanted,
+    gallery.soAnhTrongGoi,
+  );
+
   return (
     <AlbumView
       slug={slug}
       gallery={gallery}
+      soAnhTrongGoi={soAnhTrongGoi}
       lists={lists}
       album={album}
       backHref={`/g/${slug}`}

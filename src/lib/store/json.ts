@@ -7,6 +7,7 @@ import {
   slugify,
   type CreateGalleryInput,
   type Gallery,
+  type GoiMuc,
   type MucXong,
   type KhuGioiThieu,
   type Selection,
@@ -31,10 +32,19 @@ type Db = {
   mucXong?: MucXong[];
   /** Cung ly do voi mucXong: them sau, tep cu khong co truong nay. */
   biaMuc?: { galleryId: string; albumId: string; fileId: string }[];
+  /** Cung ly do voi mucXong: them sau, tep cu khong co truong nay. */
+  goiMuc?: GoiMuc[];
 };
 
 const FILE = join(process.cwd(), "data", "db.json");
-const EMPTY: Db = { galleries: [], lists: [], selections: [], mucXong: [], biaMuc: [] };
+const EMPTY: Db = {
+  galleries: [],
+  lists: [],
+  selections: [],
+  mucXong: [],
+  biaMuc: [],
+  goiMuc: [],
+};
 
 async function readFromDisk(): Promise<Db> {
   try {
@@ -388,6 +398,45 @@ export const jsonStore: Store = {
     return withLock(async () => {
       const db = await readFromDisk();
       return db.biaMuc ?? [];
+    });
+  },
+
+  setGoiMuc(
+    galleryId: string,
+    albumId: string,
+    tenMuc: string,
+    soAnh: number | null
+  ) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const ds = db.goiMuc ?? [];
+      const conLai = ds.filter(
+        (g) => !(g.galleryId === galleryId && g.albumId === albumId)
+      );
+      /*
+        So voi null chu khong viet gon thanh "soAnh ? … : …": goi 0 tam la mot
+        goi THAT (goi chi lay file), viet gon lai thi no bi hieu nham thanh
+        "bo dat rieng".
+      */
+      db.goiMuc =
+        soAnh === null
+          ? conLai
+          : [...conLai, { galleryId, albumId, tenMuc, soAnh }];
+      await writeToDisk(db);
+    });
+  },
+
+  getGoiMuc(galleryId: string) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      return (db.goiMuc ?? []).filter((g) => g.galleryId === galleryId);
+    });
+  },
+
+  listGoiMuc() {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      return db.goiMuc ?? [];
     });
   },
 

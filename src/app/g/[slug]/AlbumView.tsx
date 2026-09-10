@@ -23,6 +23,7 @@ import { ngayGon } from "@/lib/hoiDap";
 export function AlbumView({
   slug,
   gallery,
+  soAnhTrongGoi,
   lists,
   album,
   backHref,
@@ -33,6 +34,14 @@ export function AlbumView({
 }: {
   slug: string;
   gallery: Gallery;
+  /**
+   * So anh trong goi ap dung cho THU MUC NAY — da tinh ca goi rieng cua thu
+   * muc lan goi chung cua album (xem goiCuaMuc trong anhIn.ts).
+   *
+   * Truyen vao chu khong doc thang gallery.soAnhTrongGoi: tu 10/09/2026 moi
+   * thu muc co the mang mot goi khac nhau.
+   */
+  soAnhTrongGoi: number | null;
   lists: SelectionList[];
   album: Album;
   backHref: string | null;
@@ -130,7 +139,7 @@ export function AlbumView({
           những gì dòng đó nói.
         */}
         <HuongDanChon
-          soAnhTrongGoi={gallery.soAnhTrongGoi}
+          soAnhTrongGoi={soAnhTrongGoi}
           giaAnhThem={gallery.giaAnhThem}
           daTungChon={daTungChon}
         />
@@ -159,7 +168,7 @@ export function AlbumView({
         "tim với tick khác gì nhau", "chọn xong rồi làm gì".
       */}
       <HopHoiDap
-        soAnhTrongGoi={gallery.soAnhTrongGoi}
+        soAnhTrongGoi={soAnhTrongGoi}
         giaAnhThem={gallery.giaAnhThem}
         choTaiAnh={gallery.allowDownload}
         hanGiuAnh={ngayGon(gallery.expiresAt)}

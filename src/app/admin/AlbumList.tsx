@@ -3,7 +3,7 @@
 import { useDeferredValue, useMemo, useState, type ReactNode } from "react";
 import { boDau as bo_dau } from "@/lib/constants";
 import { MA_ALBUM } from "@/lib/maAlbum";
-import type { BiaMuc, Gallery, ListCount, MucXong } from "@/lib/store";
+import type { BiaMuc, Gallery, GoiMuc, ListCount, MucXong } from "@/lib/store";
 import { GalleryCard } from "./GalleryCard";
 import { LocTheoThang, hopMoc, type MocLoc } from "./LocTheoThang";
 
@@ -43,6 +43,7 @@ export function AlbumList({
   counts,
   mucXong,
   biaMuc,
+  goiMuc,
   soMayChoTin,
   baoTinLuc,
   thongBao,
@@ -53,6 +54,7 @@ export function AlbumList({
   mucXong: MucXong[];
   /** Ảnh bìa riêng của từng thư mục, của mọi album. */
   biaMuc: BiaMuc[];
+  goiMuc: GoiMuc[];
   /** So may dang cho nhan thong bao, tra theo id album. */
   soMayChoTin: Record<string, number>;
   /**
@@ -287,6 +289,7 @@ export function AlbumList({
                     counts={countsOf(g.id)}
                     mucXong={mucXong.filter((m) => m.galleryId === g.id)}
                     biaMuc={biaMuc.filter((b) => b.galleryId === g.id)}
+                    goiMuc={goiMuc.filter((x) => x.galleryId === g.id)}
                     soMayChoTin={soMayChoTin[g.id] ?? 0}
                     baoTinLuc={baoTinLuc[g.id] ?? null}
                   />

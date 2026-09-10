@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { BiaMuc, Gallery, ListCount, MucXong } from "@/lib/store";
+import type { BiaMuc, Gallery, GoiMuc, ListCount, MucXong } from "@/lib/store";
 import { MOC_DEM_LUOT_TAI, MOC_GHI_LAN_BAO, MUI_GIO } from "@/lib/constants";
 import { refreshGalleryAction } from "./actions";
 import { AccessControl } from "./AccessControl";
@@ -140,6 +140,7 @@ export function GalleryCard({
   counts,
   mucXong,
   biaMuc,
+  goiMuc,
   soMayChoTin,
   baoTinLuc,
 }: {
@@ -149,6 +150,8 @@ export function GalleryCard({
   mucXong: MucXong[];
   /** Ảnh bìa riêng từng thư mục của album này. */
   biaMuc: BiaMuc[];
+  /** Gói ảnh đặt riêng cho từng thư mục của album này. */
+  goiMuc: GoiMuc[];
   /** Số máy khách đang chờ nhận thông báo của album này. */
   soMayChoTin: number;
   /** Lần cuối bấm "Gửi thông báo" (chuỗi ISO). null = chưa ghi được lần nào. */
@@ -358,8 +361,10 @@ export function GalleryCard({
           />
           <GoiAnh
             galleryId={gallery.id}
+            folderId={gallery.driveFolderId}
             soAnhTrongGoi={gallery.soAnhTrongGoi}
             giaAnhThem={gallery.giaAnhThem}
+            goiMuc={goiMuc}
           />
           <AnhTieuBieu
             galleryId={gallery.id}

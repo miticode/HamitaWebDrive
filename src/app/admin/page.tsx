@@ -8,6 +8,7 @@ import { serviceAccountEmail } from "@/lib/drive";
 import { getConnectedAccount, oauthIsConfigured } from "@/lib/googleAuth";
 import {
   listBiaMuc,
+  listGoiMuc,
   listCounts,
   listGalleries,
   listMucXong,
@@ -96,11 +97,12 @@ export default async function AdminPage() {
     luc tao link va moi lan bam "Lam moi" — neu doc thang tu Drive thi 9 album
     la khoang 70 lan goi, cham 8-10 giay moi lan mo trang.
   */
-  const [galleries, counts, mucXong, biaMuc] = await Promise.all([
+  const [galleries, counts, mucXong, biaMuc, goiMuc] = await Promise.all([
     listGalleries(),
     listCounts(),
     listMucXong(),
     listBiaMuc(),
+    listGoiMuc(),
   ]);
 
   const driveAccount = await getConnectedAccount().catch(() => null);
@@ -287,6 +289,7 @@ export default async function AdminPage() {
               counts={counts}
               mucXong={mucXong}
               biaMuc={biaMuc}
+              goiMuc={goiMuc}
               soMayChoTin={soMayChoTin}
               baoTinLuc={baoTinLuc}
               thongBao={<ThongBao tin={tinThongBao} />}

@@ -9,6 +9,7 @@ export type {
   GalleryMeta,
   ListCount,
   Gallery,
+  GoiMuc,
   KhuGioiThieu,
   MucXong,
   Selection,
@@ -85,3 +86,10 @@ export const setBiaMuc: Store["setBiaMuc"] = (id, albumId, fileId) =>
 export const getBiaMuc: Store["getBiaMuc"] = (id) => store.getBiaMuc(id);
 
 export const listBiaMuc: Store["listBiaMuc"] = () => store.listBiaMuc();
+
+export const setGoiMuc: Store["setGoiMuc"] = (id, albumId, tenMuc, soAnh) =>
+  store.setGoiMuc(id, albumId, tenMuc, soAnh);
+
+export const getGoiMuc: Store["getGoiMuc"] = (id) => store.getGoiMuc(id);
+
+export const listGoiMuc: Store["listGoiMuc"] = () => store.listGoiMuc();

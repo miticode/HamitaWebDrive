@@ -1015,6 +1015,36 @@ số mà TypeScript lẫn ESLint đều không kêu (chuỗi vẫn hợp lệ). 
 lên đọc mới thấy. **Đừng dùng perl thay chuỗi có `${...}`; dùng công cụ sửa tệp
 hoặc đọc lại đúng dòng vừa sửa.**
 
+**50. Mỗi thư mục con có thể mang một GÓI ẢNH RIÊNG.**
+Studio yêu cầu 10/09/2026: *"có trường hợp khách chụp hình cổng rồi 1 thời gian
+về sau chụp hình cưới thì mỗi gói sẽ có số lượng ảnh khác nhau"*. Một nhà khách
+là một link, nhưng có thể là nhiều lần mua.
+
+Lưu ở bảng `GoiMuc` (galleryId + albumId). **Không có dòng nào nghĩa là theo số
+chung của album** (`Gallery.soAnhTrongGoi`) — nhờ quy tắc đó, album một gói duy
+nhất, tức phần lớn album, không sinh thêm dòng nào và studio không phải đặt lại
+từng thư mục.
+
+**Số 0 vẫn là một gói THẬT** (gói chỉ lấy file), nên chỗ nào cũng phải so với
+`null`/`undefined`, đừng viết gọn thành `goi ? …` (nguyên tắc 38).
+
+**Đơn giao in phải tính TÁCH TỪNG THƯ MỤC rồi mới cộng.** Cách cũ đem tổng số
+tấm khách thả tim so với một con số duy nhất, sai ở cả hai chiều: đo thử nhà có
+gói chung 21 và một thư mục đặt riêng 30, khách thả 10 tấm ở thư mục này và 40
+tấm ở thư mục kia — tính đúng 120.000đ, tính gộp ra 348.000đ.
+
+**Ghép theo hai khoá khác nhau, cố ý:** phía khách tra bằng **mã thư mục**
+(`goiCuaMuc`), đơn giao in tra bằng **tên** (`goiCuaMucTheoTen`) vì
+`Selection.albumName` chỉ lưu tên, mà trang đó không được gọi Drive (nguyên tắc
+9). Điểm yếu đã biết: **đổi tên thư mục trên Drive sau khi đặt gói riêng thì đơn
+in quay về gói chung** — chữa bằng cách mở ô "Gói ảnh" đặt lại một lần.
+
+**Khung "Hỏi Hamita" ở trang bìa liệt kê ĐỦ mọi thư mục** khi có gói riêng, kể
+cả thư mục đang theo gói chung: vắng mặt một thư mục thì khách đọc xong tưởng
+thư mục đó không được chọn tấm nào. Và **không bao giờ cộng các gói lại thành
+một con số** — khách sẽ thả tim theo con số đó rồi tới lúc nhận đơn mới biết
+mình vượt gói ở đợt này và còn thiếu ở đợt kia.
+
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên
 biểu tượng tới khi khách mở album ra.

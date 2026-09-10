@@ -175,6 +175,31 @@ link cũng đọc được khung, mà mã là lớp bảo vệ duy nhất.
 *Còn treo:* danh sách 10 câu mới chỉ phủ những gì bản thân trang web trả lời
 được. Studio cần đưa **câu hỏi thật khách hay hỏi sale** để bổ sung.
 
+### Mỗi thư mục một gói ảnh riêng (10/09)
+
+Anh nói: *"có trường hợp khách chụp hình cổng rồi 1 thời gian về sau chụp hình
+cưới thì mỗi gói sẽ có số lượng ảnh khác nhau"*. Nay ở ô **"Gói ảnh"** trên thẻ
+album, dưới con số chung có thêm phần **"Gói riêng từng thư mục"** — liệt kê
+từng thư mục của nhà đó, gõ số vào ô nào thì thư mục ấy chạy gói riêng.
+
+Để trống thì thư mục theo con số chung, nên **album chỉ có một gói thì không
+phải đụng gì**. Phần này chỉ hiện với album từ hai thư mục trở lên.
+
+Ba chỗ đổi theo:
+
+- **Khách mở thư mục nào thì thấy đúng gói của thư mục đó.**
+- **Khung "Hỏi Hamita" ở trang bìa** liệt kê đủ các thư mục kèm số tấm, thay vì
+  nói một con số chung không đúng cho ai cả.
+- **Đơn giao in tính tách từng thư mục rồi mới cộng.** Chỗ này là lý do chính
+  phải làm cho đúng: cách cũ đem tổng số tấm khách thả tim so với một con số duy
+  nhất. Đo thử nhà có gói chung 21 và một thư mục đặt riêng 30, khách thả 10 tấm
+  ở thư mục này và 40 tấm ở thư mục kia — **tính đúng 120.000đ, tính gộp ra
+  348.000đ**.
+
+Một điểm anh cần biết: **đổi tên thư mục trên Drive sau khi đã đặt gói riêng thì
+đơn giao in quay về gói chung** (nó ghép theo tên). Đổi tên xong thì mở ô "Gói
+ảnh" đặt lại một lần là xong.
+
 ### Thư mục ảnh đã chỉnh xong (09/09)
 
 Thư mục có tên chứa "hoàn thiện" hoặc "pts" nay hiện nút **"Đã ok, báo Hamita để

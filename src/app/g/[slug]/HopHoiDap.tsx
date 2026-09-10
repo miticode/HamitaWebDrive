@@ -26,12 +26,15 @@ export function HopHoiDap({
   giaAnhThem,
   choTaiAnh,
   hanGiuAnh,
+  goiTungMuc,
 }: {
   soAnhTrongGoi: number | null;
   giaAnhThem: number;
   choTaiAnh: boolean;
   /** Ngày dọn ảnh, đã định dạng sẵn ở máy chủ theo giờ studio. */
   hanGiuAnh: string | null;
+  /** Các thư mục có gói riêng — chỉ truyền ở trang bìa, xem danhSachHoiDap. */
+  goiTungMuc?: { tenMuc: string; soAnh: number }[];
 }) {
   const [mo, setMo] = useState(false);
   /** Câu đang mở. null = chưa mở câu nào, đang xem danh sách. */
@@ -42,6 +45,7 @@ export function HopHoiDap({
     giaAnhThem,
     choTaiAnh,
     hanGiuAnh,
+    goiTungMuc,
   });
 
   /*

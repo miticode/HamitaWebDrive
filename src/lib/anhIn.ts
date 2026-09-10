@@ -57,6 +57,52 @@ export function tinhTienIn(
 }
 
 /**
+ * Goi anh ap dung cho MOT thu muc con.
+ *
+ * Thu muc co dat rieng thi lay so cua no; khong thi lay con so chung cua ca
+ * album. Nho quy tac "khong co dong nao = theo goi chung" ma phan lon album —
+ * chi mot goi duy nhat — khong sinh them dong nao trong bang GoiMuc.
+ *
+ * Nhan albumId chu khong nhan ten: phia khach luon co san ma thu muc, ma ma
+ * thi khong doi khi studio doi ten tren Drive.
+ */
+export function goiCuaMuc(
+  goiMuc: { albumId: string; soAnh: number }[],
+  albumId: string,
+  goiChung: number | null
+): number | null {
+  const rieng = goiMuc.find((g) => g.albumId === albumId);
+  /*
+    So voi undefined chu khong viet `rieng?.soAnh ?? goiChung` cho gon: goi 0
+    tam la mot goi THAT (goi chi lay file). Viet gon thi 0 van chay dung nho
+    `??`, nhung ai doc sau de sua thanh `||` la hong ngay ma khong ai thay —
+    day dung la cho da vap mot lan (nguyen tac 38).
+  */
+  return rieng === undefined ? goiChung : rieng.soAnh;
+}
+
+/**
+ * Goi anh ap dung cho mot thu muc, tim THEO TEN.
+ *
+ * Chi don giao in dung ban nay: no gom anh theo `Selection.albumName` — ten
+ * thu muc luc khach tha tim — va khong duoc goi Drive de tra ma ra ten
+ * (nguyen tac 9). Vi vay bang GoiMuc luu ca ten, cap nhat moi lan studio dat
+ * lai so.
+ *
+ * Diem yeu da biet: studio doi ten thu muc tren Drive SAU khi dat goi rieng
+ * thi don in khong khop duoc nua va se quay ve goi chung. Sua bang cach mo o
+ * "Goi anh" dat lai mot lan — luc do ten moi duoc ghi de.
+ */
+export function goiCuaMucTheoTen(
+  goiMuc: { tenMuc: string; soAnh: number }[],
+  tenMuc: string,
+  goiChung: number | null
+): number | null {
+  const rieng = goiMuc.find((g) => g.tenMuc === tenMuc);
+  return rieng === undefined ? goiChung : rieng.soAnh;
+}
+
+/**
  * Bo tien to chu va duoi file, chi giu lai ma so.
  *
  * "HMT06704.jpg" -> "06704", "DD_08601.jpg" -> "08601". Ten khong co tien to

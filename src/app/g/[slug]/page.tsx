@@ -6,7 +6,12 @@ import { headers } from "next/headers";
 import { ROOT_ALBUM, STUDIO_NAME, laBot } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
 import type { GalleryTree } from "@/lib/drive";
-import { getBiaMuc, getGalleryBySlug, ghiLuotXem } from "@/lib/store";
+import {
+  getBiaMuc,
+  getGalleryBySlug,
+  getGoiMuc,
+  ghiLuotXem,
+} from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { DriveLoi } from "@/components/DriveLoi";
 import { LoiChuc } from "@/components/LoiChuc";
@@ -18,6 +23,7 @@ import { DauMoi, GhiNhoDaXem } from "./DauMoi";
 import { NutTaiFolder } from "./NutTaiFolder";
 import { HopHoiDap } from "./HopHoiDap";
 import { ngayGon } from "@/lib/hoiDap";
+import { goiCuaMuc } from "@/lib/anhIn";
 
 export const dynamic = "force-dynamic";
 
@@ -173,6 +179,39 @@ export default async function GalleryPage({ params }: Props) {
   );
   const biaCuaMuc = (album: { id: string; photos: { id: string }[] }) =>
     biaTheoMuc.get(album.id) ?? album.photos[0].id;
+
+  /*
+    Goi anh cua tung thu muc — chi de tra loi trong khung hoi dap.
+
+    Trang bia trai tren MOI thu muc, ma tu 10/09/2026 moi thu muc co the mang
+    mot goi khac nhau (nha chup nhieu dot). Dua mot con so duy nhat cho khung
+    hoi dap thi no tra loi sai cho nhung thu muc con lai.
+
+    Chi dung toi khi CO thu muc dat rieng — album mot goi duy nhat (phan lon)
+    van tra loi bang mot cau ngan gon nhu cu.
+
+    Liet ke DU moi thu muc chu khong chi nhung thu muc dat rieng: thu muc theo
+    goi chung ma vang mat khoi danh sach thi khach doc xong tuong thu muc do
+    khong duoc chon tam nao.
+
+    Duyet theo cay Drive chu khong duyet theo dong da luu, vi hai le: dong cu
+    cua thu muc da xoa khoi Drive van nam trong database (khong co rang buoc
+    nao don theo), va TEN phai lay tu Drive — ten trong dong la ten luc studio
+    dat goi, thu muc doi ten sau do thi hai cho noi hai kieu.
+
+    Bo qua thu muc khong co goi nao (goiCuaMuc tra null): album do khong tinh
+    theo goi, ma khung hoi dap da co nhanh rieng cho truong hop ay.
+  */
+  const goiDaDat = await getGoiMuc(gallery.id);
+  const goiTungMuc =
+    goiDaDat.length === 0
+      ? undefined
+      : tree.albums
+          .map((a) => ({
+            tenMuc: a.name,
+            soAnh: goiCuaMuc(goiDaDat, a.id, gallery.soAnhTrongGoi),
+          }))
+          .filter((g): g is { tenMuc: string; soAnh: number } => g.soAnh !== null);
 
   return (
     <main>
@@ -358,6 +397,7 @@ export default async function GalleryPage({ params }: Props) {
         giaAnhThem={gallery.giaAnhThem}
         choTaiAnh={gallery.allowDownload}
         hanGiuAnh={ngayGon(gallery.expiresAt)}
+        goiTungMuc={goiTungMuc}
       />
     </main>
   );
