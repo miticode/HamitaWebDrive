@@ -48,7 +48,7 @@ export function NutGuiThongBao({
     return (
       <span
         className="btn cursor-not-allowed opacity-45"
-        title="Chưa ai đăng ký. Khách phải cài album ra màn hình chính rồi bấm “Báo em khi có ảnh mới” thì mới nhận được tin."
+        title="Chưa ai đăng ký. Khách phải cài album ra màn hình chính rồi bấm “Nhận thông báo khi có ảnh mới” thì mới nhận được tin."
       >
         Gửi thông báo
         <span className="ml-1.5 whitespace-nowrap">· 0 máy</span>

@@ -169,19 +169,38 @@ export function NutThongBao({ slug }: { slug: string }) {
 
   return (
     <div className="mx-auto mt-4 max-w-md px-5">
+      {/*
+        Ô này NỔI HƠN nút "Lưu ra màn hình chính" ngay trên nó (studio yêu cầu
+        10/09/2026). Trước đây hai ô mặc cùng một bộ áo — viền xám, nền trắng,
+        biểu tượng nhạt — nên khách lướt qua như một dòng trang trí.
+
+        Mặc đúng bộ áo của khối "Gói ảnh của anh chị" (HuongDanChon.tsx): viền
+        và nền màu nhấn, biểu tượng tròn đặc. Dùng lại một kiểu đã có thay vì
+        bịa kiểu thứ ba — khách của studio đã quen nhận ra "khung màu vàng nâu
+        là thứ cần đọc".
+
+        Tiêu đề màu CHỮ THƯỜNG, không tô màu nhấn. Đo thật: chữ màu nhấn trên
+        nền kem chỉ đạt tương phản 3,33:1, dưới mức 4,5:1 cho chữ cỡ này — mà
+        khách của studio vốn ít đọc chữ, tiêu đề phải là thứ dễ đọc nhất. Màu
+        nhấn để cho viền, chuông và mũi tên lo phần nổi bật.
+
+        KHÔNG thêm nhấp nháy hay rung lắc để gây chú ý: web đã bỏ hết hiệu ứng
+        chuyển động, chỉ còn vòng xoay "đang chạy" (xem NutLamMoi.tsx). Nổi bật
+        bằng màu và cỡ chữ là đủ, mà không làm khách tưởng trang đang báo lỗi.
+      */}
       <button
         type="button"
         onClick={bat}
         disabled={dangChay}
-        className="flex w-full items-center gap-3.5 rounded-md border border-line-strong bg-bg-raised px-4 py-3.5 text-left transition hover:border-accent"
+        className="flex w-full items-center gap-3.5 rounded-md border border-accent bg-accent-soft px-4 py-4 text-left transition hover:shadow-[var(--shadow-lift)] disabled:opacity-70 sm:gap-4 sm:px-5"
       >
-        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent">
+        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent text-white">
           <svg
             viewBox="0 0 24 24"
-            className="size-5"
+            className="size-[22px]"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.6"
+            strokeWidth="1.7"
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden
@@ -191,15 +210,21 @@ export function NutThongBao({ slug }: { slug: string }) {
           </svg>
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium">
-            {dangChay ? "Đang bật…" : "Báo em khi có ảnh mới"}
+          <span className="block text-[15px] font-semibold text-balance text-fg">
+            {dangChay ? "Đang bật…" : "Nhận thông báo khi có ảnh mới"}
           </span>
-          <span className="mt-0.5 block text-xs leading-relaxed text-fg-muted">
+          <span className="mt-1 block text-[13px] leading-relaxed text-fg">
             Hamita thêm ảnh là điện thoại anh chị hiện ngay, khỏi phải vào xem
             chừng ạ.
           </span>
         </span>
-        <span aria-hidden className="shrink-0 text-fg-faint">
+        {/*
+          Mũi tên chỉ hiện từ màn 640px trở lên. Đo trên điện thoại 375px: có
+          mũi tên thì ô cao 168px, tiêu đề gãy đôi. Cả ô đã là một nút bấm có
+          viền màu nhấn — ở màn hẹp, mũi tên không nói thêm gì mà lại chiếm chỗ
+          của chữ.
+        */}
+        <span aria-hidden className="hidden shrink-0 text-lg text-accent sm:inline">
           →
         </span>
       </button>
