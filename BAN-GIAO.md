@@ -518,6 +518,10 @@ việc giống hệt nhau, chỉ khác ở chỗ tấm ảnh đại diện cho a
 - **Lời dặn của khách hiện trên từng ảnh** ở trang "Ảnh khách chọn", cả hai danh
   sách. Trước đây chỉ đọc được ở đơn giao in, mà đơn đó chỉ lấy danh sách trái
   tim — nên lời dặn trên tấm giữ riêng không hiện ở đâu cả.
+- **Tấm có lời dặn lên đầu thư mục** ở trang "Ảnh khách chọn" (16/09). Chỉ đổi
+  chỗ hiển thị trong từng thư mục; các tấm còn lại vẫn theo tên file, và danh
+  sách tên file để chép cho bên in vẫn theo tên. Thử trên album Quốc Phong & Mỹ
+  Lộc: 2 tấm có dặn (TRI06683, TRI06924) đứng đầu, 25 tấm sau theo tên, đủ 27.
 - **Ô ghi chú có nút "Lưu"** — xem nguyên tắc 31.
 - **Khối xác nhận "đã chọn xong" ở cuối trang thư mục**, nói rõ tên thư mục.
 - **Nhãn "Đã chọn xong"** trên thẻ album giờ ghi đúng chữ đó, thay vì chỉ ghi
