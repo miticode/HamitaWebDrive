@@ -158,6 +158,8 @@ export default async function AdminPage() {
 
   const { quaHan, sapHetHan } = xepTheoHan(galleries);
   const saoLuuCachDay = cachDayMayNgay(await docMoc("saoLuu"));
+  // Riêng bản tự động lên Drive — để biết lịch chạy mỗi đêm còn sống không.
+  const saoLuuTuDongCachDay = cachDayMayNgay(await docMoc("saoLuuTuDong"));
 
   // Cung mot cookie voi layout — doc lai o day de nut hien dung bieu tuong ngay
   // tu luot ve dau, khong nhay tu "Nen toi" sang "Nen sang" sau khi trang chay.
@@ -236,7 +238,7 @@ export default async function AdminPage() {
             serviceAccount={serviceAccount}
           />
         </div>
-        <NutSaoLuu soNgayTruoc={saoLuuCachDay} />
+        <NutSaoLuu soNgayTruoc={saoLuuCachDay} tuDongCachDay={saoLuuTuDongCachDay} />
       </div>
 
       {/*

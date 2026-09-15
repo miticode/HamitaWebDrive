@@ -312,9 +312,21 @@ sửa giọng văn thì không phải mở file giao diện.
 có cả một mạch kể dịch vụ rồi, nói lại là lặp. Bản cũ chính là lỗi đó ("Hamita
 là nơi lo trọn gói… từ lễ hỏi, ảnh cưới, trang điểm cho tới chiếc váy").
 
-**26. Bản sao lưu KHÔNG được chứa phiếu đăng nhập Google.**
-`npm run db:backup` xuất mọi bảng trừ hai thứ: cột `refreshToken` của
-`GoogleAccount`, và cả bảng `LoginAttempt`.
+**26. Bản sao lưu KHÔNG được chứa chìa khoá: phiếu Google, mật khẩu nhân viên.**
+Bỏ cột `refreshToken` của `GoogleAccount`, cột `matKhau` của `NhanVien`; bỏ hẳn
+bảng `LoginAttempt` và `PhienDangNhap`. Mọi bảng khác đều vào bản sao lưu.
+
+**Mọi bảng phải khai báo trong `src/lib/saoLuu.ts`** — `BANG_SAO_LUU` hoặc
+`BANG_BO_QUA` kèm lý do. Bảng mới chưa khai báo thì sao lưu BÁO LỖI thay vì
+lặng lẽ bỏ sót. Đã xảy ra thật: đo 15/09/2026, bản sao lưu chỉ lấy 6/13 bảng —
+thiếu ảnh bìa thư mục, gói ảnh thư mục, mốc thông báo, nhân viên, nhật ký — mà
+không ai biết, dù chú thích trong tệp đã cảnh báo đúng chuyện đó.
+
+**Tự động lên Drive mỗi đêm 3 giờ** (vercel.json → `/api/cron/sao-luu`), nén
+gzip, cất trong thư mục "Hamita – Sao lưu tự động" của tài khoản Drive đang
+kết nối, bằng quyền `drive.file` (chỉ sửa được tệp do web tạo). Chưa đặt
+`CRON_SECRET` thì người lạ gọi đường đó tối đa một lần mỗi 20 giờ, tính cả lần
+hỏng. Tên tệp theo giờ studio, không theo giờ máy chủ (UTC).
 
 Phiếu Google mở được **toàn bộ** Drive của studio và không hết hạn. Một tệp sao
 lưu nằm trên ổ đĩa, được chép đi chép lại, gửi qua chỗ này chỗ kia — không phải

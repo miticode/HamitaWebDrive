@@ -201,8 +201,28 @@ tác.
 3. Nhân viên đăng nhập bằng **số điện thoại** của mình + mật khẩu tạm, rồi bị
    bắt đặt mật khẩu riêng ngay.
 
-**Còn lại của đợt 1:** sao lưu tự động hằng ngày, Thông tin studio, Bảng dịch vụ
+**Còn lại của đợt 1:** Thông tin studio, Bảng dịch vụ
 và trang phục (1.018 mục), Nội quy.
+
+### Sao lưu tự động lên Drive mỗi đêm (15/09)
+
+Mỗi đêm 3 giờ sáng, web tự chụp toàn bộ database, nén lại, cất vào thư mục
+**"Hamita – Sao lưu tự động"** trong Google Drive của studio. Nút cũ ở trang
+quản lý album đổi thành **"Sao lưu lên Drive ngay"**, vẫn còn lựa chọn **tải về
+máy**.
+
+Khi làm phát hiện **bản sao lưu cũ chỉ lấy 6 trong 13 bảng** — thiếu ảnh bìa
+thư mục, gói ảnh thư mục, mốc đã gửi thông báo, nhân viên, nhật ký. Đã sửa, và
+từ nay bảng mới nào quên khai báo thì sao lưu báo lỗi ngay.
+
+Bản sao lưu không chứa mật khẩu nhân viên và phiếu Google — phục hồi xong phải
+bấm "Kết nối lại" Google và cấp lại mật khẩu cho nhân viên.
+
+**Anh cần làm một lần:** bấm **"Kết nối lại"** Google trên trang quản lý album
+(đăng nhập đúng tài khoản đang kết nối) và **tích ô cho phép tạo tệp**, rồi bấm
+**"Sao lưu lên Drive ngay"** để thử. Nếu Google không hiện ô đó thì phải khai
+báo thêm quyền `drive.file` trong Google Cloud Console (mục Data Access của màn
+hình đồng ý).
 
 ### Mỗi thư mục một gói ảnh riêng (10/09)
 

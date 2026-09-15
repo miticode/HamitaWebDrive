@@ -25,6 +25,7 @@ loadEnv({ path: ".env.local", quiet: true });
 
 import { readFile, readdir } from "node:fs/promises";
 import { isAbsolute, join } from "node:path";
+import { gunzipSync } from "node:zlib";
 
 const { getPrisma, databaseIsConfigured } = await import("../src/lib/db");
 
@@ -38,6 +39,12 @@ const COT_NGAY: Record<string, string[]> = {
   mucXong: ["xongLuc"],
   pushSub: ["createdAt"],
   googleAccount: ["connectedAt"],
+  // Tu ban sao luu phien ban 2 (15/09/2026):
+  biaMuc: [],
+  goiMuc: [],
+  moc: ["luc"],
+  nhanVien: ["ngayVaoLam", "dangNhapLuc", "taoLuc", "capNhatLuc"],
+  nhatKy: ["luc"],
 };
 
 function doiNgay<T extends Record<string, unknown>>(bang: string, dong: T): T {
@@ -48,11 +55,21 @@ function doiNgay<T extends Record<string, unknown>>(bang: string, dong: T): T {
   return ra as T;
 }
 
+/**
+ * Doc mot tep sao luu. Ban tu dong tren Drive nen gzip (.json.gz) — tai ve
+ * data/sao-luu roi dung lenh nay nhu thuong, khong can giai nen tay.
+ */
+async function docTep(duong: string) {
+  const tho = await readFile(duong);
+  const chu = duong.endsWith(".gz") ? gunzipSync(tho).toString("utf8") : tho.toString("utf8");
+  return JSON.parse(chu);
+}
+
 async function lietKe() {
   let tep: string[] = [];
   try {
     tep = (await readdir(THU_MUC))
-      .filter((t) => t.startsWith("hamita-") && t.endsWith(".json"))
+      .filter((t) => t.startsWith("hamita-") && (t.endsWith(".json") || t.endsWith(".json.gz")))
       .sort()
       .reverse();
   } catch {
@@ -67,7 +84,7 @@ async function lietKe() {
   console.log(`Co ${tep.length} ban sao luu trong data/sao-luu:\n`);
   for (const t of tep) {
     try {
-      const b = JSON.parse(await readFile(join(THU_MUC, t), "utf8"));
+      const b = await docTep(join(THU_MUC, t));
       console.log(
         `  ${t}   ${String(b.soLuong?.gallery ?? "?").padStart(3)} album · ` +
           `${String(b.soLuong?.selection ?? "?").padStart(5)} lua chon`
@@ -103,7 +120,7 @@ let ban: {
   bang: Record<string, Record<string, unknown>[]>;
 };
 try {
-  ban = JSON.parse(await readFile(duongDan, "utf8"));
+  ban = await docTep(duongDan);
 } catch {
   console.error(`Khong doc duoc tep: ${duongDan}`);
   process.exit(1);
@@ -138,6 +155,9 @@ const dsSelection = (ban.bang.selection ?? []).filter((s) =>
 const dsMucXong = (ban.bang.mucXong ?? []).filter((m) =>
   idGallery.has(m.galleryId as string)
 );
+// Anh bia va goi anh tung thu muc — chi co tu ban sao luu phien ban 2.
+const dsBiaMuc = (ban.bang.biaMuc ?? []).filter((m) => idGallery.has(m.galleryId as string));
+const dsGoiMuc = (ban.bang.goiMuc ?? []).filter((m) => idGallery.has(m.galleryId as string));
 
 /*
   PushSub co tinh khong phuc hoi: phieu do gan voi mot trinh duyet cu the va
@@ -164,6 +184,8 @@ for (const g of dsGallery) {
   const idListCuaNo = new Set(listCuaNo.map((l) => l.id));
   const selCuaNo = dsSelection.filter((s) => idListCuaNo.has(s.listId));
   const mucCuaNo = dsMucXong.filter((m) => m.galleryId === g.id);
+  const biaCuaNo = dsBiaMuc.filter((m) => m.galleryId === g.id);
+  const goiCuaNo = dsGoiMuc.filter((m) => m.galleryId === g.id);
 
   console.log(
     `  ${ghiThat ? "phuc hoi" : "SE them "} ${String(g.slug).padEnd(36)} ${ten}` +
@@ -186,6 +208,8 @@ for (const g of dsGallery) {
       ...mucCuaNo.map((m) =>
         prisma.mucXong.create({ data: doiNgay("mucXong", m) as never })
       ),
+      ...biaCuaNo.map((m) => prisma.biaMuc.create({ data: m as never })),
+      ...goiCuaNo.map((m) => prisma.goiMuc.create({ data: m as never })),
     ]);
   }
   daThem++;
@@ -196,7 +220,54 @@ console.log(
     (boQua ? `, bo qua ${boQua} album van con trong database.` : ".")
 );
 
-if (!ghiThat && daThem > 0) {
+/*
+  Nhan vien va nhat ky (ban sao luu tu phien ban 2). Chi phuc hoi khi KHONG
+  loc theo album. Cung luat: chi them, khong ghi de. Mat khau KHONG co trong
+  ban sao luu, nen nguoi duoc phuc hoi phai duoc quan ly cap lai mat khau.
+*/
+let nvThem = 0;
+let nkThem = 0;
+if (!chiAlbum) {
+  for (const nv of ban.bang.nhanVien ?? []) {
+    const dangCo = await prisma.nhanVien.findFirst({
+      where: { OR: [{ id: nv.id as string }, { tenDangNhap: nv.tenDangNhap as string }] },
+    });
+    if (dangCo) continue;
+    nvThem++;
+    if (ghiThat) {
+      await prisma.nhanVien.create({
+        data: { ...doiNgay("nhanVien", nv), matKhau: null, doiMatKhau: true } as never,
+      });
+    }
+  }
+
+  const dsNhatKy = ban.bang.nhatKy ?? [];
+  if (dsNhatKy.length) {
+    const daCo = new Set(
+      (
+        await prisma.nhatKy.findMany({
+          where: { id: { in: dsNhatKy.map((d) => d.id as string) } },
+          select: { id: true },
+        })
+      ).map((d) => d.id),
+    );
+    const moi = dsNhatKy.filter((d) => !daCo.has(d.id as string));
+    nkThem = moi.length;
+    if (ghiThat && moi.length) {
+      await prisma.nhatKy.createMany({
+        // chiTiet null phai bo di: cot Json khong nhan null tran.
+        data: moi.map((d) => ({ ...doiNgay("nhatKy", d), chiTiet: d.chiTiet ?? undefined })) as never,
+      });
+    }
+  }
+
+  console.log(
+    `${ghiThat ? "Da phuc hoi" : "Se phuc hoi"} ${nvThem} nhan vien, ${nkThem} dong nhat ky.` +
+      (nvThem ? " Nho cap lai mat khau cho nhung nguoi nay." : ""),
+  );
+}
+
+if (!ghiThat && (daThem > 0 || nvThem > 0 || nkThem > 0)) {
   console.log("\nGhi that thi them --ghi vao cuoi lenh.");
 }
 if (ghiThat && daThem > 0) {

@@ -13,8 +13,16 @@ import { coKhoaMaHoa, daMaHoa, giaiMa, maHoa } from "@/lib/maHoa";
  * Pham vi quyen la drive.readonly — Google xep vao nhom "han che". Khong dung
  * duoc drive.file vi Google noi ro: chon mot thu muc KHONG cap quyen doc noi dung
  * ben trong, ma ca web nay song nho viec doc anh ben trong folder.
+ *
+ * Tu 15/09/2026 xin THEM drive.file, ben canh (khong thay the) drive.readonly:
+ * chi de ghi ban sao luu tu dong moi dem (src/lib/saoLuuDrive.ts). drive.file
+ * chi cho sua dung nhung tep do chinh web tao ra. Nguoi dung bo tich o nay
+ * luc dong y thi album van chay binh thuong — chi rieng sao luu bao loi va
+ * xin ket noi lai.
  */
 const SCOPE = "https://www.googleapis.com/auth/drive.readonly";
+/** Chi de ghi tep sao luu vao Drive — xem chu thich dau tep. */
+const QUYEN_GHI_SAO_LUU = "https://www.googleapis.com/auth/drive.file";
 
 /** Chi giu mot ket noi duy nhat — day la tai khoan cua studio, khong phai cua khach. */
 const ROW_ID = "default";
@@ -45,7 +53,7 @@ function createClient(): OAuth2Client {
 export function consentUrl(state: string): string {
   return createClient().generateAuthUrl({
     access_type: "offline",
-    scope: [SCOPE, "https://www.googleapis.com/auth/userinfo.email"],
+    scope: [SCOPE, QUYEN_GHI_SAO_LUU, "https://www.googleapis.com/auth/userinfo.email"],
     // Bắt Google phát lại refresh token; nếu không, lần đồng ý thứ hai trở đi
     // Google chỉ trả access token và mình không có gì để lưu.
     prompt: "consent",
