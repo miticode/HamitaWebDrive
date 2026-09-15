@@ -315,3 +315,83 @@ model GoogleAccount {
   connectedAt  DateTime @default(now())
 }
 
+
+/// Nhan vien cua studio — nguoi dang nhap vao phan quan ly studio (/quan-ly).
+///
+/// Dang nhap bang TEN DANG NHAP + MAT KHAU (studio chot 15/09/2026, thay cho
+/// dang nhap Google — cho don gian). Mac dinh ten dang nhap la so dien thoai,
+/// vi nhan vien nao cung nho so cua minh.
+///
+/// KHONG lay lai mat khau ben AppSheet cu: o do mat khau nam tran trong file
+/// Google Sheet dung ten nguoi ban app, 25/26 cai chinh la so dien thoai cua
+/// nguoi do. Quan ly cap mat khau tam, nhan vien doi ngay lan dau dang nhap.
+model NhanVien {
+  id          String    @id @default(cuid())
+  /// Ma nhan vien ben AppSheet cu — de ghep du lieu khi chuyen cac bang sau
+  /// (cham cong, luong). null voi nhan vien tao moi tren web.
+  maNV        String?   @unique
+  ten         String
+  /// Viet thuong, khong dau cach. Mac dinh la so dien thoai.
+  tenDangNhap String    @unique
+  /// Mat khau da bam bang scrypt (src/lib/matKhau.ts). null = chua duoc cap,
+  /// chua dang nhap duoc. KHONG BAO GIO luu mat khau doc duoc.
+  matKhau     String?
+  /// true = phai doi mat khau o lan dang nhap toi (vua duoc cap mat khau tam).
+  doiMatKhau  Boolean   @default(true)
+  /// "quan-tri" | "nhan-vien". Quan tri xem duoc luong cua moi nguoi; nhan
+  /// vien chi xem luong cua chinh minh (studio chot 15/09/2026).
+  vaiTro      String    @default("nhan-vien")
+  soDienThoai String?
+  email       String?
+  gioiTinh    String?
+  /// "Nhân viên" | "Cộng tác viên" — giu nguyen chu nhu ben AppSheet.
+  loaiNV      String?
+  phongBan    String?
+  chucVu      String?
+  ngayVaoLam  DateTime?
+  /// false = da nghi viec: khong dang nhap duoc nua, moi phien bi xoa.
+  dangLam     Boolean   @default(true)
+  dangNhapLuc DateTime?
+  taoLuc      DateTime  @default(now())
+  capNhatLuc  DateTime  @updatedAt
+
+  phien PhienDangNhap[]
+}
+
+/// Mot lan dang nhap dang con hieu luc cua mot nhan vien.
+///
+/// Luu trong database chu khong ky san vao cookie: nhan vien nghi viec hay bi
+/// cap lai mat khau thi xoa dong o day la moi may cua ho bi dang xuat ngay,
+/// khong phai doi cookie het han.
+model PhienDangNhap {
+  /// SHA-256 cua chuoi trong cookie — database khong giu chuoi that, lo database
+  /// cung khong ai dung duoc phien.
+  id         String   @id
+  nhanVienId String
+  taoLuc     DateTime @default(now())
+  hetHan     DateTime
+
+  nhanVien NhanVien @relation(fields: [nhanVienId], references: [id], onDelete: Cascade)
+
+  @@index([nhanVienId])
+}
+
+/// Nhat ky thao tac trong phan quan ly studio: ai, luc nao, lam gi, sua tu gi
+/// thanh gi. Lo sua sai (nhat la tien, luong) thi truy lai duoc.
+///
+/// nguoiId KHONG noi khoa toi NhanVien: nhat ky phai con nguyen ke ca khi sau
+/// nay xoa nguoi do. Ten luu kem luc ghi (nguoiTen) vi cung ly do.
+model NhatKy {
+  id         String   @id @default(cuid())
+  luc        DateTime @default(now())
+  /// null = quan tri dang nhap bang mat khau quan ly chung.
+  nguoiId    String?
+  nguoiTen   String
+  hanhDong   String
+  doiTuong   String?
+  doiTuongId String?
+  chiTiet    Json?
+
+  @@index([luc])
+  @@index([doiTuong, doiTuongId])
+}

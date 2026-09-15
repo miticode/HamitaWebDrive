@@ -1045,6 +1045,43 @@ thư mục đó không được chọn tấm nào. Và **không bao giờ cộng
 một con số** — khách sẽ thả tim theo con số đó rồi tới lúc nhận đơn mới biết
 mình vượt gói ở đợt này và còn thiếu ở đợt kia.
 
+**51. Phần quản lý studio (`/quan-ly`) đăng nhập bằng TÊN + MẬT KHẨU, không phải Google.**
+Studio chốt 15/09/2026, bỏ phương án đăng nhập Google cho đơn giản. Đây là phần
+thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
+
+- **Tên đăng nhập mặc định là số điện thoại** — nhân viên nào cũng nhớ số mình.
+- **Mật khẩu băm scrypt, có muối** (`src/lib/matKhau.ts`). Không bao giờ lưu
+  dạng đọc được, không ghi vào nhật ký.
+- **KHÔNG nhập mật khẩu từ AppSheet.** Bên đó mật khẩu nằm trần trong file
+  Google Sheet đứng tên người bán; 25/26 cái là số điện thoại của chính người
+  đó (đo 15/09). Quản lý bấm "Cấp mật khẩu", mật khẩu tạm hiện ĐÚNG MỘT LẦN để
+  chép gửi Zalo, nhân viên bị bắt đổi ở lần đăng nhập đầu. Cấm đặt mật khẩu
+  trùng số điện thoại hay tên đăng nhập.
+- **Bộ đếm đăng nhập sai tính theo TÀI KHOẢN** (khoá `tk:<tên>` trong bảng
+  LoginAttempt), không theo địa chỉ mạng: cả tiệm dùng chung wifi, tính theo
+  địa chỉ thì một người gõ sai là khoá cả tiệm, kể cả trang quản lý album.
+- **Sếp gõ tên `admin`** + mật khẩu quản lý album (`ADMIN_PASSWORD`) — đi
+  đúng đường đăng nhập của `/admin`. Người đang đăng nhập `/admin` vào
+  `/quan-ly` là quản lý luôn. Tên "admin" cấm nhân viên dùng.
+- **Phiên lưu trong database** (bảng PhienDangNhap, chỉ giữ SHA-256 của cookie)
+  để cấp lại mật khẩu, đánh dấu nghỉ việc, hay hạ quyền là mọi máy của người
+  đó văng ra NGAY. Mỗi lần mở trang đều kiểm lại người đó còn làm không.
+- **Nhật ký** (bảng NhatKy, `src/lib/nhatKy.ts`): mọi thao tác sửa dữ liệu
+  phải ghi. Không nối khoá tới NhanVien để nhật ký còn nguyên khi xoá người.
+- **Quyền xem lương** (dùng từ đợt 4): quản lý xem lương mọi người, nhân viên
+  chỉ xem lương của chính mình. Lương cứng và số tài khoản CHƯA nhập từ
+  AppSheet — chờ tới đợt 4.
+- **Không làm chức năng quét QR trang phục** (studio chốt 15/09; bảng đó bên
+  AppSheet cũng trống).
+- **MỖI TRANG tự gọi `batBuocDangNhap()`**, đừng trông vào layout của nhóm
+  `(he-thong)`: trong Next, layout và trang dựng SONG SONG — layout chuyển hướng
+  thì trang vẫn chạy. Đã vấp thật 15/09: bốn lượt thử không đăng nhập làm trang
+  Tổng quan văng lỗi `null` vì tin là layout đã chặn. Thanh bên chỉ hiện mục
+  đã làm xong; mục đang làm liệt kê ở trang Tổng quan.
+- Nhập nhân viên: `npx tsx scripts/nhap-nhan-vien.mts` (chỉ thêm người chưa
+  có; `--cap-nhat` để cập nhật thông tin). Ghép bằng "Mã NV", không bao giờ
+  ghi đè tên đăng nhập, vai trò, mật khẩu.
+
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên
 biểu tượng tới khi khách mở album ra.

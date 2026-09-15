@@ -123,7 +123,7 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 
 ---
 
-## 6. Việc lớn đã làm trong đợt này (08–10/09/2026)
+## 6. Việc lớn đã làm trong đợt này (08–15/09/2026)
 
 Đợt này xoay quanh **khách dùng điện thoại**: tải ảnh về máy phải thật sự lưu
 được, và khách phải tự trả lời được thắc mắc mà không cần nhắn sale. Kèm theo là
@@ -174,6 +174,35 @@ link cũng đọc được khung, mà mã là lớp bảo vệ duy nhất.
 
 *Còn treo:* danh sách 10 câu mới chỉ phủ những gì bản thân trang web trả lời
 được. Studio cần đưa **câu hỏi thật khách hay hỏi sale** để bổ sung.
+
+### Bắt đầu phần quản lý studio, thay dần AppSheet (15/09)
+
+Anh mua app AppSheet của người khác, không toàn quyền. Em đọc file dữ liệu của
+nó (chỉ cấu trúc và số đếm) và phát hiện hai chuyện gấp:
+
+- **File dữ liệu đứng tên người bán** (`admin@appquanlystudio.net`), chứa 1.973
+  khách, 2.220 hợp đồng, sổ thu chi và lương. **Anh cần Tệp → Tạo bản sao vào
+  Drive của Hamita, lặp lại mỗi tuần** tới khi chuyển xong.
+- **Mật khẩu nhân viên nằm trần trong file, 25/26 cái là số điện thoại.**
+
+Đã chốt: **không tốn thêm chi phí, không dùng GoClaw, giao diện kiểu Lark, chat
+vẫn ở Zalo.** Kế hoạch đầy đủ: https://claude.ai/artifact/9NV66DHdfrjaFmLcZueTir
+
+**Đã có (đợt 1, phần đầu):** trang `/quan-ly` (hoặc nút "Quản lý studio" trên
+trang quản lý album), đăng nhập bằng tên + mật khẩu, danh bạ 26 nhân viên nhập
+từ AppSheet (16 đang làm, 10 đã nghỉ), cấp mật khẩu, phân quyền, nhật ký thao
+tác.
+
+**Cách dùng lần đầu:**
+
+1. Vào `/quan-ly`, gõ tên **admin** và mật khẩu quản lý album.
+2. Mục **Nhân viên** → bấm **Cấp mật khẩu** từng người → **Chép tin nhắn gửi
+   Zalo** (mật khẩu tạm chỉ hiện một lần).
+3. Nhân viên đăng nhập bằng **số điện thoại** của mình + mật khẩu tạm, rồi bị
+   bắt đặt mật khẩu riêng ngay.
+
+**Còn lại của đợt 1:** sao lưu tự động hằng ngày, Thông tin studio, Bảng dịch vụ
+và trang phục (1.018 mục), Nội quy.
 
 ### Mỗi thư mục một gói ảnh riêng (10/09)
 

@@ -1,0 +1,55 @@
+"use client";
+
+import { useActionState } from "react";
+import { Logo } from "@/components/Logo";
+import { dangNhapAction, type KetQua } from "../actions";
+
+export function FormDangNhap() {
+  const [kq, action, dangChay] = useActionState<KetQua, FormData>(dangNhapAction, {});
+
+  return (
+    <form action={action} className="mx-auto mt-24 w-full max-w-xs px-6 text-center">
+      <Logo size="md" className="mx-auto" />
+      <h1 className="rule mt-6 font-display text-2xl font-light">Quản lý studio</h1>
+
+      <label className="mt-8 block text-left">
+        <span className="text-xs text-fg-muted">Tên đăng nhập</span>
+        {/*
+          autoCapitalize tắt: điện thoại tự viết hoa chữ đầu, "Hoa" với "hoa"
+          lệch nhau là gõ đúng vẫn báo sai. Máy chủ vẫn hạ chữ thường cho chắc.
+        */}
+        <input
+          id="tenDangNhap"
+          name="tenDangNhap"
+          autoComplete="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          autoFocus
+          placeholder="Số điện thoại của anh chị"
+          className="input mt-1"
+        />
+      </label>
+      <label className="mt-3 block text-left">
+        <span className="text-xs text-fg-muted">Mật khẩu</span>
+        <input
+          id="matKhau"
+          name="matKhau"
+          type="password"
+          autoComplete="current-password"
+          className="input mt-1"
+        />
+      </label>
+
+      {kq.loi && <p className="mt-3 text-left text-sm text-red-700">{kq.loi}</p>}
+
+      <button disabled={dangChay} className="btn-primary mt-4 w-full justify-center">
+        {dangChay ? "Đang kiểm tra…" : "Đăng nhập"}
+      </button>
+
+      <p className="mt-6 text-xs leading-relaxed text-fg-faint">
+        Quên mật khẩu hoặc chưa có mật khẩu thì nhờ quản lý cấp lại giúp.
+      </p>
+    </form>
+  );
+}

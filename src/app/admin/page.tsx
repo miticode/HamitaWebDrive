@@ -196,6 +196,16 @@ export default async function AdminPage() {
         <TheoDoiKhach />
 
         <div className="flex items-center gap-5">
+          {/*
+            Lối sang phần quản lý studio (thay dần AppSheet, bắt đầu 15/09/2026).
+            Đang cầm mật khẩu quản lý album thì vào thẳng, không phải đăng nhập lại.
+          */}
+          <Link
+            href="/quan-ly"
+            className="eyebrow transition hover:text-accent"
+          >
+            Quản lý studio
+          </Link>
           <Link
             href="/admin/thong-ke"
             className="eyebrow transition hover:text-accent"
