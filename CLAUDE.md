@@ -34,7 +34,7 @@ Kiến trúc từng file và các bước cài đặt: đọc **`README.md`**.
 thay đổi thì phải hỏi trước và nêu rõ lý do.
 
 **1. Chỉ có MỘT chế độ truy cập: xem tự do, cần mã để chọn ảnh.**
-Khách mở link là xem được toàn bộ ảnh. Muốn tim/tick thì phải nhập mã của album
+Khách mở link là xem được toàn bộ ảnh. Muốn thả tim thì phải nhập mã của album
 (dạng `HAMITA-AB12`). Đã từng làm ba chế độ rồi gỡ đi — đừng thêm lại.
 
 **2. Cả album dùng chung MỘT mã, nên chung MỘT danh sách chọn.**
@@ -277,7 +277,7 @@ là ảnh khoe KHÔNG GIAN. Hai nơi giải hai kiểu:
   tệp — không tốn thêm lần gọi nào, đừng đi đo lại bằng cách tải ảnh về.
 
 **`/phim-truong` là trang riêng, KHÔNG dùng lại `/g/[slug]`.** Trang album là
-chỗ riêng tư của một nhà khách: có nhập mã, thả tim, tick giữ riêng, đếm ngược
+chỗ riêng tư của một nhà khách: có nhập mã, thả tim, đếm ngược
 hạn giữ ảnh, và tự khai `noindex`. Phim trường thì ngược hẳn — công khai, càng
 nhiều người tìm thấy càng tốt (nên có trong `sitemap.ts`), và khách xem nó
 không chọn ảnh gì cả. Trang chủ khoe tám tấm; ai muốn xem hết thì sang đây.
@@ -394,19 +394,26 @@ là trang vẫn mở bình thường, không gì tố cáo. Vì vậy khung `Kho
 **chưa nối Google** (giấu khung đi) với **gọi Drive hỏng** (hiện dòng đỏ) — gộp
 chung thì khung lặng lẽ biến mất và studio chỉ biết khi khách gọi điện.
 
-**28. Đơn giao in CHỈ tính danh sách "Ảnh in" (trái tim), không tính "Ảnh chọn" (tick).**
+**28. Đơn giao in CHỈ tính danh sách "Ảnh in" (trái tim) — từ 16/09/2026 cũng là danh sách duy nhất.**
 Đây không phải lựa chọn kỹ thuật mà là **lời đã nói với khách**, nguyên văn ở
 bước 01 trong `HuongDanChon.tsx` (là bước 02 cho tới 28/08/2026, khi studio
 bỏ hẳn bước "Ngắm ảnh thật kỹ" đứng trước nó):
 
-> *"Thấy tấm nào ưng, anh chị bấm **trái tim** để Hamita **in ra** nhé. Còn
-> **dấu tick** dành cho những tấm anh chị muốn **giữ riêng cho mình**."*
+> *"Thấy tấm nào ưng, anh chị bấm **trái tim** để Hamita **in ra** nhé."*
+
+**Dấu tick ("Ảnh chọn", giữ riêng) đã BỎ ngày 16/09/2026** theo yêu cầu studio.
+Kho dữ liệu (`getLists`, `getSelections`, `listCounts`) chỉ trả ra danh sách
+tim; 520 lượt tick cũ vẫn nằm trong database, KHÔNG xoá. Trước khi bỏ, 5 lời
+dặn khách ghi trên lượt tick của tấm cũng có tim ("ảnh bìa", "ảnh bàn" — album
+gd-thanh-ngan) đã được chép sang lượt tim, vì đơn giao in chỉ đọc lượt tim.
+Một lời dặn nằm trên tấm CHỈ tick (baby-cam-nuong, HMT07543 "Ảnh lớn") đã báo
+studio — không tự thả tim hộ khách, vì tim là thêm một tấm vào đơn in. Đừng
+thêm lại nút thứ hai cạnh trái tim.
 
 Suy ra ba điều mà `src/lib/anhIn.ts` phải giữ đúng:
-- Chỉ danh sách trái tim được in và được tính tiền. Đưa danh sách tick vào đơn
-  là in thừa, mà tính tiền thì là **thu tiền thứ khách không đặt**.
-- Đếm theo **tấm riêng biệt**. Một tấm vừa thả tim vừa tick vẫn chỉ là một tấm
-  cần in.
+- Chỉ danh sách trái tim được in và được tính tiền.
+- Đếm theo **tấm riêng biệt**. Hai người cùng thả tim một tấm vẫn chỉ là một
+  tấm cần in.
 - `soAnhTrongGoi = null` thì **không đưa ra con số tiền nào** — lúc đó phần
   hướng dẫn phía khách cũng đã bỏ qua đoạn giá, tự tính tiền là nói khác với
   thứ khách đọc được.
@@ -459,12 +466,9 @@ chờ xem ảnh cưới của mình rất dễ hiểu nhầm là studio đã xo�
 **30. Ba kích thước trên trang khách là chuyện AN TOÀN, không phải thẩm mỹ.**
 Đo ngày 27/08/2026 trên màn hình 375px, cả ba đều là số đo được.
 
-- **Nút trái tim và nút tick: 44px, cách nhau 12px.** Trước là 40px cách 6px,
-  trong khi đầu ngón tay người lớn rộng 45–57px. Hai nút này mang **ý nghĩa
-  ngược nhau** — tim là *in ra*, tick là *giữ riêng* — nên bấm nhầm không phải
-  phiền một chút: tấm khách muốn in rơi vào danh sách giữ riêng, tới ngày giao
-  ảnh mới phát hiện thiếu và không ai biết vì sao. Đừng thu `gap-3` lại cho
-  "gọn mắt".
+- **Nút trái tim: 44px.** Trước là 40px, trong khi đầu ngón tay người lớn rộng
+  45–57px. (Cho tới 16/09/2026 bên cạnh còn nút tick, phải đặt cách 12px vì hai
+  nút mang ý nghĩa ngược nhau; nay chỉ còn trái tim.)
 - **Nút "Nhập mã": 44px cao, có viền.** Trước là chữ gạch chân cao 16px —
   thứ nhỏ nhất trên màn hình, mà chưa nhập mã thì khách không thả tim được
   tấm nào.
@@ -945,7 +949,7 @@ mà nguyên tắc 1 và 14 dựng lên. Câu "bấm tim mà không được" ch�
 `123456` không xuất hiện ở đâu trong khung.
 
 **Câu chữ phải KHỚP với thứ đang hiện trên trang** (nguyên tắc 28). Đoạn
-tim/tick lấy đúng ý bước 01 phần hướng dẫn; số tấm trong gói và giá ảnh thêm
+thả tim lấy đúng ý bước 01 phần hướng dẫn; số tấm trong gói và giá ảnh thêm
 lấy thẳng từ `Gallery`; ngày giữ ảnh dùng chung cách viết với thanh đếm ngược
 (`05/12/2026`) — hai chỗ nói cùng một ngày mà viết hai kiểu thì khách tưởng là
 hai mốc khác nhau. Gói ảnh vẫn phải xử đủ **ba trạng thái** `null`/`0`/`N`
@@ -1284,7 +1288,7 @@ Bốn loại đang canh:
   bộ.
   *Khách báo xong mà KHÔNG thả tim tấm nào thì đừng mời đi làm đơn giao in* —
   đơn đó sẽ trống trơn. Có thật: nhà "baby- Châu" báo xong mà chỉ tick giữ
-  riêng 7 tấm. Có thể họ hiểu nhầm hai nút, cũng có thể chỉ muốn giữ file;
+  riêng 7 tấm (hồi còn nút tick). Có thể họ hiểu nhầm hai nút, cũng có thể chỉ muốn giữ file;
   đằng nào studio cũng nên hỏi lại trước khi kết sổ, nên câu chữ nói thẳng vậy.
 - **Chưa đặt gói ảnh.** Tách hai mức, đừng gộp: đã có khách thả tim là **gấp**
   (đơn giao in không tính được tiền, tới ngày giao mới lộ ra); chưa ai thả tim

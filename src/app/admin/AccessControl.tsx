@@ -7,7 +7,7 @@ import { regenerateCodeAction, setAccessAction } from "./actions";
 /**
  * Mã chọn ảnh của album.
  *
- * Khách xem ảnh thoải mái, nhưng phải có mã mới tim/tick được — tránh người
+ * Khách xem ảnh thoải mái, nhưng phải có mã mới thả tim được — tránh người
  * ngoài chọn bậy vào danh sách in của khách. Cả nhà dùng chung một mã nên lựa
  * chọn cũng là một danh sách chung: cô dâu chọn trên điện thoại rồi mở laptop
  * vẫn thấy đúng, và hai người cùng tim một tấm cũng chỉ tính một lần.

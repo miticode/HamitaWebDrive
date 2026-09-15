@@ -10,8 +10,8 @@ import { useState } from "react";
  * va tu go loi huong dan. Web da biet ca ba thu do. Voi vai chuc album mot
  * thang thi day la viec lap nhieu nhat trong ngay.
  *
- * Loi trong tin nhan phai KHOP voi thu khach doc tren web: tim la "in ra",
- * tick la "giu rieng", va buoc cuoi la bam "Báo cho Hamita". Sua loi o web ma
+ * Loi trong tin nhan phai KHOP voi thu khach doc tren web: tim la "in ra"
+ * (tick da bo 16/09/2026), va buoc cuoi la bam "Báo cho Hamita". Sua loi o web ma
  * quen sua o day la studio noi mot dang, web noi mot neo.
  */
 export function CopyLink({
@@ -44,7 +44,7 @@ export function CopyLink({
 
     dong.push(
       "",
-      "Anh chị bấm trái tim vào tấm nào muốn Hamita in ra nhé. Còn dấu tick là những tấm anh chị muốn giữ riêng cho mình ạ.",
+      "Anh chị bấm trái tim vào tấm nào muốn Hamita in ra nhé.",
       "",
       'Chọn xong anh chị bấm "Báo cho Hamita" giúp em một tiếng là Hamita bắt tay vào làm liền ạ.'
     );

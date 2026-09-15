@@ -165,7 +165,7 @@ export function AlbumView({
       {/*
         Khung hỏi đáp nổi ở góc trái dưới. Cần ở ĐÂY chứ không chỉ trang bìa:
         đây mới là trang khách ngồi lâu nhất và là lúc thắc mắc nảy ra —
-        "tim với tick khác gì nhau", "chọn xong rồi làm gì".
+        "thả tim để làm gì", "chọn xong rồi làm gì".
       */}
       <HopHoiDap
         soAnhTrongGoi={soAnhTrongGoi}

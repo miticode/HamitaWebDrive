@@ -194,9 +194,7 @@ export function GalleryHeader({
               >
                 <span
                   aria-hidden
-                  className={`inline-block size-2 rounded-full ${
-                    list.icon === "heart" ? "bg-rose-500" : "bg-accent"
-                  }`}
+                  className="inline-block size-2 rounded-full bg-rose-500"
                 />
                 <span className="hidden sm:inline">{list.name}</span>
                 <strong className="font-display text-base leading-none font-medium">

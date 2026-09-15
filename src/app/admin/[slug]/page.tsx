@@ -95,9 +95,7 @@ export default async function ResultsPage({ params }: Props) {
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="font-display text-2xl font-light">
                 <span
-                  className={`mr-2 inline-block size-2.5 rounded-full align-middle ${
-                    list.icon === "heart" ? "bg-rose-500" : "bg-accent"
-                  }`}
+                  className="mr-2 inline-block size-2.5 rounded-full align-middle bg-rose-500"
                 />
                 {list.name}
                 <span className="ml-2 text-lg text-fg-muted">

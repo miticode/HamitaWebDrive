@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 
-export type ClientList = { id: string; name: string; icon: "heart" | "check" };
+export type ClientList = { id: string; name: string; icon: "heart" };
 
 type Photo = { id: string; name: string; album: string };
 
@@ -36,7 +36,7 @@ type Ctx = {
 
   /**
    * So tam da chon TRONG THU MUC DANG MO, dem theo tam rieng biet — mot tam
-   * vua tha tim vua tick van chi la mot.
+   * co hai dong (hai nguoi cung tha tim) van chi la mot.
    *
    * Chu thich cu o day ghi nguoc han ("gop ca gallery"), trong khi ma ben duoi
    * van loc theo idTrongMuc tu dau. Sua lai cho khoi ai tin nham: con so nay
@@ -447,7 +447,7 @@ export function SelectionProvider({
         Đếm số TẤM riêng biệt khách đã chọn TRONG THƯ MỤC ĐANG MỞ.
 
         Trước đây lấy thẳng selected.size, tức là đếm cả album và đếm cả những
-        dòng trùng — một tấm vừa thả tim vừa tick sẽ tính thành hai. Từ khi
+        dòng trùng — một tấm có hai dòng sẽ tính thành hai. Từ khi
         trạng thái "chọn xong" tính riêng từng thư mục, con số hỏi khách
         ("chọn xong N tấm rồi phải không ạ?") cũng phải là của đúng thư mục họ
         đang xem, không thì hỏi một đằng làm một nẻo.

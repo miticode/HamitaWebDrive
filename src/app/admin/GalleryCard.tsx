@@ -22,7 +22,7 @@ function Stat({
   value,
   label,
 }: {
-  icon: "photo" | "folder" | "heart" | "check" | "tai";
+  icon: "photo" | "folder" | "heart" | "tai";
   value: number;
   label: string;
 }) {
@@ -31,7 +31,6 @@ function Stat({
     folder: "M3 7h6l2 2h10v10H3z",
     heart:
       "M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z",
-    check: "M20 6.5 9.2 17.3 4 12.1",
     // Mui ten di xuong cham vao mot vach — bieu tuong tai ve ai cung nhan ra.
     tai: "M12 4v11m0 0 4-4m-4 4-4-4M4 19h16",
   };
@@ -39,7 +38,6 @@ function Stat({
     photo: "text-fg-faint",
     folder: "text-fg-faint",
     heart: "text-rose-500",
-    check: "text-accent",
     tai: "text-fg-faint",
   };
 

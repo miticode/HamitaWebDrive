@@ -96,7 +96,7 @@ function trungBinh(ds: number[]): number | null {
 export async function docThongKe(bayGio = new Date()): Promise<ThongKe> {
   const prisma = getPrisma();
 
-  const [galleries, lists, selections, mucXong] = await Promise.all([
+  const [galleries, lists, tatCaLuotChon, mucXong] = await Promise.all([
     prisma.gallery.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.selectionList.findMany(),
     prisma.selection.findMany({ orderBy: { createdAt: "asc" } }),
@@ -108,6 +108,11 @@ export async function docThongKe(bayGio = new Date()): Promise<ThongKe> {
   const idListTim = new Set(
     lists.filter((l) => l.icon === "heart").map((l) => l.id)
   );
+  /*
+    Chi luot tim. Tick da bo ngay 16/09/2026 — dong tick cu con trong database
+    nhung khong duoc tinh vao so lieu nao nua.
+  */
+  const selections = tatCaLuotChon.filter((s) => idListTim.has(s.listId));
 
   const NGAY = 86_400_000;
   const canNhac: CanNhac[] = [];

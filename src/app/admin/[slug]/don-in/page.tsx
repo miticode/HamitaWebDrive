@@ -21,7 +21,7 @@ type Props = { params: Promise<{ slug: string }> };
  * Đơn giao in — tờ giấy đưa cho bên in ảnh, hoặc chép gửi đội Media.
  *
  * Khác trang "Ảnh khách chọn" ở chỗ nào: trang kia để studio NGỒI XEM, có ảnh
- * thu nhỏ, có cả hai danh sách. Trang này để ĐƯA CHO NGƯỜI KHÁC LÀM — không
+ * thu nhỏ và lời dặn trên từng tấm. Trang này để ĐƯA CHO NGƯỜI KHÁC LÀM — không
  * ảnh, chỉ mã số và ghi chú, và chỉ những tấm thật sự phải in.
  *
  * Xem `src/lib/anhIn.ts` để biết vì sao chỉ tính danh sách "Ảnh in".
@@ -71,7 +71,6 @@ export default async function DonInPage({ params }: Props) {
     dặn "bấm trái tim để Hamita in ra".
   */
   const dsIn = lists.find((l) => l.icon === "heart");
-  const dsGiuRieng = lists.find((l) => l.icon === "check");
 
   /*
     Đếm theo TẤM RIÊNG BIỆT. Một tấm chỉ có thể nằm một lần trong cùng một danh
@@ -92,12 +91,6 @@ export default async function DonInPage({ params }: Props) {
         a.albumName.localeCompare(b.albumName, "vi") ||
         a.fileName.localeCompare(b.fileName, "vi"),
     );
-
-  const soGiuRieng = new Set(
-    selections
-      .filter((s) => s.listId === dsGiuRieng?.id)
-      .map((s) => s.driveFileId),
-  ).size;
 
   const tenKhach = gallery.clientName ?? gallery.title;
   const ngay = ngayHomNay();
@@ -379,17 +372,6 @@ export default async function DonInPage({ params }: Props) {
         </>
       )}
 
-      {/*
-        Nói rõ số tấm KHÔNG in, để người cầm đơn không tưởng là đơn bị thiếu.
-        Khách được dặn dấu tick là "giữ riêng cho mình" nên những tấm đó không
-        được in và không được tính tiền.
-      */}
-      {soGiuRieng > 0 && (
-        <p className="mt-10 border-t border-line pt-4 text-xs leading-relaxed text-fg-muted">
-          Khách còn tick <b>{soGiuRieng} tấm</b> để giữ riêng cho mình — không
-          nằm trong đơn in này và không tính tiền.
-        </p>
-      )}
     </main>
   );
 }

@@ -26,8 +26,8 @@ thuê (`hamitaweddinghouse.gump.gg`).
 **Điểm khác biệt cốt lõi:** ảnh vẫn nằm nguyên trên Google Drive của studio,
 web chỉ là lớp hiển thị. Studio không phải upload lại, không tốn tiền lưu trữ.
 
-Khách nhận một link, xem ảnh, tim ❤️ những tấm muốn in và tick ✓ những tấm chọn
-cho nhu cầu khác, ghi chú riêng từng tấm (vd "in cỡ 40x60"), rồi bấm "Báo cho
+Khách nhận một link, xem ảnh, tim ❤️ những tấm muốn in (dấu tick ✓ đã bỏ ngày
+16/09/2026), ghi chú riêng từng tấm (vd "in cỡ 40x60"), rồi bấm "Báo cho
 studio" khi chọn xong. Studio xem lại trong trang quản lý, xuất Excel hoặc chép
 danh sách tên/mã file để giao cho bên in ảnh.
 
@@ -74,7 +74,7 @@ là khách F5 thấy ngay.
 Album chỉ có một bộ thì vào thẳng lưới ảnh.
 
 **Mã chọn ảnh:** mỗi album có một mã dạng `HAMITA-AB12`. Khách xem ảnh tự do,
-nhưng phải nhập mã mới tim/tick/ghi chú/báo xong được — kiểm ở phía máy chủ,
+nhưng phải nhập mã mới thả tim/ghi chú/báo xong được — kiểm ở phía máy chủ,
 và ô nhập mã có khoá chống dò (sai 8 lần/15 phút).
 
 **Tải ảnh:** đi qua `/api/download`, cắt sạch metadata máy ảnh/GPS mà **không
@@ -174,6 +174,22 @@ link cũng đọc được khung, mà mã là lớp bảo vệ duy nhất.
 
 *Còn treo:* danh sách 10 câu mới chỉ phủ những gì bản thân trang web trả lời
 được. Studio cần đưa **câu hỏi thật khách hay hỏi sale** để bổ sung.
+
+### Bỏ dấu tick, chỉ giữ trái tim (16/09)
+
+Anh yêu cầu bỏ hẳn dấu tick ("Ảnh chọn", giữ riêng) trên trang album. Trái tim
+nay là nút chọn duy nhất: khách thả tim tấm muốn in, ghi chú, báo xong.
+
+- **Không xoá dữ liệu:** 520 lượt tick cũ trên 13 album vẫn nằm trong database,
+  chỉ không hiện ở đâu nữa (trang khách, trang "Ảnh khách chọn", đơn in, xuất
+  Excel, thẻ album, thống kê). Máy chủ cũng từ chối lượt tick gửi lên từ trình
+  duyệt còn mở bản cũ. **Không đổi tick thành tim** — tim là in và tính tiền.
+- **5 lời dặn "ảnh bìa", "ảnh bàn" (album gd-thanh-ngan)** trước đây nằm trên
+  lượt tick nên **đơn in của nhà này thiếu cả 5**. Đã chép sang lượt tim.
+- **Một lời dặn còn lại anh cần xem:** album **baby-cam-nuong**, thư mục "pts Cẩm
+  Nương", tấm **HMT07543** ghi "Ảnh lớn" — khách chỉ tick, không thả tim.
+- Album tạo mới từ nay chỉ có danh sách trái tim. Tin nhắn chép gửi khách, phần
+  hướng dẫn 3 bước và khung Hỏi Hamita đã bỏ câu về dấu tick.
 
 ### Bắt đầu phần quản lý studio, thay dần AppSheet (15/09)
 
@@ -547,7 +563,7 @@ UptimeRobot nằm trong `README.md`.
 **Đơn giao in** `/admin/[slug]/don-in` — tờ đưa cho bên in: chỉ ảnh phải in,
 kèm mã số, ghi chú cỡ in của khách, và tiền phát sinh tính sẵn. In ra giấy hoặc
 chép gửi đội Media. Quy tắc tính tiền lấy từ **đúng lời đã nói với khách**: chỉ
-danh sách trái tim được in và tính tiền, danh sách tick là ảnh khách giữ riêng.
+danh sách trái tim được in và tính tiền (danh sách tick đã bỏ 16/09/2026).
 
 **Thống kê** `/admin/thong-ke` — xếp theo việc cần làm: phần đầu là danh sách
 khách nên nhắn (chưa mở link / đã mở mà chưa chọn / chọn dở rồi dừng), số liệu
@@ -922,7 +938,9 @@ lệch tới **1.353 ảnh** ở một album. Khung Thông báo **không phát h
 này vì nó cũng không gọi Drive. Đo 07/09: còn 1 album lệch (baby- Châu, DB 81 /
 Drive 88).
 
-**🟡 Khách bấm "Báo cho Hamita" mà không thả tim tấm nào.**
+**✅ (16/09) Khách bấm "Báo cho Hamita" mà không thả tim tấm nào.** Nút tick đã
+bỏ nên hết cảnh nhầm giữa hai nút; khung Thông báo vẫn nhắc nếu khách báo xong
+mà chưa thả tim tấm nào. Ghi chép cũ:
 Nhà "baby- Châu" báo xong với 0 tấm tim, chỉ tick giữ riêng 7 tấm. Có thể họ
 hiểu nhầm hai nút tim/tick. Khung Thông báo đã nói rõ trường hợp này để studio
 hỏi lại, nhưng **giao diện chọn ảnh chưa làm gì để tránh nhầm lẫn từ đầu**.

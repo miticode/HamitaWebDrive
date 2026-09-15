@@ -36,39 +36,24 @@ function useViewerSize(): number {
 }
 
 /**
- * Hình dạng biểu tượng KHÔNG đổi giữa hai trạng thái — trái tim luôn là trái
- * tim, dấu tick luôn là dấu tick. Chỉ độ đậm và màu nền nút thay đổi.
+ * Trái tim của nút chọn ảnh — nét rỗng khi chưa chọn, tô đặc khi đã chọn.
+ * Hình dạng không đổi giữa hai trạng thái, chỉ độ đậm và màu nền nút đổi.
  *
- * Trước đây nút thứ hai hiện ô vuông khi chưa chọn rồi mới thành dấu tick,
- * khiến khách không đoán được bấm vào sẽ ra gì.
+ * Trước 16/09/2026 bên cạnh còn nút dấu tick ("giữ riêng"); studio bỏ hẳn,
+ * chỉ giữ trái tim.
  */
-function Icon({ kind, filled }: { kind: ClientList["icon"]; filled: boolean }) {
-  if (kind === "heart") {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        className="size-[19px]"
-        fill={filled ? "currentColor" : "none"}
-        stroke="currentColor"
-        strokeWidth={filled ? 1 : 1.8}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-      </svg>
-    );
-  }
+function Icon({ filled }: { filled: boolean }) {
   return (
     <svg
       viewBox="0 0 24 24"
       className="size-[19px]"
-      fill="none"
+      fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
-      strokeWidth={filled ? 3.2 : 2.2}
+      strokeWidth={filled ? 1 : 1.8}
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M20 6.5 9.2 17.3 4 12.1" />
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
     </svg>
   );
 }
@@ -238,13 +223,10 @@ function SelectButtons({
 
   return (
     /*
-      Khoang cach giua hai nut la chuyen AN TOAN, khong phai chuyen tham my.
-      Tim = "in ra", tick = "giu rieng" — hai y nghia nguoc nhau ma dat sat
-      nhau thi bam nham la tam khach muon in roi vao danh sach giu rieng, toi
-      ngay giao anh moi phat hien thieu. Do that ngay 27/08/2026 tren man hinh
-      375px: hai nut 40px cach nhau dung 6px, trong khi dau ngon tay nguoi lon
-      rong 45-57px. Gio moi nut 44px (muc toi thieu cua ca Apple lan Google) va
-      cach nhau 12px.
+      Nut 44px la muc toi thieu cua ca Apple lan Google cho mot nut cham — do
+      that ngay 27/08/2026 tren man hinh 375px, dau ngon tay nguoi lon rong
+      45-57px. Truoc 16/09/2026 canh nut tim con nut tick ("giu rieng"), hai y
+      nghia nguoc nhau nen phai dat cach xa; studio da bo tick, chi con tim.
     */
     <div className={size === "lg" ? "flex gap-4" : "flex gap-3"}>
       {lists.map((list) => {
@@ -264,13 +246,11 @@ function SelectButtons({
               "grid place-items-center rounded-full backdrop-blur-sm transition duration-200 active:scale-90",
               size === "lg" ? "size-14" : "size-11",
               on
-                ? list.icon === "heart"
-                  ? "bg-rose-500 text-white shadow-lg"
-                  : "bg-[#9c7c4f] text-white shadow-lg"
+                ? "bg-rose-500 text-white shadow-lg"
                 : "bg-black/35 text-white/90 hover:bg-black/65 hover:text-white",
             ].join(" ")}
           >
-            <Icon kind={list.icon} filled={on} />
+            <Icon filled={on} />
           </button>
         );
       })}

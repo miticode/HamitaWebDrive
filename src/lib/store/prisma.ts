@@ -74,7 +74,8 @@ type ListRow = {
 };
 
 function toList(row: ListRow): SelectionList {
-  return { ...row, icon: row.icon === "check" ? "check" : "heart" };
+  // Kho chi tra ra danh sach tim (xem getLists), nen bieu tuong luon la tim.
+  return { ...row, icon: "heart" };
 }
 
 type SelectionRow = {
@@ -191,8 +192,14 @@ export const prismaStore: Store = {
   },
 
   async getLists(galleryId: string) {
+    /*
+      CHI danh sach trai tim. Tick ("Ảnh chọn") da bo ngay 16/09/2026 — dong cu
+      van con trong database (khong xoa lua chon cua khach) nhung khong tra ra:
+      trang khach khong ve nut tick, duong nhan luot chon tu choi luot tick gui
+      len tu trinh duyet con mo ban cu, trang quan ly va don in khong con thay.
+    */
     const rows = await getPrisma().selectionList.findMany({
-      where: { galleryId },
+      where: { galleryId, icon: "heart" },
       orderBy: { position: "asc" },
     });
     return rows.map(toList);
@@ -200,7 +207,8 @@ export const prismaStore: Store = {
 
   async getSelections(galleryId: string) {
     const rows = await getPrisma().selection.findMany({
-      where: { list: { galleryId } },
+      // Chi luot tim — cung ly do voi getLists.
+      where: { list: { galleryId, icon: "heart" } },
       orderBy: { fileName: "asc" },
     });
     return rows.map(toSelection);
@@ -238,7 +246,8 @@ export const prismaStore: Store = {
       chi can in mot tam — dem theo dong se lam in du va tinh tien khach sai.
     */
     const [lists, grouped] = await Promise.all([
-      prisma.selectionList.findMany({ orderBy: { position: "asc" } }),
+      // Chi danh sach tim — tick da bo, xem getLists.
+      prisma.selectionList.findMany({ where: { icon: "heart" }, orderBy: { position: "asc" } }),
       prisma.selection.groupBy({ by: ["listId", "driveFileId"] }),
     ]);
     const counts = new Map<string, number>();
@@ -249,7 +258,7 @@ export const prismaStore: Store = {
       galleryId: l.galleryId,
       listId: l.id,
       name: l.name,
-      icon: l.icon === "check" ? ("check" as const) : ("heart" as const),
+      icon: "heart" as const,
       count: counts.get(l.id) ?? 0,
     }));
   },

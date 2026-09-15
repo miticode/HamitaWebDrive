@@ -178,7 +178,8 @@ export const jsonStore: Store = {
     return withLock(async () => {
       const db = await readFromDisk();
       return db.lists
-        .filter((l) => l.galleryId === galleryId)
+        // Chi danh sach tim — tick da bo 16/09/2026, xem getLists trong prisma.ts.
+        .filter((l) => l.galleryId === galleryId && l.icon === "heart")
         .sort((a, b) => a.position - b.position);
     });
   },
@@ -187,7 +188,7 @@ export const jsonStore: Store = {
     return withLock(async () => {
       const db = await readFromDisk();
       const listIds = new Set(
-        db.lists.filter((l) => l.galleryId === galleryId).map((l) => l.id)
+        db.lists.filter((l) => l.galleryId === galleryId && l.icon === "heart").map((l) => l.id)
       );
       return db.selections.filter((s) => listIds.has(s.listId));
     });
@@ -223,6 +224,7 @@ export const jsonStore: Store = {
     return withLock(async () => {
       const db = await readFromDisk();
       return db.lists
+        .filter((l) => l.icon === "heart")
         .sort((a, b) => a.position - b.position)
         .map((l) => ({
           galleryId: l.galleryId,

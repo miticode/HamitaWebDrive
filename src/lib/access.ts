@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
  * Ma chon anh cua album.
  *
  * Chi co mot cach lam duy nhat: ai co link deu xem anh thoai mai, nhung phai co
- * ma cua studio moi tim/tick duoc. Tranh nguoi ngoai chon bay vao danh sach in
+ * ma cua studio moi tha tim duoc. Tranh nguoi ngoai chon bay vao danh sach in
  * cua khach, ma van de khoe anh cho ho hang.
  *
  * Ca nha dung chung mot ma nen lua chon cung la mot danh sach chung — nho vay

@@ -38,7 +38,7 @@ export function HuongDanChon({
     {
       so: "01",
       ten: "Thả tim tấm mình thương",
-      mo: "Thấy tấm nào ưng, anh chị bấm trái tim để Hamita in ra nhé. Còn dấu tick dành cho những tấm anh chị muốn giữ riêng cho mình.",
+      mo: "Thấy tấm nào ưng, anh chị bấm trái tim để Hamita in ra nhé.",
       /*
         Thông tin gói ảnh KHÔNG còn nằm ở đây nữa — nó đã ra thành một khối
         riêng bên dưới. Xem chú thích ở khối đó để biết vì sao.

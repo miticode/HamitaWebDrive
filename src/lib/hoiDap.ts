@@ -17,7 +17,7 @@ import { HAMI_BABY, STUDIO } from "./studio";
   văn thì không phải mở file giao diện (cùng lý do với `studio.ts`, nguyên
   tắc 25).
 
-  Câu trả lời phải KHỚP với thứ đang hiện trên trang. Ví dụ đoạn tim/tick dưới
+  Câu trả lời phải KHỚP với thứ đang hiện trên trang. Ví dụ đoạn thả tim dưới
   đây là lời studio đã nói với khách ở bước 01 phần hướng dẫn (nguyên tắc 28);
   viết khác đi ở đây là nói hai kiểu về cùng một việc.
 */
@@ -78,10 +78,9 @@ export function danhSachHoiDap(album: {
   const ds: CauHoi[] = [];
 
   ds.push({
-    hoi: "Trái tim với dấu tick khác nhau chỗ nào ạ?",
+    hoi: "Thả tim để làm gì ạ?",
     dap:
-      "Trái tim là những tấm anh chị muốn Hamita IN RA.\n" +
-      "Dấu tick dành cho những tấm anh chị chỉ muốn giữ riêng cho mình, Hamita không in.\n\n" +
+      "Trái tim là những tấm anh chị muốn Hamita IN RA.\n\n" +
       "Đơn in của bên em chỉ tính những tấm thả tim thôi ạ, nên tấm nào muốn cầm về trên giấy thì anh chị nhớ bấm trái tim giúp em nhé.",
   });
 
@@ -139,7 +138,7 @@ export function danhSachHoiDap(album: {
     hoi: "Anh chị muốn dặn Hamita chỉnh sửa thì ghi ở đâu?",
     dap:
       "Anh chị bấm vào tấm ảnh cho nó hiện to lên. Ngay dưới ảnh có ô để ghi — ví dụ “ảnh cổng”, “ảnh bìa”, “in cỡ 40x60”, hay “sáng hơn chút giúp em”.\n\n" +
-      "Gõ xong bấm nút Lưu bên cạnh ô là Hamita nhận được ạ. Ô ghi chú chỉ hiện ra khi tấm đó đã được thả tim hoặc tick.",
+      "Gõ xong bấm nút Lưu bên cạnh ô là Hamita nhận được ạ. Ô ghi chú chỉ hiện ra khi tấm đó đã được thả tim.",
   });
 
   ds.push({
@@ -156,7 +155,7 @@ export function danhSachHoiDap(album: {
   ds.push({
     hoi: "Anh chị bấm trái tim mà không được ạ?",
     dap:
-      "Phải nhập mã của album thì mới thả tim và tick được ạ — mã đó để không ai ngoài nhà mình chọn nhầm vào bộ ảnh của anh chị.\n\n" +
+      "Phải nhập mã của album thì mới thả tim được ạ — mã đó để không ai ngoài nhà mình chọn nhầm vào bộ ảnh của anh chị.\n\n" +
       "Anh chị bấm nút “Nhập mã” ở thanh trên cùng rồi gõ mã studio đã gửi kèm link. Không tìm thấy mã thì nhắn Zalo cho Hamita, bên em gửi lại ngay ạ.",
   });
 

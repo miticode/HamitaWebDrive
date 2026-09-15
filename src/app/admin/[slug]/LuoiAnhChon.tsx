@@ -58,9 +58,9 @@ export function LuoiAnhChon({ anh }: { anh: AnhChon[] }) {
               đọc sai ý khách — "in cỡ 40x60" cắt còn "in cỡ 40..." thì bên in
               làm sao biết.
 
-              Hiện ở CẢ HAI danh sách, không riêng "Ảnh in". Đơn giao in chỉ lấy
-              danh sách trái tim (nguyên tắc 28) nên lời dặn khách ghi trên tấm
-              giữ riêng trước đây không hiện ở đâu cả — gõ xong rồi không ai đọc.
+              Từ 16/09/2026 chỉ còn danh sách trái tim (bỏ tick). Năm lời dặn
+              khách từng ghi trên tấm vừa tick vừa tim đã được chép sang lượt
+              tim, để đơn giao in không mất "ảnh bìa", "ảnh bàn".
             */}
             <figcaption className="px-1.5 py-1.5">
               <span className="block truncate text-[11px] text-fg-faint">

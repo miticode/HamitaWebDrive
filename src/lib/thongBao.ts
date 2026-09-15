@@ -88,8 +88,9 @@ export async function docThongBao(): Promise<ThongBao[]> {
 
   for (const g of galleries) {
     const ten = g.clientName ?? g.title;
+    // Chi luot tim — tick da bo 16/09/2026, dong tick cu khong con tinh.
     const cuaNo = selections.filter(
-      (s) => galleryCuaList.get(s.listId) === g.id,
+      (s) => galleryCuaList.get(s.listId) === g.id && listTim.has(s.listId),
     );
     const soTim = new Set(
       cuaNo.filter((s) => listTim.has(s.listId)).map((s) => s.driveFileId),
@@ -161,13 +162,13 @@ export async function docThongBao(): Promise<ThongBao[]> {
         /*
           KHONG thả tim tấm nào thì đừng mời studio đi làm đơn giao in — đơn đó
           sẽ trống trơn. Chuyện này có thật: nhà "baby- Châu" báo xong mà chỉ
-          tick giữ riêng 7 tấm, không thả tim tấm nào. Có thể họ hiểu nhầm hai
+          tick giữ riêng 7 tấm (hồi còn nút tick), không thả tim tấm nào. Có thể họ hiểu nhầm hai
           nút, mà cũng có thể họ chỉ muốn giữ file — đằng nào studio cũng nên
           hỏi lại một câu trước khi kết sổ, nên nói thẳng ra như vậy.
         */
         chiTiet:
           soTim === 0
-            ? `Khách chưa thả tim tấm nào, chỉ tick giữ riêng — nên hỏi lại xem có tấm nào cần in không.${conMuc}`
+            ? `Khách báo xong mà chưa thả tim tấm nào — nên hỏi lại xem có tấm nào cần in không.${conMuc}`
             : `Đã chọn ${soTim} tấm in. Mở ra làm đơn giao in được rồi.${conMuc}`,
         slug: g.slug,
         tenAlbum: ten,

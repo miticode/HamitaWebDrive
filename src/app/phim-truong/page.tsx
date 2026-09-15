@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic";
  * Trang xem TẤT CẢ bối cảnh của phim trường studio.
  *
  * Vì sao phải là một trang riêng chứ không phải trang album `/g/[slug]` có sẵn:
- * trang album là chỗ riêng tư của một nhà khách — có nhập mã, thả tim, tick giữ
- * riêng, đếm ngược hạn giữ ảnh, và khai báo "đừng đưa lên Google". Phim trường
+ * trang album là chỗ riêng tư của một nhà khách — có nhập mã, thả tim, đếm
+ * ngược hạn giữ ảnh, và khai báo "đừng đưa lên Google". Phim trường
  * thì ngược lại hoàn toàn: đây là trang quảng bá công khai, càng nhiều người
  * tìm thấy càng tốt, và khách xem nó thì không chọn ảnh gì cả.
  *

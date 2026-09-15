@@ -58,7 +58,7 @@ export function XoaAlbumDialog({
           Xoá “{ten}”?
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-fg-muted">
-          Toàn bộ ảnh khách đã tim/tick trong album này sẽ mất theo, không lấy
+          Toàn bộ ảnh khách đã thả tim trong album này sẽ mất theo, không lấy
           lại được. Ảnh gốc trên Drive vẫn còn nguyên — chỉ link xem và các lựa
           chọn bị xoá.
         </p>

@@ -4,8 +4,7 @@
  * QUY TAC LAY TU DUNG LOI DA NOI VOI KHACH, khong duoc tu dat lai. Buoc 01
  * trong huong dan chon anh (HuongDanChon.tsx) viet nguyen van:
  *
- *   "Thay tam nao ung, anh chi bam TRAI TIM de Hamita IN RA nhe. Con DAU TICK
- *    danh cho nhung tam anh chi muon GIU RIENG cho minh."
+ *   "Thay tam nao ung, anh chi bam TRAI TIM de Hamita IN RA nhe."
  *
  * Va khoi goi anh ngay duoi luoi anh, ba gach dau dong:
  *
@@ -20,12 +19,12 @@
  *
  * Suy ra ba dieu, va don in phai theo dung ba dieu do:
  *
- * 1. CHI danh sach "Anh in" (icon heart) moi duoc in va duoc tinh tien.
- *    Danh sach "Anh chon" (icon check) la anh khach giu rieng — dua vao don in
- *    la in thua, ma tinh tien thi la thu tien thu khach khong dat.
+ * 1. CHI danh sach "Anh in" (icon heart) moi duoc in va duoc tinh tien. Tu
+ *    16/09/2026 cung chi con danh sach do — nut tick ("Anh chon", giu rieng)
+ *    da bo; dong tick cu con trong database nhung kho khong tra ra.
  *
- * 2. Dem theo SO TAM RIENG BIET. Mot tam vua tha tim vua tick van chi la mot
- *    tam can in; dem hai lan la in du va tinh tien khach sai.
+ * 2. Dem theo SO TAM RIENG BIET. Mot tam co hai dong van chi la mot tam can
+ *    in; dem hai lan la in du va tinh tien khach sai.
  *
  * 3. Khong dat goi (soAnhTrongGoi = null) thi KHONG tinh tien gi ca — luc do
  *    phan huong dan phia khach cung da bo qua doan gia, nen tu dung dua ra mot
