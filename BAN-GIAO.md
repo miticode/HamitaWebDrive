@@ -218,11 +218,13 @@ từ nay bảng mới nào quên khai báo thì sao lưu báo lỗi ngay.
 Bản sao lưu không chứa mật khẩu nhân viên và phiếu Google — phục hồi xong phải
 bấm "Kết nối lại" Google và cấp lại mật khẩu cho nhân viên.
 
-**Anh cần làm một lần:** bấm **"Kết nối lại"** Google trên trang quản lý album
-(đăng nhập đúng tài khoản đang kết nối) và **tích ô cho phép tạo tệp**, rồi bấm
-**"Sao lưu lên Drive ngay"** để thử. Nếu Google không hiện ô đó thì phải khai
-báo thêm quyền `drive.file` trong Google Cloud Console (mục Data Access của màn
-hình đồng ý).
+**Đã chạy thật 15/09/2026 14:03:** anh kết nối lại Google (có quyền tạo tệp),
+bản đầu tiên `hamita-2026-09-15-1403.json.gz` 125 KB. Em mở lại tệp trên Drive,
+giải nén, đếm lại: đủ 11 bảng, số dòng khớp, không có mật khẩu hay phiếu Google.
+
+Nếu một ngày dòng trạng thái cạnh nút chuyển màu cam ("lên Drive: 3 ngày
+trước"), lịch chạy đêm đang hỏng — thường là kết nối Google đã bị gỡ quyền.
+Bấm "Sao lưu lên Drive ngay" sẽ thấy lý do.
 
 ### Mỗi thư mục một gói ảnh riêng (10/09)
 
@@ -850,10 +852,9 @@ Hệ quả nếu để đầy hẳn: Google dùng chung một kho cho Drive, Gma
 đầy là **Gmail cũng ngừng nhận thư** trên `hamita.studio@gmail.com` — tài khoản
 của cả Neon lẫn Vercel. Mất thư là mất đường khôi phục mật khẩu.
 
-**🟡 Sao lưu chưa chạy tự động.**
-Đo 10/09: lần gần nhất **12 ngày trước** — đang là việc treo lâu nhất. Lệnh và nút đều có, mốc trên trang quản
-lý cập nhật đúng cho cả hai đường. Lịch tự động thì chưa đặt — lệnh PowerShell
-nằm trong `README.md`; giới hạn của nó là chỉ chạy khi máy bật.
+**✅ Sao lưu đã tự động (15/09).** Mỗi đêm 3 giờ lên Drive, thư mục "Hamita –
+Sao lưu tự động" — xem mục 6. Không cần máy tính của anh bật. Lệnh
+`npm run db:backup` vẫn dùng được khi muốn có thêm bản trên máy.
 
 **🟡 Chưa nối dịch vụ theo dõi vào `/api/suc-khoe`.**
 Đường kiểm tra chạy đúng, nhưng phần gọi thử mỗi vài phút rồi nhắn tin phải để
@@ -931,7 +932,7 @@ hỏi lại, nhưng **giao diện chọn ảnh chưa làm gì để tránh nhầ
 | Album chưa đặt gói ảnh | **2** (tiệc sn Ngọc Trinh · HC-Her-His-Công Đạt & Tuyết Nhi) |
 | Album quá hạn giữ ảnh | **0** |
 | Album mất mã bảo vệ | **0** |
-| Sao lưu gần nhất | **12 ngày trước** |
+| Sao lưu gần nhất | **15/09 14:03, tự động mỗi đêm từ nay** |
 
 Số ảnh, dung lượng và khu trên trang giới thiệu của từng album xem trong trang
 quản lý — đọc ở đây thì lỗi thời ngay sau lần "Làm mới" kế tiếp.
