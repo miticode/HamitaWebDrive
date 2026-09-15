@@ -45,6 +45,8 @@ const COT_NGAY: Record<string, string[]> = {
   moc: ["luc"],
   nhanVien: ["ngayVaoLam", "dangNhapLuc", "taoLuc", "capNhatLuc"],
   nhatKy: ["luc"],
+  thongTinStudio: ["capNhatLuc"],
+  noiQuy: ["taoLuc", "capNhatLuc"],
 };
 
 function doiNgay<T extends Record<string, unknown>>(bang: string, dong: T): T {
@@ -227,6 +229,8 @@ console.log(
 */
 let nvThem = 0;
 let nkThem = 0;
+let nqThem = 0;
+let ttThem = 0;
 if (!chiAlbum) {
   for (const nv of ban.bang.nhanVien ?? []) {
     const dangCo = await prisma.nhanVien.findFirst({
@@ -261,13 +265,28 @@ if (!chiAlbum) {
     }
   }
 
+  // Noi quy va thong tin studio: cung luat chi them, khong ghi de.
+  for (const nq of ban.bang.noiQuy ?? []) {
+    const dangCo = await prisma.noiQuy.findFirst({
+      where: { OR: [{ id: nq.id as string }, ...(nq.maNQ ? [{ maNQ: nq.maNQ as string }] : [])] },
+    });
+    if (dangCo) continue;
+    nqThem++;
+    if (ghiThat) await prisma.noiQuy.create({ data: doiNgay("noiQuy", nq) as never });
+  }
+  const tt = (ban.bang.thongTinStudio ?? [])[0];
+  if (tt && !(await prisma.thongTinStudio.findUnique({ where: { id: tt.id as string } }))) {
+    ttThem = 1;
+    if (ghiThat) await prisma.thongTinStudio.create({ data: doiNgay("thongTinStudio", tt) as never });
+  }
+
   console.log(
-    `${ghiThat ? "Da phuc hoi" : "Se phuc hoi"} ${nvThem} nhan vien, ${nkThem} dong nhat ky.` +
+    `${ghiThat ? "Da phuc hoi" : "Se phuc hoi"} ${nvThem} nhan vien, ${nkThem} dong nhat ky, ${nqThem} noi quy, ${ttThem} thong tin studio.` +
       (nvThem ? " Nho cap lai mat khau cho nhung nguoi nay." : ""),
   );
 }
 
-if (!ghiThat && (daThem > 0 || nvThem > 0 || nkThem > 0)) {
+if (!ghiThat && (daThem > 0 || nvThem > 0 || nkThem > 0 || nqThem > 0 || ttThem > 0)) {
   console.log("\nGhi that thi them --ghi vao cuoi lenh.");
 }
 if (ghiThat && daThem > 0) {

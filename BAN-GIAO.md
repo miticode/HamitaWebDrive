@@ -201,8 +201,14 @@ tác.
 3. Nhân viên đăng nhập bằng **số điện thoại** của mình + mật khẩu tạm, rồi bị
    bắt đặt mật khẩu riêng ngay.
 
-**Còn lại của đợt 1:** Thông tin studio, Bảng dịch vụ
-và trang phục (1.018 mục), Nội quy.
+**Đã thêm (15/09):** mục **Nội quy** (6 điều nhập từ AppSheet; mọi người xem,
+quản lý sửa; không xoá, chỉ ngưng áp dụng) và **Thông tin studio** (chỉ quản
+lý: tài khoản ngân hàng, giờ làm 08:30–18:00, nghỉ giữa buổi 1,5 giờ, 30 ngày
+công, toạ độ để kiểm chấm công). Địa chỉ, hotline, Zalo vẫn chỉ sửa ở
+`src/lib/studio.ts` — bên AppSheet ghi cả "377" lẫn "337 Đỗ Tường Tự", web ghi
+"337": **anh xác nhận giúp số nhà nào đúng**.
+
+**Còn lại của đợt 1:** Bảng dịch vụ và trang phục (1.018 mục).
 
 ### Sao lưu tự động lên Drive mỗi đêm (15/09)
 

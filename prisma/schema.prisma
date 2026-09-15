@@ -396,3 +396,45 @@ model NhatKy {
   @@index([luc])
   @@index([doiTuong, doiTuongId])
 }
+
+/// Thong tin NOI BO cua studio — mot dong duy nhat (id = "studio"). Chi quan ly
+/// xem va sua (ben AppSheet cu cung chi Admin xem duoc muc nay).
+///
+/// Thong tin LIEN HE CONG KHAI (ten, dia chi, hotline, Zalo, Facebook, ban do)
+/// KHONG nam o day ma o src/lib/studio.ts — trang gioi thieu va khung Hoi Hamita
+/// doc tu do. Giu hai noi cung mot so dien thoai la co ngay lech nhau (do
+/// 15/09/2026: AppSheet ghi dia chi "377" lan "337", web ghi "337").
+model ThongTinStudio {
+  id              String   @id @default("studio")
+  nguoiDaiDien    String?
+  soTaiKhoan1     String?
+  soTaiKhoan2     String?
+  /// "HH:MM" gio studio. Dung de tinh di tre khi cham cong (dot 4).
+  gioBatDau       String?
+  gioKetThuc      String?
+  /// So gio nghi giua buoi, vd 1.5.
+  gioNghiGiuaBuoi Float?
+  /// So ngay cong chuan moi thang — mau so khi tinh luong theo ngay (dot 4).
+  ngayCongThang   Int?
+  /// "vi do, kinh do" cua studio — de kiem nhan vien cham cong dung cho (dot 4).
+  toaDo           String?
+  capNhatLuc      DateTime @updatedAt
+}
+
+/// Noi quy studio va muc phat moi lan vi pham. Moi nguoi xem duoc, chi quan ly
+/// sua.
+///
+/// KHONG XOA — chi ngung ap dung (dangApDung = false): nhung lan phat da ghi
+/// (dot 4) van tro toi noi quy do, xoa di thi lich su phat mat ly do.
+model NoiQuy {
+  id         String   @id @default(cuid())
+  /// Ma ben AppSheet cu (P01, P02…) — de ghep lich su thuong phat khi chuyen o dot 4.
+  maNQ       String?  @unique
+  noiDung    String
+  /// Muc phat moi lan, tinh bang dong.
+  mucPhat    Int      @default(0)
+  thuTu      Int      @default(0)
+  dangApDung Boolean  @default(true)
+  taoLuc     DateTime @default(now())
+  capNhatLuc DateTime @updatedAt
+}

@@ -1097,6 +1097,16 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
 - Nhập nhân viên: `npx tsx scripts/nhap-nhan-vien.mts` (chỉ thêm người chưa
   có; `--cap-nhat` để cập nhật thông tin). Ghép bằng "Mã NV", không bao giờ
   ghi đè tên đăng nhập, vai trò, mật khẩu.
+- **Thông tin studio:** liên hệ công khai (địa chỉ, hotline, Zalo, Facebook)
+  CHỈ nằm ở `src/lib/studio.ts` — trang giới thiệu và khung Hỏi Hamita đọc từ
+  đó. Bảng ThongTinStudio chỉ giữ phần NỘI BỘ (tài khoản ngân hàng, giờ làm,
+  ngày công, toạ độ chấm công), chỉ quản lý xem. Đừng thêm hotline vào bảng
+  đó: hai nơi giữ một số điện thoại là có ngày lệch (AppSheet đã ghi địa chỉ
+  "377" lẫn "337" trong cùng một ô).
+- **Nội quy không bao giờ xoá**, chỉ ngưng áp dụng — lịch sử phạt (đợt 4) trỏ
+  tới nó. Nhân viên chỉ thấy nội quy đang áp dụng.
+- Script đọc AppSheet dùng chung `src/lib/appsheet.ts` (tải file vào bộ nhớ,
+  không ghi xuống đĩa).
 
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên

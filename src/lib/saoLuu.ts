@@ -42,6 +42,8 @@ const BANG_SAO_LUU = [
   "GoogleAccount",
   "NhanVien",
   "NhatKy",
+  "ThongTinStudio",
+  "NoiQuy",
 ] as const;
 
 /** Bảng cố ý không sao lưu, kèm lý do. */
@@ -110,6 +112,8 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     googleAccount,
     nhanVien,
     nhatKy,
+    thongTinStudio,
+    noiQuy,
   ] = await Promise.all([
     prisma.gallery.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.selectionList.findMany({ orderBy: { position: "asc" } }),
@@ -126,6 +130,8 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     // Cố tình KHÔNG lấy mật khẩu — xem chú thích đầu tệp.
     prisma.nhanVien.findMany({ omit: { matKhau: true }, orderBy: { taoLuc: "asc" } }),
     prisma.nhatKy.findMany({ orderBy: { luc: "asc" } }),
+    prisma.thongTinStudio.findMany(),
+    prisma.noiQuy.findMany({ orderBy: { thuTu: "asc" } }),
   ]);
 
   /*
@@ -144,6 +150,8 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     googleAccount,
     nhanVien,
     nhatKy,
+    thongTinStudio,
+    noiQuy,
   };
 
   return {

@@ -23,6 +23,9 @@ export default async function HeThongLayout({ children }: { children: React.Reac
   const menu: MucMenu[] = [
     { nhom: null, ten: "Tổng quan", href: "/quan-ly" },
     { nhom: "Thông tin studio", ten: "Nhân viên", href: "/quan-ly/nhan-vien" },
+    { nhom: "Thông tin studio", ten: "Nội quy", href: "/quan-ly/noi-quy" },
+    // Có số tài khoản ngân hàng — chỉ quản lý (AppSheet cũ cũng chỉ Admin xem).
+    ...(quanTri ? [{ nhom: "Thông tin studio", ten: "Thông tin studio", href: "/quan-ly/thong-tin" }] : []),
     ...(quanTri
       ? [
           { nhom: "Hệ thống", ten: "Nhật ký thao tác", href: "/quan-ly/nhat-ky" },
