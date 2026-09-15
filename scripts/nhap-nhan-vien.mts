@@ -32,6 +32,16 @@ const { ghiNhatKy } = await import("../src/lib/nhatKy");
 const FILE_APPSHEET = "1Z0TqSN4GDKWGK1EWXcx_vnngm_DrWfdb6uz2kDN7rKk";
 const capNhat = process.argv.includes("--cap-nhat");
 
+/*
+  Mã NV KHÔNG BAO GIỜ nhập, kèm lý do.
+
+  NV001 là NGƯỜI BÁN app AppSheet (bảng ghi Admin, chức vụ "APP"), không phải
+  nhân viên — studio xoá khỏi web 16/09/2026. Không chặn ở đây thì chạy lại
+  script này là người bán quay lại, mà còn mang quyền QUẢN LÝ (vì "Admin" bên
+  AppSheet được đổi thành quản lý khi tạo mới).
+*/
+const KHONG_NHAP = new Map([["NV001", "người bán app AppSheet, không phải nhân viên (xoá 16/09/2026)"]]);
+
 const token = await getUserAccessToken();
 if (!token) throw new Error("Chưa kết nối Google Drive của studio.");
 const mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -133,9 +143,15 @@ let them = 0;
 let capNhatDuoc = 0;
 let boQua = 0;
 let dungMaLamTen = 0;
+let boQuaCoY = 0;
 
 for (const d of dsDong) {
   const { maNV, ...thongTin } = d;
+
+  if (KHONG_NHAP.has(maNV)) {
+    boQuaCoY++;
+    continue;
+  }
 
   if (maDaCo.has(maNV)) {
     if (!capNhat) {
@@ -172,5 +188,6 @@ console.log("Nhân viên đọc từ AppSheet:", dsDong.length);
 console.log("  thêm mới:", them, `(trong đó ${dungMaLamTen} người dùng mã NV làm tên đăng nhập vì trùng hoặc thiếu số điện thoại)`);
 console.log("  cập nhật:", capNhatDuoc);
 console.log("  bỏ qua vì đã có:", boQua);
+console.log("  cố ý không nhập:", boQuaCoY, `(${[...KHONG_NHAP.values()].join("; ")})`);
 const tong = await prisma.nhanVien.groupBy({ by: ["dangLam", "vaiTro"], _count: true });
 console.log("Bảng NhanVien hiện có:", JSON.stringify(tong.map((t) => ({ dangLam: t.dangLam, vaiTro: t.vaiTro, so: t._count }))));

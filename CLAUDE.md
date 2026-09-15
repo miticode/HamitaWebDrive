@@ -1100,7 +1100,9 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
   đã làm xong; mục đang làm liệt kê ở trang Tổng quan.
 - Nhập nhân viên: `npx tsx scripts/nhap-nhan-vien.mts` (chỉ thêm người chưa
   có; `--cap-nhat` để cập nhật thông tin). Ghép bằng "Mã NV", không bao giờ
-  ghi đè tên đăng nhập, vai trò, mật khẩu.
+  ghi đè tên đăng nhập, vai trò, mật khẩu. **NV001 (Võ Đại Dương) là NGƯỜI BÁN
+  app AppSheet, không phải nhân viên** — studio xoá 16/09; script bỏ qua mã đó
+  (`KHONG_NHAP`). Đừng gỡ: nhập lại là người bán có quyền quản lý trên web.
 - **Thông tin studio:** liên hệ công khai (địa chỉ, hotline, Zalo, Facebook)
   CHỈ nằm ở `src/lib/studio.ts` — trang giới thiệu và khung Hỏi Hamita đọc từ
   đó. Bảng ThongTinStudio chỉ giữ phần NỘI BỘ (tài khoản ngân hàng, giờ làm,

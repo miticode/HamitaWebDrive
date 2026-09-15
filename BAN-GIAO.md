@@ -205,9 +205,11 @@ nó (chỉ cấu trúc và số đếm) và phát hiện hai chuyện gấp:
 vẫn ở Zalo.** Kế hoạch đầy đủ: https://claude.ai/artifact/9NV66DHdfrjaFmLcZueTir
 
 **Đã có (đợt 1, phần đầu):** trang `/quan-ly` (hoặc nút "Quản lý studio" trên
-trang quản lý album), đăng nhập bằng tên + mật khẩu, danh bạ 26 nhân viên nhập
-từ AppSheet (16 đang làm, 10 đã nghỉ), cấp mật khẩu, phân quyền, nhật ký thao
-tác.
+trang quản lý album), đăng nhập bằng tên + mật khẩu, danh bạ nhân viên nhập
+từ AppSheet, cấp mật khẩu, phân quyền, nhật ký thao tác. Nhập 26 người; ngày
+16/09 anh cho xoá **Võ Đại Dương (NV001) — người bán app AppSheet, không phải
+nhân viên** (đang mang quyền quản lý, may chưa từng được cấp mật khẩu hay đăng
+nhập). Script nhập nhân viên đã chặn không nhập lại mã này. Còn 25 người.
 
 **Cách dùng lần đầu:**
 
