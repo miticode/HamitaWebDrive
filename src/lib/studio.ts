@@ -23,7 +23,15 @@ export const STUDIO = {
   /** Dang dung cho the <a href="tel:"> — khong dau cach. */
   dienThoaiSo: "0982341989",
   email: "hamita.studio@gmail.com",
-  diaChi: "337 Đỗ Tường Tự, Tầm Vu, Châu Thành, Long An",
+  /*
+    Dia chi Hamita Wedding House (cuoi hoi). Tiem co HAI co so: so 337 cung
+    duong la Hami Baby — xem HAMI_BABY.diaChi. Anh xac nhan 15/09/2026.
+
+    Truoc ngay do o day ghi "337" — tuc dia chi cua Hami Baby — trong khi ban
+    do nhung ngay canh (mapEmbed) lai la Wedding House: khach cuoi doc trang
+    gioi thieu se di nham sang co so chup be.
+  */
+  diaChi: "377 Đỗ Tường Tự, Tầm Vu, Châu Thành, Long An",
   gioMoCua: "Mở cửa tất cả các ngày",
   facebook: "https://www.facebook.com/hamitaweddinghouse",
   tiktok: "https://www.tiktok.com/@hamitawedding",
@@ -219,6 +227,8 @@ export const HAMI_BABY = {
   moTa: "Mảng chụp bé yêu và gia đình của Hamita Studio — thôi nôi, bầu, sơ sinh tại Long An.",
   dienThoai: "079 772 2972",
   dienThoaiSo: "0797722972",
+  /** Co so rieng cua Hami Baby — cung duong voi Wedding House, so 337. */
+  diaChi: "337 Đỗ Tường Tự, Tầm Vu, Châu Thành, Long An",
   facebook: "https://www.facebook.com/hamibabylongan",
   soNguoiTheoDoi: "3,1K",
   mapEmbed:

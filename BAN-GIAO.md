@@ -205,8 +205,12 @@ tác.
 quản lý sửa; không xoá, chỉ ngưng áp dụng) và **Thông tin studio** (chỉ quản
 lý: tài khoản ngân hàng, giờ làm 08:30–18:00, nghỉ giữa buổi 1,5 giờ, 30 ngày
 công, toạ độ để kiểm chấm công). Địa chỉ, hotline, Zalo vẫn chỉ sửa ở
-`src/lib/studio.ts` — bên AppSheet ghi cả "377" lẫn "337 Đỗ Tường Tự", web ghi
-"337": **anh xác nhận giúp số nhà nào đúng**.
+`src/lib/studio.ts`. Tiệm có **hai cơ sở**: **377 Đỗ Tường Tự là Hamita Wedding
+House** (cưới hỏi), **337 là Hami Baby** (bé, gia đình) — anh xác nhận 15/09.
+Trang giới thiệu trước đó ghi nhầm 337 làm địa chỉ chung (cạnh bản đồ Wedding
+House); đã sửa để hiện đủ hai cơ sở, cả trong khung Hỏi Hamita. Toạ độ chấm
+công hiện chỉ một điểm gần Wedding House — tới đợt 4 cần hỏi nhân viên có chấm
+công ở cả hai cơ sở không.
 
 **Còn lại của đợt 1:** Bảng dịch vụ và trang phục (1.018 mục).
 

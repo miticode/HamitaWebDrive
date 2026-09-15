@@ -6,7 +6,8 @@
  *
  * KHÔNG nhập địa chỉ, hotline, Zalo, Facebook, bản đồ nhúng: những thứ đó nằm ở
  * src/lib/studio.ts, nơi trang giới thiệu và khung Hỏi Hamita đọc — giữ một nơi
- * duy nhất. Bên AppSheet ghi địa chỉ "377" lẫn "337", web ghi "337".
+ * duy nhất. Bên AppSheet ghi hai địa chỉ trong một ô vì tiệm có HAI cơ sở: 377
+ * Đỗ Tường Tự là Hamita Wedding House, 337 là Hami Baby.
  *
  * Nội quy không bao giờ bị ghi đè hay xoá: đã có (theo mã) thì bỏ qua.
  *

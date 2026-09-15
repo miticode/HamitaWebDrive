@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
-import { STUDIO } from "@/lib/studio";
+import { HAMI_BABY, STUDIO } from "@/lib/studio";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { FormThongTin } from "./FormThongTin";
 
@@ -12,9 +12,10 @@ export const dynamic = "force-dynamic";
  *
  * Hai phần, khác nhau về NƠI GIỮ:
  * - Liên hệ công khai: đọc từ src/lib/studio.ts, CHỈ HIỆN LẠI. Trang giới
- *   thiệu và khung Hỏi Hamita đọc từ đó; cho sửa riêng ở đây là có hai số
- *   điện thoại lệch nhau — đo 15/09/2026, AppSheet đã ghi địa chỉ "377" lẫn
- *   "337" trong cùng một ô.
+ *   thiệu và khung Hỏi Hamita đọc từ đó; cho sửa riêng ở đây là có ngày hai
+ *   nơi ghi hai số điện thoại khác nhau. Tiệm có HAI cơ sở — 377 Đỗ Tường Tự
+ *   là Wedding House, 337 là Hami Baby (anh xác nhận 15/09/2026) — nên hiện đủ
+ *   cả hai.
  * - Nội bộ: trong database, sửa ngay tại đây.
  */
 export default async function ThongTinPage() {
@@ -25,8 +26,10 @@ export default async function ThongTinPage() {
 
   const congKhai: [string, string][] = [
     ["Tên", STUDIO.ten],
-    ["Địa chỉ", STUDIO.diaChi],
-    ["Điện thoại", STUDIO.dienThoai],
+    ["Địa chỉ · cưới hỏi (Wedding House)", STUDIO.diaChi],
+    ["Địa chỉ · Hami Baby", HAMI_BABY.diaChi],
+    ["Điện thoại · cưới hỏi", STUDIO.dienThoai],
+    ["Điện thoại · Hami Baby", HAMI_BABY.dienThoai],
     ["Email", STUDIO.email],
     ["Giờ mở cửa", STUDIO.gioMoCua],
     ["Facebook", STUDIO.facebook],

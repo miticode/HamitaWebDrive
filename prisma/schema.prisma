@@ -402,8 +402,9 @@ model NhatKy {
 ///
 /// Thong tin LIEN HE CONG KHAI (ten, dia chi, hotline, Zalo, Facebook, ban do)
 /// KHONG nam o day ma o src/lib/studio.ts — trang gioi thieu va khung Hoi Hamita
-/// doc tu do. Giu hai noi cung mot so dien thoai la co ngay lech nhau (do
-/// 15/09/2026: AppSheet ghi dia chi "377" lan "337", web ghi "337").
+/// doc tu do. Giu hai noi cung mot so dien thoai la co ngay lech nhau. (Tiem
+/// co HAI co so: 377 Do Tuong Tu la Wedding House, 337 la Hami Baby — anh xac
+/// nhan 15/09/2026; ca hai nam trong studio.ts.)
 model ThongTinStudio {
   id              String   @id @default("studio")
   nguoiDaiDien    String?

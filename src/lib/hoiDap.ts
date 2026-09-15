@@ -1,5 +1,5 @@
 import { MUI_GIO, tien } from "./constants";
-import { STUDIO } from "./studio";
+import { HAMI_BABY, STUDIO } from "./studio";
 
 /*
   Bộ câu hỏi thường gặp hiện ở khung trò chuyện trên trang album của khách.
@@ -202,8 +202,14 @@ export function danhSachHoiDap(album: {
   ds.push({
     hoi: "Hamita ở đâu, liên hệ thế nào ạ?",
     dap:
-      `${STUDIO.ten}\n${STUDIO.diaChi}\n${STUDIO.gioMoCua}\n\n` +
-      `Điện thoại ${STUDIO.dienThoai} — anh chị gọi hoặc nhắn Zalo đều được ạ.`,
+      /*
+        Hai co so, noi du ca hai: khach album be hoi cau nay cung nhieu nhu
+        khach cuoi, ma chi dua mot dia chi thi mot nua se di nham noi.
+      */
+      `${STUDIO.ten} có hai cơ sở ạ:\n\n` +
+      `• Cưới hỏi — Hamita Wedding House\n${STUDIO.diaChi}\nĐiện thoại ${STUDIO.dienThoai}\n\n` +
+      `• Chụp bé và gia đình — ${HAMI_BABY.ten}\n${HAMI_BABY.diaChi}\nĐiện thoại ${HAMI_BABY.dienThoai}\n\n` +
+      `${STUDIO.gioMoCua}. Anh chị gọi hoặc nhắn Zalo đều được ạ.`,
   });
 
   return ds;

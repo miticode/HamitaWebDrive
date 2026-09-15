@@ -576,7 +576,14 @@ export default async function Home() {
             <dl className="mt-16 grid grid-cols-1 gap-x-12 gap-y-9 sm:grid-cols-2">
               <div>
                 <dt className="eyebrow">Địa chỉ</dt>
-                <dd className="mt-2 leading-relaxed">{STUDIO.diaChi}</dd>
+                {/* Hai cơ sở, xếp đúng như số điện thoại ngay bên: cưới hỏi trước, bé và gia đình sau. */}
+                <dd className="mt-2 leading-relaxed">
+                  {STUDIO.diaChi}
+                  <span className="text-fg-faint"> · cưới hỏi</span>
+                  <br />
+                  {HAMI_BABY.diaChi}
+                  <span className="text-fg-faint"> · chụp bé và gia đình</span>
+                </dd>
               </div>
               <div>
                 <dt className="eyebrow">Giờ mở cửa</dt>

@@ -1101,8 +1101,10 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
   CHỈ nằm ở `src/lib/studio.ts` — trang giới thiệu và khung Hỏi Hamita đọc từ
   đó. Bảng ThongTinStudio chỉ giữ phần NỘI BỘ (tài khoản ngân hàng, giờ làm,
   ngày công, toạ độ chấm công), chỉ quản lý xem. Đừng thêm hotline vào bảng
-  đó: hai nơi giữ một số điện thoại là có ngày lệch (AppSheet đã ghi địa chỉ
-  "377" lẫn "337" trong cùng một ô).
+  đó: hai nơi giữ một số điện thoại là có ngày lệch. Tiệm có **HAI cơ sở** —
+  377 Đỗ Tường Tự là Hamita Wedding House (cưới hỏi), 337 là Hami Baby (bé,
+  gia đình); mỗi cơ sở một địa chỉ, số điện thoại, bản đồ riêng trong `STUDIO`
+  và `HAMI_BABY`. Nơi nào hiện địa chỉ thì hiện đủ cả hai.
 - **Nội quy không bao giờ xoá**, chỉ ngưng áp dụng — lịch sử phạt (đợt 4) trỏ
   tới nó. Nhân viên chỉ thấy nội quy đang áp dụng.
 - Script đọc AppSheet dùng chung `src/lib/appsheet.ts` (tải file vào bộ nhớ,
