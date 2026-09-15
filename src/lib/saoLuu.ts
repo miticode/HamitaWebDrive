@@ -44,6 +44,8 @@ const BANG_SAO_LUU = [
   "NhatKy",
   "ThongTinStudio",
   "NoiQuy",
+  "DichVu",
+  "GiaHangMuc",
 ] as const;
 
 /** Bảng cố ý không sao lưu, kèm lý do. */
@@ -114,6 +116,8 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     nhatKy,
     thongTinStudio,
     noiQuy,
+    dichVu,
+    giaHangMuc,
   ] = await Promise.all([
     prisma.gallery.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.selectionList.findMany({ orderBy: { position: "asc" } }),
@@ -132,6 +136,8 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     prisma.nhatKy.findMany({ orderBy: { luc: "asc" } }),
     prisma.thongTinStudio.findMany(),
     prisma.noiQuy.findMany({ orderBy: { thuTu: "asc" } }),
+    prisma.dichVu.findMany({ orderBy: { maDV: "asc" } }),
+    prisma.giaHangMuc.findMany({ orderBy: { taoLuc: "asc" } }),
   ]);
 
   /*
@@ -152,6 +158,8 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     nhatKy,
     thongTinStudio,
     noiQuy,
+    dichVu,
+    giaHangMuc,
   };
 
   return {

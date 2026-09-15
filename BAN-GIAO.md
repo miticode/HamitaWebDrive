@@ -228,7 +228,16 @@ House); đã sửa để hiện đủ hai cơ sở, cả trong khung Hỏi Hamit
 công hiện chỉ một điểm gần Wedding House — tới đợt 4 cần hỏi nhân viên có chấm
 công ở cả hai cơ sở không.
 
-**Còn lại của đợt 1:** Bảng dịch vụ và trang phục (1.018 mục).
+**Đã thêm (16/09) — xong đợt 1:** mục **Dịch vụ & trang phục**. Nhập đủ 1.018
+mục từ AppSheet (95 dịch vụ, 887 trang phục, 36 sản phẩm) và 313/315 dòng chi
+phí từng hạng mục (2 dòng trỏ tới mã TTPTB25x35, 15x21G không còn trong bảng
+Dịch vụ bên AppSheet nên bỏ). Cả tiệm xem được, tìm theo mã/tên/chi tiết, lọc
+theo nhóm. Quản lý và sale thêm, sửa mọi loại; nhân viên phòng Váy thêm, sửa
+trang phục. Mã không đổi được, không xoá chỉ ngưng dùng. Chi phí hạng mục
+(tiền công thợ) chỉ quản lý thấy. **Ảnh mẫu trang phục chưa có** — vẫn chờ người
+bán chia sẻ thư mục ảnh của app. Trong lúc AppSheet còn chạy song song, mục
+mới thêm bên đó thì chạy lại `npx tsx scripts/nhap-dich-vu.mts` (chỉ thêm mục
+chưa có).
 
 ### Sao lưu tự động lên Drive mỗi đêm (15/09)
 

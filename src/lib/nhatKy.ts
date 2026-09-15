@@ -50,7 +50,9 @@ export type HanhDong =
   | "nhap-du-lieu"
   | "sua-thong-tin-studio"
   | "them-noi-quy"
-  | "sua-noi-quy";
+  | "sua-noi-quy"
+  | "them-dich-vu"
+  | "sua-dich-vu";
 
 export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "dang-nhap": "Đăng nhập",
@@ -64,4 +66,6 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "sua-thong-tin-studio": "Sửa thông tin studio",
   "them-noi-quy": "Thêm nội quy",
   "sua-noi-quy": "Sửa nội quy",
+  "them-dich-vu": "Thêm dịch vụ / trang phục",
+  "sua-dich-vu": "Sửa dịch vụ / trang phục",
 };

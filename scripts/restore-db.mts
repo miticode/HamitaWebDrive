@@ -47,6 +47,9 @@ const COT_NGAY: Record<string, string[]> = {
   nhatKy: ["luc"],
   thongTinStudio: ["capNhatLuc"],
   noiQuy: ["taoLuc", "capNhatLuc"],
+  // Tu 16/09/2026 (van phien ban 2, chi them bang):
+  dichVu: ["taoLuc", "capNhatLuc"],
+  giaHangMuc: ["taoLuc"],
 };
 
 function doiNgay<T extends Record<string, unknown>>(bang: string, dong: T): T {
@@ -231,6 +234,8 @@ let nvThem = 0;
 let nkThem = 0;
 let nqThem = 0;
 let ttThem = 0;
+let dvThem = 0;
+let cpThem = 0;
 if (!chiAlbum) {
   for (const nv of ban.bang.nhanVien ?? []) {
     const dangCo = await prisma.nhanVien.findFirst({
@@ -280,13 +285,32 @@ if (!chiAlbum) {
     if (ghiThat) await prisma.thongTinStudio.create({ data: doiNgay("thongTinStudio", tt) as never });
   }
 
+  /*
+    Dich vu: chi them, ghep theo id hoac ma DV. Chi phi hang muc phuc hoi SAU
+    dich vu (tro khoa toi no); dong nao tro toi dich vu khong co thi bo qua.
+  */
+  for (const dv of ban.bang.dichVu ?? []) {
+    const dangCo = await prisma.dichVu.findFirst({
+      where: { OR: [{ id: dv.id as string }, { maDV: dv.maDV as string }] },
+    });
+    if (dangCo) continue;
+    dvThem++;
+    if (ghiThat) await prisma.dichVu.create({ data: doiNgay("dichVu", dv) as never });
+  }
+  for (const cp of ban.bang.giaHangMuc ?? []) {
+    if (await prisma.giaHangMuc.findUnique({ where: { id: cp.id as string } })) continue;
+    if (ghiThat && !(await prisma.dichVu.findUnique({ where: { id: cp.dichVuId as string } }))) continue;
+    cpThem++;
+    if (ghiThat) await prisma.giaHangMuc.create({ data: doiNgay("giaHangMuc", cp) as never });
+  }
+
   console.log(
-    `${ghiThat ? "Da phuc hoi" : "Se phuc hoi"} ${nvThem} nhan vien, ${nkThem} dong nhat ky, ${nqThem} noi quy, ${ttThem} thong tin studio.` +
+    `${ghiThat ? "Da phuc hoi" : "Se phuc hoi"} ${nvThem} nhan vien, ${nkThem} dong nhat ky, ${nqThem} noi quy, ${ttThem} thong tin studio, ${dvThem} dich vu, ${cpThem} chi phi hang muc.` +
       (nvThem ? " Nho cap lai mat khau cho nhung nguoi nay." : ""),
   );
 }
 
-if (!ghiThat && (daThem > 0 || nvThem > 0 || nkThem > 0 || nqThem > 0 || ttThem > 0)) {
+if (!ghiThat && (daThem > 0 || nvThem > 0 || nkThem > 0 || nqThem > 0 || ttThem > 0 || dvThem > 0 || cpThem > 0)) {
   console.log("\nGhi that thi them --ghi vao cuoi lenh.");
 }
 if (ghiThat && daThem > 0) {

@@ -30,6 +30,11 @@ export type NguoiDung = {
   vaiTro: VaiTro;
   /** Vừa được cấp mật khẩu tạm — phải đổi trước khi làm gì khác. */
   doiMatKhau: boolean;
+  /**
+   * Phòng ban, đúng chữ trong mục Nhân viên. Dùng cho quyền theo phòng — hiện
+   * chỉ có phòng Váy được sửa trang phục (xem loaiDuocSua trong dichVuChung.ts).
+   */
+  phongBan: string | null;
 };
 
 /** Database chỉ giữ dấu băm của chuỗi trong cookie — lộ database cũng không ai dùng được phiên. */
@@ -95,12 +100,13 @@ export const layNguoiDung = cache(async (): Promise<NguoiDung | null> => {
         // Chữ lạ trong cột vai trò thì coi là nhân viên — quyền thấp nhất, không bao giờ là cao nhất.
         vaiTro: laVaiTro(nv.vaiTro) ? nv.vaiTro : "nhan-vien",
         doiMatKhau: nv.doiMatKhau,
+        phongBan: nv.phongBan,
       };
     }
   }
 
   if (await isAdmin()) {
-    return { id: null, ten: "Quản lý", vaiTro: "quan-tri", doiMatKhau: false };
+    return { id: null, ten: "Quản lý", vaiTro: "quan-tri", doiMatKhau: false, phongBan: null };
   }
   return null;
 });

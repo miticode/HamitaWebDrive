@@ -439,3 +439,59 @@ model NoiQuy {
   taoLuc     DateTime @default(now())
   capNhatLuc DateTime @updatedAt
 }
+
+/// Bang dich vu, trang phuc, san pham — trang "Dịch vụ" ben AppSheet cu (nhap
+/// 16/09/2026: 887 trang phuc, 95 dich vu, 36 san pham).
+///
+/// Ai dang nhap cung XEM duoc (sale bao gia, phong Vay tra mau). SUA: quan ly,
+/// sale, va phong Vay (chi trang phuc) — xem loaiDuocSua() trong
+/// src/lib/dichVuChung.ts.
+///
+/// KHONG XOA — chi ngung dung (dangDung = false): hop dong (dot 2) se tro toi
+/// dich vu, xoa di thi hop dong cu mat ten mat gia.
+model DichVu {
+  id           String   @id @default(cuid())
+  /// Ma ben AppSheet ("QPS7TR", "ADQ01"…), giu nguyen chu nhu da go. KHONG DOI
+  /// DUOC sau khi tao: hop dong cu ben AppSheet tim dich vu bang ma nay (dot 2).
+  maDV         String   @unique
+  /// "dich-vu" | "trang-phuc" | "san-pham" — xem LOAI_DICH_VU.
+  loai         String
+  ten          String
+  /// Nhom trong loai — cot "Loại DV" ben AppSheet (Cưới, Baby, Thuê lẻ, IN ẢNH…). Chu tu do.
+  nhom         String?
+  chiTiet      String?
+  donGia       Int      @default(0)
+  donVi        String?
+  /// Duong dan anh ben AppSheet ("Dịch vụ_Images/ADQ01.Hình ảnh.083439.jpg").
+  /// Thu muc anh cua app chua duoc nguoi ban chia se (do 15/09) — giu duong dan
+  /// de ghep anh khi co quyen.
+  hinhAppSheet String?
+  dangDung     Boolean  @default(true)
+  taoLuc       DateTime @default(now())
+  capNhatLuc   DateTime @updatedAt
+
+  chiPhi GiaHangMuc[]
+
+  @@index([loai, dangDung])
+}
+
+/// Chi phi tung hang muc cua mot dich vu — trang "Dịch vụ CT" ben AppSheet
+/// (315 dong cho 98 dich vu): tien tra tho chup, makeup, photoshop, xuong in,
+/// hoa… moi lan lam dich vu do. La nen de tinh luong san pham o dot 4.
+///
+/// CHI QUAN LY xem: phan lon la tien cong tho (studio chot 15/09: chi quan ly
+/// xem luong moi nguoi).
+model GiaHangMuc {
+  id         String   @id @default(cuid())
+  dichVuId   String
+  /// "PHOTO", "Makeup", "Xưởng in"… giu nguyen chu ben AppSheet.
+  hangMuc    String?
+  donGia     Int      @default(0)
+  /// Cot "ID" ben AppSheet — chay lai script nhap khong bi trung.
+  maAppSheet String?  @unique
+  taoLuc     DateTime @default(now())
+
+  dichVu DichVu @relation(fields: [dichVuId], references: [id], onDelete: Restrict)
+
+  @@index([dichVuId])
+}

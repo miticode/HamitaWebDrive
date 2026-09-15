@@ -80,6 +80,12 @@ export default async function TongQuanPage() {
             </Link>
             <span className="text-right text-fg-muted">Nội quy và mức phạt{quanTri ? ", sửa được" : ""}</span>
           </li>
+          <li className="flex items-baseline justify-between gap-4 px-4 py-3">
+            <Link href="/quan-ly/dich-vu" className="font-medium hover:text-accent">
+              Dịch vụ &amp; trang phục
+            </Link>
+            <span className="text-right text-fg-muted">Bảng giá dịch vụ, trang phục, sản phẩm</span>
+          </li>
           {quanTri && (
             <li className="flex items-baseline justify-between gap-4 px-4 py-3">
               <Link href="/quan-ly/thong-tin" className="font-medium hover:text-accent">

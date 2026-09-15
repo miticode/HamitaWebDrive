@@ -1111,6 +1111,15 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
   và `HAMI_BABY`. Nơi nào hiện địa chỉ thì hiện đủ cả hai.
 - **Nội quy không bao giờ xoá**, chỉ ngưng áp dụng — lịch sử phạt (đợt 4) trỏ
   tới nó. Nhân viên chỉ thấy nội quy đang áp dụng.
+- **Dịch vụ & trang phục** (bảng DichVu + GiaHangMuc, `src/lib/dichVuChung.ts`,
+  nhập 16/09 bằng `npx tsx scripts/nhap-dich-vu.mts`; `--cap-nhat` ĐÈ cả chỗ đã
+  sửa trên web). Ai đăng nhập cũng XEM. SỬA: quản lý + sale mọi loại; **nhân
+  viên phòng Váy chỉ trang phục** (bên AppSheet phòng Váy tự nhập trang phục) —
+  quyền theo phòng đọc từ `NguoiDung.phongBan`. **Mã DV không đổi được** sau khi
+  tạo: hợp đồng AppSheet (đợt 2) tìm dịch vụ theo mã. **Không xoá**, chỉ ngưng
+  dùng. **Chi phí từng hạng mục (GiaHangMuc) chỉ quản lý thấy** — phần lớn là
+  tiền công thợ, nền của lương sản phẩm đợt 4. Ảnh trang phục chưa có (thư mục
+  ảnh AppSheet chưa được chia sẻ); đường dẫn cũ nằm ở `hinhAppSheet`.
 - Script đọc AppSheet dùng chung `src/lib/appsheet.ts` (tải file vào bộ nhớ,
   không ghi xuống đĩa).
 
