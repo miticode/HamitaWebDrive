@@ -58,7 +58,7 @@ export function LuoiAnhChon({ anh }: { anh: AnhChon[] }) {
               đọc sai ý khách — "in cỡ 40x60" cắt còn "in cỡ 40..." thì bên in
               làm sao biết.
 
-              Từ 16/09/2026 chỉ còn danh sách trái tim (bỏ tick). Năm lời dặn
+              Từ 15/09/2026 chỉ còn danh sách trái tim (bỏ tick). Năm lời dặn
               khách từng ghi trên tấm vừa tick vừa tim đã được chép sang lượt
               tim, để đơn giao in không mất "ảnh bìa", "ảnh bàn".
             */}

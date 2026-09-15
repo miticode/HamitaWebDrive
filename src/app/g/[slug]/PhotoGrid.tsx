@@ -39,7 +39,7 @@ function useViewerSize(): number {
  * Trái tim của nút chọn ảnh — nét rỗng khi chưa chọn, tô đặc khi đã chọn.
  * Hình dạng không đổi giữa hai trạng thái, chỉ độ đậm và màu nền nút đổi.
  *
- * Trước 16/09/2026 bên cạnh còn nút dấu tick ("giữ riêng"); studio bỏ hẳn,
+ * Trước 15/09/2026 bên cạnh còn nút dấu tick ("giữ riêng"); studio bỏ hẳn,
  * chỉ giữ trái tim.
  */
 function Icon({ filled }: { filled: boolean }) {
@@ -225,7 +225,7 @@ function SelectButtons({
     /*
       Nut 44px la muc toi thieu cua ca Apple lan Google cho mot nut cham — do
       that ngay 27/08/2026 tren man hinh 375px, dau ngon tay nguoi lon rong
-      45-57px. Truoc 16/09/2026 canh nut tim con nut tick ("giu rieng"), hai y
+      45-57px. Truoc 15/09/2026 canh nut tim con nut tick ("giu rieng"), hai y
       nghia nguoc nhau nen phai dat cach xa; studio da bo tick, chi con tim.
     */
     <div className={size === "lg" ? "flex gap-4" : "flex gap-3"}>

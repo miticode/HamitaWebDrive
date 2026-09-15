@@ -36,11 +36,11 @@ const capNhat = process.argv.includes("--cap-nhat");
   Mã NV KHÔNG BAO GIỜ nhập, kèm lý do.
 
   NV001 là NGƯỜI BÁN app AppSheet (bảng ghi Admin, chức vụ "APP"), không phải
-  nhân viên — studio xoá khỏi web 16/09/2026. Không chặn ở đây thì chạy lại
+  nhân viên — studio xoá khỏi web 15/09/2026. Không chặn ở đây thì chạy lại
   script này là người bán quay lại, mà còn mang quyền QUẢN LÝ (vì "Admin" bên
   AppSheet được đổi thành quản lý khi tạo mới).
 */
-const KHONG_NHAP = new Map([["NV001", "người bán app AppSheet, không phải nhân viên (xoá 16/09/2026)"]]);
+const KHONG_NHAP = new Map([["NV001", "người bán app AppSheet, không phải nhân viên (xoá 15/09/2026)"]]);
 
 const token = await getUserAccessToken();
 if (!token) throw new Error("Chưa kết nối Google Drive của studio.");

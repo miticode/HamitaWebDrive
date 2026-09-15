@@ -139,7 +139,7 @@ export default async function ResultsPage({ params }: Props) {
                   trôi sang thư mục khác lúc nào không hay.
 
                   Tấm có lời dặn đưa lên đầu thư mục (anh Hamita yêu cầu
-                  16/09): lời dặn là việc phải làm thêm, nằm lẫn giữa ba chục
+                  15/09): lời dặn là việc phải làm thêm, nằm lẫn giữa ba chục
                   tấm thì dễ sót. Các tấm còn lại vẫn theo tên file — sort của
                   JavaScript giữ nguyên thứ tự cũ khi hai tấm ngang nhau. Chỉ
                   đổi chỗ HIỂN THỊ; danh sách tên file để chép vẫn theo tên,

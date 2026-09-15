@@ -109,7 +109,7 @@ export async function docThongKe(bayGio = new Date()): Promise<ThongKe> {
     lists.filter((l) => l.icon === "heart").map((l) => l.id)
   );
   /*
-    Chi luot tim. Tick da bo ngay 16/09/2026 — dong tick cu con trong database
+    Chi luot tim. Tick da bo ngay 15/09/2026 — dong tick cu con trong database
     nhung khong duoc tinh vao so lieu nao nua.
   */
   const selections = tatCaLuotChon.filter((s) => idListTim.has(s.listId));

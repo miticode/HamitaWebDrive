@@ -20,7 +20,7 @@
  * Suy ra ba dieu, va don in phai theo dung ba dieu do:
  *
  * 1. CHI danh sach "Anh in" (icon heart) moi duoc in va duoc tinh tien. Tu
- *    16/09/2026 cung chi con danh sach do — nut tick ("Anh chon", giu rieng)
+ *    15/09/2026 cung chi con danh sach do — nut tick ("Anh chon", giu rieng)
  *    da bo; dong tick cu con trong database nhung kho khong tra ra.
  *
  * 2. Dem theo SO TAM RIENG BIET. Mot tam co hai dong van chi la mot tam can

@@ -88,7 +88,7 @@ export async function docThongBao(): Promise<ThongBao[]> {
 
   for (const g of galleries) {
     const ten = g.clientName ?? g.title;
-    // Chi luot tim — tick da bo 16/09/2026, dong tick cu khong con tinh.
+    // Chi luot tim — tick da bo 15/09/2026, dong tick cu khong con tinh.
     const cuaNo = selections.filter(
       (s) => galleryCuaList.get(s.listId) === g.id && listTim.has(s.listId),
     );

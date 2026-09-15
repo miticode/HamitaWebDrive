@@ -46,6 +46,10 @@ const BANG_SAO_LUU = [
   "NoiQuy",
   "DichVu",
   "GiaHangMuc",
+  "KhachHang",
+  "HopDong",
+  "ChiTietHopDong",
+  "PhieuThu",
 ] as const;
 
 /** Bảng cố ý không sao lưu, kèm lý do. */
@@ -118,6 +122,10 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     noiQuy,
     dichVu,
     giaHangMuc,
+    khachHang,
+    hopDong,
+    chiTietHopDong,
+    phieuThu,
   ] = await Promise.all([
     prisma.gallery.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.selectionList.findMany({ orderBy: { position: "asc" } }),
@@ -138,6 +146,14 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     prisma.noiQuy.findMany({ orderBy: { thuTu: "asc" } }),
     prisma.dichVu.findMany({ orderBy: { maDV: "asc" } }),
     prisma.giaHangMuc.findMany({ orderBy: { taoLuc: "asc" } }),
+    /*
+      Bốn bảng đợt 2 lúc này chỉ là bản chép từ AppSheet, vẫn sao lưu: tới ngày
+      chuyển hẳn sang web thì chúng thành bản gốc, lúc đó mới thêm là muộn.
+    */
+    prisma.khachHang.findMany({ orderBy: { taoLuc: "asc" } }),
+    prisma.hopDong.findMany({ orderBy: { taoLuc: "asc" } }),
+    prisma.chiTietHopDong.findMany({ orderBy: { taoLuc: "asc" } }),
+    prisma.phieuThu.findMany({ orderBy: { taoLuc: "asc" } }),
   ]);
 
   /*
@@ -160,6 +176,10 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     noiQuy,
     dichVu,
     giaHangMuc,
+    khachHang,
+    hopDong,
+    chiTietHopDong,
+    phieuThu,
   };
 
   return {

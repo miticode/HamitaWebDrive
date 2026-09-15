@@ -394,14 +394,14 @@ là trang vẫn mở bình thường, không gì tố cáo. Vì vậy khung `Kho
 **chưa nối Google** (giấu khung đi) với **gọi Drive hỏng** (hiện dòng đỏ) — gộp
 chung thì khung lặng lẽ biến mất và studio chỉ biết khi khách gọi điện.
 
-**28. Đơn giao in CHỈ tính danh sách "Ảnh in" (trái tim) — từ 16/09/2026 cũng là danh sách duy nhất.**
+**28. Đơn giao in CHỈ tính danh sách "Ảnh in" (trái tim) — từ 15/09/2026 cũng là danh sách duy nhất.**
 Đây không phải lựa chọn kỹ thuật mà là **lời đã nói với khách**, nguyên văn ở
 bước 01 trong `HuongDanChon.tsx` (là bước 02 cho tới 28/08/2026, khi studio
 bỏ hẳn bước "Ngắm ảnh thật kỹ" đứng trước nó):
 
 > *"Thấy tấm nào ưng, anh chị bấm **trái tim** để Hamita **in ra** nhé."*
 
-**Dấu tick ("Ảnh chọn", giữ riêng) đã BỎ ngày 16/09/2026** theo yêu cầu studio.
+**Dấu tick ("Ảnh chọn", giữ riêng) đã BỎ ngày 15/09/2026** theo yêu cầu studio.
 Kho dữ liệu (`getLists`, `getSelections`, `listCounts`) chỉ trả ra danh sách
 tim; 520 lượt tick cũ vẫn nằm trong database, KHÔNG xoá. Trước khi bỏ, 5 lời
 dặn khách ghi trên lượt tick của tấm cũng có tim ("ảnh bìa", "ảnh bàn" — album
@@ -467,7 +467,7 @@ chờ xem ảnh cưới của mình rất dễ hiểu nhầm là studio đã xo�
 Đo ngày 27/08/2026 trên màn hình 375px, cả ba đều là số đo được.
 
 - **Nút trái tim: 44px.** Trước là 40px, trong khi đầu ngón tay người lớn rộng
-  45–57px. (Cho tới 16/09/2026 bên cạnh còn nút tick, phải đặt cách 12px vì hai
+  45–57px. (Cho tới 15/09/2026 bên cạnh còn nút tick, phải đặt cách 12px vì hai
   nút mang ý nghĩa ngược nhau; nay chỉ còn trái tim.)
 - **Nút "Nhập mã": 44px cao, có viền.** Trước là chữ gạch chân cao 16px —
   thứ nhỏ nhất trên màn hình, mà chưa nhập mã thì khách không thả tim được
@@ -1101,7 +1101,7 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
 - Nhập nhân viên: `npx tsx scripts/nhap-nhan-vien.mts` (chỉ thêm người chưa
   có; `--cap-nhat` để cập nhật thông tin). Ghép bằng "Mã NV", không bao giờ
   ghi đè tên đăng nhập, vai trò, mật khẩu. **NV001 (Võ Đại Dương) là NGƯỜI BÁN
-  app AppSheet, không phải nhân viên** — studio xoá 16/09; script bỏ qua mã đó
+  app AppSheet, không phải nhân viên** — studio xoá 15/09; script bỏ qua mã đó
   (`KHONG_NHAP`). Đừng gỡ: nhập lại là người bán có quyền quản lý trên web.
 - **Thông tin studio:** liên hệ công khai (địa chỉ, hotline, Zalo, Facebook)
   CHỈ nằm ở `src/lib/studio.ts` — trang giới thiệu và khung Hỏi Hamita đọc từ
@@ -1114,7 +1114,7 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
 - **Nội quy không bao giờ xoá**, chỉ ngưng áp dụng — lịch sử phạt (đợt 4) trỏ
   tới nó. Nhân viên chỉ thấy nội quy đang áp dụng.
 - **Dịch vụ & trang phục** (bảng DichVu + GiaHangMuc, `src/lib/dichVuChung.ts`,
-  nhập 16/09 bằng `npx tsx scripts/nhap-dich-vu.mts`; `--cap-nhat` ĐÈ cả chỗ đã
+  nhập 15/09 bằng `npx tsx scripts/nhap-dich-vu.mts`; `--cap-nhat` ĐÈ cả chỗ đã
   sửa trên web). Ai đăng nhập cũng XEM. SỬA: quản lý + sale mọi loại; **nhân
   viên phòng Váy chỉ trang phục** (bên AppSheet phòng Váy tự nhập trang phục) —
   quyền theo phòng đọc từ `NguoiDung.phongBan`. **Mã DV không đổi được** sau khi
@@ -1124,6 +1124,32 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
   ảnh AppSheet chưa được chia sẻ); đường dẫn cũ nằm ở `hinhAppSheet`.
 - Script đọc AppSheet dùng chung `src/lib/appsheet.ts` (tải file vào bộ nhớ,
   không ghi xuống đĩa).
+
+**52. Hợp đồng, khách, phiếu thu (đợt 2) đang ở GIAI ĐOẠN SONG SONG — web CHỈ XEM.**
+Studio chốt 15/09/2026: nhân viên vẫn làm hợp đồng, phiếu thu bên AppSheet; web
+tự chép sang mỗi đêm 02:30 (`/api/cron/dong-bo` → `src/lib/dongBoAppSheet.ts`),
+quản lý bấm "Đồng bộ ngay" được. Chạy tay: `npx tsx scripts/dong-bo-appsheet.mts`.
+
+- **Đừng thêm nút sửa** vào bốn bảng KhachHang, HopDong, ChiTietHopDong,
+  PhieuThu khi còn song song: đêm sau bản AppSheet đè lên, người sửa mất công
+  mà không biết. Ngày chuyển hẳn (sau đợt 3): **tắt lịch `dong-bo` trong
+  `vercel.json` TRƯỚC**, rồi mới mở sửa.
+- Chép theo dấu vân tay (`bamAppSheet`): dòng không đổi thì không ghi. Dòng
+  biến mất bên AppSheet chỉ đánh dấu `matBenAppSheet`, không xoá; và chỉ đụng
+  dòng CÓ `bamAppSheet` — dòng tạo trên web sau này không bao giờ bị đánh dấu.
+- Tiền là con số AppSheet đã tính, web không tính lại ("Thanh toán" bên đó cộng
+  cả phiếu chờ duyệt — trang phiếu thu tách phiếu chờ duyệt ra khỏi tổng tháng).
+  Ngày không giờ lưu chuỗi `"YYYY-MM-DD"`; thời điểm bên AppSheet là giờ Việt
+  Nam đọc ra như UTC nên lùi 7 tiếng.
+- **Ai đăng nhập cũng xem hết, kể cả tiền** (studio chốt 15/09: nhân viên xem
+  như sale, chỉ không sửa).
+- Mã dịch vụ mới bên AppSheet: bộ đồng bộ chỉ THÊM vào bảng Dịch vụ, không sửa
+  mục đã có (bảng đó sửa trên web).
+- Lịch 02:30 chạy TRƯỚC sao lưu 03:00 để bản sao lưu đêm có dữ liệu mới. Chưa
+  đặt `CRON_SECRET` nên ai không phải quản lý gọi thẳng đường này thì tối đa
+  một lần mỗi 20 giờ (mốc `dongBoThu`). **Thử tay bằng tài khoản không phải
+  quản lý thì xoá mốc đó sau**, không thì đêm đó lịch chạy bị bỏ qua — y hệt
+  bẫy đã gặp với đường sao lưu.
 
 **41. Số đỏ trên biểu tượng app** (Badging API), thêm 04/09/2026 theo yêu cầu.
 Thông báo trên màn hình khoá rất dễ vuốt qua rồi quên; con số thì nằm lì trên

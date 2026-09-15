@@ -441,7 +441,7 @@ model NoiQuy {
 }
 
 /// Bang dich vu, trang phuc, san pham — trang "Dịch vụ" ben AppSheet cu (nhap
-/// 16/09/2026: 887 trang phuc, 95 dich vu, 36 san pham).
+/// 15/09/2026: 887 trang phuc, 95 dich vu, 36 san pham).
 ///
 /// Ai dang nhap cung XEM duoc (sale bao gia, phong Vay tra mau). SUA: quan ly,
 /// sale, va phong Vay (chi trang phuc) — xem loaiDuocSua() trong
@@ -470,7 +470,8 @@ model DichVu {
   taoLuc       DateTime @default(now())
   capNhatLuc   DateTime @updatedAt
 
-  chiPhi GiaHangMuc[]
+  chiPhi      GiaHangMuc[]
+  dongHopDong ChiTietHopDong[]
 
   @@index([loai, dangDung])
 }
@@ -494,4 +495,141 @@ model GiaHangMuc {
   dichVu DichVu @relation(fields: [dichVuId], references: [id], onDelete: Restrict)
 
   @@index([dichVuId])
+}
+
+/// ── Dot 2: hop dong & khach (15/09/2026) ────────────────────────────────────
+///
+/// GIAI DOAN SONG SONG (studio chot 15/09): nhan vien VAN lam hop dong, phieu
+/// thu ben AppSheet; web TU CHEP sang moi dem (src/lib/dongBoAppSheet.ts) de
+/// xem, tim, xem cong no. Web CHUA sua bon bang duoi — sua o day thi dem sau
+/// bi ghi de. Xong dot 3 (lich, cong viec) anh chon ngay chuyen han.
+///
+/// Dong chep tu AppSheet mang khoa ben kia (maAppSheet / maHD) va `bamAppSheet`
+/// — dau van tay luc chep gan nhat, khong doi thi khong ghi lai. Dong bien mat
+/// ben AppSheet KHONG bi xoa o web, chi danh dau `matBenAppSheet`.
+
+/// Khach hang — trang "Khách hàng" ben AppSheet (1.978 khach).
+model KhachHang {
+  id             String    @id @default(cuid())
+  /// "Mã KH" ben AppSheet — gan nhu luon la so dien thoai (1.938/1.978, do 15/09).
+  maAppSheet     String?   @unique
+  ten            String
+  soDienThoai    String?
+  tinh           String?
+  ghiChu         String?
+  /// Ma nhan vien tao ben AppSheet (NhanVien.maNV).
+  nguoiTaoMaNV   String?
+  taoLuc         DateTime  @default(now())
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  hopDong HopDong[]
+
+  @@index([soDienThoai])
+}
+
+/// Hop dong — trang "Hợp đồng" ben AppSheet (2.225 hop dong).
+///
+/// Tien la dung con so AppSheet tinh (do 15/09: Tong = Thanh tien − KM va Con
+/// lai = Tong − Da thu dung ca 2.225 dong), chua tinh lai o web.
+model HopDong {
+  id             String    @id @default(cuid())
+  /// "Mã HĐ" ben AppSheet (dang STT_…).
+  maHD           String    @unique
+  khachHangId    String?
+  /// Ten ghi tren hop dong — co khi khac ten trong bang khach.
+  tenKhach       String
+  /// Khách lẻ, CƯỚI, HỎI, Baby, NHÀ SU, kỉ yếu, PreWedding… — giu chu ben AppSheet.
+  loaiDV         String?
+  danhSachDV     String?
+  /// "YYYY-MM-DD" — ngay khong gio, luu dang chu cho khoi lech mui gio.
+  ngayDat        String?
+  thanhTien      Int       @default(0)
+  khuyenMai      Int       @default(0)
+  tongTien       Int       @default(0)
+  /// "Thanh toán" ben AppSheet = cong MOI phieu thu, ke ca phieu cho duyet.
+  daThu          Int       @default(0)
+  conLai         Int       @default(0)
+  /// Nguyen chu ben AppSheet, vd "12. Đã xong tiệc".
+  trangThai      String?
+  /// So buoc tach tu trangThai: 1–9 nhanh chup studio, 10–18 nhanh tiec.
+  buoc           Int?
+  ngayHoanThanh  String?
+  diaChi         String?
+  ghiChu         String?
+  nguoiLapMaNV   String?
+  taoLuc         DateTime  @default(now())
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  khachHang KhachHang?       @relation(fields: [khachHangId], references: [id], onDelete: SetNull)
+  chiTiet   ChiTietHopDong[]
+  phieuThu  PhieuThu[]
+
+  @@index([khachHangId])
+  @@index([ngayDat])
+  @@index([buoc])
+}
+
+/// Tung dong dich vu, trang phuc, san pham trong hop dong — "Hợp đồng CT".
+model ChiTietHopDong {
+  id             String    @id @default(cuid())
+  /// "Mã chi tiết HĐ" ben AppSheet.
+  maAppSheet     String    @unique
+  hopDongId      String
+  /// "dich-vu" | "trang-phuc" | "san-pham" (LOAI_DICH_VU).
+  loai           String?
+  ngayChup       String?
+  /// Ma dich vu ghi tren dong. 1.081/6.675 dong mang ma KHONG con trong bang
+  /// Dich vu (do 15/09: vest cu VET…, ao dai cu…) — nen giu ca ma lan ten
+  /// ngay tren dong; dichVuId chi co khi ghep duoc.
+  maDV           String?
+  dichVuId       String?
+  tenDV          String?
+  chiTiet        String?
+  donGia         Int       @default(0)
+  soLuong        Float     @default(0)
+  thanhTien      Int       @default(0)
+  ghiChu         String?
+  nguoiLapMaNV   String?
+  taoLuc         DateTime  @default(now())
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  hopDong HopDong @relation(fields: [hopDongId], references: [id], onDelete: Cascade)
+  dichVu  DichVu? @relation(fields: [dichVuId], references: [id], onDelete: SetNull)
+
+  @@index([hopDongId])
+  @@index([ngayChup])
+}
+
+/// Phieu thu — trang "Thu" ben AppSheet (3.950 phieu).
+model PhieuThu {
+  id             String    @id @default(cuid())
+  /// Cot "Id" ben AppSheet.
+  maAppSheet     String?   @unique
+  hopDongId      String?
+  /// "Tiền mặt" | "Chuyển khoản"
+  hinhThuc       String?
+  /// Tai khoan ngan hang cua tiem nhan tien chuyen khoan.
+  taiKhoan       String?
+  /// Cot "Loại thanh toán" ben AppSheet — chu tu do: Cọc, Cọc lần 1, Đủ…
+  noiDung        String?
+  ngayThu        String?
+  soTien         Int       @default(0)
+  /// "Đã thu tiền mặt" | "Đã thu chuyển khoản" | "Chờ duyệt"
+  trangThai      String?
+  ghiChu         String?
+  nguoiTaoMaNV   String?
+  nguoiDuyetMaNV String?
+  /// Duong dan anh chung tu ben AppSheet — thu muc anh chua duoc chia se.
+  anhAppSheet    String?
+  taoLuc         DateTime  @default(now())
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  hopDong HopDong? @relation(fields: [hopDongId], references: [id], onDelete: SetNull)
+
+  @@index([hopDongId])
+  @@index([ngayThu])
 }

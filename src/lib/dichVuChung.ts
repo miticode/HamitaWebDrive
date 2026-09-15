@@ -37,7 +37,7 @@ export function loaiTuAppSheet(s: string | null): LoaiDichVu | null {
  *
  * - Quản lý, Sale: mọi loại. Sale là người báo giá; giá sai là hợp đồng sai.
  * - Nhân viên phòng Váy: chỉ trang phục. Bên AppSheet, phòng Váy tự nhập trang
- *   phục (đo 16/09: 286/1.018 dòng do người phòng Váy tạo, phần lớn còn lại do
+ *   phục (đo 15/09: 286/1.018 dòng do người phòng Váy tạo, phần lớn còn lại do
  *   phòng Tư Vấn). Không cho họ sửa bảng giá dịch vụ.
  *
  * Người dùng khác chỉ xem được — bảng giá là thứ cả tiệm cần tra.

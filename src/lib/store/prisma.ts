@@ -193,7 +193,7 @@ export const prismaStore: Store = {
 
   async getLists(galleryId: string) {
     /*
-      CHI danh sach trai tim. Tick ("Ảnh chọn") da bo ngay 16/09/2026 — dong cu
+      CHI danh sach trai tim. Tick ("Ảnh chọn") da bo ngay 15/09/2026 — dong cu
       van con trong database (khong xoa lua chon cua khach) nhung khong tra ra:
       trang khach khong ve nut tick, duong nhan luot chon tu choi luot tick gui
       len tu trinh duyet con mo ban cu, trang quan ly va don in khong con thay.

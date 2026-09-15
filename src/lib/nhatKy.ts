@@ -53,7 +53,8 @@ export type HanhDong =
   | "them-noi-quy"
   | "sua-noi-quy"
   | "them-dich-vu"
-  | "sua-dich-vu";
+  | "sua-dich-vu"
+  | "dong-bo-appsheet";
 
 export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "dang-nhap": "Đăng nhập",
@@ -70,4 +71,5 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "sua-noi-quy": "Sửa nội quy",
   "them-dich-vu": "Thêm dịch vụ / trang phục",
   "sua-dich-vu": "Sửa dịch vụ / trang phục",
+  "dong-bo-appsheet": "Đồng bộ từ AppSheet",
 };

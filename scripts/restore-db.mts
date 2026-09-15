@@ -47,9 +47,13 @@ const COT_NGAY: Record<string, string[]> = {
   nhatKy: ["luc"],
   thongTinStudio: ["capNhatLuc"],
   noiQuy: ["taoLuc", "capNhatLuc"],
-  // Tu 16/09/2026 (van phien ban 2, chi them bang):
+  // Tu 15/09/2026 (van phien ban 2, chi them bang):
   dichVu: ["taoLuc", "capNhatLuc"],
   giaHangMuc: ["taoLuc"],
+  khachHang: ["taoLuc", "matBenAppSheet"],
+  hopDong: ["taoLuc", "matBenAppSheet"],
+  chiTietHopDong: ["taoLuc", "matBenAppSheet"],
+  phieuThu: ["taoLuc", "matBenAppSheet"],
 };
 
 function doiNgay<T extends Record<string, unknown>>(bang: string, dong: T): T {
@@ -236,6 +240,7 @@ let nqThem = 0;
 let ttThem = 0;
 let dvThem = 0;
 let cpThem = 0;
+const dot2: Record<string, number> = {};
 if (!chiAlbum) {
   for (const nv of ban.bang.nhanVien ?? []) {
     const dangCo = await prisma.nhanVien.findFirst({
@@ -304,13 +309,43 @@ if (!chiAlbum) {
     if (ghiThat) await prisma.giaHangMuc.create({ data: doiNgay("giaHangMuc", cp) as never });
   }
 
+  /*
+    Bon bang dot 2 (chep tu AppSheet): chi them dong chua co. Dong trung id hay
+    trung ma AppSheet thi Postgres tu bo qua (skipDuplicates). Dung thu tu khoa:
+    khach → hop dong → chi tiet, phieu thu.
+  */
+  type UyPhucHoi = {
+    findMany(a: unknown): Promise<{ id: string }[]>;
+    createMany(a: unknown): Promise<unknown>;
+  };
+  for (const [ten, uy] of [
+    ["khachHang", prisma.khachHang],
+    ["hopDong", prisma.hopDong],
+    ["chiTietHopDong", prisma.chiTietHopDong],
+    ["phieuThu", prisma.phieuThu],
+  ] as [string, unknown][]) {
+    const ds = (ban.bang[ten] ?? []) as Record<string, unknown>[];
+    if (!ds.length) continue;
+    const u = uy as UyPhucHoi;
+    const daCo = new Set((await u.findMany({ select: { id: true } })).map((d) => d.id));
+    const moi = ds.filter((d) => !daCo.has(d.id as string));
+    dot2[ten] = moi.length;
+    if (ghiThat) {
+      for (let i = 0; i < moi.length; i += 1000) {
+        await u.createMany({ data: moi.slice(i, i + 1000).map((d) => doiNgay(ten, d)), skipDuplicates: true });
+      }
+    }
+  }
+
   console.log(
-    `${ghiThat ? "Da phuc hoi" : "Se phuc hoi"} ${nvThem} nhan vien, ${nkThem} dong nhat ky, ${nqThem} noi quy, ${ttThem} thong tin studio, ${dvThem} dich vu, ${cpThem} chi phi hang muc.` +
+    `${ghiThat ? "Da phuc hoi" : "Se phuc hoi"} ${nvThem} nhan vien, ${nkThem} dong nhat ky, ${nqThem} noi quy, ${ttThem} thong tin studio, ${dvThem} dich vu, ${cpThem} chi phi hang muc` +
+      (Object.keys(dot2).length ? `, ${Object.entries(dot2).map(([k, n]) => `${n} ${k}`).join(", ")}` : "") +
+      "." +
       (nvThem ? " Nho cap lai mat khau cho nhung nguoi nay." : ""),
   );
 }
 
-if (!ghiThat && (daThem > 0 || nvThem > 0 || nkThem > 0 || nqThem > 0 || ttThem > 0 || dvThem > 0 || cpThem > 0)) {
+if (!ghiThat && (daThem > 0 || nvThem > 0 || nkThem > 0 || nqThem > 0 || ttThem > 0 || dvThem > 0 || cpThem > 0 || Object.values(dot2).some((n) => n > 0))) {
   console.log("\nGhi that thi them --ghi vao cuoi lenh.");
 }
 if (ghiThat && daThem > 0) {

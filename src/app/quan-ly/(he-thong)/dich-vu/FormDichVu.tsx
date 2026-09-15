@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { TEN_LOAI, type DuLieuDichVu, type LoaiDichVu } from "@/lib/dichVuChung";
 import { suaDichVuAction, themDichVuAction } from "../../actionsDichVu";
 
-/** Đơn vị đang dùng bên AppSheet, xếp theo số lần dùng (đo 16/09). */
+/** Đơn vị đang dùng bên AppSheet, xếp theo số lần dùng (đo 15/09). */
 const DON_VI = ["Bộ", "Váy", "Cái", "Gói", "Tấm", "Lần", "Cuốn", "Bó", "Người", "Đôi"];
 
 type Props = {

@@ -11,7 +11,7 @@ import { useState } from "react";
  * thang thi day la viec lap nhieu nhat trong ngay.
  *
  * Loi trong tin nhan phai KHOP voi thu khach doc tren web: tim la "in ra"
- * (tick da bo 16/09/2026), va buoc cuoi la bam "Báo cho Hamita". Sua loi o web ma
+ * (tick da bo 15/09/2026), va buoc cuoi la bam "Báo cho Hamita". Sua loi o web ma
  * quen sua o day la studio noi mot dang, web noi mot neo.
  */
 export function CopyLink({

@@ -66,7 +66,7 @@ export type ListCount = {
 /**
  * Mot danh sach chon anh — nay chi con "Ảnh in" (trai tim).
  *
- * Danh sach tick ("Ảnh chọn", giu rieng) da BO ngay 16/09/2026 theo yeu cau
+ * Danh sach tick ("Ảnh chọn", giu rieng) da BO ngay 15/09/2026 theo yeu cau
  * studio. Dong cu van nam trong database nhung kho khong tra ra dau ca — xem
  * getLists trong prisma.ts.
  */
@@ -303,7 +303,7 @@ export type Store = {
   ): Promise<void>;
 };
 
-/** Danh sach mac dinh tao kem moi gallery — chi con trai tim (bo tick 16/09/2026). */
+/** Danh sach mac dinh tao kem moi gallery — chi con trai tim (bo tick 15/09/2026). */
 export const DEFAULT_LISTS = [{ name: "Ảnh in", icon: "heart" as const, position: 0 }];
 
 const VIETNAMESE_MAP: Record<string, string> = { đ: "d", Đ: "d" };

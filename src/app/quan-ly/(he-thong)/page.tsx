@@ -10,7 +10,11 @@ export const dynamic = "force-dynamic";
   thông tin, không phải trang trí.
 */
 const SAP_CO = [
-  { dot: 2, ten: "Hợp đồng & khách hàng", mo: "Hợp đồng, phiếu thu, quy trình trạng thái, tự nối với album ảnh." },
+  {
+    dot: 2,
+    ten: "Hợp đồng — phần còn lại",
+    mo: "Nối album ảnh vào hợp đồng. Tạo, sửa hợp đồng và duyệt phiếu thu ngay trên web khi chuyển hẳn khỏi AppSheet.",
+  },
   { dot: 3, ten: "Lịch & công việc", mo: "Lịch chụp, lịch soạn váy, chia việc dạng kanban, khách tiềm năng." },
   { dot: 4, ten: "Nhân sự & chi", mo: "Chấm công, đơn xin, thưởng phạt, lương tháng, phiếu chi." },
   { dot: 5, ten: "Báo cáo", mo: "Báo cáo tổng hợp, doanh thu kỳ vọng, chỉ tiêu doanh số." },
@@ -66,6 +70,24 @@ export default async function TongQuanPage() {
       <section className="mt-10">
         <h2 className="eyebrow">Đang có</h2>
         <ul className="mt-3 divide-y divide-line rounded-md border border-line bg-bg-raised text-sm">
+          <li className="flex items-baseline justify-between gap-4 px-4 py-3">
+            <Link href="/quan-ly/hop-dong" className="font-medium hover:text-accent">
+              Hợp đồng
+            </Link>
+            <span className="text-right text-fg-muted">Tra hợp đồng, công nợ — chép từ AppSheet mỗi đêm</span>
+          </li>
+          <li className="flex items-baseline justify-between gap-4 px-4 py-3">
+            <Link href="/quan-ly/khach-hang" className="font-medium hover:text-accent">
+              Khách hàng
+            </Link>
+            <span className="text-right text-fg-muted">Khách và mọi hợp đồng của họ</span>
+          </li>
+          <li className="flex items-baseline justify-between gap-4 px-4 py-3">
+            <Link href="/quan-ly/phieu-thu" className="font-medium hover:text-accent">
+              Phiếu thu
+            </Link>
+            <span className="text-right text-fg-muted">Thu theo tháng, tiền mặt / chuyển khoản, chờ duyệt</span>
+          </li>
           <li className="flex items-baseline justify-between gap-4 px-4 py-3">
             <Link href="/quan-ly/nhan-vien" className="font-medium hover:text-accent">
               Nhân viên

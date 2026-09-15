@@ -27,7 +27,7 @@ thuê (`hamitaweddinghouse.gump.gg`).
 web chỉ là lớp hiển thị. Studio không phải upload lại, không tốn tiền lưu trữ.
 
 Khách nhận một link, xem ảnh, tim ❤️ những tấm muốn in (dấu tick ✓ đã bỏ ngày
-16/09/2026), ghi chú riêng từng tấm (vd "in cỡ 40x60"), rồi bấm "Báo cho
+15/09/2026), ghi chú riêng từng tấm (vd "in cỡ 40x60"), rồi bấm "Báo cho
 studio" khi chọn xong. Studio xem lại trong trang quản lý, xuất Excel hoặc chép
 danh sách tên/mã file để giao cho bên in ảnh.
 
@@ -175,7 +175,7 @@ link cũng đọc được khung, mà mã là lớp bảo vệ duy nhất.
 *Còn treo:* danh sách 10 câu mới chỉ phủ những gì bản thân trang web trả lời
 được. Studio cần đưa **câu hỏi thật khách hay hỏi sale** để bổ sung.
 
-### Bỏ dấu tick, chỉ giữ trái tim (16/09)
+### Bỏ dấu tick, chỉ giữ trái tim (15/09)
 
 Anh yêu cầu bỏ hẳn dấu tick ("Ảnh chọn", giữ riêng) trên trang album. Trái tim
 nay là nút chọn duy nhất: khách thả tim tấm muốn in, ghi chú, báo xong.
@@ -207,7 +207,7 @@ vẫn ở Zalo.** Kế hoạch đầy đủ: https://claude.ai/artifact/9NV66DHd
 **Đã có (đợt 1, phần đầu):** trang `/quan-ly` (hoặc nút "Quản lý studio" trên
 trang quản lý album), đăng nhập bằng tên + mật khẩu, danh bạ nhân viên nhập
 từ AppSheet, cấp mật khẩu, phân quyền, nhật ký thao tác. Nhập 26 người; ngày
-16/09 anh cho xoá **Võ Đại Dương (NV001) — người bán app AppSheet, không phải
+15/09 anh cho xoá **Võ Đại Dương (NV001) — người bán app AppSheet, không phải
 nhân viên** (đang mang quyền quản lý, may chưa từng được cấp mật khẩu hay đăng
 nhập). Script nhập nhân viên đã chặn không nhập lại mã này. Còn 25 người.
 
@@ -230,7 +230,7 @@ House); đã sửa để hiện đủ hai cơ sở, cả trong khung Hỏi Hamit
 công hiện chỉ một điểm gần Wedding House — tới đợt 4 cần hỏi nhân viên có chấm
 công ở cả hai cơ sở không.
 
-**Đã thêm (16/09) — xong đợt 1:** mục **Dịch vụ & trang phục**. Nhập đủ 1.018
+**Đã thêm (15/09) — xong đợt 1:** mục **Dịch vụ & trang phục**. Nhập đủ 1.018
 mục từ AppSheet (95 dịch vụ, 887 trang phục, 36 sản phẩm) và 313/315 dòng chi
 phí từng hạng mục (2 dòng trỏ tới mã TTPTB25x35, 15x21G không còn trong bảng
 Dịch vụ bên AppSheet nên bỏ). Cả tiệm xem được, tìm theo mã/tên/chi tiết, lọc
@@ -240,6 +240,27 @@ trang phục. Mã không đổi được, không xoá chỉ ngưng dùng. Chi ph
 bán chia sẻ thư mục ảnh của app. Trong lúc AppSheet còn chạy song song, mục
 mới thêm bên đó thì chạy lại `npx tsx scripts/nhap-dich-vu.mts` (chỉ thêm mục
 chưa có).
+
+### Đợt 2 bắt đầu: hợp đồng, khách, phiếu thu chép từ AppSheet (15/09)
+
+Anh chốt hai điều: **chạy song song** (nhân viên vẫn làm hợp đồng, phiếu thu bên
+AppSheet, web tự chép sang mỗi đêm — không ai phải nhập hai nơi; xong đợt 3 anh
+chọn ngày chuyển hẳn) và **nhân viên thường xem hết như sale**, chỉ không sửa.
+
+**Đã có:** ba mục mới trên thanh bên — **Hợp đồng** (tìm theo tên, số điện
+thoại, mã; lọc theo 18 trạng thái, theo loại, "đang chờ khách chọn / duyệt",
+"còn nợ"; xem từng hợp đồng đủ dòng dịch vụ, trang phục, phiếu thu), **Khách
+hàng** (xếp theo hợp đồng gần nhất, lọc còn nợ / chưa có hợp đồng), **Phiếu
+thu** (theo tháng, tiền mặt / chuyển khoản, phiếu chờ duyệt tách riêng).
+
+Chép lần đầu 13 giây: 1.978 khách, 2.225 hợp đồng, 6.673 dòng chi tiết (2 dòng
+bên AppSheet trống mã hợp đồng nên bỏ), 3.950 phiếu thu. Chạy lại 5 giây,
+không thêm trùng. Đối chiếu với số đo trực tiếp trên file AppSheet: còn nợ
+**101 hợp đồng, 783.935.909đ**, khớp; các phép cộng tiền khớp y như bên đó.
+Bản sao lưu đêm nặng lên 1,4 MB (nén), vẫn nhẹ.
+
+**Còn lại của đợt 2:** nối album ảnh vào hợp đồng; tạo, sửa hợp đồng và duyệt
+phiếu thu trên web (chỉ bật khi chuyển hẳn — xem nguyên tắc 52).
 
 ### Sao lưu tự động lên Drive mỗi đêm (15/09)
 
@@ -529,7 +550,7 @@ việc giống hệt nhau, chỉ khác ở chỗ tấm ảnh đại diện cho a
 - **Lời dặn của khách hiện trên từng ảnh** ở trang "Ảnh khách chọn", cả hai danh
   sách. Trước đây chỉ đọc được ở đơn giao in, mà đơn đó chỉ lấy danh sách trái
   tim — nên lời dặn trên tấm giữ riêng không hiện ở đâu cả.
-- **Tấm có lời dặn lên đầu thư mục** ở trang "Ảnh khách chọn" (16/09). Chỉ đổi
+- **Tấm có lời dặn lên đầu thư mục** ở trang "Ảnh khách chọn" (15/09). Chỉ đổi
   chỗ hiển thị trong từng thư mục; các tấm còn lại vẫn theo tên file, và danh
   sách tên file để chép cho bên in vẫn theo tên. Thử trên album Quốc Phong & Mỹ
   Lộc: 2 tấm có dặn (TRI06683, TRI06924) đứng đầu, 25 tấm sau theo tên, đủ 27.
@@ -578,7 +599,7 @@ UptimeRobot nằm trong `README.md`.
 **Đơn giao in** `/admin/[slug]/don-in` — tờ đưa cho bên in: chỉ ảnh phải in,
 kèm mã số, ghi chú cỡ in của khách, và tiền phát sinh tính sẵn. In ra giấy hoặc
 chép gửi đội Media. Quy tắc tính tiền lấy từ **đúng lời đã nói với khách**: chỉ
-danh sách trái tim được in và tính tiền (danh sách tick đã bỏ 16/09/2026).
+danh sách trái tim được in và tính tiền (danh sách tick đã bỏ 15/09/2026).
 
 **Thống kê** `/admin/thong-ke` — xếp theo việc cần làm: phần đầu là danh sách
 khách nên nhắn (chưa mở link / đã mở mà chưa chọn / chọn dở rồi dừng), số liệu
@@ -953,7 +974,7 @@ lệch tới **1.353 ảnh** ở một album. Khung Thông báo **không phát h
 này vì nó cũng không gọi Drive. Đo 07/09: còn 1 album lệch (baby- Châu, DB 81 /
 Drive 88).
 
-**✅ (16/09) Khách bấm "Báo cho Hamita" mà không thả tim tấm nào.** Nút tick đã
+**✅ (15/09) Khách bấm "Báo cho Hamita" mà không thả tim tấm nào.** Nút tick đã
 bỏ nên hết cảnh nhầm giữa hai nút; khung Thông báo vẫn nhắc nếu khách báo xong
 mà chưa thả tim tấm nào. Ghi chép cũ:
 Nhà "baby- Châu" báo xong với 0 tấm tim, chỉ tick giữ riêng 7 tấm. Có thể họ
