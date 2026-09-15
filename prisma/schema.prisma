@@ -338,8 +338,9 @@ model NhanVien {
   matKhau     String?
   /// true = phai doi mat khau o lan dang nhap toi (vua duoc cap mat khau tam).
   doiMatKhau  Boolean   @default(true)
-  /// "quan-tri" | "nhan-vien". Quan tri xem duoc luong cua moi nguoi; nhan
-  /// vien chi xem luong cua chinh minh (studio chot 15/09/2026).
+  /// "quan-tri" | "sale" | "nhan-vien" — xem VAI_TRO trong nhanVienChung.ts.
+  /// Sua hop dong: quan tri + sale. Duyet thu chi: chi quan tri. Xem luong:
+  /// quan tri xem moi nguoi, con lai chi xem cua minh (studio chot 15/09/2026).
   vaiTro      String    @default("nhan-vien")
   soDienThoai String?
   email       String?

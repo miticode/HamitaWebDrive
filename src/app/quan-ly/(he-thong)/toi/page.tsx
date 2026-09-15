@@ -1,5 +1,6 @@
 import { getPrisma } from "@/lib/db";
 import { batBuocDangNhap } from "@/lib/phienNhanVien";
+import { TEN_VAI_TRO, laVaiTro } from "@/lib/nhanVienChung";
 import { FormDoiMatKhau } from "../../FormDoiMatKhau";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +34,7 @@ export default async function ToiPage() {
     ["Phòng ban", nv.phongBan],
     ["Chức vụ", nv.chucVu],
     ["Điện thoại", nv.soDienThoai],
-    ["Vai trò", nv.vaiTro === "quan-tri" ? "Quản lý" : "Nhân viên"],
+    ["Vai trò", TEN_VAI_TRO[laVaiTro(nv.vaiTro) ? nv.vaiTro : "nhan-vien"]],
   ];
 
   return (

@@ -287,7 +287,8 @@ function FormNhanVien({
             onChange={(e) => doi("vaiTro", e.target.value)}
           >
             <option value="nhan-vien">Nhân viên — xem lương của mình</option>
-            <option value="quan-tri">Quản lý — xem lương mọi người</option>
+            <option value="sale">Sale — thêm quyền sửa hợp đồng</option>
+            <option value="quan-tri">Quản lý — duyệt thu chi, xem lương mọi người</option>
           </select>
         </label>
       </div>

@@ -123,6 +123,9 @@ export default async function NhanVienPage({ searchParams }: Props) {
                   {n.vaiTro === "quan-tri" && (
                     <span className="ml-2 rounded border border-accent px-1.5 py-0.5 text-[11px] text-accent">Quản lý</span>
                   )}
+                  {n.vaiTro === "sale" && (
+                    <span className="ml-2 rounded border border-line-strong px-1.5 py-0.5 text-[11px] text-fg-muted">Sale</span>
+                  )}
                 </td>
                 <td className="px-4 py-2.5 whitespace-nowrap">{n.phongBan}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap">{n.chucVu}</td>

@@ -30,6 +30,7 @@ import {
   chuanSoDienThoai,
   chuanTenDangNhap,
   kiemTenDangNhap,
+  laVaiTro,
 } from "@/lib/nhanVienChung";
 
 export type KetQua = { loi?: string; ok?: string };
@@ -238,7 +239,7 @@ async function kiemDuLieu(
   const soDienThoai = chuanSoDienThoai(soGo);
   if (soGo && !soDienThoai) return { loi: "Số điện thoại chưa đúng (10 số, bắt đầu bằng 0)." };
 
-  if (du.vaiTro !== "quan-tri" && du.vaiTro !== "nhan-vien") {
+  if (!laVaiTro(du.vaiTro)) {
     return { loi: "Vai trò không hợp lệ." };
   }
 

@@ -44,3 +44,27 @@ export function kiemTenDangNhap(ten: string): string | null {
   }
   return null;
 }
+
+/**
+ * Ba vai trò trong phần quản lý studio, và việc từng vai trò được làm.
+ *
+ * Studio chốt 15/09/2026:
+ * - Sửa hợp đồng: QUẢN LÝ và SALE.
+ * - Duyệt phiếu thu, phiếu chi: CHỈ QUẢN LÝ.
+ * - Xem lương: quản lý xem của mọi người, sale và nhân viên chỉ xem của mình.
+ *
+ * Bên AppSheet cũ chỉ ghi Admin/User cho từng người; vai trò Sale mặc định
+ * gán cho phòng Tư Vấn, quản lý đổi lại được ở mục Nhân viên.
+ */
+export const VAI_TRO = ["quan-tri", "sale", "nhan-vien"] as const;
+export type VaiTro = (typeof VAI_TRO)[number];
+
+export const TEN_VAI_TRO: Record<VaiTro, string> = {
+  "quan-tri": "Quản lý",
+  sale: "Sale",
+  "nhan-vien": "Nhân viên",
+};
+
+export function laVaiTro(s: string): s is VaiTro {
+  return (VAI_TRO as readonly string[]).includes(s);
+}

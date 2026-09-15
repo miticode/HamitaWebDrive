@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { databaseIsConfigured, getPrisma } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
+import { laVaiTro, type VaiTro } from "@/lib/nhanVienChung";
 
 /**
  * Phiên đăng nhập của phần quản lý studio (/quan-ly).
@@ -20,7 +21,7 @@ const COOKIE = "nv_phien";
 /** Ba mươi ngày: nhân viên mở trên điện thoại cả ngày, bắt đăng nhập lại mỗi tuần là phiền. */
 const HAN_MS = 30 * 24 * 60 * 60 * 1000;
 
-export type VaiTro = "quan-tri" | "nhan-vien";
+export type { VaiTro };
 
 export type NguoiDung = {
   /** null = quản trị chung (mật khẩu quản lý album), không phải một nhân viên cụ thể. */
@@ -91,7 +92,8 @@ export const layNguoiDung = cache(async (): Promise<NguoiDung | null> => {
       return {
         id: nv.id,
         ten: nv.ten,
-        vaiTro: nv.vaiTro === "quan-tri" ? "quan-tri" : "nhan-vien",
+        // Chữ lạ trong cột vai trò thì coi là nhân viên — quyền thấp nhất, không bao giờ là cao nhất.
+        vaiTro: laVaiTro(nv.vaiTro) ? nv.vaiTro : "nhan-vien",
         doiMatKhau: nv.doiMatKhau,
       };
     }

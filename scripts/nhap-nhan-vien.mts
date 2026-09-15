@@ -103,10 +103,16 @@ for (let i = 2; i <= ws.rowCount; i++) {
     phongBan: chu(o(row, "Phòng Ban")),
     chucVu: chu(o(row, "Chức vụ")),
     /*
-      "Admin" bên AppSheet → quản lý trên web. Chỉ áp khi TẠO MỚI; người đã có
-      thì giữ vai trò quản lý đã đặt trên web.
+      "Admin" bên AppSheet → quản lý; phòng Tư Vấn → sale (AppSheet không ghi
+      vai trò sale riêng). Chỉ áp khi TẠO MỚI; người đã có thì giữ vai trò đã
+      đặt trên web.
     */
-    vaiTro: chu(o(row, "Phân quyền")) === "Admin" ? "quan-tri" : "nhan-vien",
+    vaiTro:
+      chu(o(row, "Phân quyền")) === "Admin"
+        ? "quan-tri"
+        : chu(o(row, "Phòng Ban")) === "Tư Vấn"
+          ? "sale"
+          : "nhan-vien",
     dangLam: chu(o(row, "Trạng thái")) !== "Đã nghỉ",
     ngayVaoLam: ngay instanceof Date ? ngay : null,
   });

@@ -1068,6 +1068,10 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
   đó văng ra NGAY. Mỗi lần mở trang đều kiểm lại người đó còn làm không.
 - **Nhật ký** (bảng NhatKy, `src/lib/nhatKy.ts`): mọi thao tác sửa dữ liệu
   phải ghi. Không nối khoá tới NhanVien để nhật ký còn nguyên khi xoá người.
+- **Ba vai trò** (`VAI_TRO` trong `src/lib/nhanVienChung.ts`, chốt 15/09):
+  quản lý, sale, nhân viên. **Sửa hợp đồng: quản lý + sale. Duyệt phiếu thu
+  chi: chỉ quản lý.** Sale mặc định gán cho phòng Tư Vấn (AppSheet chỉ ghi
+  Admin/User). Chữ lạ trong cột vai trò luôn coi là nhân viên, quyền thấp nhất.
 - **Quyền xem lương** (dùng từ đợt 4): quản lý xem lương mọi người, nhân viên
   chỉ xem lương của chính mình. Lương cứng và số tài khoản CHƯA nhập từ
   AppSheet — chờ tới đợt 4.

@@ -1,4 +1,5 @@
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
+import { TEN_VAI_TRO } from "@/lib/nhanVienChung";
 import { ThanhBen, type MucMenu } from "./ThanhBen";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +36,7 @@ export default async function HeThongLayout({ children }: { children: React.Reac
       <ThanhBen
         menu={menu}
         ten={nguoi.ten}
-        vaiTro={quanTri ? "Quản lý" : "Nhân viên"}
+        vaiTro={TEN_VAI_TRO[nguoi.vaiTro]}
         coTaiKhoanRieng={nguoi.id !== null}
       />
       <main className="min-w-0 flex-1 px-5 py-8 sm:px-8 md:py-10">{children}</main>
