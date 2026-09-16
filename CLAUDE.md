@@ -1081,7 +1081,10 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
   có màn hình riêng chỉ hỏi mật khẩu — hai cửa cho cùng một người, đứng nhầm
   cửa thì không thấy ô tài khoản và tưởng hệ thống hỏng. Nay `/admin` chuyển
   về màn hình chung kèm `?tiep=<đường cần quay lại>`; đăng nhập xong quay
-  đúng chỗ. `tiep` CHỈ nhận đường nội bộ (bắt đầu bằng một dấu "/") — nhận
+  đúng chỗ. **Không có `tiep` thì mọi tài khoản vào thẳng `/admin`**
+  (`TRANG_DAU` trong `src/app/quan-ly/actions.ts`, studio chốt 16/09): quản
+  lý album là việc mở ra mỗi ngày, còn phần quản lý studio vào bằng link ngay
+  đầu trang album. `tiep` CHỈ nhận đường nội bộ (bắt đầu bằng một dấu "/") — nhận
   bừa là ai đó gửi link đưa người dùng sang web khác sau khi đăng nhập.
 - **Sếp gõ tên `admin`** + mật khẩu quản lý album (`ADMIN_PASSWORD`). Tên
   "admin" cấm nhân viên dùng.

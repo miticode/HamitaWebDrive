@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { laQuanTri, layNguoiDung } from "@/lib/phienNhanVien";
+import { layNguoiDung } from "@/lib/phienNhanVien";
 import { FormDangNhap } from "./FormDangNhap";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,8 @@ export default async function DangNhapPage({ searchParams }: Props) {
 
   if (nguoi) {
     if (nguoi.doiMatKhau) redirect("/quan-ly/doi-mat-khau");
-    redirect(an && (!an.startsWith("/admin") || laQuanTri(nguoi)) ? an : "/quan-ly");
+    // Đã đăng nhập rồi thì đi thẳng: link cụ thể nếu có, còn lại là trang album.
+    redirect(an || "/admin");
   }
   return <FormDangNhap tiep={an} />;
 }

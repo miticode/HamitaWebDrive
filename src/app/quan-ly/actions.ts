@@ -36,6 +36,16 @@ import {
 export type KetQua = { loi?: string; ok?: string };
 
 /**
+ * Đăng nhập xong thì vào đâu — studio chốt 16/09/2026: TRANG QUẢN LÝ ALBUM.
+ *
+ * Đó là việc cả tiệm mở ra mỗi ngày; phần quản lý studio (hợp đồng, nhân
+ * viên…) tra thỉnh thoảng, vào bằng link "Quản lý studio" ngay đầu trang album.
+ * Ai bấm vào một link cụ thể rồi mới đăng nhập thì vẫn quay lại đúng link đó
+ * (ô ẩn "tiep"), không bị ném về đây.
+ */
+const TRANG_DAU = "/admin";
+
+/**
  * Đường quay lại sau khi đăng nhập (ô ẩn "tiep").
  *
  * CHỈ nhận đường trong chính web này: phải bắt đầu bằng một dấu "/" và không
@@ -80,7 +90,7 @@ export async function dangNhapAction(_truoc: KetQua, form: FormData): Promise<Ke
     }
     await clearFailures(ip);
     await ghiNhatKy({ nguoi: { id: null, ten: "Quản lý" }, hanhDong: "dang-nhap" });
-    redirect(duongQuayLai(form) ?? "/quan-ly");
+    redirect(duongQuayLai(form) ?? TRANG_DAU);
   }
 
   if (!databaseIsConfigured()) {
@@ -122,12 +132,8 @@ export async function dangNhapAction(_truoc: KetQua, form: FormData): Promise<Ke
   await prisma.nhanVien.update({ where: { id: nv.id }, data: { dangNhapLuc: new Date() } });
   await ghiNhatKy({ nguoi: { id: nv.id, ten: nv.ten }, hanhDong: "dang-nhap" });
   if (nv.doiMatKhau) redirect("/quan-ly/doi-mat-khau");
-  /*
-    Quay lại đúng trang vừa bị chặn — trừ trang quản lý album: nhân viên
-    thường không mở được trang đó, đưa họ tới sẽ bị chặn lần nữa.
-  */
-  const tiep = duongQuayLai(form);
-  redirect(tiep && (!tiep.startsWith("/admin") || nv.vaiTro === "quan-tri") ? tiep : "/quan-ly");
+  // Bấm vào link nào thì quay lại đúng link đó; còn lại về trang đầu.
+  redirect(duongQuayLai(form) ?? TRANG_DAU);
 }
 
 export async function dangXuatAction(): Promise<void> {
@@ -181,7 +187,7 @@ export async function doiMatKhauAction(_truoc: KetQua, form: FormData): Promise<
   await taoPhien(nv.id);
   await ghiNhatKy({ nguoi, hanhDong: "doi-mat-khau", doiTuong: "NhanVien", doiTuongId: nv.id });
 
-  if (nv.doiMatKhau) redirect("/quan-ly");
+  if (nv.doiMatKhau) redirect(TRANG_DAU);
   return { ok: "Đã đổi mật khẩu. Các máy khác đang đăng nhập tài khoản này đã bị đăng xuất." };
 }
 

@@ -213,7 +213,9 @@ nhập). Script nhập nhân viên đã chặn không nhập lại mã này. Cò
 
 **Cách dùng lần đầu:**
 
-1. Vào `/quan-ly`, gõ tên **admin** và mật khẩu quản lý album. Từ 16/09 cả
+1. Vào `/quan-ly`, gõ tên **admin** và mật khẩu quản lý album. Đăng nhập
+   xong vào thẳng **trang quản lý album**; phần quản lý studio bấm link "Quản
+   lý studio" ngay đầu trang đó. Từ 16/09 cả
    hệ thống chỉ còn **một màn hình đăng nhập** này — vào thẳng `/admin` cũng
    được đưa về đây rồi quay lại đúng trang cũ. **Mọi nhân viên đăng nhập đều
    vào được trang quản lý album** để làm việc (tạo link, ảnh bìa, gói ảnh, gửi
