@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { isAdmin } from "@/lib/auth";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import { loadTree } from "@/lib/gallery";
 
 export const runtime = "nodejs";
@@ -10,7 +10,7 @@ const PAGE = 60;
 
 /** Danh sach anh cua mot album, de chon anh bia. Chi admin goi duoc. */
 export async function GET(req: NextRequest) {
-  if (!(await isAdmin())) {
+  if (!(await quyenAlbum())) {
     return Response.json({ error: "Chưa đăng nhập quản trị." }, { status: 403 });
   }
 

@@ -5,17 +5,12 @@ import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { invalidate } from "@/lib/cache";
 import { getFolderName, parseFolderId } from "@/lib/drive";
-import { isAdmin, signIn, signOut } from "@/lib/auth";
+import { signOut } from "@/lib/auth";
+import { quyenAlbum } from "@/lib/quyenAlbum";
+import { xoaPhienHienTai } from "@/lib/phienNhanVien";
 import { disconnect } from "@/lib/googleAuth";
 import { MA_MAC_DINH, sinhMa } from "@/lib/access";
 import { GIA_ANH_THEM_MAC_DINH } from "@/lib/constants";
-import {
-  LOCK_MINUTES,
-  clearFailures,
-  clientIp,
-  recordFailure,
-  remainingAttempts,
-} from "@/lib/rateLimit";
 import type { KhuGioiThieu } from "@/lib/store";
 import {
   createGallery,
@@ -38,45 +33,24 @@ import { khoaDaDoc } from "@/lib/thongBao";
 
 export type ActionState = { error?: string; ok?: string };
 
-export async function loginAction(
-  _prev: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  const ip = await clientIp();
-
-  const left = await remainingAttempts(ip);
-  if (left === 0) {
-    return {
-      error: `Sai quá nhiều lần. Thử lại sau ${LOCK_MINUTES} phút.`,
-    };
-  }
-
-  const password = String(formData.get("password") ?? "");
-  if (!(await signIn(password))) {
-    await recordFailure(ip);
-    const remaining = left - 1;
-    return {
-      error:
-        remaining > 0
-          ? `Mật khẩu không đúng. Còn ${remaining} lần thử.`
-          : `Sai quá nhiều lần. Thử lại sau ${LOCK_MINUTES} phút.`,
-    };
-  }
-
-  await clearFailures(ip);
-  redirect("/admin");
-}
-
+/**
+ * Đăng xuất khỏi trang quản lý album.
+ *
+ * Xoá CẢ HAI phiếu: mật khẩu quản lý album và phiên tài khoản nhân viên. Từ
+ * 16/09/2026 hai đường đăng nhập gộp làm một, chỉ xoá một bên thì bấm "Đăng
+ * xuất" xong vẫn vào lại được như thường, mà người bấm tưởng mình đã ra.
+ */
 export async function logoutAction() {
   await signOut();
-  redirect("/admin");
+  await xoaPhienHienTai();
+  redirect("/quan-ly/dang-nhap");
 }
 
 export async function createGalleryAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
 
   const link = String(formData.get("driveLink") ?? "").trim();
   const folderId = parseFolderId(link);
@@ -138,14 +112,14 @@ export async function createGalleryAction(
 }
 
 export async function deleteGalleryAction(formData: FormData) {
-  if (!(await isAdmin())) return;
+  if (!(await quyenAlbum())) return;
   await deleteGallery(String(formData.get("id")));
   revalidatePath("/admin");
 }
 
 /** Xoa cache de anh thay ngay folder vua them, khong phai doi het 5 phut. */
 export async function refreshGalleryAction(formData: FormData) {
-  if (!(await isAdmin())) return;
+  if (!(await quyenAlbum())) return;
   const folderId = String(formData.get("folderId"));
   const galleryId = String(formData.get("galleryId"));
   // Hai cache rieng: cay anh cho trang khach, va danh sach thu muc con cho trang nay.
@@ -172,7 +146,7 @@ export async function refreshGalleryAction(formData: FormData) {
 export async function guiThongBaoAction(
   galleryId: string,
 ): Promise<{ error?: string; daGui?: number }> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
 
   const g = await getGalleryById(galleryId);
   if (!g) return { error: "Không tìm thấy album." };
@@ -217,7 +191,7 @@ export async function guiThongBaoAction(
 export async function danhDauDaDocAction(
   id: string,
 ): Promise<{ error?: string }> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
   if (!id.trim()) return { error: "Thiếu mã thông báo." };
 
   await ghiMoc(khoaDaDoc(id), new Date());
@@ -226,7 +200,7 @@ export async function danhDauDaDocAction(
 
 /** Ngat ket noi Google Drive — web quay ve dung service account. */
 export async function disconnectDriveAction() {
-  if (!(await isAdmin())) return;
+  if (!(await quyenAlbum())) return;
   await disconnect();
   invalidate("subs:");
   invalidate("tree:");
@@ -235,7 +209,7 @@ export async function disconnectDriveAction() {
 
 /** Dat anh bia cho album. fileId rong = tro lai tu dong lay tam dau tien. */
 export async function setCoverAction(galleryId: string, fileId: string | null) {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
   await setCover(galleryId, fileId);
   revalidatePath("/admin");
   return {};
@@ -246,7 +220,7 @@ export async function setAccessAction(
   galleryId: string,
   code: string,
 ): Promise<{ error?: string }> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
 
   const ma = code.trim().toUpperCase();
   if (ma.length < 4) return { error: "Mã phải có ít nhất 4 ký tự." };
@@ -266,7 +240,7 @@ export async function setMessageAction(
   galleryId: string,
   message: string,
 ): Promise<{ error?: string }> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
 
   const noiDung = message.trim();
   if (noiDung.length > 500) return { error: "Lời nhắn dài quá 500 ký tự." };
@@ -292,7 +266,7 @@ export async function setGoiAnhAction(
   galleryId: string,
   soAnh: string,
 ): Promise<{ error?: string }> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
 
   /*
     Nhan CA SO 0, khong chi tu 1 tro len.
@@ -338,7 +312,7 @@ export async function setGoiMucAction(
   tenMuc: string,
   soAnh: string,
 ): Promise<{ error?: string }> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
   if (!tenMuc.trim()) return { error: "Thiếu tên thư mục." };
 
   const soSach = soAnh.trim();
@@ -370,7 +344,7 @@ export async function setClientNameAction(
   galleryId: string,
   ten: string,
 ): Promise<{ error?: string }> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
 
   const sach = ten.trim();
   if (sach.length > 120) return { error: "Tên dài quá 120 ký tự." };
@@ -392,7 +366,7 @@ export async function setFeaturedAction(
   galleryId: string,
   featured: boolean,
 ): Promise<{ error?: string }> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
   await setFeatured(galleryId, featured);
   revalidatePath("/admin");
   revalidatePath("/");
@@ -416,7 +390,7 @@ export async function setKhuAction(
   galleryId: string,
   khu: KhuGioiThieu,
 ): Promise<{ error?: string }> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
   await setKhuGioiThieu(galleryId, khu);
   revalidatePath("/admin");
   revalidatePath("/");
@@ -436,7 +410,7 @@ export async function setExpiryAction(
   galleryId: string,
   expiresAt: string | null,
 ): Promise<{ error?: string }> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
 
   if (expiresAt !== null) {
     const t = Date.parse(expiresAt);
@@ -457,7 +431,7 @@ export async function setBiaMucAction(
   albumId: string,
   fileId: string | null,
 ): Promise<{ error?: string }> {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
 
   await setBiaMuc(galleryId, albumId, fileId?.trim() || null);
 
@@ -474,7 +448,7 @@ export async function setBiaMucAction(
 
 /** Sinh ma moi — moi phieu mo album cu tu het hieu luc. */
 export async function regenerateCodeAction(galleryId: string) {
-  if (!(await isAdmin())) return { error: "Chưa đăng nhập." };
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
   await setAccess(galleryId, sinhMa());
   revalidatePath("/admin");
   return {};

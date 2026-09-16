@@ -1,5 +1,5 @@
 import { cached } from "@/lib/cache";
-import { isAdmin } from "@/lib/auth";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import { getUserAccessToken } from "@/lib/googleAuth";
 
 export const runtime = "nodejs";
@@ -62,7 +62,7 @@ async function docKho(): Promise<KhoAnh | null> {
 }
 
 export async function GET() {
-  if (!(await isAdmin())) {
+  if (!(await quyenAlbum())) {
     return Response.json({ error: "Chưa đăng nhập" }, { status: 401 });
   }
 

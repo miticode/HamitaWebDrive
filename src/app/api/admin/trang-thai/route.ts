@@ -1,4 +1,4 @@
-import { isAdmin } from "@/lib/auth";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import { listCounts, listGalleries, listMucXong } from "@/lib/store";
 
 export const runtime = "nodejs";
@@ -13,7 +13,7 @@ export const runtime = "nodejs";
  * KHÔNG gọi Drive (nguyên tắc 9): tất cả đọc từ database.
  */
 export async function GET() {
-  if (!(await isAdmin())) {
+  if (!(await quyenAlbum())) {
     return Response.json({ error: "Chưa đăng nhập" }, { status: 401 });
   }
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { isAdmin } from "@/lib/auth";
+import { notFound, redirect } from "next/navigation";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import { STUDIO_NAME, tien } from "@/lib/constants";
 import { goiCuaMucTheoTen, maSoFile, tinhTienIn } from "@/lib/anhIn";
 import {
@@ -10,7 +10,6 @@ import {
   getSelections,
   type Selection,
 } from "@/lib/store";
-import { LoginForm } from "../../LoginForm";
 import { NutDonIn } from "./NutDonIn";
 
 export const dynamic = "force-dynamic";
@@ -53,9 +52,10 @@ function gomTheoThuMuc(anh: Selection[]): [string, Selection[]][] {
 }
 
 export default async function DonInPage({ params }: Props) {
-  if (!(await isAdmin())) return <LoginForm />;
-
   const { slug } = await params;
+  if (!(await quyenAlbum())) {
+    redirect(`/quan-ly/dang-nhap?tiep=${encodeURIComponent(`/admin/${slug}/don-in`)}`);
+  }
   const gallery = await getGalleryBySlug(slug);
   if (!gallery) notFound();
 

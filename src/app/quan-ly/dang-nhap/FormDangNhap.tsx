@@ -4,13 +4,17 @@ import { useActionState } from "react";
 import { Logo } from "@/components/Logo";
 import { dangNhapAction, type KetQua } from "../actions";
 
-export function FormDangNhap() {
+export function FormDangNhap({ tiep }: { tiep?: string }) {
   const [kq, action, dangChay] = useActionState<KetQua, FormData>(dangNhapAction, {});
 
   return (
     <form action={action} className="mx-auto mt-24 w-full max-w-xs px-6 text-center">
       <Logo size="md" className="mx-auto" />
-      <h1 className="rule mt-6 font-display text-2xl font-light">Quản lý studio</h1>
+      <h1 className="rule mt-6 font-display text-2xl font-light">Đăng nhập</h1>
+      {tiep && <input type="hidden" name="tiep" value={tiep} />}
+      <p className="mt-3 text-xs text-fg-faint">
+        {tiep?.startsWith("/admin") ? "Quản lý album ảnh" : "Quản lý studio"}
+      </p>
 
       <label className="mt-8 block text-left">
         <span className="text-xs text-fg-muted">Tên đăng nhập</span>

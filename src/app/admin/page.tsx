@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { adminPasswordIsSet, isAdmin } from "@/lib/auth";
+import { adminPasswordIsSet } from "@/lib/auth";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import { Logo } from "@/components/Logo";
 import { NutDoiTong } from "./NutDoiTong";
 import { TheoDoiKhach } from "./TheoDoiKhach";
@@ -25,7 +27,6 @@ import { DriveConnection } from "./DriveConnection";
 import { AlbumList } from "./AlbumList";
 import { GalleryForm } from "./GalleryForm";
 import { ThongBao } from "./ThongBao";
-import { LoginForm } from "./LoginForm";
 
 export const dynamic = "force-dynamic";
 
@@ -89,7 +90,7 @@ function cachDayMayNgay(luc: Date | null): number | null {
 }
 
 export default async function AdminPage() {
-  if (!(await isAdmin())) return <LoginForm />;
+  if (!(await quyenAlbum())) redirect("/quan-ly/dang-nhap?tiep=%2Fadmin");
 
   /*
     Ca trang nay chi doc database, khong goi Drive lan nao.

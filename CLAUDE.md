@@ -1076,9 +1076,20 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
 - **Bộ đếm đăng nhập sai tính theo TÀI KHOẢN** (khoá `tk:<tên>` trong bảng
   LoginAttempt), không theo địa chỉ mạng: cả tiệm dùng chung wifi, tính theo
   địa chỉ thì một người gõ sai là khoá cả tiệm, kể cả trang quản lý album.
-- **Sếp gõ tên `admin`** + mật khẩu quản lý album (`ADMIN_PASSWORD`) — đi
-  đúng đường đăng nhập của `/admin`. Người đang đăng nhập `/admin` vào
-  `/quan-ly` là quản lý luôn. Tên "admin" cấm nhân viên dùng.
+- **MỘT MÀN HÌNH ĐĂNG NHẬP DUY NHẤT** cho cả hệ thống: `/quan-ly/dang-nhap`
+  (gộp 16/09/2026 theo yêu cầu studio). Trang quản lý album `/admin` trước đó
+  có màn hình riêng chỉ hỏi mật khẩu — hai cửa cho cùng một người, đứng nhầm
+  cửa thì không thấy ô tài khoản và tưởng hệ thống hỏng. Nay `/admin` chuyển
+  về màn hình chung kèm `?tiep=<đường cần quay lại>`; đăng nhập xong quay
+  đúng chỗ. `tiep` CHỈ nhận đường nội bộ (bắt đầu bằng một dấu "/") — nhận
+  bừa là ai đó gửi link đưa người dùng sang web khác sau khi đăng nhập.
+- **Sếp gõ tên `admin`** + mật khẩu quản lý album (`ADMIN_PASSWORD`). Tên
+  "admin" cấm nhân viên dùng.
+- **Quyền vào trang album dùng chung `quyenAlbum()`** (`src/lib/quyenAlbum.ts`):
+  mật khẩu quản lý album HOẶC tài khoản nhân viên vai trò quản lý. Đừng gọi
+  thẳng `isAdmin()` ở trang hay đường API của `/admin` nữa — gọi thẳng là
+  tài khoản quản lý bị chặn khỏi đúng trang mà thanh bên vừa mời họ bấm vào.
+  Nút "Đăng xuất" ở `/admin` xoá CẢ HAI phiếu, không thì bấm xong vẫn vào lại được.
 - **Phiên lưu trong database** (bảng PhienDangNhap, chỉ giữ SHA-256 của cookie)
   để cấp lại mật khẩu, đánh dấu nghỉ việc, hay hạ quyền là mọi máy của người
   đó văng ra NGAY. Mỗi lần mở trang đều kiểm lại người đó còn làm không.

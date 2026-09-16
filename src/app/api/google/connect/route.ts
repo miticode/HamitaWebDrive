@@ -1,12 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
-import { isAdmin } from "@/lib/auth";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import { consentUrl, oauthIsConfigured } from "@/lib/googleAuth";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  if (!(await isAdmin())) {
+  if (!(await quyenAlbum())) {
     return Response.json({ error: "Chưa đăng nhập quản trị." }, { status: 403 });
   }
   if (!oauthIsConfigured()) {

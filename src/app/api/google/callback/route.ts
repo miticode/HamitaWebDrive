@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
-import { isAdmin } from "@/lib/auth";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import { saveConnection } from "@/lib/googleAuth";
 
 export const runtime = "nodejs";
@@ -13,7 +13,7 @@ function backToAdmin(req: NextRequest, params: Record<string, string>) {
 }
 
 export async function GET(req: NextRequest) {
-  if (!(await isAdmin())) {
+  if (!(await quyenAlbum())) {
     return Response.json({ error: "Chưa đăng nhập quản trị." }, { status: 403 });
   }
 

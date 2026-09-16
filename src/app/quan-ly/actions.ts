@@ -35,6 +35,18 @@ import {
 
 export type KetQua = { loi?: string; ok?: string };
 
+/**
+ * Đường quay lại sau khi đăng nhập (ô ẩn "tiep").
+ *
+ * CHỈ nhận đường trong chính web này: phải bắt đầu bằng một dấu "/" và không
+ * phải "//". Nhận bừa thì ai đó gửi link /quan-ly/dang-nhap?tiep=https://web-gia
+ * là đăng nhập xong người dùng bị ném sang web của họ, tưởng vẫn đang ở đây.
+ */
+function duongQuayLai(form: FormData): string | null {
+  const t = String(form.get("tiep") ?? "").trim();
+  return /^\/(?!\/)[\w\-./?=&%]*$/.test(t) ? t : null;
+}
+
 const SAI_CHUNG =
   "Tên đăng nhập hoặc mật khẩu không đúng. Chưa có mật khẩu thì nhờ quản lý cấp giúp.";
 
@@ -68,7 +80,7 @@ export async function dangNhapAction(_truoc: KetQua, form: FormData): Promise<Ke
     }
     await clearFailures(ip);
     await ghiNhatKy({ nguoi: { id: null, ten: "Quản lý" }, hanhDong: "dang-nhap" });
-    redirect("/quan-ly");
+    redirect(duongQuayLai(form) ?? "/quan-ly");
   }
 
   if (!databaseIsConfigured()) {
@@ -109,7 +121,13 @@ export async function dangNhapAction(_truoc: KetQua, form: FormData): Promise<Ke
   await taoPhien(nv.id);
   await prisma.nhanVien.update({ where: { id: nv.id }, data: { dangNhapLuc: new Date() } });
   await ghiNhatKy({ nguoi: { id: nv.id, ten: nv.ten }, hanhDong: "dang-nhap" });
-  redirect(nv.doiMatKhau ? "/quan-ly/doi-mat-khau" : "/quan-ly");
+  if (nv.doiMatKhau) redirect("/quan-ly/doi-mat-khau");
+  /*
+    Quay lại đúng trang vừa bị chặn — trừ trang quản lý album: nhân viên
+    thường không mở được trang đó, đưa họ tới sẽ bị chặn lần nữa.
+  */
+  const tiep = duongQuayLai(form);
+  redirect(tiep && (!tiep.startsWith("/admin") || nv.vaiTro === "quan-tri") ? tiep : "/quan-ly");
 }
 
 export async function dangXuatAction(): Promise<void> {

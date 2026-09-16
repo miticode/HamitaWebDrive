@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
-import { isAdmin } from "@/lib/auth";
+import { notFound, redirect } from "next/navigation";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import {
   getGalleryBySlug,
   getLists,
@@ -9,7 +9,6 @@ import {
   type Selection,
 } from "@/lib/store";
 import { maSoFile } from "@/lib/anhIn";
-import { LoginForm } from "../LoginForm";
 import { NutDoiTong } from "../NutDoiTong";
 import { ExportButton } from "./ExportButton";
 import { LuoiAnhChon } from "./LuoiAnhChon";
@@ -29,9 +28,10 @@ function gomTheoAlbum(anh: Selection[]) {
 }
 
 export default async function ResultsPage({ params }: Props) {
-  if (!(await isAdmin())) return <LoginForm />;
-
   const { slug } = await params;
+  if (!(await quyenAlbum())) {
+    redirect(`/quan-ly/dang-nhap?tiep=${encodeURIComponent(`/admin/${slug}`)}`);
+  }
   const gallery = await getGalleryBySlug(slug);
   if (!gallery) notFound();
 

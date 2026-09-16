@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import ExcelJS from "exceljs";
-import { isAdmin } from "@/lib/auth";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import { getGalleryBySlug, getLists, getSelections } from "@/lib/store";
 
 export const runtime = "nodejs";
@@ -14,7 +14,7 @@ export const runtime = "nodejs";
  * — khac voi nut "Chep danh sach ten file" cu chi la van ban thuan.
  */
 export async function GET(req: NextRequest) {
-  if (!(await isAdmin())) return Response.json({ error: "Chưa đăng nhập" }, { status: 401 });
+  if (!(await quyenAlbum())) return Response.json({ error: "Chưa đăng nhập" }, { status: 401 });
 
   const slug = req.nextUrl.searchParams.get("slug") ?? "";
   const gallery = await getGalleryBySlug(slug);

@@ -1,4 +1,4 @@
-import { isAdmin } from "@/lib/auth";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import { databaseIsConfigured } from "@/lib/db";
 import { docMoc, ghiMoc } from "@/lib/moc";
 import { taoBanSaoLuu } from "@/lib/saoLuu";
@@ -31,7 +31,7 @@ export async function GET(req: Request) {
     return Response.json({ error: "Chưa có database" }, { status: 503 });
   }
 
-  const quanTri = await isAdmin();
+  const quanTri = await quyenAlbum();
   const biMat = process.env.CRON_SECRET?.trim();
   const dungMa = !!biMat && req.headers.get("authorization") === `Bearer ${biMat}`;
 

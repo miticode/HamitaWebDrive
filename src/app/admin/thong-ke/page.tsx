@@ -1,9 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { isAdmin } from "@/lib/auth";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import { databaseIsConfigured } from "@/lib/db";
 import { docThongKe } from "@/lib/thongKe";
-import { LoginForm } from "../LoginForm";
 import { NutDoiTong } from "../NutDoiTong";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ function docSoNgay(n: number): string {
 }
 
 export default async function ThongKePage() {
-  if (!(await isAdmin())) return <LoginForm />;
+  if (!(await quyenAlbum())) redirect("/quan-ly/dang-nhap?tiep=%2Fadmin%2Fthong-ke");
 
   const tongToi = (await cookies()).get("admin-tong")?.value === "toi";
 
