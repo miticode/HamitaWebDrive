@@ -2,16 +2,34 @@ import { isAdmin } from "@/lib/auth";
 import { laQuanTri, layNguoiDung } from "@/lib/phienNhanVien";
 
 /**
- * Ai mở được trang quản lý album (/admin) và các đường API của nó.
+ * Ai MỞ ĐƯỢC trang quản lý album (/admin) và các đường API của nó.
  *
- * Từ 16/09/2026 hai cửa đăng nhập gộp làm MỘT màn hình (/quan-ly/dang-nhap):
- * - Tên "admin" + mật khẩu quản lý album — cách cũ, vẫn giữ.
- * - Hoặc tài khoản nhân viên có vai trò QUẢN LÝ. Trước đó sếp phải nhớ thêm
- *   mật khẩu chung mới vào được trang album, trong khi thanh bên đã mời họ bấm
- *   vào đúng trang đó rồi — hai cửa cho một người là chỗ dễ tưởng hệ thống hỏng.
+ * Mật khẩu quản lý album, HOẶC bất kỳ tài khoản nhân viên nào đã đăng nhập —
+ * studio chốt 16/09/2026: cả tiệm làm album chứ không riêng sếp. Người vừa
+ * được cấp mật khẩu tạm thì chưa vào được, phải tự đổi mật khẩu trước đã.
  *
- * Nhân viên thường không mở được trang album; họ dùng phần quản lý studio.
+ * Trước đó chỉ mật khẩu chung mới vào được, nên nhân viên đứng ở màn hình đăng
+ * nhập gõ tài khoản riêng mãi không vào nổi.
  */
 export async function quyenAlbum(): Promise<boolean> {
+  if (await isAdmin()) return true;
+  const nguoi = await layNguoiDung();
+  return nguoi !== null && !nguoi.doiMatKhau;
+}
+
+/**
+ * Ba việc trên trang album CHỈ QUẢN LÝ làm được (studio chốt 16/09/2026):
+ * xoá album, kết nối / ngắt Google Drive, và bản sao lưu.
+ *
+ * Vì sao riêng ba việc này: xoá nhầm một album là mất luôn mọi lựa chọn ảnh
+ * của khách; ngắt Drive là cả tiệm không xem được ảnh nữa; bản sao lưu là một
+ * tệp mang dữ liệu cả tiệm đi ra ngoài. Những việc còn lại — tạo album, đổi
+ * tên, ảnh bìa, gói ảnh, mã xem ảnh, gửi thông báo, xem ảnh khách chọn, đơn
+ * giao in, thống kê — nhân viên làm bình thường.
+ *
+ * Kiểm ở MÁY CHỦ, không chỉ giấu nút: giấu nút chỉ đỡ bấm nhầm, không chặn
+ * được người gọi thẳng đường API.
+ */
+export async function quyenAlbumNguyHiem(): Promise<boolean> {
   return (await isAdmin()) || laQuanTri(await layNguoiDung());
 }

@@ -1,6 +1,6 @@
 import { databaseIsConfigured } from "@/lib/db";
 import { docMoc, ghiMoc } from "@/lib/moc";
-import { quyenAlbum } from "@/lib/quyenAlbum";
+import { quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
 import { dongBoAppSheet } from "@/lib/dongBoAppSheet";
 
 export const runtime = "nodejs";
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     return Response.json({ error: "Chưa có database" }, { status: 503 });
   }
 
-  const quanTri = await quyenAlbum();
+  const quanTri = await quyenAlbumNguyHiem();
   const biMat = process.env.CRON_SECRET?.trim();
   const dungMa = !!biMat && req.headers.get("authorization") === `Bearer ${biMat}`;
 

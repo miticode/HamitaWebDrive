@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { adminPasswordIsSet } from "@/lib/auth";
-import { quyenAlbum } from "@/lib/quyenAlbum";
+import { quyenAlbum, quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
 import { Logo } from "@/components/Logo";
 import { NutDoiTong } from "./NutDoiTong";
 import { TheoDoiKhach } from "./TheoDoiKhach";
@@ -91,6 +91,12 @@ function cachDayMayNgay(luc: Date | null): number | null {
 
 export default async function AdminPage() {
   if (!(await quyenAlbum())) redirect("/quan-ly/dang-nhap?tiep=%2Fadmin");
+  /*
+    Nhân viên vào làm album bình thường; ba việc nguy hiểm (xoá album, kết nối
+    Drive, bản sao lưu) chỉ quản lý — xem quyenAlbumNguyHiem(). Ở đây chỉ giấu
+    nút cho đỡ bấm nhầm, chặn thật nằm trong từng action và đường API.
+  */
+  const quanLy = await quyenAlbumNguyHiem();
 
   /*
     Ca trang nay chi doc database, khong goi Drive lan nao.
@@ -231,16 +237,18 @@ export default async function AdminPage() {
         chăm sóc hệ thống, không phải việc làm với từng album. Gộp lại thì phần
         trên trang gọn còn một hàng, chừa chỗ cho khung kho ảnh ngay dưới.
       */}
-      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
-        <div className="min-w-0 flex-1">
-          <DriveConnection
-            account={driveAccount}
-            oauthConfigured={oauthIsConfigured()}
-            serviceAccount={serviceAccount}
-          />
+      {quanLy && (
+        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <div className="min-w-0 flex-1">
+            <DriveConnection
+              account={driveAccount}
+              oauthConfigured={oauthIsConfigured()}
+              serviceAccount={serviceAccount}
+            />
+          </div>
+          <NutSaoLuu soNgayTruoc={saoLuuCachDay} tuDongCachDay={saoLuuTuDongCachDay} />
         </div>
-        <NutSaoLuu soNgayTruoc={saoLuuCachDay} tuDongCachDay={saoLuuTuDongCachDay} />
-      </div>
+      )}
 
       {/*
         Khung kho ảnh đặt NGAY ĐẦU TRANG, trên cả ô tạo link.
@@ -305,6 +313,7 @@ export default async function AdminPage() {
               goiMuc={goiMuc}
               soMayChoTin={soMayChoTin}
               baoTinLuc={baoTinLuc}
+              quanLy={quanLy}
               thongBao={<ThongBao tin={tinThongBao} />}
             />
           )}

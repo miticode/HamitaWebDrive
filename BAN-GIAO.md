@@ -215,8 +215,10 @@ nhập). Script nhập nhân viên đã chặn không nhập lại mã này. Cò
 
 1. Vào `/quan-ly`, gõ tên **admin** và mật khẩu quản lý album. Từ 16/09 cả
    hệ thống chỉ còn **một màn hình đăng nhập** này — vào thẳng `/admin` cũng
-   được đưa về đây rồi quay lại đúng trang cũ, và tài khoản có vai trò **Quản
-   lý** mở được trang quản lý album mà không cần biết mật khẩu chung.
+   được đưa về đây rồi quay lại đúng trang cũ. **Mọi nhân viên đăng nhập đều
+   vào được trang quản lý album** để làm việc (tạo link, ảnh bìa, gói ảnh, gửi
+   thông báo, xem ảnh khách chọn, đơn giao in, thống kê). Riêng **xoá album,
+   kết nối Google Drive và bản sao lưu chỉ Quản lý** mới làm được.
 2. Mục **Nhân viên** → bấm **Cấp mật khẩu** từng người → **Chép tin nhắn gửi
    Zalo** (mật khẩu tạm chỉ hiện một lần).
 3. Nhân viên đăng nhập bằng **số điện thoại** của mình + mật khẩu tạm, rồi bị

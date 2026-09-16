@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { invalidate } from "@/lib/cache";
 import { getFolderName, parseFolderId } from "@/lib/drive";
 import { signOut } from "@/lib/auth";
-import { quyenAlbum } from "@/lib/quyenAlbum";
+import { quyenAlbum, quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
 import { xoaPhienHienTai } from "@/lib/phienNhanVien";
 import { disconnect } from "@/lib/googleAuth";
 import { MA_MAC_DINH, sinhMa } from "@/lib/access";
@@ -112,7 +112,7 @@ export async function createGalleryAction(
 }
 
 export async function deleteGalleryAction(formData: FormData) {
-  if (!(await quyenAlbum())) return;
+  if (!(await quyenAlbumNguyHiem())) return;
   await deleteGallery(String(formData.get("id")));
   revalidatePath("/admin");
 }
@@ -200,7 +200,7 @@ export async function danhDauDaDocAction(
 
 /** Ngat ket noi Google Drive — web quay ve dung service account. */
 export async function disconnectDriveAction() {
-  if (!(await quyenAlbum())) return;
+  if (!(await quyenAlbumNguyHiem())) return;
   await disconnect();
   invalidate("subs:");
   invalidate("tree:");

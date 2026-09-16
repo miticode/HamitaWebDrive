@@ -141,6 +141,7 @@ export function GalleryCard({
   goiMuc,
   soMayChoTin,
   baoTinLuc,
+  quanLy,
 }: {
   gallery: Gallery;
   counts: ListCount[];
@@ -154,6 +155,8 @@ export function GalleryCard({
   soMayChoTin: number;
   /** Lần cuối bấm "Gửi thông báo" (chuỗi ISO). null = chưa ghi được lần nào. */
   baoTinLuc: string | null;
+  /** Người đang xem là quản lý — chỉ họ thấy nút xoá album (xem quyenAlbumNguyHiem). */
+  quanLy: boolean;
 }) {
   const title = gallery.clientName ?? gallery.title;
   const chuaDongBo = gallery.syncedAt === null;
@@ -412,14 +415,17 @@ export function GalleryCard({
           */}
           <NutGuiThongBao galleryId={gallery.id} soMay={soMayChoTin} />
 
-          <button
-            type="button"
-            onClick={() => setMoXoa(true)}
-            title={`Xoá album "${title}"`}
-            className="btn btn-danger ml-auto"
-          >
-            Xoá
-          </button>
+          {/* Chỉ quản lý được xoá album — xoá nhầm là mất cả lựa chọn ảnh của khách. */}
+          {quanLy && (
+            <button
+              type="button"
+              onClick={() => setMoXoa(true)}
+              title={`Xoá album "${title}"`}
+              className="btn btn-danger ml-auto"
+            >
+              Xoá
+            </button>
+          )}
         </div>
 
         {trangThaiBaoTin && (
@@ -434,7 +440,7 @@ export function GalleryCard({
         )}
       </div>
 
-      {moXoa && (
+      {moXoa && quanLy && (
         <XoaAlbumDialog
           galleryId={gallery.id}
           ten={title}

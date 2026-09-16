@@ -1085,11 +1085,16 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
   bừa là ai đó gửi link đưa người dùng sang web khác sau khi đăng nhập.
 - **Sếp gõ tên `admin`** + mật khẩu quản lý album (`ADMIN_PASSWORD`). Tên
   "admin" cấm nhân viên dùng.
-- **Quyền vào trang album dùng chung `quyenAlbum()`** (`src/lib/quyenAlbum.ts`):
-  mật khẩu quản lý album HOẶC tài khoản nhân viên vai trò quản lý. Đừng gọi
-  thẳng `isAdmin()` ở trang hay đường API của `/admin` nữa — gọi thẳng là
-  tài khoản quản lý bị chặn khỏi đúng trang mà thanh bên vừa mời họ bấm vào.
-  Nút "Đăng xuất" ở `/admin` xoá CẢ HAI phiếu, không thì bấm xong vẫn vào lại được.
+- **Quyền trang album có HAI mức** (`src/lib/quyenAlbum.ts`), đừng gọi thẳng
+  `isAdmin()` ở trang hay đường API của `/admin` nữa:
+  - `quyenAlbum()` — MỞ trang: mật khẩu quản lý album, hoặc **bất kỳ nhân
+    viên nào đã đăng nhập** (studio chốt 16/09: cả tiệm làm album). Người còn
+    mật khẩu tạm thì chưa vào được, phải đổi mật khẩu trước.
+  - `quyenAlbumNguyHiem()` — **xoá album, kết nối/ngắt Drive, bản sao lưu**:
+    chỉ quản lý. Xoá nhầm là mất cả lựa chọn ảnh của khách; ngắt Drive là cả
+    tiệm không xem được ảnh; bản sao lưu mang dữ liệu cả tiệm đi ra ngoài.
+  Giấu nút trong giao diện là để đỡ bấm nhầm; chặn thật phải nằm trong từng
+  action và đường API. Nút "Đăng xuất" ở `/admin` xoá CẢ HAI phiếu.
 - **Phiên lưu trong database** (bảng PhienDangNhap, chỉ giữ SHA-256 của cookie)
   để cấp lại mật khẩu, đánh dấu nghỉ việc, hay hạ quyền là mọi máy của người
   đó văng ra NGAY. Mỗi lần mở trang đều kiểm lại người đó còn làm không.

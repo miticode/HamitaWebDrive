@@ -1,4 +1,4 @@
-import { quyenAlbum } from "@/lib/quyenAlbum";
+import { quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
 import { databaseIsConfigured } from "@/lib/db";
 import { ghiMoc } from "@/lib/moc";
 import { taoBanSaoLuu, tenTepSaoLuu } from "@/lib/saoLuu";
@@ -27,7 +27,7 @@ export const maxDuration = 60;
  * gửi được GET.
  */
 export async function GET() {
-  if (!(await quyenAlbum())) {
+  if (!(await quyenAlbumNguyHiem())) {
     return Response.json({ error: "Chưa đăng nhập" }, { status: 401 });
   }
   if (!databaseIsConfigured()) {

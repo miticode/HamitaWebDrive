@@ -47,6 +47,7 @@ export function AlbumList({
   soMayChoTin,
   baoTinLuc,
   thongBao,
+  quanLy,
 }: {
   galleries: Gallery[];
   counts: ListCount[];
@@ -63,6 +64,8 @@ export function AlbumList({
    * vi sao khong the doc thang do la "chua gui bao gio".
    */
   baoTinLuc: Record<string, string>;
+  /** Người đang xem là quản lý — chỉ họ thấy nút xoá album (xem quyenAlbumNguyHiem). */
+  quanLy: boolean;
   /**
    * Khung "Thông báo", dựng sẵn ở máy chủ rồi truyền xuống.
    *
@@ -292,6 +295,7 @@ export function AlbumList({
                     goiMuc={goiMuc.filter((x) => x.galleryId === g.id)}
                     soMayChoTin={soMayChoTin[g.id] ?? 0}
                     baoTinLuc={baoTinLuc[g.id] ?? null}
+                    quanLy={quanLy}
                   />
                 ))}
               </div>
