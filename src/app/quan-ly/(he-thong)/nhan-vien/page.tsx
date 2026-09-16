@@ -3,6 +3,7 @@ import { getPrisma } from "@/lib/db";
 import { MUI_GIO } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { HangNhanVien, ThemNhanVien } from "./HangNhanVien";
+import { NutDangXuatMoiMay } from "./NutDangXuatMoiMay";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +69,12 @@ export default async function NhanVienPage({ searchParams }: Props) {
             Nhân viên <span className="text-fg-faint tabular-nums">{ds.length}</span>
           </h1>
         </div>
-        {quanTri && <ThemNhanVien dsPhong={dsPhong} />}
+        {quanTri && (
+          <div className="flex flex-wrap items-center gap-2">
+            <NutDangXuatMoiMay soChuaCoMatKhau={tatCa.filter((n) => n.dangLam && !n.matKhau).length} />
+            <ThemNhanVien dsPhong={dsPhong} />
+          </div>
+        )}
       </div>
 
       {/* Lọc bằng đường link thường, không cần JavaScript: gửi link cho nhau cũng mở ra đúng bộ lọc. */}

@@ -223,6 +223,11 @@ nhập). Script nhập nhân viên đã chặn không nhập lại mã này. Cò
    kết nối Google Drive và bản sao lưu chỉ Quản lý** mới làm được.
 2. Mục **Nhân viên** → bấm **Cấp mật khẩu** từng người → **Chép tin nhắn gửi
    Zalo** (mật khẩu tạm chỉ hiện một lần).
+   Cũng ở mục này có nút **"Đăng xuất mọi máy"**: đá mọi máy đang đăng nhập ra
+   cùng lúc, kể cả máy còn giữ phiên bằng mật khẩu chung cũ và kể cả máy anh
+   đang ngồi. Mật khẩu không đổi, ai có mật khẩu thì đăng nhập lại. Dùng khi có
+   người nghỉ việc, mất điện thoại, hoặc muốn cả tiệm chuyển sang tài khoản
+   riêng (anh bấm lần đầu 16/09).
 3. Nhân viên đăng nhập bằng **số điện thoại** của mình + mật khẩu tạm, rồi bị
    bắt đặt mật khẩu riêng ngay.
 

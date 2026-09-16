@@ -1098,6 +1098,15 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
     tiệm không xem được ảnh; bản sao lưu mang dữ liệu cả tiệm đi ra ngoài.
   Giấu nút trong giao diện là để đỡ bấm nhầm; chặn thật phải nằm trong từng
   action và đường API. Nút "Đăng xuất" ở `/admin` xoá CẢ HAI phiếu.
+- **"Đăng xuất mọi máy"** (nút ở mục Nhân viên, chỉ quản lý; hoặc
+  `npx tsx scripts/dang-xuat-moi-may.mts`): xoá sạch bảng PhienDangNhap VÀ ghi
+  mốc `dangXuatMoiMay`. Phiếu mật khẩu chung không nằm trong database nên
+  không xoá từng cái được — nó là dấu băm của mật khẩu, nên mốc đó được đem
+  băm cùng (`admin-<mốc>` trong `src/lib/auth.ts`): đổi mốc là mọi phiếu cũ
+  chết ngay, mật khẩu vẫn nguyên. Chưa bấm lần nào thì mốc là "v1" — đúng
+  chuỗi cũ, phiếu đang có vẫn sống. Studio bấm lần đầu 16/09/2026 để cả tiệm
+  bỏ mật khẩu chung, chuyển sang tài khoản riêng; ai chưa được cấp mật khẩu
+  thì từ đó không vào được nữa.
 - **Phiên lưu trong database** (bảng PhienDangNhap, chỉ giữ SHA-256 của cookie)
   để cấp lại mật khẩu, đánh dấu nghỉ việc, hay hạ quyền là mọi máy của người
   đó văng ra NGAY. Mỗi lần mở trang đều kiểm lại người đó còn làm không.

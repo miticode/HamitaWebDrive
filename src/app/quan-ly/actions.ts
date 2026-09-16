@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { databaseIsConfigured, getPrisma } from "@/lib/db";
-import { signIn, signOut } from "@/lib/auth";
+import { dangXuatMoiMay, signIn, signOut } from "@/lib/auth";
 import {
   clearFailures,
   clientIp,
@@ -26,6 +26,7 @@ import {
   xoaPhienHienTai,
 } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
+import { quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
 import {
   chuanSoDienThoai,
   chuanTenDangNhap,
@@ -134,6 +135,28 @@ export async function dangNhapAction(_truoc: KetQua, form: FormData): Promise<Ke
   if (nv.doiMatKhau) redirect("/quan-ly/doi-mat-khau");
   // Bấm vào link nào thì quay lại đúng link đó; còn lại về trang đầu.
   redirect(duongQuayLai(form) ?? TRANG_DAU);
+}
+
+/**
+ * Đá MỌI MÁY ra khỏi hệ thống — cả máy đang giữ phiếu mật khẩu chung lẫn máy
+ * đang đăng nhập bằng tài khoản. Chỉ quản lý bấm được.
+ *
+ * Không đổi mật khẩu của ai: người còn mật khẩu chỉ việc đăng nhập lại. Tài
+ * khoản chưa được cấp mật khẩu thì từ đây không vào được cho tới khi quản lý
+ * cấp — đó chính là điều studio muốn khi bấm nút này.
+ */
+export async function dangXuatMoiMayAction(): Promise<void> {
+  const nguoi = await layNguoiDung();
+  if (!(await quyenAlbumNguyHiem())) return;
+  const { soPhien } = await dangXuatMoiMay();
+  await ghiNhatKy({
+    nguoi,
+    hanhDong: "dang-xuat-moi-may",
+    chiTiet: { ten: "Đăng xuất mọi máy", so: { "phiên tài khoản bị xoá": soPhien } },
+  });
+  // Xoá luôn phiếu của chính người vừa bấm, không thì họ tưởng mình là ngoại lệ.
+  await signOut();
+  redirect("/quan-ly/dang-nhap");
 }
 
 export async function dangXuatAction(): Promise<void> {
