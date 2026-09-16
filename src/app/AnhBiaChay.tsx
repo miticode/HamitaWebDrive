@@ -20,7 +20,18 @@ const NGUONG_VUOT = 45;
  * ở lớp dưới — khung luôn đầy, màu luôn ăn với ảnh đang hiện, mà không phải
  * cắt tấm nào.
  */
-export function AnhBiaChay({ anh }: { anh: readonly { ten: string; mo: string }[] }) {
+export function AnhBiaChay({
+  anh,
+  /*
+    true = nằm TRONG một khung có sẵn (khung ảnh bo góc bên phải đầu trang, bố
+    cục học từ mohome.vn 16/09/2026): lấp đầy khung cha, bỏ dải sáng ở mép trên
+    vì không còn thanh điều hướng nào đè lên nữa.
+  */
+  trongKhung = false,
+}: {
+  anh: readonly { ten: string; mo: string }[];
+  trongKhung?: boolean;
+}) {
   const [hienTai, setHienTai] = useState(0);
   const [tuDung, setTuDung] = useState(false);
   const [batDauVuot, setBatDauVuot] = useState<number | null>(null);
@@ -44,7 +55,11 @@ export function AnhBiaChay({ anh }: { anh: readonly { ten: string; mo: string }[
 
   return (
     <section
-      className="relative h-[62svh] overflow-hidden bg-bg-soft sm:h-[84svh]"
+      className={
+        trongKhung
+          ? "absolute inset-0 overflow-hidden bg-bg-soft"
+          : "relative h-[62svh] overflow-hidden bg-bg-soft sm:h-[84svh]"
+      }
       aria-roledescription="carousel"
       aria-label="Ảnh album tiêu biểu"
       onTouchStart={(e) => setBatDauVuot(e.touches[0].clientX)}
@@ -106,10 +121,12 @@ export function AnhBiaChay({ anh }: { anh: readonly { ten: string; mo: string }[
         này chỗ sáng chỗ tối nên chữ menu có lúc chìm hẳn. Dải này cho menu một
         nền ổn định mà không phải phủ tối cả tấm ảnh.
       */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg via-bg/70 to-transparent"
-      />
+      {!trongKhung && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg via-bg/70 to-transparent"
+        />
+      )}
 
       {anh.length > 1 && (
         <>

@@ -308,6 +308,28 @@ Mọi chữ khách đọc nằm trong `src/lib/studio.ts` (`HANH_TRINH`, `VE_HAM
 `LOI_KE`, `ALBUM_HC`, `PHIM_TRUONG`, `HAMI_BABY`), **không viết thẳng vào JSX** —
 sửa giọng văn thì không phải mở file giao diện.
 
+**Bố cục trang giới thiệu học từ mohome.vn (16/09/2026, theo yêu cầu).** Chỉ học
+CÁCH BÀY, giữ nguyên màu, phông và bốn khu của Hamita: đầu trang hai cột (dải
+trang album chạy nằm trong khung bo góc bên phải — `AnhBiaChay trongKhung`),
+"Về Hamita" kèm thẻ số liệu, thẻ **hai cơ sở**, lưới **"Hamita chụp gì?"** bằng
+thẻ ảnh lớn chữ đè lên ảnh (`DICH_VU` trong `studio.ts`), bốn khu ảnh với đầu
+mục canh trái, hành trình năm chương thành dải thẻ, dải kêu gọi bo tròn, và ba
+nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
+
+- **Không dựng "cảm nhận khách hàng" hay "blog"** như web mẫu — chưa có dữ liệu
+  thật, dựng ra là bịa.
+- **Thẻ dịch vụ và mục menu chỉ trỏ tới khu ĐANG HIỆN.** Khu ảnh cưới / album
+  chỉ dựng khi có album được tích lên trang giới thiệu; đo trên web thật 16/09:
+  chưa có album nào, nên thẻ trỏ về `#hanh-trinh` và `NavGioiThieu` nhận
+  `anMuc` để ẩn mục đó. Trước đó menu "Ảnh cưới", "Album" bấm vào đứng im.
+- Thẻ chưa có ảnh thì hiện biểu tượng trên nền màu nhấn nhạt, chữ đậm — **không**
+  để ô xám trông như ảnh tải hỏng. Cụm ảnh "Về Hamita" thiếu ảnh cưới thì dùng
+  bìa album dọc `/bia/bia-4.webp` (khung 2:3 đúng tỉ lệ, không xén chữ).
+- **Nút liên hệ nổi CHỈ ở trang giới thiệu**, không đưa sang `/g/…`: góc dưới
+  trang khách đã có nút thả tim, tải ảnh, khung Hỏi Hamita.
+- Nút chính nền đậm (`bg-fg`), không nền vàng đồng: chữ trắng trên #9c7c4f chỉ
+  3,9:1.
+
 Đoạn `VE_HAMITA` phải nêu **quan điểm**, không liệt kê dịch vụ: ngay dưới nó đã
 có cả một mạch kể dịch vụ rồi, nói lại là lặp. Bản cũ chính là lỗi đó ("Hamita
 là nơi lo trọn gói… từ lễ hỏi, ảnh cưới, trang điểm cho tới chiếc váy").

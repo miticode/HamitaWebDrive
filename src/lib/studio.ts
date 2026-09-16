@@ -180,6 +180,54 @@ export const LOI_KE = {
 } as const;
 
 /**
+ * Dong nho chu hoa ngay duoi cau mo dau o dau trang (bo cuc hoc tu mohome.vn,
+ * 16/09/2026). Chi ke nhung thu kiem chung duoc: hai co so, phim truong rieng,
+ * tron goi ngay cuoi — deu da co o cac khu ben duoi.
+ */
+export const DAU_TRANG = {
+  dongPhu: "Hai cơ sở · Phim trường riêng · Trọn gói ngày cưới",
+} as const;
+
+/**
+ * Hai co so — hai the canh nhau, nhu "he thong chi nhanh" o mohome.vn.
+ *
+ * Dia chi, so dien thoai lay tu STUDIO va HAMI_BABY, khong chep lai o day: hai
+ * noi giu cung mot so dien thoai la co ngay lech nhau (nguyen tac 51).
+ */
+export const CO_SO = {
+  nhan: "Hai cơ sở",
+  tieuDe: "Hai cơ sở trên đường Đỗ Tường Tự",
+  moTa: "Cưới hỏi ở số 377, bé và gia đình ở số 337 — cùng một con đường ở Tầm Vu.",
+} as const;
+
+/**
+ * Luoi "Hamita chup gi?" — moi the la mot mang dich vu, bam vao nhay toi khu
+ * anh cua mang do.
+ *
+ * Moi chu o day lay tu nhung gi trang da noi o cho khac (HANH_TRINH, ALBUM_HC,
+ * PHIM_TRUONG, HAMI_BABY) — khong them loi hua moi nao.
+ *
+ * "khu" chi cho trang biet lay anh bia cua khu nao dat len the; "vay" khong co
+ * khu anh rieng nen muon tam anh cuoi thu hai.
+ */
+export const DICH_VU = {
+  nhan: "Dịch vụ",
+  tieuDe: "Hamita chụp gì?",
+  muc: [
+    { khu: "cuoi", icon: "rings", nhan: "Trọn gói ngày cưới", ten: "Ảnh cưới", moTa: "Từ lễ hỏi tới lúc tan tiệc", href: "#anh" },
+    { khu: "albumhc", icon: "album", nhan: "Sản phẩm in", ten: "Album & hình cổng", moTa: "Thứ anh chị cầm về sau ngày cưới", href: "#album-hc" },
+    { khu: "phimtruong", icon: "camera", nhan: "Phim trường độc quyền", ten: "Hamita Garden", moTa: "Bối cảnh châu Âu ngay tại Long An", href: "/phim-truong" },
+    { khu: "baby", icon: "sparkle", nhan: "Hami Baby Studio", ten: "Bé & gia đình", moTa: "Thôi nôi, bầu, sơ sinh", href: "#baby" },
+    { khu: "vay", icon: "dress", nhan: "Có sẵn tại studio", ten: "Váy cưới & trang điểm", moTa: "Mặc thử ngay tại chỗ, tới lúc ưng thì thôi", href: "#hanh-trinh" },
+  ],
+  /** The thu sau, lap cho luoi du hang — moi go cua thay vi de trong mot o. */
+  tuVan: {
+    tieuDe: "Chưa biết nên bắt đầu từ đâu?",
+    ke: "Anh chị kể Hamita nghe ngày cưới định làm thế nào — chuyện gói, chuyện giá mình tính sau.",
+  },
+} as const;
+
+/**
  * Khu Album va hinh cong — SAN PHAM IN khach cam ve tay.
  *
  * Tach rieng khoi khu anh cuoi vi khach nhin hai thu do voi hai muc dich khac

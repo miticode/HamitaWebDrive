@@ -11,7 +11,9 @@ import { STUDIO } from "@/lib/studio";
 */
 const MUC = [
   { href: "#gioi-thieu", nhan: "Giới thiệu" },
-  { href: "#hanh-trinh", nhan: "Hành trình" },
+  /* Lưới "Hamita chụp gì?" — thay chỗ "Hành trình": khách mở menu là để tìm
+     mảng mình cần, hành trình vẫn nằm trong trang cho ai cuộn tới. */
+  { href: "#dich-vu", nhan: "Dịch vụ" },
   { href: "#anh", nhan: "Ảnh cưới" },
   /* "Album" chu khong phai "Album & HC": HC la tieng long trong nghe, khach
      khong hieu. Ten day du nam o tieu de cua chinh khu do. */
@@ -36,9 +38,17 @@ export function NavGioiThieu({
     mới cuộn tới ("/#anh"), không thì bấm vào chẳng đi đâu cả.
   */
   trangKhac = false,
+  /*
+    Neo của những khu KHÔNG hiện trên trang (khu ảnh cưới, album chỉ dựng khi
+    có album được tích lên trang giới thiệu). Giữ mục đó trên menu thì bấm vào
+    đứng im, khách tưởng web hỏng — đo 16/09/2026: đúng hai mục "Ảnh cưới" và
+    "Album" đang như vậy.
+  */
+  anMuc = [],
 }: {
   coAnhNen: boolean;
   trangKhac?: boolean;
+  anMuc?: string[];
 }) {
   const [daCuon, setDaCuon] = useState(false);
 
@@ -63,8 +73,8 @@ export function NavGioiThieu({
           <Logo size="sm" on={noiSang ? "dark" : "page"} className="h-8 sm:h-9" />
         </a>
 
-        <nav className="hidden items-center gap-8 sm:flex">
-          {MUC.map((m) => (
+        <nav className="hidden items-center gap-7 lg:flex">
+          {MUC.filter((m) => !anMuc.includes(m.href)).map((m) => (
             <a
               key={m.href}
               href={duong(m.href)}
@@ -86,9 +96,12 @@ export function NavGioiThieu({
             viec tiep theo la goi. De 16px thi tren dien thoai phai nham lam moi
             trung.
           */
-          className="-my-3.5 py-3.5 text-xs font-medium tracking-wide sm:text-sm"
-          style={{ color: noiSang ? "#fff" : "var(--fg)" }}
+          className="inline-flex min-h-10 items-center gap-2 rounded-full border px-4 text-xs font-medium tracking-wide transition hover:border-accent hover:text-accent sm:text-sm"
+          style={{ color: noiSang ? "#fff" : "var(--fg)", borderColor: noiSang ? "rgba(255,255,255,.6)" : "var(--line-strong)" }}
         >
+          <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M4 5c0 8.3 6.7 15 15 15l2-3-4-2-2 2a15 15 0 0 1-6-6l2-2-2-4Z" />
+          </svg>
           {STUDIO.dienThoai}
         </a>
       </div>

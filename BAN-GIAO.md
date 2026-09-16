@@ -278,6 +278,23 @@ album, số tấm khách đã thả tim, lúc khách báo chọn xong và link �
 Nếu khách đã báo chọn xong mà hợp đồng bên AppSheet còn ở bước "chờ khách
 chọn", trang hợp đồng sẽ nhắc để nhân viên chuyển bước bên AppSheet.
 
+### Trang giới thiệu bày lại theo kiểu mohome.vn (16/09)
+
+Anh gửi mohome.vn để học cách bố cục. Em giữ nguyên màu, phông, bốn khu và giọng
+kể của Hamita, chỉ đổi cách bày: đầu trang hai cột (chữ lớn, nửa sau khẩu hiệu
+in nghiêng, nút Zalo / gọi / Messenger bo tròn, dải trang album chạy trong khung
+bo góc), "Về Hamita" kèm bốn thẻ số liệu, **thẻ hai cơ sở** (377 Wedding House,
+337 Hami Baby — có nút chỉ đường), lưới **"Hamita chụp gì?"** gồm năm thẻ ảnh
+lớn (Ảnh cưới, Album & hình cổng, Phim trường, Bé & gia đình, Váy & trang điểm)
+cộng một thẻ mời tư vấn, hành trình năm bước thành dải thẻ, dải kêu gọi cuối
+trang, và **ba nút liên hệ nổi** ở góc phải. Hai phần "cảm nhận khách hàng" và
+"blog" của web mẫu em không làm vì mình chưa có dữ liệu thật.
+
+**Việc anh nên làm để trang đẹp hẳn:** hiện chưa album nào được tích "hiện lên
+trang giới thiệu" cho khu **Ảnh cưới, Album và Bé** — nên mấy thẻ đó đang hiện
+biểu tượng thay cho ảnh, và hai mục "Ảnh cưới", "Album" tạm ẩn khỏi menu. Anh vào
+trang quản lý album, tích chọn vài album đẹp cho từng khu là trang tự có ảnh.
+
 ### Đợt 3: Lịch chụp & đầu việc (16/09)
 
 Anh chốt thêm một điều quan trọng: **về lâu dài hợp đồng vẫn tạo bên AppSheet**,

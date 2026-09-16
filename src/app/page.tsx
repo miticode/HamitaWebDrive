@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { FadeIn } from "@/components/FadeIn";
 import { StudioIcon } from "@/components/StudioIcon";
 import {
   ALBUM_HC,
   ANH_BIA,
+  CO_SO,
+  DAU_TRANG,
+  DICH_VU,
   HAMI_BABY,
   HANH_TRINH,
   LOI_KE,
@@ -17,6 +21,7 @@ import { listGalleries, type KhuGioiThieu } from "@/lib/store";
 import { loadTree } from "@/lib/gallery";
 import { NavGioiThieu } from "./NavGioiThieu";
 import { AnhBiaChay } from "./AnhBiaChay";
+import { NutLienHeNoi } from "./NutLienHeNoi";
 
 /* Đọc database mỗi lần mở trang, để anh vừa tích chọn album là thấy ngay. */
 export const dynamic = "force-dynamic";
@@ -31,12 +36,30 @@ export const metadata: Metadata = {
   },
 };
 
+/*
+  Nút bo tròn dùng chung cả trang — bố cục học từ mohome.vn (16/09/2026): nút
+  dạng viên thuốc, cao 48px cho dễ bấm trên điện thoại. Nút chính nền đậm chứ
+  không nền vàng đồng: chữ trắng trên #9c7c4f chỉ đạt 3,9:1, dưới mức đọc rõ.
+*/
+const NUT_CHINH =
+  "inline-flex min-h-12 items-center gap-2 rounded-full bg-fg px-6 text-sm font-medium tracking-wide text-bg shadow-[0_12px_30px_-14px_rgba(31,28,26,0.55)] transition hover:opacity-90 active:scale-95";
+const NUT_PHU =
+  "inline-flex min-h-12 items-center gap-2 rounded-full border border-line-strong bg-bg-raised px-6 text-sm tracking-wide text-fg transition hover:border-accent hover:text-accent active:scale-95";
+
+/** Thẻ bo góc lớn, viền mảnh, bóng mềm ngả màu nhấn — kiểu thẻ chung của trang. */
+const THE =
+  "rounded-[1.75rem] border border-line bg-bg-raised shadow-[0_24px_50px_-34px_rgba(156,124,79,0.45)]";
+
 /**
  * Trang giới thiệu studio.
  *
- * Trước đây địa chỉ gốc nhảy thẳng vào trang quản trị — ai gõ đúng tên miền
- * cũng rơi vào ô đăng nhập, không biết đây là studio nào. Giờ là trang giới
- * thiệu thật; trang quản trị vẫn ở `/admin`, có lối vào kín đáo dưới chân trang.
+ * Bố cục học từ mohome.vn theo yêu cầu 16/09/2026: đầu trang hai cột, lưới
+ * "chụp gì" bằng thẻ ảnh lớn, thẻ hai cơ sở, dải kêu gọi bo tròn, nút liên hệ
+ * nổi. Web đó chỉ có mảng bé; ở đây giữ nguyên BỐN KHU của Hamita (nguyên tắc
+ * 24) và giọng kể hành trình của khách (nguyên tắc 25) — chỉ đổi cách bày.
+ *
+ * Không chép hai phần "cảm nhận khách hàng" và "blog" của họ: Hamita chưa có
+ * dữ liệu thật cho hai phần đó, dựng ra là bịa.
  */
 export default async function Home() {
   /*
@@ -44,12 +67,6 @@ export default async function Home() {
     không tự động bung hết lên trang công khai.
   */
   const galleries = await listGalleries();
-
-  /*
-    Studio có nhiều mảng tách bạch và khách của từng mảng khác hẳn nhau: người
-    tìm chụp cưới không đi tìm chụp thôi nôi, còn người hỏi thuê phim trường
-    lại là nhóm khác nữa. Nên ảnh chia theo khu — ảnh cưới, ảnh bé, phim trường.
-  */
   const daChon = galleries.filter((g) => g.featured && g.coverFileId);
   const biaCuaKhu = (khu: KhuGioiThieu) =>
     daChon
@@ -62,20 +79,13 @@ export default async function Home() {
   const anhBaby = biaCuaKhu("baby");
 
   /*
-    Khu phim trường đọc khác hẳn hai khu trên.
-
-    Ảnh cưới và ảnh bé gom ẢNH BÌA của nhiều album — mỗi album là buổi chụp của
-    một nhà khách. Phim trường thì chỉ có MỘT album, và chính các góc chụp bên
-    trong nó mới là thứ cần khoe; lấy một tấm bìa thì chẳng quảng cáo được gì.
-    Nên ở đây đọc thẳng cây thư mục của album đó ra.
-
-    Đây là lời gọi Drive duy nhất của trang này. Chấp nhận được vì `loadTree`
-    có cache 5 phút dùng chung với trang khách xem, nên thực tế là một lần gọi
-    mỗi 5 phút chứ không phải mỗi lượt khách vào.
+    Khu phim trường đọc THẲNG nhiều ảnh trong một album duy nhất (bối cảnh của
+    studio, một tấm bìa không khoe được gì) — lời gọi Drive duy nhất của trang,
+    cache 5 phút chung với trang khách xem. Chỉ lấy ẢNH DỌC cho khung 2:3, thiếu
+    thì bù tấm còn lại (nguyên tắc 24). Drive trục trặc thì bỏ qua khu này, không
+    để cả trang quảng bá chết theo.
   */
-  const albumPhimTruong = galleries.find(
-    (g) => g.featured && g.khuGioiThieu === "phimtruong"
-  );
+  const albumPhimTruong = galleries.find((g) => g.featured && g.khuGioiThieu === "phimtruong");
   let anhPhimTruong: string[] = [];
   let tongGocChup = 0;
   if (albumPhimTruong) {
@@ -83,202 +93,384 @@ export default async function Home() {
       const tree = await loadTree(albumPhimTruong.driveFolderId);
       const tatCa = tree.albums.flatMap((a) => a.photos);
       tongGocChup = tatCa.length;
-
-      /*
-        Ở đây chỉ lấy ẢNH DỌC, và chỉ tám tấm.
-
-        Album phim trường mới trộn cả dọc lẫn ngang — đo 20 tấm ngày 03/09/2026
-        ra 12 dọc, 8 ngang, tỉ lệ trải từ 0,563 tới 1,499. Lưới dưới đây là
-        khung 2:3 cố định để tám ô đều tăm tắp; nhét một tấm ngang 3:2 vào đó
-        thì `object-cover` xén mất khoảng 55% chiều rộng — mà đây là ảnh khoe
-        KHÔNG GIAN, xén đi thì mất đúng thứ nó cần cho thấy. Album cũ toàn ảnh
-        dọc nên chuyện này chưa từng lộ ra.
-
-        Ảnh ngang không bị bỏ phí: trang /phim-truong hiện đủ cả 60 tấm theo
-        đúng tỉ lệ gốc, không xén tấm nào.
-
-        Thiếu ảnh dọc thì bù bằng những tấm còn lại — thà một hai ô bị xén còn
-        hơn khu này trống trơn.
-      */
       const doc = tatCa.filter((p) => p.width && p.height && p.height > p.width);
-      anhPhimTruong = [...doc, ...tatCa.filter((p) => !doc.includes(p))]
-        .slice(0, 8)
-        .map((p) => p.id);
+      anhPhimTruong = [...doc, ...tatCa.filter((p) => !doc.includes(p))].slice(0, 8).map((p) => p.id);
     } catch {
-      /*
-        Drive trục trặc thì bỏ qua khu này, KHÔNG để cả trang giới thiệu chết
-        theo — đây là trang quảng bá công khai, mất nó là mất khách vào xem.
-      */
+      /* Xem chú thích ngay trên. */
     }
   }
 
-  // Ảnh minh hoạ cạnh phần "Về Hamita" — đoạn đó nói về cưới nên lấy ảnh cưới.
-  const anhBenCanh = anhTieuBieu[0] ?? null;
+  /* Ảnh đặt lên từng thẻ của lưới "Hamita chụp gì?". */
+  const anhThe: Record<string, string | undefined> = {
+    cuoi: anhTieuBieu[0],
+    albumhc: anhAlbumHC[0],
+    phimtruong: anhPhimTruong[0],
+    baby: anhBaby[0],
+    // Váy & trang điểm không có khu ảnh riêng — ảnh cưới nào cũng là váy và trang điểm.
+    vay: anhTieuBieu[1] ?? anhTieuBieu[0],
+  };
+
+  /*
+    Thẻ chỉ trỏ tới khu ĐANG HIỆN. Khu ảnh cưới, album chỉ dựng khi có album
+    được tích "hiện lên trang giới thiệu" — đo trên web thật 16/09/2026: chưa
+    có album nào như vậy, nên hai khu đó đang ẩn. Trỏ vào một neo không tồn tại
+    thì bấm thẻ đứng im, khách tưởng hỏng. Lúc đó đưa về phần hành trình, nơi
+    vẫn kể đúng mảng ấy bằng chữ.
+  */
+  const khuDangHien: Record<string, boolean> = {
+    cuoi: anhTieuBieu.length > 0,
+    albumhc: anhAlbumHC.length > 0,
+    phimtruong: anhPhimTruong.length > 0,
+    baby: true,
+    vay: true,
+  };
+  const hrefThe = (m: (typeof DICH_VU.muc)[number]) =>
+    khuDangHien[m.khu] ? m.href : m.khu === "phimtruong" ? "#lien-he" : "#hanh-trinh";
+
+  /* "Sang trọng từ tâm — tận tình như nhà": nửa sau in nghiêng màu nhấn. */
+  const [dauKhauHieu, cuoiKhauHieu] = STUDIO.khauHieu.split(/\s*—\s*/);
+  const tenTrangFacebook = STUDIO.facebook.replace(/\/+$/, "").split("/").pop();
+  const chiDuong = (diaChi: string) =>
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(diaChi)}`;
 
   return (
     <main>
-      {/*
-        coAnhNen={false} chứ không phải true như hồi còn ảnh bìa cố định: ảnh
-        bìa cũ là poster nền đen nên chữ menu màu trắng nổi rõ, còn bốn trang
-        album bây giờ phần lớn nền sáng — để chữ trắng là menu biến mất. Chữ
-        tối, cộng với dải sáng ở mép trên dải ảnh, đọc được trên cả bốn tấm.
-      */}
-      <NavGioiThieu coAnhNen={false} />
+      <NavGioiThieu
+        coAnhNen={false}
+        anMuc={[
+          ...(khuDangHien.cuoi ? [] : ["#anh"]),
+          ...(khuDangHien.albumhc ? [] : ["#album-hc"]),
+          ...(khuDangHien.phimtruong ? [] : ["#phim-truong"]),
+        ]}
+      />
+      <NutLienHeNoi />
 
-      {/*
-        Dải ảnh bìa chạy. Ảnh là trang album đã dàn chữ nên hiện trọn tấm, không
-        cắt — xem AnhBiaChay.tsx. Cũng vì ảnh đã kín chữ sẵn nên KHÔNG chồng
-        thêm chữ của trang lên; tên studio nằm ở dải tiêu đề ngay dưới, như cách
-        đặt caption dưới ảnh bìa tạp chí.
-      */}
-      <AnhBiaChay anh={ANH_BIA} />
-
-      <section className="border-b border-line">
-        <div className="mx-auto max-w-3xl px-6 py-14 text-center sm:py-16">
+      {/* ── Đầu trang: hai cột ─────────────────────────────────────────── */}
+      <section className="relative overflow-hidden pt-16">
+        {/*
+          Cả khu đầu trang ngả một lớp màu nhấn rất nhạt thay vì trắng phẳng —
+          học từ mohome: nhìn vào là biết đây là phần mở đầu, tách khỏi thân trang.
+        */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-accent-soft via-bg to-bg" />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:py-20">
           <FadeIn>
-            <h1 className="font-display text-3xl leading-tight font-light sm:text-5xl">
+            <p className="text-xs font-medium tracking-[0.22em] text-accent uppercase">{STUDIO.moTa}</p>
+            <h1 className="mt-5 font-display text-[2.6rem] leading-[1.05] font-light text-balance sm:text-6xl">
               {STUDIO.ten}
             </h1>
-            <p className="mx-auto mt-4 max-w-xl font-display text-lg font-light text-fg-muted text-balance sm:text-xl">
-              {STUDIO.khauHieu}
+            <p className="mt-4 font-display text-2xl leading-snug font-light text-fg-muted sm:text-[2rem]">
+              {dauKhauHieu}
+              {cuoiKhauHieu && (
+                <>
+                  {" — "}
+                  <em className="text-accent">{cuoiKhauHieu}</em>
+                </>
+              )}
             </p>
+            <p className="mt-6 max-w-lg text-[15px] leading-[1.85] text-fg-muted">{LOI_KE.moDau}</p>
+            <p className="mt-6 text-[11px] font-medium tracking-[0.2em] text-accent uppercase">{DAU_TRANG.dongPhu}</p>
 
-            {/*
-              Câu mở đầu đặt ngay đây, thay chỗ dòng "Chụp ảnh cưới, gia đình &
-              bé yêu tại Tầm Vu, Long An" cũ.
-
-              Dòng cũ là một cái nhãn phân loại — đúng nhưng không mời ai đọc
-              tiếp. Câu này nói thẳng vào thứ khách đang lo (ngày cưới trôi rất
-              nhanh) rồi mới nói Hamita làm gì với nó. Địa chỉ không mất đi, nó
-              nằm ở phần liên hệ và trong thẻ mô tả trang.
-            */}
-            <p className="mx-auto mt-7 max-w-lg text-[15px] leading-[1.9] text-balance text-fg-muted">
-              {LOI_KE.moDau}
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-              <a
-                href={`tel:${STUDIO.dienThoaiSo}`}
-                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-fg px-7 text-sm font-medium tracking-wide text-bg transition hover:opacity-88 active:scale-95"
-              >
-                <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 5c0 8.3 6.7 15 15 15l2-3-4-2-2 2a15 15 0 0 1-6-6l2-2-2-4Z" />
-                </svg>
-                {STUDIO.dienThoai}
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href={STUDIO.zalo} target="_blank" rel="noreferrer" className={NUT_CHINH}>
+                <IconChat /> Nhắn Zalo
               </a>
-              <a
-                href="#hanh-trinh"
-                className="inline-flex min-h-12 items-center rounded-full border px-7 text-sm tracking-wide transition active:scale-95"
-                style={{ borderColor: "var(--line-strong)", color: "var(--fg)" }}
-              >
-                Xem hành trình
+              <a href={`tel:${STUDIO.dienThoaiSo}`} className={NUT_PHU}>
+                <IconGoi /> {STUDIO.dienThoai}
               </a>
+              <a href={`https://m.me/${tenTrangFacebook}`} target="_blank" rel="noreferrer" className={NUT_PHU}>
+                Messenger
+              </a>
+            </div>
+            <a href="#dich-vu" className="mt-7 inline-flex items-center gap-1.5 text-sm text-accent hover:underline hover:underline-offset-4">
+              Xem Hamita chụp gì <span aria-hidden>→</span>
+            </a>
+          </FadeIn>
+
+          {/*
+            Khung ảnh bìa bo góc lớn bên phải. Bên trong vẫn là dải trang album
+            chạy như trước (AnhBiaChay) — ảnh album dàn chữ sẵn nên hiện trọn,
+            không cắt. Khung 4:3 vì ba trên bốn tấm là trang ngang.
+          */}
+          <FadeIn cham={120}>
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] shadow-[0_40px_80px_-40px_rgba(156,124,79,0.6)]">
+              <AnhBiaChay anh={ANH_BIA} trongKhung />
             </div>
           </FadeIn>
         </div>
       </section>
 
-      {/* Tin cậy bằng số thật từ Facebook — không tự bịa số liệu. */}
-      <section className="border-b border-line bg-bg-soft">
-        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-6 px-5 py-10 text-center sm:grid-cols-4 sm:gap-4 sm:px-6">
-          {[
-            { so: STUDIO.soNguoiTheoDoi, nhan: "Người theo dõi" },
-            { so: `${STUDIO.soDanhGia}+`, nhan: "Lượt đánh giá" },
-            { so: "100%", nhan: "Hài lòng" },
-            { so: "10+", nhan: "Album mỗi tháng" },
-          ].map((s) => (
-            <div key={s.nhan}>
-              <p className="font-display text-3xl font-light sm:text-4xl">{s.so}</p>
-              <p className="eyebrow mt-1.5">{s.nhan}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
+      {/* ── Về Hamita + số liệu ───────────────────────────────────────── */}
       <section id="gioi-thieu" className="scroll-mt-16">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-5 py-24 sm:px-6 sm:py-32 lg:grid-cols-2 lg:gap-20">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-20 sm:px-6 sm:py-28 lg:grid-cols-2 lg:gap-16">
           <FadeIn>
-            {anhBenCanh ? (
-              <div className="skeleton aspect-[4/5] overflow-hidden rounded-sm">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/api/img/${anhBenCanh}?w=1440`}
-                  alt=""
-                  className="size-full object-cover"
-                />
+            {/* Cụm ba ảnh ghép: một tấm cao bên trái, hai tấm vuông xếp chồng bên phải. */}
+            {anhTieuBieu.length >= 3 ? (
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <AnhThe id={anhTieuBieu[0]} className="row-span-2 aspect-[3/5]" rong={960} />
+                <AnhThe id={anhTieuBieu[1]} className="aspect-square" />
+                <AnhThe id={anhTieuBieu[2]} className="aspect-square" />
               </div>
+            ) : anhTieuBieu[0] ? (
+              <AnhThe id={anhTieuBieu[0]} className="aspect-[4/5]" rong={1440} />
             ) : (
-              <div className="flex aspect-[4/5] items-center justify-center rounded-sm bg-bg-soft">
-                <Logo size="md" className="opacity-30" />
+              /*
+                Chưa album cưới nào được tích lên trang giới thiệu: dùng tấm bìa
+                album dọc có sẵn (bia-4, 853×1280 ≈ 2:3). Khung 2:3 đúng tỉ lệ
+                đó nên không xén mất chữ trên bìa.
+              */
+              <div className="mx-auto max-w-sm overflow-hidden rounded-[1.75rem] shadow-[0_40px_80px_-40px_rgba(156,124,79,0.6)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/bia/bia-4.webp" alt={ANH_BIA[3].mo} className="aspect-[2/3] size-full object-cover" loading="lazy" />
               </div>
             )}
           </FadeIn>
 
           <FadeIn cham={140}>
-            <p className="eyebrow">{VE_HAMITA.nhan}</p>
-            <h2 className="rule mt-5 font-display text-3xl leading-[1.3] font-light text-balance sm:text-4xl">
-              {VE_HAMITA.tieuDe}
-            </h2>
-            <p className="mt-7 text-[15px] leading-[1.85] text-fg-muted">
-              {VE_HAMITA.ke}
-            </p>
+            <DauMuc nhan={VE_HAMITA.nhan} tieuDe={VE_HAMITA.tieuDe} />
+            <p className="mt-6 text-[15px] leading-[1.85] text-fg-muted">{VE_HAMITA.ke}</p>
+            {/* Số thật từ trang Facebook của studio — không tự bịa số liệu. */}
+            <dl className="mt-9 grid grid-cols-2 gap-3 sm:gap-4">
+              {[
+                { so: STUDIO.soNguoiTheoDoi, nhan: "Người theo dõi" },
+                { so: `${STUDIO.soDanhGia}+`, nhan: "Lượt đánh giá" },
+                { so: "100%", nhan: "Hài lòng" },
+                { so: "10+", nhan: "Album mỗi tháng" },
+              ].map((s) => (
+                <div key={s.nhan} className={`${THE} px-5 py-4`}>
+                  <dd className="font-display text-3xl font-light text-accent sm:text-4xl">{s.so}</dd>
+                  <dt className="mt-1 text-xs tracking-wide text-fg-muted">{s.nhan}</dt>
+                </div>
+              ))}
+            </dl>
           </FadeIn>
         </div>
       </section>
 
-      {/*
-        Năm dịch vụ, kể lại thành năm chương theo đúng thứ tự chúng diễn ra với
-        một cặp đôi.
-
-        Trước đây là lưới năm ô có icon — đúng nhưng đọc như tờ rao giá, và
-        khách phải tự ghép xem mình sẽ trải qua những gì. Xếp theo thời gian
-        thì tự nó thành một mạch, đọc hết là hình dung được cả chặng đường.
-
-        Đánh số 01–05 ở đây là CÓ NGHĨA chứ không phải trang trí: đây thật sự
-        là một trình tự, chương 02 xảy ra sau chương 01. Sợi chỉ dọc nối các
-        chương cũng vì thế — nó nói rằng đây là một mạch liền, không phải năm
-        món rời nhau.
-      */}
-      <section id="hanh-trinh" className="scroll-mt-16 border-y border-line bg-bg-soft">
-        <div className="mx-auto max-w-3xl px-5 py-24 sm:px-6 sm:py-32">
+      {/* ── Hai cơ sở ─────────────────────────────────────────────────── */}
+      <section className="border-y border-line bg-bg-soft">
+        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-20">
           <FadeIn>
-            <p className="eyebrow text-center">{HANH_TRINH.nhan}</p>
-            <h2 className="rule mx-auto mt-5 max-w-xl text-center font-display text-3xl leading-[1.25] font-light text-balance sm:text-4xl">
-              {HANH_TRINH.tieuDe}
-            </h2>
+            <DauMuc nhan={CO_SO.nhan} tieuDe={CO_SO.tieuDe} moTa={CO_SO.moTa} />
           </FadeIn>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2">
+            {[
+              { co: STUDIO, ten: STUDIO.ten, loai: "Cưới hỏi" },
+              { co: HAMI_BABY, ten: HAMI_BABY.ten, loai: "Bé & gia đình", khu: "khu-baby" },
+            ].map((c, i) => (
+              <FadeIn key={c.ten} cham={i * 100}>
+                {/* Thẻ Hami Baby mang luôn tông trắng hồng của khu bé (.khu-baby). */}
+                <div className={`${c.khu ?? ""} ${THE} h-full p-6 sm:p-7`}>
+                  <p className="text-[11px] font-medium tracking-[0.2em] text-accent uppercase">{c.loai}</p>
+                  <h3 className="mt-2 font-display text-2xl font-normal sm:text-[1.7rem]">{c.ten}</h3>
+                  <ul className="mt-5 space-y-2.5 text-sm text-fg-muted">
+                    <li className="flex gap-3"><IconGhim /> {c.co.diaChi}</li>
+                    <li className="flex gap-3"><IconDongHo /> {STUDIO.gioMoCua}</li>
+                    <li className="flex gap-3">
+                      <IconGoi />
+                      <a href={`tel:${c.co.dienThoaiSo}`} className="font-medium text-fg hover:text-accent">{c.co.dienThoai}</a>
+                    </li>
+                  </ul>
+                  <a
+                    href={chiDuong(c.co.diaChi)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-6 inline-flex items-center gap-1.5 text-sm text-accent hover:underline hover:underline-offset-4"
+                  >
+                    Chỉ đường <span aria-hidden>→</span>
+                  </a>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          <ol className="mt-16 sm:mt-20">
-            {HANH_TRINH.chuong.map((c, i) => (
-              <li key={c.so}>
-                <FadeIn cham={i * 90}>
-                  <div className="relative grid grid-cols-[auto_1fr] gap-x-5 pb-12 sm:gap-x-8 sm:pb-14">
-                    {/*
-                      Sợi chỉ nối xuống chương sau. Chương cuối không có, nếu
-                      không sẽ có một đoạn chỉ thừa chạy vào khoảng trống.
-                    */}
-                    {i < HANH_TRINH.chuong.length - 1 && (
-                      <span
-                        aria-hidden
-                        className="absolute top-12 bottom-0 left-[1.375rem] w-px bg-line-strong sm:top-14 sm:left-[1.75rem]"
+      {/* ── Hamita chụp gì? ───────────────────────────────────────────── */}
+      <section id="dich-vu" className="scroll-mt-16">
+        <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28">
+          <FadeIn>
+            <DauMuc nhan={DICH_VU.nhan} tieuDe={DICH_VU.tieuDe} />
+          </FadeIn>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+            {DICH_VU.muc.map((m, i) => {
+              const anh = anhThe[m.khu];
+              return (
+                <FadeIn key={m.ten} cham={i * 70}>
+                  {/*
+                    Chữ nằm trên ảnh, dưới một lớp tối dần từ đáy — kiểu thẻ của
+                    mohome: nhìn ảnh là biết mảng gì, không phải đọc nhãn dưới.
+                    Cả thẻ là một liên kết, bấm đâu cũng tới đúng khu đó.
+                  */}
+                  <a
+                    href={hrefThe(m)}
+                    className={`group relative block aspect-[4/5] overflow-hidden rounded-[1.75rem] ${m.khu === "baby" ? "khu-baby" : ""} ${anh ? "bg-bg-soft" : "border border-line bg-gradient-to-br from-accent-soft to-bg-soft"}`}
+                  >
+                    {anh ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={`/api/img/${anh}?w=960`}
+                        alt=""
+                        loading="lazy"
+                        className="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-105"
                       />
+                    ) : (
+                      /*
+                        Chưa có ảnh album cho mảng này: biểu tượng lớn trên nền
+                        màu nhấn nhạt, chữ màu đậm. Ô trống xám trông như ảnh
+                        tải hỏng; ô có chủ ý thì không.
+                      */
+                      <span className="absolute top-6 left-6 grid size-16 place-items-center rounded-full border border-line-strong bg-bg-raised text-accent">
+                        <StudioIcon ten={m.icon} className="size-7" />
+                      </span>
                     )}
+                    {anh && <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />}
+                    <span className={`absolute inset-x-0 bottom-0 p-6 ${anh ? "text-white" : "text-fg"}`}>
+                      <span className="block text-[11px] font-medium tracking-[0.2em] uppercase opacity-85">{m.nhan}</span>
+                      <span className="mt-1.5 block font-display text-[1.9rem] leading-tight">{m.ten}</span>
+                      <span className="mt-1 flex items-center justify-between gap-3 text-sm opacity-90">
+                        {m.moTa}
+                        <span
+                          aria-hidden
+                          className={`grid size-8 shrink-0 place-items-center rounded-full transition ${anh ? "bg-white/20 backdrop-blur-sm group-hover:bg-white/35" : "border border-line-strong group-hover:border-accent group-hover:text-accent"}`}
+                        >
+                          →
+                        </span>
+                      </span>
+                    </span>
+                  </a>
+                </FadeIn>
+              );
+            })}
 
-                    <div className="relative flex size-11 shrink-0 items-center justify-center rounded-full border border-line-strong bg-bg text-accent sm:size-14">
-                      <StudioIcon ten={c.icon} className="size-5 sm:size-6" />
-                    </div>
+            {/* Thẻ thứ sáu: mời tư vấn, lấp đủ hàng thay vì chừa một ô trống. */}
+            <FadeIn cham={DICH_VU.muc.length * 70}>
+              <div className="flex aspect-[4/5] flex-col justify-end rounded-[1.75rem] bg-fg p-7 text-bg">
+                <StudioIcon ten="rings" className="size-9 opacity-70" />
+                <p className="mt-auto font-display text-[1.9rem] leading-tight">{DICH_VU.tuVan.tieuDe}</p>
+                <p className="mt-3 text-sm leading-relaxed opacity-75">{DICH_VU.tuVan.ke}</p>
+                <div className="mt-6 flex flex-wrap gap-2.5">
+                  <a href={STUDIO.zalo} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-full bg-bg px-5 text-sm font-medium text-fg transition hover:opacity-90">
+                    Nhắn Zalo
+                  </a>
+                  <a href={`tel:${STUDIO.dienThoaiSo}`} className="inline-flex min-h-11 items-center rounded-full border border-bg/40 px-5 text-sm transition hover:border-bg">
+                    Gọi Hamita
+                  </a>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
 
-                    <div>
-                      <p className="font-display text-sm tracking-[0.3em] text-accent">
-                        {c.so}
-                      </p>
-                      <h3 className="mt-1.5 font-display text-2xl font-normal sm:text-[1.75rem]">
-                        {c.ten}
-                      </h3>
-                      <p className="mt-3 text-[15px] leading-[1.85] text-fg-muted">
-                        {c.ke}
-                      </p>
+      {/* ── Ảnh cưới ──────────────────────────────────────────────────── */}
+      {anhTieuBieu.length > 0 && (
+        <section id="anh" className="scroll-mt-16 border-t border-line">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28">
+            <FadeIn>
+              <DauMuc
+                nhan="Ảnh cưới"
+                tieuDe="Những khoảnh khắc Hamita giữ lại"
+                moTa="Mỗi tấm dưới đây là của một nhà khác nhau, chụp ở một ngày khác nhau. Anh chị xem thử có bắt gặp mình ở đâu trong đó không."
+              />
+            </FadeIn>
+            <LuoiAnh ds={anhTieuBieu} khung="aspect-[3/4]" />
+          </div>
+        </section>
+      )}
+
+      {/* ── Album & hình cổng — khung 4:5 vì trang album rộng bản hơn ảnh chân dung. */}
+      {anhAlbumHC.length > 0 && (
+        <section id="album-hc" className="scroll-mt-16 border-t border-line bg-bg-soft">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28">
+            <FadeIn>
+              <DauMuc nhan={ALBUM_HC.nhan} tieuDe={ALBUM_HC.tieuDe} moTa={ALBUM_HC.moTa} />
+            </FadeIn>
+            <LuoiAnh ds={anhAlbumHC} khung="aspect-[4/5]" />
+          </div>
+        </section>
+      )}
+
+      {/* ── Phim trường — tông giấy da châu Âu (.khu-phim-truong), khung 2:3. */}
+      {anhPhimTruong.length > 0 && (
+        <section id="phim-truong" className="khu-phim-truong scroll-mt-16 border-t border-line bg-bg-soft">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28">
+            <FadeIn>
+              <DauMuc
+                nhan={`${PHIM_TRUONG.nhan} · ${tongGocChup} góc chụp`}
+                tieuDe={PHIM_TRUONG.tieuDe}
+                moTa={PHIM_TRUONG.moTa}
+                phai={
+                  tongGocChup > anhPhimTruong.length ? (
+                    <Link href="/phim-truong" className={NUT_PHU}>
+                      Xem tất cả {tongGocChup} góc chụp <span aria-hidden>→</span>
+                    </Link>
+                  ) : null
+                }
+              />
+            </FadeIn>
+            {/* Bấm vào ảnh nào cũng sang trang xem đủ bối cảnh — phản xạ đầu tiên của khách là bấm vào chính tấm ảnh. */}
+            <LuoiAnh ds={anhPhimTruong} khung="aspect-[2/3]" href="/phim-truong" alt={`Bối cảnh tại ${PHIM_TRUONG.ten}`} />
+            <FadeIn>
+              <p className="mt-10 text-center text-sm text-fg-muted">
+                {PHIM_TRUONG.moiGoi}{" "}
+                <a href={`tel:${STUDIO.dienThoaiSo}`} className="font-medium text-fg underline underline-offset-4 hover:text-accent">
+                  {STUDIO.dienThoai}
+                </a>
+              </p>
+            </FadeIn>
+          </div>
+        </section>
+      )}
+
+      {/* ── Hami Baby — tông trắng hồng (.khu-baby). */}
+      <section id="baby" className="khu-baby scroll-mt-16 border-t border-line bg-bg-soft">
+        <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28">
+          <FadeIn>
+            <DauMuc
+              nhan={`Bé & gia đình · ${HAMI_BABY.soNguoiTheoDoi} người theo dõi`}
+              tieuDe={HAMI_BABY.ten}
+              moTa={HAMI_BABY.moTa}
+              phai={
+                <span className="flex flex-wrap gap-3">
+                  <a href={`tel:${HAMI_BABY.dienThoaiSo}`} className={NUT_PHU}>
+                    <IconGoi /> {HAMI_BABY.dienThoai}
+                  </a>
+                  <a href={HAMI_BABY.facebook} target="_blank" rel="noreferrer" className={NUT_PHU}>
+                    Facebook
+                  </a>
+                </span>
+              }
+            />
+          </FadeIn>
+          {anhBaby.length > 0 && <LuoiAnh ds={anhBaby} khung="aspect-[3/4]" />}
+        </div>
+      </section>
+
+      {/* ── Hành trình năm bước ───────────────────────────────────────── */}
+      {/*
+        Vẫn là năm chương THEO ĐÚNG THỨ TỰ (nguyên tắc 25), chỉ đổi từ dòng kể
+        dọc sang dải thẻ. Đường kẻ mảnh chạy sau dải thẻ (máy tính) và số thứ tự
+        trên mỗi thẻ giữ lại đúng ý "đây là một mạch liền", không phải năm món rời.
+      */}
+      <section id="hanh-trinh" className="scroll-mt-16 border-t border-line">
+        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 sm:py-28">
+          <FadeIn>
+            <DauMuc nhan={HANH_TRINH.nhan} tieuDe={HANH_TRINH.tieuDe} giua />
+          </FadeIn>
+          <ol className="relative mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <span aria-hidden className="absolute top-[3.25rem] right-8 left-8 hidden h-px bg-line-strong lg:block" />
+            {HANH_TRINH.chuong.map((c, i) => (
+              <li key={c.so} className={i === HANH_TRINH.chuong.length - 1 ? "sm:col-span-2 lg:col-span-1" : ""}>
+                <FadeIn cham={i * 90} className="h-full">
+                  <div className={`${THE} relative h-full p-6`}>
+                    <div className="flex items-center justify-between">
+                      <span className="grid size-12 place-items-center rounded-full border border-line-strong bg-bg text-accent">
+                        <StudioIcon ten={c.icon} className="size-5" />
+                      </span>
+                      <span className="font-display text-3xl font-light text-accent/60">{c.so}</span>
                     </div>
+                    <h3 className="mt-5 font-display text-[1.45rem] leading-snug font-normal">{c.ten}</h3>
+                    <p className="mt-3 text-[13.5px] leading-[1.8] text-fg-muted">{c.ke}</p>
                   </div>
                 </FadeIn>
               </li>
@@ -287,377 +479,74 @@ export default async function Home() {
         </div>
       </section>
 
-      {anhTieuBieu.length > 0 && (
-        <section id="anh" className="scroll-mt-16">
-          <div className="mx-auto max-w-[1700px] px-2 py-24 sm:px-6 sm:py-32">
-            <FadeIn>
-              {/* Nói rõ "ảnh cưới": từ khi tách khu chụp bé xuống dưới, một
-                  nhãn chung chung không còn phân biệt được hai mảng. */}
-              <p className="eyebrow text-center">Ảnh cưới</p>
-              <h2 className="rule mx-auto mt-5 max-w-lg text-center font-display text-3xl font-light sm:text-4xl">
-                Những khoảnh khắc Hamita giữ lại
-              </h2>
-              {/* Ba khu ảnh phía dưới đều có một câu dẫn; riêng khu này trước
-                  đó nhảy thẳng từ tiêu đề vào lưới ảnh, đọc bị hụt một nhịp. */}
-              <p className="mx-auto mt-6 max-w-xl text-center text-sm leading-relaxed text-balance text-fg-muted">
-                Mỗi tấm dưới đây là của một nhà khác nhau, chụp ở một ngày khác
-                nhau. Anh chị xem thử có bắt gặp mình ở đâu trong đó không.
-              </p>
-            </FadeIn>
-
-            <div className="mt-16 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-              {anhTieuBieu.map((fileId, i) => (
-                <FadeIn key={fileId} cham={i * 60}>
-                  <div className="group skeleton aspect-[3/4] overflow-hidden rounded-sm">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`/api/img/${fileId}?w=640`}
-                      alt=""
-                      loading="lazy"
-                      className="size-full object-cover transition duration-700 ease-out group-hover:scale-105"
-                    />
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/*
-        Khu Album và hình cổng — sản phẩm in.
-
-        Tách khỏi khu ảnh cưới ngay trên vì khách nhìn hai thứ đó với hai mục
-        đích khác nhau: xem ảnh cưới là xem PHONG CÁCH CHỤP, còn xem album và
-        hình cổng là xem THỨ MÌNH SẼ CẦM VỀ. Gộp chung một lưới thì cả hai đều
-        bị loãng — người đang chọn studio không phân biệt được studio này chụp
-        đẹp hay dàn album đẹp.
-
-        Đặt liền ngay sau ảnh cưới: xem xong ảnh, câu hỏi kế tiếp thường là
-        "rồi tôi nhận được gì".
-
-        Khung 4/5 chứ không phải 3/4 như khu ảnh cưới — trang album dàn ngang
-        và hình cổng đều rộng bản hơn ảnh chân dung, khung cao quá sẽ xén mất
-        hai bên đúng chỗ có chữ.
-      */}
-      {anhAlbumHC.length > 0 && (
-        <section id="album-hc" className="scroll-mt-16 border-t border-line">
-          <div className="mx-auto max-w-[1700px] px-2 py-24 sm:px-6 sm:py-32">
-            <FadeIn>
-              <p className="eyebrow text-center">{ALBUM_HC.nhan}</p>
-              <h2 className="rule mx-auto mt-5 max-w-lg text-center font-display text-3xl font-light sm:text-4xl">
-                {ALBUM_HC.tieuDe}
-              </h2>
-              <p className="mx-auto mt-6 max-w-xl text-center text-sm leading-relaxed text-balance text-fg-muted">
-                {ALBUM_HC.moTa}
-              </p>
-            </FadeIn>
-
-            <div className="mt-16 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-              {anhAlbumHC.map((fileId, i) => (
-                <FadeIn key={fileId} cham={i * 60}>
-                  <div className="group skeleton aspect-[4/5] overflow-hidden rounded-sm">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`/api/img/${fileId}?w=640`}
-                      alt=""
-                      loading="lazy"
-                      className="size-full object-cover transition duration-700 ease-out group-hover:scale-105"
-                    />
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/*
-        Khu phim trường.
-
-        Đặt ngay sau khu ảnh cưới chứ không xuống cuối trang: người vừa xem
-        xong ảnh cưới là người đang cân nhắc đặt chụp, và câu hỏi kế tiếp của
-        họ thường là "chụp ở đâu". Trả lời ngay lúc đó là đúng nhịp nhất.
-
-        Bố cục cố ý khác hai khu kia — ảnh đầu tràn rộng, bảy tấm còn lại xếp
-        lưới nhỏ bên dưới. Đây là bối cảnh chứ không phải ảnh của khách, khoe
-        không gian thì cần một tấm đủ lớn để thấy được tổng thể.
-      */}
-      {anhPhimTruong.length > 0 && (
-        <section
-          id="phim-truong"
-          /*
-            khu-phim-truong đổi bảng màu cả khu sang tông giấy da châu Âu —
-            xem chú thích ở globals.css. Đặt trên chính <section> để đường kẻ
-            trên và nền cũng nằm trong phạm vi đổi màu.
-          */
-          className="khu-phim-truong scroll-mt-16 border-t border-line bg-bg-soft"
-        >
-          <div className="mx-auto max-w-[1700px] px-5 py-24 sm:px-6 sm:py-28">
-            <FadeIn>
-              <div className="mx-auto max-w-3xl text-center">
-                <p className="eyebrow">{PHIM_TRUONG.nhan}</p>
-                <h2 className="rule mx-auto mt-5 font-display text-3xl font-light sm:text-4xl">
-                  {PHIM_TRUONG.tieuDe}
-                </h2>
-                <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-balance text-fg-muted">
-                  {PHIM_TRUONG.moTa}
-                </p>
-                <p className="eyebrow mt-4">
-                  {PHIM_TRUONG.ten} · {tongGocChup} góc chụp
-                </p>
-              </div>
-            </FadeIn>
-
-            {/*
-              Khung 2:3 chứ không phải 3/4 như hai khu kia, và cũng không phải
-              một tấm ngang lớn như bản đầu.
-
-              Lý do đo được: cả 16 tấm của album này đều là ảnh DỌC 1365x2048,
-              tức đúng 2:3. Bản đầu em dựng một tấm 16:9 tràn rộng cho hoành
-              tráng, nhưng object-cover sẽ xén mất khoảng 63% chiều cao mỗi
-              tấm — mà đây là ảnh khoe KHÔNG GIAN, xén đi thì còn lại đúng cái
-              nó cần cho thấy. Khung khớp đúng tỉ lệ gốc thì không xén tấm nào.
-            */}
-            <div className="mt-14 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-              {anhPhimTruong.map((fileId, i) => (
-                <FadeIn key={fileId} cham={i * 60}>
-                  {/*
-                    Cả ô ảnh là một liên kết sang trang xem đủ bối cảnh. Khách
-                    thấy ảnh đẹp thì phản xạ đầu tiên là bấm vào chính tấm ảnh
-                    đó, không phải đi tìm một cái nút ở đâu khác — nên bấm vào
-                    đâu cũng phải ra cùng một chỗ.
-                  */}
-                  <Link
-                    href="/phim-truong"
-                    className="group skeleton block aspect-[2/3] overflow-hidden rounded-sm"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`/api/img/${fileId}?w=640`}
-                      alt={`Bối cảnh tại ${PHIM_TRUONG.ten}`}
-                      loading="lazy"
-                      className="size-full object-cover transition duration-700 ease-out group-hover:scale-105"
-                    />
-                  </Link>
-                </FadeIn>
-              ))}
-            </div>
-
-            {/*
-              Nút riêng bên cạnh việc bấm vào ảnh: bấm vào ảnh là thứ khách hay
-              thử, còn dòng chữ này mới là thứ NÓI cho họ biết bên trong còn
-              bao nhiêu nữa. Tám tấm trên kia trông như đã là tất cả nếu không
-              ai nói gì.
-            */}
-            {tongGocChup > anhPhimTruong.length && (
-              <FadeIn>
-                <div className="mt-10 text-center">
-                  <Link
-                    href="/phim-truong"
-                    className="btn inline-flex items-center gap-2"
-                  >
-                    Xem tất cả {tongGocChup} góc chụp
-                    <span aria-hidden>→</span>
-                  </Link>
-                </div>
-              </FadeIn>
-            )}
-
-            <FadeIn>
-              <div className="mt-12 text-center">
-                <p className="text-sm text-fg-muted">{PHIM_TRUONG.moiGoi}</p>
-                <a
-                  href={`tel:${STUDIO.dienThoaiSo}`}
-                  className="btn-primary mt-5 inline-flex"
-                >
-                  {STUDIO.dienThoai}
-                </a>
-              </div>
-            </FadeIn>
-          </div>
-        </section>
-      )}
-
-      {/*
-        Khu Hami Baby — mảng chụp bé và gia đình.
-
-        Trước đây chỉ có chữ, không một tấm ảnh nào: người đang tìm chỗ chụp
-        thôi nôi đọc xong vẫn không biết studio chụp bé ra sao. Giờ ảnh của
-        mảng này nằm ngay đây, tách hẳn khỏi ảnh cưới phía trên.
-      */}
-      {/*
-        khu-baby đổi bảng màu của cả khu sang tông trắng hồng — xem chú thích
-        ở globals.css. Đặt trên chính <section> chứ không phải thẻ con, để
-        đường kẻ trên và nền cũng nằm trong phạm vi đổi màu.
-      */}
-      <section id="baby" className="khu-baby scroll-mt-16 border-t border-line bg-bg-soft">
-        <div className="mx-auto max-w-[1700px] px-5 py-24 sm:px-6 sm:py-28">
-          <FadeIn>
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="eyebrow">Mảng dịch vụ khác</p>
-              <h2 className="mt-5 font-display text-3xl font-light sm:text-4xl">
-                {HAMI_BABY.ten}
-              </h2>
-              <p className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-balance text-fg-muted">
-                {HAMI_BABY.moTa}
-              </p>
-              <p className="eyebrow mt-4">{HAMI_BABY.soNguoiTheoDoi} người theo dõi</p>
-            </div>
-          </FadeIn>
-
-          {anhBaby.length > 0 && (
-            <div className="mt-14 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-              {anhBaby.map((fileId, i) => (
-                <FadeIn key={fileId} cham={i * 60}>
-                  <div className="group skeleton aspect-[3/4] overflow-hidden rounded-sm">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`/api/img/${fileId}?w=640`}
-                      alt=""
-                      loading="lazy"
-                      className="size-full object-cover transition duration-700 ease-out group-hover:scale-105"
-                    />
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          )}
-
-          <FadeIn>
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
-              <a href={`tel:${HAMI_BABY.dienThoaiSo}`} className="btn">
-                {HAMI_BABY.dienThoai}
-              </a>
-              <a
-                href={HAMI_BABY.facebook}
-                target="_blank"
-                rel="noreferrer"
-                className="btn"
-              >
-                Xem trang Facebook
-              </a>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/*
-        Câu kết, đặt ngay trước phần liên hệ.
-
-        Một trang kể chuyện mà hết ảnh là nhảy thẳng vào bảng địa chỉ với bản
-        đồ thì cụt. Đoạn này khép mạch lại — nhắc rằng chương 01 (ngồi nghe
-        nhau) là thứ tiếp theo khách cần làm, rồi mới đưa số điện thoại.
-      */}
-      <section className="border-t border-line">
-        <div className="mx-auto max-w-2xl px-5 py-24 text-center sm:px-6 sm:py-28">
-          <FadeIn>
-            <span aria-hidden className="mx-auto block h-px w-10 bg-line-strong" />
-            <h2 className="mt-8 font-display text-3xl leading-[1.25] font-light text-balance sm:text-4xl">
+      {/* ── Dải kêu gọi bo tròn ───────────────────────────────────────── */}
+      <section className="px-5 pb-20 sm:px-6 sm:pb-28">
+        <FadeIn>
+          <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] border border-line bg-gradient-to-br from-accent-soft via-bg-soft to-bg-raised px-6 py-16 text-center sm:px-12 sm:py-20">
+            <Logo size="sm" className="mx-auto opacity-70" />
+            <h2 className="mx-auto mt-6 max-w-2xl font-display text-3xl leading-[1.2] font-light text-balance sm:text-5xl">
               {LOI_KE.ketTieuDe}
             </h2>
-            <p className="mx-auto mt-6 max-w-lg text-[15px] leading-[1.9] text-balance text-fg-muted">
-              {LOI_KE.ket}
-            </p>
-          </FadeIn>
-        </div>
+            <p className="mx-auto mt-5 max-w-xl text-[15px] leading-[1.85] text-balance text-fg-muted">{LOI_KE.ket}</p>
+            <div className="mt-9 flex flex-wrap justify-center gap-3">
+              <a href={STUDIO.zalo} target="_blank" rel="noreferrer" className={NUT_CHINH}>
+                <IconChat /> Nhắn Zalo
+              </a>
+              <a href={`https://m.me/${tenTrangFacebook}`} target="_blank" rel="noreferrer" className={NUT_PHU}>
+                Messenger
+              </a>
+              <a href={`tel:${STUDIO.dienThoaiSo}`} className={NUT_PHU}>
+                <IconGoi /> {STUDIO.dienThoai}
+              </a>
+            </div>
+          </div>
+        </FadeIn>
       </section>
 
+      {/* ── Liên hệ & bản đồ ──────────────────────────────────────────── */}
       <section id="lien-he" className="scroll-mt-16 border-t border-line bg-bg-soft">
-        <div className="mx-auto max-w-4xl px-5 py-24 sm:px-6 sm:py-32">
+        <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-24">
           <FadeIn>
-            <p className="eyebrow text-center">Liên hệ</p>
-            <h2 className="rule mx-auto mt-5 max-w-md text-center font-display text-3xl font-light sm:text-4xl">
-              Hẹn gặp anh chị tại studio
-            </h2>
+            <DauMuc nhan="Liên hệ" tieuDe="Hẹn gặp anh chị tại studio" moTa={`${STUDIO.gioMoCua} · ${STUDIO.email}`} />
           </FadeIn>
-
-          <FadeIn cham={140}>
-            <dl className="mt-16 grid grid-cols-1 gap-x-12 gap-y-9 sm:grid-cols-2">
-              <div>
-                <dt className="eyebrow">Địa chỉ</dt>
-                {/* Hai cơ sở, xếp đúng như số điện thoại ngay bên: cưới hỏi trước, bé và gia đình sau. */}
-                <dd className="mt-2 leading-relaxed">
-                  {STUDIO.diaChi}
-                  <span className="text-fg-faint"> · cưới hỏi</span>
-                  <br />
-                  {HAMI_BABY.diaChi}
-                  <span className="text-fg-faint"> · chụp bé và gia đình</span>
-                </dd>
-              </div>
-              <div>
-                <dt className="eyebrow">Giờ mở cửa</dt>
-                <dd className="mt-2 leading-relaxed">{STUDIO.gioMoCua}</dd>
-              </div>
-              <div>
-                <dt className="eyebrow">Điện thoại</dt>
-                <dd className="mt-2 leading-relaxed">
-                  <a href={`tel:${STUDIO.dienThoaiSo}`} className="-my-2.5 inline-block py-2.5 hover:text-accent">
-                    {STUDIO.dienThoai}
-                  </a>
-                  <span className="text-fg-faint"> · cưới hỏi</span>
-                  <br />
-                  <a href={`tel:${HAMI_BABY.dienThoaiSo}`} className="-my-2.5 inline-block py-2.5 hover:text-accent">
-                    {HAMI_BABY.dienThoai}
-                  </a>
-                  <span className="text-fg-faint"> · chụp bé và gia đình</span>
-                </dd>
-              </div>
-              <div>
-                <dt className="eyebrow">Email</dt>
-                <dd className="mt-2 leading-relaxed">
-                  <a href={`mailto:${STUDIO.email}`} className="-my-2.5 inline-block py-2.5 hover:text-accent">
-                    {STUDIO.email}
-                  </a>
-                </dd>
-              </div>
-            </dl>
-
-            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <p className="eyebrow">{STUDIO.ten} · cưới hỏi</p>
-                <div className="skeleton mt-2 aspect-[4/3] overflow-hidden rounded-sm border border-line-strong">
-                  <iframe
-                    src={STUDIO.mapEmbed}
-                    title={`Bản đồ ${STUDIO.ten}`}
-                    loading="lazy"
-                    allowFullScreen
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    className="size-full border-0"
-                  />
-                </div>
-              </div>
-              <div>
-                <p className="eyebrow">{HAMI_BABY.ten} · bé và gia đình</p>
-                <div className="skeleton mt-2 aspect-[4/3] overflow-hidden rounded-sm border border-line-strong">
-                  <iframe
-                    src={HAMI_BABY.mapEmbed}
-                    title={`Bản đồ ${HAMI_BABY.ten}`}
-                    loading="lazy"
-                    allowFullScreen
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    className="size-full border-0"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-14 flex flex-wrap justify-center gap-3">
-              <a href={STUDIO.zalo} target="_blank" rel="noreferrer" className="btn-primary">
-                Nhắn tin Zalo
-              </a>
-              <a href={STUDIO.facebook} target="_blank" rel="noreferrer" className="btn">
-                Facebook
-              </a>
-              <a href={STUDIO.tiktok} target="_blank" rel="noreferrer" className="btn">
-                TikTok
-              </a>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2">
+            {[
+              { ten: STUDIO.ten, loai: "cưới hỏi", co: STUDIO },
+              { ten: HAMI_BABY.ten, loai: "bé và gia đình", co: HAMI_BABY },
+            ].map((c) => (
+              <FadeIn key={c.ten}>
+                <figure className={`${THE} overflow-hidden`}>
+                  <div className="skeleton aspect-[4/3]">
+                    <iframe
+                      src={c.co.mapEmbed}
+                      title={`Bản đồ ${c.ten}`}
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      className="size-full border-0"
+                    />
+                  </div>
+                  <figcaption className="px-5 py-4 text-sm">
+                    <span className="font-medium">{c.ten}</span>
+                    <span className="text-fg-faint"> · {c.loai}</span>
+                    <span className="mt-0.5 block text-fg-muted">{c.co.diaChi}</span>
+                  </figcaption>
+                </figure>
+              </FadeIn>
+            ))}
+          </div>
+          <FadeIn>
+            <div className="mt-10 flex flex-wrap justify-center gap-3">
+              <a href={`mailto:${STUDIO.email}`} className={NUT_PHU}>{STUDIO.email}</a>
+              <a href={STUDIO.facebook} target="_blank" rel="noreferrer" className={NUT_PHU}>Facebook</a>
+              <a href={STUDIO.tiktok} target="_blank" rel="noreferrer" className={NUT_PHU}>TikTok</a>
             </div>
           </FadeIn>
         </div>
       </section>
 
-      <footer className="border-t border-line py-14 text-center">
+      {/* pb-24 trên điện thoại: chừa chỗ cho ba nút liên hệ nổi, không che dòng chữ cuối. */}
+      <footer className="border-t border-line pt-14 pb-24 text-center sm:pb-14">
         <Logo size="sm" className="mx-auto opacity-60" />
         <p className="eyebrow mt-4">{STUDIO.ten}</p>
         <p className="mt-6 text-xs text-fg-faint">
@@ -668,5 +557,108 @@ export default async function Home() {
         </p>
       </footer>
     </main>
+  );
+}
+
+/* ── Mảnh dùng chung trong trang ───────────────────────────────────────── */
+
+/**
+ * Đầu mỗi khu: nhãn nhỏ chữ hoa màu nhấn, tiêu đề lớn, câu dẫn — canh TRÁI,
+ * nút "xem thêm" (nếu có) dạt sang phải cùng hàng. Kiểu đầu mục của mohome:
+ * mắt đọc từ trái sang là gặp ngay tiêu đề rồi tới lưới, không phải dò giữa.
+ */
+function DauMuc({
+  nhan,
+  tieuDe,
+  moTa,
+  phai,
+  giua = false,
+}: {
+  nhan: string;
+  tieuDe: string;
+  moTa?: string;
+  phai?: ReactNode;
+  giua?: boolean;
+}) {
+  return (
+    <div className={`flex flex-wrap items-end justify-between gap-x-8 gap-y-5 ${giua ? "justify-center text-center" : ""}`}>
+      <div className={`min-w-0 ${giua ? "mx-auto max-w-2xl" : "max-w-2xl"}`}>
+        <p className="text-[11px] font-medium tracking-[0.22em] text-accent uppercase">{nhan}</p>
+        <h2 className="mt-3 font-display text-3xl leading-[1.2] font-light text-balance sm:text-[2.75rem]">{tieuDe}</h2>
+        {moTa && <p className="mt-4 text-[15px] leading-[1.8] text-balance text-fg-muted">{moTa}</p>}
+      </div>
+      {phai}
+    </div>
+  );
+}
+
+/** Một tấm ảnh bo góc lớn, phóng nhẹ khi rê chuột. */
+function AnhThe({ id, className, rong = 640, alt = "" }: { id: string; className: string; rong?: number; alt?: string }) {
+  return (
+    <div className={`group skeleton overflow-hidden rounded-[1.5rem] ${className}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/api/img/${id}?w=${rong}`}
+        alt={alt}
+        loading="lazy"
+        className="size-full object-cover transition duration-700 ease-out group-hover:scale-105"
+      />
+    </div>
+  );
+}
+
+/**
+ * Lưới ảnh của một khu. Khung ảnh truyền vào theo TỈ LỆ ẢNH THẬT của khu đó
+ * (nguyên tắc 24) — đừng đổi cho đẹp mà không đo lại.
+ */
+function LuoiAnh({ ds, khung, href, alt = "" }: { ds: string[]; khung: string; href?: string; alt?: string }) {
+  return (
+    <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+      {ds.map((id, i) => (
+        <FadeIn key={id} cham={i * 60}>
+          {href ? (
+            <Link href={href} className="block">
+              <AnhThe id={id} className={khung} alt={alt} />
+            </Link>
+          ) : (
+            <AnhThe id={id} className={khung} alt={alt} />
+          )}
+        </FadeIn>
+      ))}
+    </div>
+  );
+}
+
+function IconGoi() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 5c0 8.3 6.7 15 15 15l2-3-4-2-2 2a15 15 0 0 1-6-6l2-2-2-4Z" />
+    </svg>
+  );
+}
+
+function IconChat() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" />
+    </svg>
+  );
+}
+
+function IconGhim() {
+  return (
+    <svg viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 text-accent" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </svg>
+  );
+}
+
+function IconDongHo() {
+  return (
+    <svg viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 text-accent" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
   );
 }
