@@ -1153,15 +1153,21 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
 - Script đọc AppSheet dùng chung `src/lib/appsheet.ts` (tải file vào bộ nhớ,
   không ghi xuống đĩa).
 
-**52. Hợp đồng, khách, phiếu thu (đợt 2) đang ở GIAI ĐOẠN SONG SONG — web CHỈ XEM.**
-Studio chốt 15/09/2026: nhân viên vẫn làm hợp đồng, phiếu thu bên AppSheet; web
-tự chép sang mỗi đêm 02:30 (`/api/cron/dong-bo` → `src/lib/dongBoAppSheet.ts`),
-quản lý bấm "Đồng bộ ngay" được. Chạy tay: `npx tsx scripts/dong-bo-appsheet.mts`.
+**52. Hợp đồng, lịch, đầu việc: APPSHEET LÀ NƠI TẠO, web tự kéo sang — CHỈ XEM.**
+Studio chốt 16/09/2026 (đổi ý so với 15/09, lúc đó tính sẽ chuyển hẳn): **về lâu
+dài nhân viên vẫn tạo hợp đồng bên AppSheet**, web tự mang sang. Vì vậy ĐỪNG làm
+chức năng tạo / sửa hợp đồng, phiếu thu, lịch, đầu việc trên web trừ khi studio
+đổi ý lần nữa — sửa ở web thì lượt chép sau ghi đè.
 
-- **Đừng thêm nút sửa** vào bốn bảng KhachHang, HopDong, ChiTietHopDong,
-  PhieuThu khi còn song song: đêm sau bản AppSheet đè lên, người sửa mất công
-  mà không biết. Ngày chuyển hẳn (sau đợt 3): **tắt lịch `dong-bo` trong
-  `vercel.json` TRƯỚC**, rồi mới mở sửa.
+Chép **mỗi giờ** 07:05–22:05 giờ Việt Nam, thêm một lượt 02:05 ngay trước bản sao
+lưu 03:00 (`vercel.json` → `/api/cron/dong-bo` → `src/lib/dongBoAppSheet.ts`).
+Quản lý bấm "Đồng bộ ngay" được; chạy tay: `npx tsx scripts/dong-bo-appsheet.mts`.
+Mỗi lượt hỏi Drive "file sửa lần cuối lúc nào" trước (`lucSuaFileAppSheet`), không
+đổi thì dừng luôn — nên chạy mỗi giờ gần như không tốn gì.
+
+- **Đừng thêm nút sửa** vào sáu bảng chép từ AppSheet — KhachHang, HopDong,
+  ChiTietHopDong, PhieuThu, LichChup, CongViec. Nếu có ngày studio đổi ý muốn
+  chuyển hẳn: **tắt lịch `dong-bo` trong `vercel.json` TRƯỚC**, rồi mới mở sửa.
 - Chép theo dấu vân tay (`bamAppSheet`): dòng không đổi thì không ghi. Dòng
   biến mất bên AppSheet chỉ đánh dấu `matBenAppSheet`, không xoá; và chỉ đụng
   dòng CÓ `bamAppSheet` — dòng tạo trên web sau này không bao giờ bị đánh dấu.

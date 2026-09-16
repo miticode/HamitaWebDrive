@@ -278,8 +278,27 @@ album, số tấm khách đã thả tim, lúc khách báo chọn xong và link �
 Nếu khách đã báo chọn xong mà hợp đồng bên AppSheet còn ở bước "chờ khách
 chọn", trang hợp đồng sẽ nhắc để nhân viên chuyển bước bên AppSheet.
 
-**Còn lại của đợt 2:** tạo, sửa hợp đồng và duyệt phiếu thu trên web (chỉ bật
-khi chuyển hẳn — xem nguyên tắc 52).
+### Đợt 3: Lịch chụp & đầu việc (16/09)
+
+Anh chốt thêm một điều quan trọng: **về lâu dài hợp đồng vẫn tạo bên AppSheet**,
+web chỉ tự mang sang. Vậy nên web không làm nút tạo/sửa hợp đồng nữa, mà lo chạy
+cho kịp: bản chép giờ chạy **mỗi giờ** (07:05–22:05, thêm một lượt 02:05 trước
+khi sao lưu) thay vì mỗi đêm. Mỗi lượt hỏi Drive một câu "file có đổi không",
+không đổi thì thôi — nên chạy dày mà gần như không tốn gì. Quản lý vẫn bấm
+"Đồng bộ ngay" được nếu muốn thấy hợp đồng vừa tạo xuất hiện liền.
+
+Hai mục mới trên thanh bên:
+
+- **Lịch chụp** — 1.313 buổi chép từ AppSheet. Xem theo tháng (lưới lịch trên
+  máy tính, danh sách trên điện thoại), lọc theo loại buổi (ngày chụp, nhà gái,
+  nhà trai, đính hôn, Hami Baby, chụp bé…), bấm vào là mở hợp đồng.
+- **Đầu việc** — 4.577 đầu việc. Mặc định chỉ hiện việc **chưa xong**, xếp theo
+  thời hạn gần nhất, việc quá hạn tô vàng; lọc theo người làm, có chip **"Việc
+  của tôi"**. Đo lúc nhập: 125 việc chưa xong, trong đó **103 việc quá hạn** —
+  anh xem lại giúp em, có thể là do bên AppSheet quên đóng việc cũ.
+
+**Còn lại của đợt 2 và 3:** chỉ còn những thứ phải sửa trên web mới làm được
+(chia việc, lịch soạn váy, khách tiềm năng) — để dành tới khi anh cần.
 
 ### Sao lưu tự động lên Drive mỗi đêm (15/09)
 

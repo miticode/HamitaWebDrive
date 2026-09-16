@@ -54,6 +54,8 @@ const COT_NGAY: Record<string, string[]> = {
   hopDong: ["taoLuc", "matBenAppSheet"],
   chiTietHopDong: ["taoLuc", "matBenAppSheet"],
   phieuThu: ["taoLuc", "matBenAppSheet"],
+  lichChup: ["taoLuc", "matBenAppSheet"],
+  congViec: ["taoLuc", "matBenAppSheet"],
 };
 
 function doiNgay<T extends Record<string, unknown>>(bang: string, dong: T): T {
@@ -323,6 +325,8 @@ if (!chiAlbum) {
     ["hopDong", prisma.hopDong],
     ["chiTietHopDong", prisma.chiTietHopDong],
     ["phieuThu", prisma.phieuThu],
+    ["lichChup", prisma.lichChup],
+    ["congViec", prisma.congViec],
   ] as [string, unknown][]) {
     const ds = (ban.bang[ten] ?? []) as Record<string, unknown>[];
     if (!ds.length) continue;

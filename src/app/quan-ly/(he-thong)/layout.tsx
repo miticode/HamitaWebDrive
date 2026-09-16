@@ -24,6 +24,8 @@ export default async function HeThongLayout({ children }: { children: React.Reac
     { nhom: null, ten: "Tổng quan", href: "/quan-ly" },
     // Đợt 2 — bản chép từ AppSheet, ai đăng nhập cũng xem (studio chốt 15/09).
     { nhom: "Hợp đồng – Công việc", ten: "Hợp đồng", href: "/quan-ly/hop-dong" },
+    { nhom: "Hợp đồng – Công việc", ten: "Lịch chụp", href: "/quan-ly/lich" },
+    { nhom: "Hợp đồng – Công việc", ten: "Đầu việc", href: "/quan-ly/cong-viec" },
     { nhom: "Tư vấn – CSKH", ten: "Khách hàng", href: "/quan-ly/khach-hang" },
     { nhom: "Kế toán", ten: "Phiếu thu", href: "/quan-ly/phieu-thu" },
     { nhom: "Thông tin studio", ten: "Nhân viên", href: "/quan-ly/nhan-vien" },

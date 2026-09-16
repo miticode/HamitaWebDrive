@@ -1,0 +1,187 @@
+import Link from "next/link";
+import type { Prisma } from "@/generated/prisma/client";
+import { getPrisma } from "@/lib/db";
+import { MUI_GIO } from "@/lib/constants";
+import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
+import { ngayVN } from "@/lib/hopDongChung";
+import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
+import { BangDongBo } from "../hop-dong/BangDongBo";
+
+export const dynamic = "force-dynamic";
+
+type Props = { searchParams: Promise<{ nguoi?: string; tt?: string; so?: string }> };
+
+const MOI_LUOT = 150;
+
+/** Hôm nay theo giờ studio, dạng "YYYY-MM-DD" — mốc để biết việc nào trễ hạn. */
+function homNay(): string {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", { timeZone: MUI_GIO, year: "numeric", month: "2-digit", day: "2-digit" })
+      .formatToParts(new Date())
+      .map((x) => [x.type, x.value]),
+  );
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+/**
+ * Đầu việc — trang "Tiến độ công việc" bên AppSheet, bản chép mỗi giờ (đợt 3).
+ *
+ * Mặc định chỉ hiện việc CHƯA XONG, xếp theo thời hạn gần nhất: 4.449/4.577
+ * dòng đã làm xong rồi, mở ra mà thấy cả đống việc cũ thì không ai tìm được
+ * việc của hôm nay. Việc quá hạn tô vàng.
+ */
+export default async function CongViecPage({ searchParams }: Props) {
+  const nguoi = await batBuocDangNhap();
+  const sp = await searchParams;
+  const loc = sp.nguoi ?? "";
+  const tt = ["qua-han", "da-lam", "tat-ca"].includes(sp.tt ?? "") ? sp.tt! : "chua-xong";
+  const so = Math.max(MOI_LUOT, Math.floor(Number(sp.so)) || MOI_LUOT);
+  const nay = homNay();
+
+  const theoTrangThai: Prisma.CongViecWhereInput =
+    tt === "da-lam"
+      ? { trangThai: "Đã làm" }
+      : tt === "tat-ca"
+        ? {}
+        : tt === "qua-han"
+          ? { trangThai: { not: "Đã làm" }, thoiHan: { lt: nay } }
+          : { trangThai: { not: "Đã làm" } };
+  const where: Prisma.CongViecWhereInput = {
+    matBenAppSheet: null,
+    ...theoTrangThai,
+    ...(loc ? { nguoiPhuTrachMaNV: loc } : {}),
+  };
+
+  const prisma = getPrisma();
+  const [ds, demNguoi, soQuaHan, bangTen] = await Promise.all([
+    prisma.congViec.findMany({
+      where,
+      select: {
+        id: true,
+        loai: true,
+        thoiHan: true,
+        ngayHoanThanh: true,
+        trangThai: true,
+        tienDo: true,
+        ghiChu: true,
+        nguoiPhuTrachMaNV: true,
+        hopDong: { select: { id: true, tenKhach: true } },
+      },
+      orderBy: [{ thoiHan: { sort: "asc", nulls: "last" } }, { taoLuc: "asc" }],
+    }),
+    prisma.congViec.groupBy({
+      by: ["nguoiPhuTrachMaNV"],
+      where: { matBenAppSheet: null, trangThai: { not: "Đã làm" } },
+      _count: { _all: true },
+    }),
+    prisma.congViec.count({
+      where: { matBenAppSheet: null, trangThai: { not: "Đã làm" }, thoiHan: { lt: nay } },
+    }),
+    tenTheoMaNV(),
+  ]);
+  const hien = ds.slice(0, so);
+
+  const link = (thay: Record<string, string>) => {
+    const p = new URLSearchParams({ nguoi: loc, tt, ...thay });
+    for (const [k, v] of [...p.entries()]) if (!v || (k === "tt" && v === "chua-xong")) p.delete(k);
+    return `/quan-ly/cong-viec?${p}`;
+  };
+  const lopChip = (bat: boolean) =>
+    `rounded-full border px-3 py-1 text-xs transition whitespace-nowrap ${
+      bat ? "border-accent bg-accent-soft text-accent" : "border-line text-fg-muted hover:border-line-strong"
+    }`;
+
+  return (
+    <div>
+      <p className="eyebrow">Hợp đồng – Công việc</p>
+      <h1 className="mt-2 font-display text-3xl font-light">
+        Đầu việc <span className="text-fg-faint tabular-nums">{ds.length}</span>
+      </h1>
+      <BangDongBo quanTri={laQuanTri(nguoi)} />
+
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        <Link href={link({ tt: "chua-xong" })} className={lopChip(tt === "chua-xong")}>Chưa xong</Link>
+        <Link href={link({ tt: "qua-han" })} className={lopChip(tt === "qua-han")}>
+          Quá hạn <span className="tabular-nums opacity-70">{soQuaHan}</span>
+        </Link>
+        <Link href={link({ tt: "da-lam" })} className={lopChip(tt === "da-lam")}>Đã làm</Link>
+        <Link href={link({ tt: "tat-ca" })} className={lopChip(tt === "tat-ca")}>Tất cả</Link>
+        <span className="mx-1 h-4 w-px bg-line" aria-hidden />
+        <Link href={link({ nguoi: "" })} className={lopChip(!loc)}>Mọi người</Link>
+        {/* "Việc của tôi" chỉ hiện với người có mã nhân viên bên AppSheet. */}
+        {nguoi.maNV && (
+          <Link href={link({ nguoi: nguoi.maNV })} className={lopChip(loc.toLowerCase() === nguoi.maNV.toLowerCase())}>
+            Việc của tôi
+          </Link>
+        )}
+        {demNguoi
+          .filter((d) => d.nguoiPhuTrachMaNV)
+          .sort((a, b) => b._count._all - a._count._all)
+          .slice(0, 10)
+          .map((d) => (
+            <Link key={d.nguoiPhuTrachMaNV} href={link({ nguoi: d.nguoiPhuTrachMaNV! })} className={lopChip(loc === d.nguoiPhuTrachMaNV)}>
+              {tenNV(bangTen, d.nguoiPhuTrachMaNV)} <span className="tabular-nums opacity-70">{d._count._all}</span>
+            </Link>
+          ))}
+      </div>
+
+      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
+              <th className="px-4 py-2.5 font-medium">Thời hạn</th>
+              <th className="px-4 py-2.5 font-medium">Việc</th>
+              <th className="px-4 py-2.5 font-medium">Khách</th>
+              <th className="px-4 py-2.5 font-medium">Người làm</th>
+              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {hien.map((v) => {
+              const treHan = v.thoiHan !== null && v.thoiHan < nay && v.trangThai !== "Đã làm";
+              return (
+                <tr key={v.id} className="align-top transition hover:bg-bg-soft">
+                  <td className={`px-4 py-2.5 whitespace-nowrap tabular-nums ${treHan ? "font-medium text-amber-800" : "text-fg-muted"}`}>
+                    {ngayVN(v.thoiHan) || "—"}
+                    {treHan && <span className="block text-[11px]">quá hạn</span>}
+                  </td>
+                  <td className="min-w-40 px-4 py-2.5">
+                    {v.loai ?? "—"}
+                    {v.ghiChu && <span className="block text-xs text-fg-muted">{v.ghiChu}</span>}
+                  </td>
+                  <td className="min-w-40 px-4 py-2.5">
+                    {v.hopDong ? (
+                      <Link href={`/quan-ly/hop-dong/${v.hopDong.id}`} className="font-medium hover:text-accent">
+                        {v.hopDong.tenKhach}
+                      </Link>
+                    ) : (
+                      <span className="text-fg-faint">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2.5 whitespace-nowrap">{tenNV(bangTen, v.nguoiPhuTrachMaNV) ?? "—"}</td>
+                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
+                    {v.trangThai ?? "—"}
+                    {v.trangThai === "Đã làm" && v.ngayHoanThanh && (
+                      <span className="block text-xs text-fg-faint">
+                        {ngayVN(v.ngayHoanThanh)}
+                        {v.tienDo ? ` · ${v.tienDo}` : ""}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {ds.length === 0 && <p className="px-4 py-8 text-center text-sm text-fg-muted">Không có đầu việc nào khớp bộ lọc.</p>}
+      </div>
+
+      {ds.length > hien.length && (
+        <p className="mt-3 text-sm text-fg-muted">
+          Đang hiện <span className="tabular-nums">{hien.length}/{ds.length}</span>.{" "}
+          <Link href={link({ so: String(so + MOI_LUOT) })} className="text-accent underline underline-offset-2">Xem thêm</Link>
+        </p>
+      )}
+    </div>
+  );
+}

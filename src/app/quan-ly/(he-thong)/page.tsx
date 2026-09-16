@@ -15,7 +15,7 @@ const SAP_CO = [
     ten: "Hợp đồng — phần còn lại",
     mo: "Nối album ảnh vào hợp đồng. Tạo, sửa hợp đồng và duyệt phiếu thu ngay trên web khi chuyển hẳn khỏi AppSheet.",
   },
-  { dot: 3, ten: "Lịch & công việc", mo: "Lịch chụp, lịch soạn váy, chia việc dạng kanban, khách tiềm năng." },
+  { dot: 3, ten: "Lịch & công việc — phần còn lại", mo: "Lịch soạn váy, chia việc ngay trên web, khách tiềm năng." },
   { dot: 4, ten: "Nhân sự & chi", mo: "Chấm công, đơn xin, thưởng phạt, lương tháng, phiếu chi." },
   { dot: 5, ten: "Báo cáo", mo: "Báo cáo tổng hợp, doanh thu kỳ vọng, chỉ tiêu doanh số." },
 ];
@@ -75,6 +75,18 @@ export default async function TongQuanPage() {
               Hợp đồng
             </Link>
             <span className="text-right text-fg-muted">Tra hợp đồng, công nợ — chép từ AppSheet mỗi đêm</span>
+          </li>
+          <li className="flex items-baseline justify-between gap-4 px-4 py-3">
+            <Link href="/quan-ly/lich" className="font-medium hover:text-accent">
+              Lịch chụp
+            </Link>
+            <span className="text-right text-fg-muted">Lịch cả tháng, lọc theo loại buổi chụp</span>
+          </li>
+          <li className="flex items-baseline justify-between gap-4 px-4 py-3">
+            <Link href="/quan-ly/cong-viec" className="font-medium hover:text-accent">
+              Đầu việc
+            </Link>
+            <span className="text-right text-fg-muted">Việc chưa xong, việc quá hạn, việc của từng người</span>
           </li>
           <li className="flex items-baseline justify-between gap-4 px-4 py-3">
             <Link href="/quan-ly/khach-hang" className="font-medium hover:text-accent">

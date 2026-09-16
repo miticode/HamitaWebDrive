@@ -8,8 +8,15 @@ export const dynamic = "force-dynamic";
 /* Tải cả file AppSheet (~30.000 dòng) rồi so từng dòng — lần đầu mất cả phút. */
 export const maxDuration = 300;
 
-/** Người lạ gọi đường này thì tối đa một lần mỗi 20 giờ. */
-const KHOANG_NGUOI_LA_MS = 20 * 60 * 60 * 1000;
+/**
+ * Người lạ gọi đường này thì tối đa một lần mỗi 50 phút.
+ *
+ * Vì sao không khoá chặt như đường sao lưu (20 giờ): lịch của Vercel chạy MỖI
+ * GIỜ và chưa đặt CRON_SECRET, nên chính lịch đó cũng bị tính là "người lạ" —
+ * khoá 20 giờ là ngày chỉ chép được một lần. Chép lại vô hại: không đổi thì
+ * chỉ hỏi Drive một câu rồi thôi, mà có đổi thì đằng nào cũng phải chép.
+ */
+const KHOANG_NGUOI_LA_MS = 50 * 60 * 1000;
 
 /**
  * Chép hợp đồng, khách, phiếu thu từ AppSheet sang web (src/lib/dongBoAppSheet.ts).

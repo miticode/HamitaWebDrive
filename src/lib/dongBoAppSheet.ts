@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
 import { getPrisma } from "@/lib/db";
-import { chu, docAppSheet, giaTri } from "@/lib/appsheet";
+import { chu, docAppSheet, giaTri, lucSuaFileAppSheet } from "@/lib/appsheet";
 import { chuanSoDienThoai } from "@/lib/nhanVienChung";
 import { loaiTuAppSheet } from "@/lib/dichVuChung";
 import { tachTrangThai } from "@/lib/hopDongChung";
-import { ghiMoc } from "@/lib/moc";
+import { docMoc, ghiMoc } from "@/lib/moc";
 import { ghiNhatKy } from "@/lib/nhatKy";
 
 /**
@@ -31,10 +31,21 @@ import { ghiNhatKy } from "@/lib/nhatKy";
 
 export type SoDongBo = { them: number; sua: number; mat: number; boQua: number };
 export type KetQuaDongBo = {
+  /** File AppSheet không đổi từ lần chép trước — không tải, không ghi gì. */
+  khongDoi: boolean;
   dichVuThem: number;
-  bang: { khachHang: SoDongBo; hopDong: SoDongBo; chiTiet: SoDongBo; phieuThu: SoDongBo };
+  bang: {
+    khachHang: SoDongBo;
+    hopDong: SoDongBo;
+    chiTiet: SoDongBo;
+    phieuThu: SoDongBo;
+    lich: SoDongBo;
+    congViec: SoDongBo;
+  };
   giay: number;
 };
+
+const KHONG: SoDongBo = { them: 0, sua: 0, mat: 0, boQua: 0 };
 
 /* ── Chuyển ô AppSheet ─────────────────────────────────────────────────── */
 
@@ -131,6 +142,24 @@ async function chepBang<T extends object>(
 
 export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Promise<KetQuaDongBo> {
   const batDau = Date.now();
+
+  /*
+    Không đổi thì thôi. Lịch chạy mỗi giờ mà lượt nào cũng tải cả tệp 30.000
+    dòng về chỉ để so ra "y như cũ" thì phí — hỏi Drive đúng một câu "file sửa
+    lần cuối lúc nào" là biết. Hỏi không được (mất mạng, mất quyền) thì cứ chép
+    như thường: thà làm thừa còn hơn bỏ sót hợp đồng mới.
+  */
+  const lucSua = await lucSuaFileAppSheet();
+  const lanTruoc = await docMoc("dongBoAppSheet");
+  if (lucSua && lanTruoc && lucSua <= lanTruoc) {
+    return {
+      khongDoi: true,
+      dichVuThem: 0,
+      bang: { khachHang: KHONG, hopDong: KHONG, chiTiet: KHONG, phieuThu: KHONG, lich: KHONG, congViec: KHONG },
+      giay: Math.round((Date.now() - batDau) / 1000),
+    };
+  }
+
   const bang = await docAppSheet();
   const prisma = getPrisma();
   const bay = new Date();
@@ -296,9 +325,73 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     bay,
   );
 
+  /* 5. Lịch chụp. */
+  const nguonLich = bang("Lịch").flatMap((d) => {
+    const m = ma(d["Id"]);
+    if (!m) return [];
+    return [{
+      ma: m,
+      data: {
+        hopDongId: hdTheoMa.get(ma(d["Hợp đồng"]) ?? "") ?? null,
+        ngay: ngay(d["Ngày"]),
+        loai: chu(d["Loại"]),
+        ghiChu: chu(d["Ghi chú"]),
+        trangThai: chu(d["Trạng thái"]),
+        hienThi: chu(d["Hiển thị"]),
+        nguoiTaoMaNV: chu(d["Người tạo"]),
+        taoLuc: luc(d["Ngày tạo"]),
+      },
+    }];
+  });
+  const lich = await chepBang(
+    prisma.lichChup as unknown as UyQuyen,
+    "maAppSheet",
+    nguonLich,
+    (await prisma.lichChup.findMany({ select: { id: true, maAppSheet: true, bamAppSheet: true, matBenAppSheet: true } }))
+      .map((c) => ({ ...c, ma: c.maAppSheet })),
+    bay,
+  );
+
+  /* 6. Đầu việc — ghép về dòng chi tiết hợp đồng đã chép ở bước 3. */
+  const ctTheoMa = new Map(
+    (await prisma.chiTietHopDong.findMany({ select: { id: true, maAppSheet: true } })).map((c) => [c.maAppSheet, c.id]),
+  );
+  const nguonViec = bang("Tiến độ công việc").flatMap((d) => {
+    const m = ma(d["ID"]);
+    if (!m) return [];
+    return [{
+      ma: m,
+      data: {
+        hopDongId: hdTheoMa.get(ma(d["Mã HĐ"]) ?? "") ?? null,
+        chiTietId: ctTheoMa.get(ma(d["Hợp đồng CT"]) ?? "") ?? null,
+        loai: chu(d["Loại"]),
+        soLuong: soThuc(d["Số lượng"]),
+        donGia: tien(d["Đơn giá"]),
+        thanhTien: tien(d["Thành tiền"]),
+        nguoiPhuTrachMaNV: chu(d["Người phụ trách"]),
+        thoiHan: ngay(d["Thời hạn"]),
+        ngayXuLy: ngay(d["Ngày xử lý"]),
+        ngayHoanThanh: ngay(d["Ngày hoàn thành"]),
+        trangThai: chu(d["Trạng thái"]),
+        tienDo: chu(d["Tiến độ"]),
+        ghiChu: chu(d["Ghi chú"]),
+        taoLuc: luc(d["Thời gian tạo"]),
+      },
+    }];
+  });
+  const congViec = await chepBang(
+    prisma.congViec as unknown as UyQuyen,
+    "maAppSheet",
+    nguonViec,
+    (await prisma.congViec.findMany({ select: { id: true, maAppSheet: true, bamAppSheet: true, matBenAppSheet: true } }))
+      .map((c) => ({ ...c, ma: c.maAppSheet })),
+    bay,
+  );
+
   const kq: KetQuaDongBo = {
+    khongDoi: false,
     dichVuThem: dvMoi.length,
-    bang: { khachHang: kh, hopDong: hd, chiTiet: ct, phieuThu: thu },
+    bang: { khachHang: kh, hopDong: hd, chiTiet: ct, phieuThu: thu, lich, congViec },
     giay: Math.round((Date.now() - batDau) / 1000),
   };
 
@@ -307,7 +400,14 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
   // Nhật ký chỉ ghi khi CÓ đổi — đêm nào cũng một dòng "không đổi gì" thì nhật ký ngập.
   const so: Record<string, number> = {};
   if (kq.dichVuThem) so["dịch vụ mới"] = kq.dichVuThem;
-  const CHU = { khachHang: "khách", hopDong: "hợp đồng", chiTiet: "dòng chi tiết", phieuThu: "phiếu thu" } as const;
+  const CHU = {
+    khachHang: "khách",
+    hopDong: "hợp đồng",
+    chiTiet: "dòng chi tiết",
+    phieuThu: "phiếu thu",
+    lich: "lịch",
+    congViec: "đầu việc",
+  } as const;
   for (const [k, s] of Object.entries(kq.bang) as [keyof typeof CHU, SoDongBo][]) {
     if (s.them) so[`${CHU[k]} thêm`] = s.them;
     if (s.sua) so[`${CHU[k]} sửa`] = s.sua;

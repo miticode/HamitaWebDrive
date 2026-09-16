@@ -35,6 +35,11 @@ export type NguoiDung = {
    * chỉ có phòng Váy được sửa trang phục (xem loaiDuocSua trong dichVuChung.ts).
    */
   phongBan: string | null;
+  /**
+   * Mã nhân viên bên AppSheet. Dữ liệu chép từ AppSheet (đầu việc, phiếu thu,
+   * lịch) chỉ ghi mã này, nên cần nó mới lọc được "việc của tôi".
+   */
+  maNV: string | null;
 };
 
 /** Database chỉ giữ dấu băm của chuỗi trong cookie — lộ database cũng không ai dùng được phiên. */
@@ -101,12 +106,13 @@ export const layNguoiDung = cache(async (): Promise<NguoiDung | null> => {
         vaiTro: laVaiTro(nv.vaiTro) ? nv.vaiTro : "nhan-vien",
         doiMatKhau: nv.doiMatKhau,
         phongBan: nv.phongBan,
+        maNV: nv.maNV,
       };
     }
   }
 
   if (await isAdmin()) {
-    return { id: null, ten: "Quản lý", vaiTro: "quan-tri", doiMatKhau: false, phongBan: null };
+    return { id: null, ten: "Quản lý", vaiTro: "quan-tri", doiMatKhau: false, phongBan: null, maNV: null };
   }
   return null;
 });

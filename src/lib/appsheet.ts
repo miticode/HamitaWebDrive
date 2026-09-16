@@ -35,6 +35,34 @@ export function chu(v: unknown): string | null {
 }
 
 /**
+ * Lần cuối file AppSheet được sửa, hỏi Drive bằng một lượt gọi nhẹ (chỉ lấy
+ * đúng trường modifiedTime, không tải nội dung).
+ *
+ * Nhờ nó mà lịch chạy mỗi giờ gần như không tốn gì: ngày thường tiệm chỉ sửa
+ * AppSheet vài lần, những lượt còn lại thấy file không đổi là bỏ qua luôn,
+ * khỏi tải cả tệp 30.000 dòng về chỉ để so ra "không có gì mới".
+ *
+ * Hỏi không được thì trả null — lúc đó cứ đồng bộ như thường, thà làm thừa còn
+ * hơn bỏ sót hợp đồng mới.
+ */
+export async function lucSuaFileAppSheet(): Promise<Date | null> {
+  const token = await getUserAccessToken();
+  if (!token) return null;
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${FILE_APPSHEET}?fields=modifiedTime`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!res.ok) return null;
+    const j = (await res.json()) as { modifiedTime?: string };
+    const d = j.modifiedTime ? new Date(j.modifiedTime) : null;
+    return d && !isNaN(d.getTime()) ? d : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Tải file một lần, trả về hàm đọc từng trang tính thành danh sách dòng
  * { tên cột: giá trị }. Dòng trống bị bỏ.
  */

@@ -21,6 +21,10 @@ export function NutDongBo() {
         setBao(j.error ?? "Chưa đồng bộ được, anh thử lại giúp em.");
         return;
       }
+      if (j.ketQua.khongDoi) {
+        setBao("Bên AppSheet không có gì mới.");
+        return;
+      }
       const bang = Object.values(j.ketQua.bang as Record<string, SoDongBo>);
       const them = bang.reduce((s, b) => s + b.them, 0);
       const sua = bang.reduce((s, b) => s + b.sua, 0);
