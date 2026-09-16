@@ -6,6 +6,7 @@ import { batBuocDangNhap } from "@/lib/phienNhanVien";
 import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
+import { albumCuaHopDong } from "@/lib/noiAlbum";
 import { ChipTrangThai } from "../ChipTrangThai";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
   const { id } = await params;
   const prisma = getPrisma();
 
-  const [hd, bangTen] = await Promise.all([
+  const [hd, bangTen, album] = await Promise.all([
     prisma.hopDong.findUnique({
       where: { id },
       include: {
@@ -36,8 +37,18 @@ export default async function ChiTietHopDongPage({ params }: Props) {
       },
     }),
     tenTheoMaNV(),
+    albumCuaHopDong(id),
   ]);
   if (!hd) notFound();
+
+  /*
+    Khách đã bấm "đã chọn xong" mà hợp đồng bên AppSheet vẫn đứng ở bước chờ
+    khách (4 nhánh chụp, 13 nhánh tiệc) — nhắc một câu để người phụ trách
+    chuyển bước bên đó. Web không tự chuyển: AppSheet vẫn là bản gốc trong giai
+    đoạn song song, sửa ở đây thì đêm sau bị ghi đè.
+  */
+  const daChonXong = album.find((a) => a.xongLuc);
+  const nhacChuyenBuoc = daChonXong && (hd.buoc === 4 || hd.buoc === 13);
 
   const choDuyet = hd.phieuThu.filter((p) => p.trangThai === "Chờ duyệt");
 
@@ -135,6 +146,48 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           )}
         </section>
       </div>
+
+      <section className="mt-8">
+        <h2 className="eyebrow">Album ảnh ({album.length})</h2>
+        {nhacChuyenBuoc && (
+          <p className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
+            Khách đã báo chọn xong ảnh ngày {NGAY.format(daChonXong!.xongLuc!)} mà hợp đồng bên AppSheet còn ở
+            bước {hd.buoc}. Nhớ chuyển bước bên đó.
+          </p>
+        )}
+        {album.length === 0 ? (
+          <p className="mt-2 text-sm text-fg-muted">
+            Chưa gắn album nào. Mở trang quản lý album của nhà khách rồi bấm “Gắn hợp đồng”.
+          </p>
+        ) : (
+          <ul className="mt-3 divide-y divide-line rounded-md border border-line bg-bg-raised text-sm">
+            {album.map((a) => (
+              <li key={a.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3">
+                <span className="min-w-0">
+                  <Link href={`/admin/${a.slug}`} className="font-medium hover:text-accent">
+                    {a.ten}
+                  </Link>
+                  <span className="block text-xs text-fg-muted">
+                    Tạo {NGAY.format(a.taoLuc)}
+                    {a.xongLuc ? ` · khách báo chọn xong ${NGAY.format(a.xongLuc)}` : " · khách chưa báo chọn xong"}
+                    {a.soMucXong > 1 ? ` (${a.soMucXong} thư mục)` : ""}
+                  </span>
+                </span>
+                <span className="shrink-0 text-right">
+                  <span className="font-medium tabular-nums">{a.soTim}</span>
+                  <span className="text-fg-muted"> tấm khách chọn in</span>
+                  <Link
+                    href={`/admin/${a.slug}/don-in`}
+                    className="ml-3 text-xs text-fg-muted underline underline-offset-2 hover:text-accent"
+                  >
+                    Đơn giao in
+                  </Link>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="mt-8">
         <h2 className="eyebrow">Dịch vụ, trang phục ({hd.chiTiet.length})</h2>

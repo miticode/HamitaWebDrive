@@ -9,9 +9,11 @@ import {
   type Selection,
 } from "@/lib/store";
 import { maSoFile } from "@/lib/anhIn";
+import { goiYHopDong, hopDongCuaAlbum } from "@/lib/noiAlbum";
 import { NutDoiTong } from "../NutDoiTong";
 import { ExportButton } from "./ExportButton";
 import { LuoiAnhChon } from "./LuoiAnhChon";
+import { GanHopDong } from "./GanHopDong";
 
 export const dynamic = "force-dynamic";
 
@@ -35,10 +37,16 @@ export default async function ResultsPage({ params }: Props) {
   const gallery = await getGalleryBySlug(slug);
   if (!gallery) notFound();
 
-  const [lists, selections] = await Promise.all([
+  const [lists, selections, hopDong] = await Promise.all([
     getLists(gallery.id),
     getSelections(gallery.id),
+    hopDongCuaAlbum(gallery.id),
   ]);
+  /*
+    Chỉ đi tìm gợi ý khi CHƯA gắn hợp đồng: việc đó quét cả bảng hợp đồng để so
+    tên, không có lý do làm lại mỗi lần mở một album đã gắn rồi.
+  */
+  const goiY = hopDong ? [] : await goiYHopDong(gallery.clientName ?? gallery.title);
 
   // Cung mot cookie voi layout — doc lai de nut hien dung bieu tuong ngay luot dau.
   const tongToi = (await cookies()).get("admin-tong")?.value === "toi";
@@ -79,6 +87,8 @@ export default async function ResultsPage({ params }: Props) {
           </Link>
         )}
       </div>
+
+      <GanHopDong galleryId={gallery.id} dangGan={hopDong} goiY={goiY} />
 
       {selections.length === 0 && (
         <p className="mt-10 text-sm text-fg-muted">Khách chưa chọn ảnh nào.</p>

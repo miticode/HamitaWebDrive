@@ -135,6 +135,12 @@ model Gallery {
   /// Chi co y nghia khi soAnhTrongGoi co gia tri.
   giaAnhThem       Int      @default(12000)
 
+  /// Hop dong cua nha khach nay (dot 2b, 16/09/2026) — nhan vien tu gan o
+  /// trang album. AppSheet khong biet gi ve album nen day la du lieu CUA WEB:
+  /// bo dong bo dem khong bao gio dung toi cot nay.
+  hopDongId     String?
+  hopDong       HopDong? @relation(fields: [hopDongId], references: [id], onDelete: SetNull)
+
   lists SelectionList[]
   pushSubs PushSub[]
   mucXong  MucXong[]
@@ -142,6 +148,7 @@ model Gallery {
   goiMuc   GoiMuc[]
 
   @@index([driveFolderId])
+  @@index([hopDongId])
 }
 
 /// Khach da bao "chon xong" cho MOT thu muc con.
@@ -565,6 +572,7 @@ model HopDong {
   khachHang KhachHang?       @relation(fields: [khachHangId], references: [id], onDelete: SetNull)
   chiTiet   ChiTietHopDong[]
   phieuThu  PhieuThu[]
+  album     Gallery[]
 
   @@index([khachHangId])
   @@index([ngayDat])

@@ -1171,6 +1171,15 @@ quản lý bấm "Đồng bộ ngay" được. Chạy tay: `npx tsx scripts/dong
   Nam đọc ra như UTC nên lùi 7 tiếng.
 - **Ai đăng nhập cũng xem hết, kể cả tiền** (studio chốt 15/09: nhân viên xem
   như sale, chỉ không sửa).
+- **Nối album ảnh với hợp đồng** (`Gallery.hopDongId`, `src/lib/noiAlbum.ts`,
+  16/09): đây là DỮ LIỆU CỦA WEB — AppSheet không biết gì về album, nên bộ
+  đồng bộ đêm không đụng cột này. Web **chỉ gợi ý** hợp đồng trùng tên rồi để
+  người bấm, **không tự gắn**: trùng tên khách là chuyện thường (hai nhà cùng
+  tên, một nhà hai hợp đồng), gắn nhầm thì tiền và tiến độ nhà này hiện sang
+  nhà kia. Gắn ở trang "Ảnh khách chọn" của album; trang hợp đồng hiện lại
+  album, số tấm khách đã thả tim và lúc khách báo chọn xong. Khách đã báo xong
+  mà hợp đồng còn ở bước 4 hay 13 thì trang hợp đồng NHẮC chuyển bước — nhắc
+  thôi, không tự chuyển: AppSheet vẫn là bản gốc, sửa ở web thì đêm sau bị ghi đè.
 - Mã dịch vụ mới bên AppSheet: bộ đồng bộ chỉ THÊM vào bảng Dịch vụ, không sửa
   mục đã có (bảng đó sửa trên web).
 - Lịch 02:30 chạy TRƯỚC sao lưu 03:00 để bản sao lưu đêm có dữ liệu mới. Chưa

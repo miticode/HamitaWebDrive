@@ -271,8 +271,15 @@ không thêm trùng. Đối chiếu với số đo trực tiếp trên file AppS
 **101 hợp đồng, 783.935.909đ**, khớp; các phép cộng tiền khớp y như bên đó.
 Bản sao lưu đêm nặng lên 1,4 MB (nén), vẫn nhẹ.
 
-**Còn lại của đợt 2:** nối album ảnh vào hợp đồng; tạo, sửa hợp đồng và duyệt
-phiếu thu trên web (chỉ bật khi chuyển hẳn — xem nguyên tắc 52).
+**Nối album ảnh với hợp đồng (16/09):** ở trang "Ảnh khách chọn" của mỗi album
+có nút **Gắn hợp đồng** — web gợi ý sẵn vài hợp đồng trùng tên khách, bấm một
+cái là xong (gắn nhầm thì bấm "Bỏ gắn"). Gắn rồi thì mở hợp đồng ra là thấy
+album, số tấm khách đã thả tim, lúc khách báo chọn xong và link đơn giao in.
+Nếu khách đã báo chọn xong mà hợp đồng bên AppSheet còn ở bước "chờ khách
+chọn", trang hợp đồng sẽ nhắc để nhân viên chuyển bước bên AppSheet.
+
+**Còn lại của đợt 2:** tạo, sửa hợp đồng và duyệt phiếu thu trên web (chỉ bật
+khi chuyển hẳn — xem nguyên tắc 52).
 
 ### Sao lưu tự động lên Drive mỗi đêm (15/09)
 
