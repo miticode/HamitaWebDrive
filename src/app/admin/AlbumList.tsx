@@ -15,6 +15,32 @@ import { LocTheoThang, hopMoc, type MocLoc } from "./LocTheoThang";
 */
 const NHAN = MA_ALBUM.map((m) => m.ma);
 
+/*
+  Lọc theo tiến độ chọn ảnh (anh yêu cầu 17/09/2026). BA nhóm chứ không hai:
+  đo trên dữ liệu thật lúc làm, 49 album có 13 xong hết, 12 mới báo xong MỘT
+  PHẦN thư mục, 24 chưa báo xong thư mục nào. Gộp "một phần" vào "đã xong" là
+  giấu 12 nhà còn thư mục đang chờ khách; gộp vào "chưa chọn" thì studio bỏ sót
+  thư mục đã xong có thể đem in trước.
+
+  Tính theo bảng MucXong (khách bấm báo xong), không theo số tim: thả tim rồi
+  chưa báo thì khách vẫn đang chọn.
+*/
+type TienDo = "chua" | "mot-phan" | "xong";
+const TIEN_DO: { key: TienDo; ten: string }[] = [
+  { key: "chua", ten: "Chưa chọn xong" },
+  { key: "mot-phan", ten: "Xong một phần" },
+  { key: "xong", ten: "Đã chọn xong" },
+];
+
+function tienDoCua(g: Gallery, mucXong: MucXong[]): TienDo {
+  const soMuc = new Set(
+    mucXong.filter((m) => m.galleryId === g.id).map((m) => m.albumId),
+  ).size;
+  if (soMuc === 0) return "chua";
+  // Album một thư mục (albumCount 0 hoặc 1) báo xong là xong hết.
+  return soMuc >= Math.max(g.albumCount, 1) ? "xong" : "mot-phan";
+}
+
 /** Hien bao nhieu the truoc khi phai bam "xem them". */
 const TRANG = 24;
 
@@ -81,6 +107,7 @@ export function AlbumList({
   const [tuKhoa, setTuKhoa] = useState("");
   const [nhan, setNhan] = useState<string | null>(null);
   const [moc, setMoc] = useState<MocLoc>(null);
+  const [tienDo, setTienDo] = useState<TienDo | null>(null);
   const [hienBaoNhieu, setHienBaoNhieu] = useState(TRANG);
 
   // Go nhanh tren danh sach dai thi de giat; deferred cho phan go muot truoc,
@@ -88,8 +115,14 @@ export function AlbumList({
   const tuKhoaCho = useDeferredValue(tuKhoa);
 
   const chiMuc = useMemo(
-    () => galleries.map((g) => ({ g, chu: kho_chu(g), tu: cac_tu(g) })),
-    [galleries],
+    () =>
+      galleries.map((g) => ({
+        g,
+        chu: kho_chu(g),
+        tu: cac_tu(g),
+        tienDo: tienDoCua(g, mucXong),
+      })),
+    [galleries, mucXong],
   );
 
   const ngayTao = useMemo(() => galleries.map((g) => g.createdAt), [galleries]);
@@ -113,6 +146,8 @@ export function AlbumList({
 
     if (moc) ds = ds.filter((m) => hopMoc(m.g.createdAt, moc));
 
+    if (tienDo) ds = ds.filter((m) => m.tienDo === tienDo);
+
     if (nhan) {
       // So khop theo dau tu, khong phai chuoi con: "hc" khop "hc Ngọc Thơ"
       // nhung khong khop "thach" — tranh ket qua thua.
@@ -127,11 +162,22 @@ export function AlbumList({
     }
 
     return ds.map((m) => m.g);
-  }, [chiMuc, moc, nhan, tuKhoaCho]);
+  }, [chiMuc, moc, nhan, tienDo, tuKhoaCho]);
 
   const countsOf = (galleryId: string) =>
     counts.filter((c) => c.galleryId === galleryId);
-  const dangLoc = Boolean(nhan) || Boolean(moc) || tuKhoa.trim().length > 0;
+  const dangLoc =
+    Boolean(nhan) ||
+    Boolean(moc) ||
+    Boolean(tienDo) ||
+    tuKhoa.trim().length > 0;
+
+  const boHetLoc = () => {
+    setNhan(null);
+    setTienDo(null);
+    setTuKhoa("");
+    doiMoc(null);
+  };
 
   const doiMoc = (m: MocLoc) => {
     setMoc(m);
@@ -216,43 +262,72 @@ export function AlbumList({
           )}
         </div>
 
-        {nhanCoDung.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {nhanCoDung.map((n) => {
-              const dang = nhan === n.key;
-              return (
-                <button
-                  key={n.ma}
-                  type="button"
-                  onClick={() => {
-                    setNhan(dang ? null : n.key);
-                    setHienBaoNhieu(TRANG);
-                  }}
-                  className={`min-h-8 rounded-full border px-3 text-xs tracking-wide transition ${
-                    dang
-                      ? "border-transparent bg-fg text-bg"
-                      : "border-line-strong bg-bg-raised text-fg-muted hover:border-accent hover:text-fg"
-                  }`}
-                >
-                  {n.ma} <span className="opacity-60">{n.so}</span>
-                </button>
-              );
-            })}
-            {dangLoc && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {TIEN_DO.map((t) => {
+            const dang = tienDo === t.key;
+            const so = chiMuc.filter((m) => m.tienDo === t.key).length;
+            return (
               <button
+                key={t.key}
+                type="button"
+                aria-pressed={dang}
+                onClick={() => {
+                  setTienDo(dang ? null : t.key);
+                  setHienBaoNhieu(TRANG);
+                }}
+                className={`flex min-h-8 items-center gap-1.5 rounded-full border px-3 text-xs tracking-wide transition ${
+                  dang
+                    ? "border-transparent bg-fg text-bg"
+                    : "border-line-strong bg-bg-raised text-fg-muted hover:border-accent hover:text-fg"
+                }`}
+              >
+                <span
+                  aria-hidden
+                  className={`size-1.5 rounded-full ${
+                    t.key === "xong"
+                      ? "bg-emerald-500"
+                      : t.key === "mot-phan"
+                        ? "bg-amber-500"
+                        : "bg-fg-faint"
+                  }`}
+                />
+                {t.ten} <span className="opacity-60">{so}</span>
+              </button>
+            );
+          })}
+          {nhanCoDung.length > 0 && (
+            <span aria-hidden className="mx-1 h-5 w-px bg-line-strong" />
+          )}
+          {nhanCoDung.map((n) => {
+            const dang = nhan === n.key;
+            return (
+              <button
+                key={n.ma}
                 type="button"
                 onClick={() => {
-                  setNhan(null);
-                  setTuKhoa("");
-                  doiMoc(null);
+                  setNhan(dang ? null : n.key);
+                  setHienBaoNhieu(TRANG);
                 }}
-                className="min-h-8 px-2 text-xs text-fg-faint underline underline-offset-2 hover:text-accent"
+                className={`min-h-8 rounded-full border px-3 text-xs tracking-wide transition ${
+                  dang
+                    ? "border-transparent bg-fg text-bg"
+                    : "border-line-strong bg-bg-raised text-fg-muted hover:border-accent hover:text-fg"
+                }`}
               >
-                bỏ lọc
+                {n.ma} <span className="opacity-60">{n.so}</span>
               </button>
-            )}
-          </div>
-        )}
+            );
+          })}
+          {dangLoc && (
+            <button
+              type="button"
+              onClick={boHetLoc}
+              className="min-h-8 px-2 text-xs text-fg-faint underline underline-offset-2 hover:text-accent"
+            >
+              bỏ lọc
+            </button>
+          )}
+        </div>
 
         {/*
           ĐÂY là ô cuộn duy nhất của trang từ 1536px trở lên.
@@ -269,19 +344,11 @@ export function AlbumList({
             <div className="mt-10 text-center">
               <p className="font-display text-2xl">Không tìm thấy album nào</p>
               <p className="mt-2 text-sm text-fg-muted">
-                Thử gõ ít chữ hơn, bỏ mã lọc, hoặc chọn tháng khác. Ô tìm không
-                cần gõ dấu.
+                Thử gõ ít chữ hơn, bỏ mã lọc hay nút tiến độ, hoặc chọn tháng
+                khác. Ô tìm không cần gõ dấu.
               </p>
               {dangLoc && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNhan(null);
-                    setTuKhoa("");
-                    doiMoc(null);
-                  }}
-                  className="btn mt-5"
-                >
+                <button type="button" onClick={boHetLoc} className="btn mt-5">
                   Bỏ hết bộ lọc
                 </button>
               )}

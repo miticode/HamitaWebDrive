@@ -299,6 +299,11 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   khung 896px (mỗi tấm ~105px). Giờ trang rộng tới 2048px, số cột theo màn hình —
   màn 2000px 6 cột mỗi tấm 310×413, màn 1280px 5 cột, điện thoại 2 cột; tên file
   và lời dặn chữ to hơn.
+- **Lọc theo tiến độ chọn ảnh** (17/09): ba nút đầu hàng lọc — *Chưa chọn xong* ·
+  *Xong một phần* · *Đã chọn xong*, kèm số album. Tính theo bảng `MucXong` (khách
+  bấm báo xong), không theo số tim. "Một phần" = đã báo xong ít nhất một thư mục
+  nhưng chưa đủ `albumCount`. Đo lúc làm: 24 / 12 / 13 trên 49 album — nhóm giữa
+  đông nên không gộp. Kết hợp được với ô tìm, mã và tháng.
 
 ### Trang giới thiệu bày lại theo kiểu mohome.vn (16/09)
 
