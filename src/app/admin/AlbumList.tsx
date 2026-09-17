@@ -17,10 +17,10 @@ const NHAN = MA_ALBUM.map((m) => m.ma);
 
 /*
   Lọc theo tiến độ chọn ảnh (anh yêu cầu 17/09/2026). HAI nhóm: bản đầu có
-  thêm nút "Xong một phần", anh bảo bỏ cùng ngày. Album mới báo xong MỘT PHẦN
-  thư mục xếp vào "Chưa chọn xong" — khách còn thư mục phải chọn, xếp vào "Đã
-  chọn xong" là studio tưởng xong cả nhà. Thư mục đã xong vẫn thấy qua nhãn
-  xanh trên thẻ. Đo lúc làm: 12/49 album ở tình trạng đó.
+  thêm nút "Xong một phần", anh bảo bỏ cùng ngày. Khách báo xong DÙ CHỈ MỘT
+  thư mục là album tính "Đã chọn xong" (anh chốt 17/09) — khớp với nhãn xanh
+  trên thẻ: thẻ có nhãn nào thì nằm ở nút đó. Muốn biết còn thư mục nào chưa
+  xong thì đọc nhãn trên thẻ. Đo lúc làm: 12/49 album mới xong một phần.
 
   Tính theo bảng MucXong (khách bấm báo xong), không theo số tim: thả tim rồi
   chưa báo thì khách vẫn đang chọn.
@@ -32,11 +32,7 @@ const TIEN_DO: { key: TienDo; ten: string }[] = [
 ];
 
 function tienDoCua(g: Gallery, mucXong: MucXong[]): TienDo {
-  const soMuc = new Set(
-    mucXong.filter((m) => m.galleryId === g.id).map((m) => m.albumId),
-  ).size;
-  // Album một thư mục (albumCount 0 hoặc 1) báo xong là xong hết.
-  return soMuc > 0 && soMuc >= Math.max(g.albumCount, 1) ? "xong" : "chua";
+  return mucXong.some((m) => m.galleryId === g.id) ? "xong" : "chua";
 }
 
 /** Hien bao nhieu the truoc khi phai bam "xem them". */

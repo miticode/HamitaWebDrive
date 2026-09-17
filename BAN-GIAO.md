@@ -301,9 +301,9 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   và lời dặn chữ to hơn.
 - **Lọc theo tiến độ chọn ảnh** (17/09): hai nút đầu hàng lọc — *Chưa chọn xong*
   · *Đã chọn xong*, kèm số album. Tính theo bảng `MucXong` (khách bấm báo xong),
-  không theo số tim. "Đã chọn xong" = báo xong ĐỦ thư mục (`albumCount`); album
-  mới xong một phần thư mục nằm ở "Chưa chọn xong" (anh bỏ nút "Xong một phần"
-  cùng ngày). Đo lúc làm: 36 / 13 trên 49 album. Kết hợp được với ô tìm, mã, tháng.
+  không theo số tim. "Đã chọn xong" = khách báo xong ÍT NHẤT MỘT thư mục (anh
+  chốt 17/09, bỏ luôn nút "Xong một phần"), khớp với nhãn xanh trên thẻ. Đo lúc
+  làm: 24 / 25 trên 49 album. Kết hợp được với ô tìm, mã, tháng.
 
 ### Trang giới thiệu bày lại theo kiểu mohome.vn (16/09)
 
