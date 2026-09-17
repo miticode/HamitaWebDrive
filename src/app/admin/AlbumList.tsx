@@ -16,19 +16,18 @@ import { LocTheoThang, hopMoc, type MocLoc } from "./LocTheoThang";
 const NHAN = MA_ALBUM.map((m) => m.ma);
 
 /*
-  Lọc theo tiến độ chọn ảnh (anh yêu cầu 17/09/2026). BA nhóm chứ không hai:
-  đo trên dữ liệu thật lúc làm, 49 album có 13 xong hết, 12 mới báo xong MỘT
-  PHẦN thư mục, 24 chưa báo xong thư mục nào. Gộp "một phần" vào "đã xong" là
-  giấu 12 nhà còn thư mục đang chờ khách; gộp vào "chưa chọn" thì studio bỏ sót
-  thư mục đã xong có thể đem in trước.
+  Lọc theo tiến độ chọn ảnh (anh yêu cầu 17/09/2026). HAI nhóm: bản đầu có
+  thêm nút "Xong một phần", anh bảo bỏ cùng ngày. Album mới báo xong MỘT PHẦN
+  thư mục xếp vào "Chưa chọn xong" — khách còn thư mục phải chọn, xếp vào "Đã
+  chọn xong" là studio tưởng xong cả nhà. Thư mục đã xong vẫn thấy qua nhãn
+  xanh trên thẻ. Đo lúc làm: 12/49 album ở tình trạng đó.
 
   Tính theo bảng MucXong (khách bấm báo xong), không theo số tim: thả tim rồi
   chưa báo thì khách vẫn đang chọn.
 */
-type TienDo = "chua" | "mot-phan" | "xong";
+type TienDo = "chua" | "xong";
 const TIEN_DO: { key: TienDo; ten: string }[] = [
   { key: "chua", ten: "Chưa chọn xong" },
-  { key: "mot-phan", ten: "Xong một phần" },
   { key: "xong", ten: "Đã chọn xong" },
 ];
 
@@ -36,9 +35,8 @@ function tienDoCua(g: Gallery, mucXong: MucXong[]): TienDo {
   const soMuc = new Set(
     mucXong.filter((m) => m.galleryId === g.id).map((m) => m.albumId),
   ).size;
-  if (soMuc === 0) return "chua";
   // Album một thư mục (albumCount 0 hoặc 1) báo xong là xong hết.
-  return soMuc >= Math.max(g.albumCount, 1) ? "xong" : "mot-phan";
+  return soMuc > 0 && soMuc >= Math.max(g.albumCount, 1) ? "xong" : "chua";
 }
 
 /** Hien bao nhieu the truoc khi phai bam "xem them". */
@@ -284,11 +282,7 @@ export function AlbumList({
                 <span
                   aria-hidden
                   className={`size-1.5 rounded-full ${
-                    t.key === "xong"
-                      ? "bg-emerald-500"
-                      : t.key === "mot-phan"
-                        ? "bg-amber-500"
-                        : "bg-fg-faint"
+                    t.key === "xong" ? "bg-emerald-500" : "bg-fg-faint"
                   }`}
                 />
                 {t.ten} <span className="opacity-60">{so}</span>
