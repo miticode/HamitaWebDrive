@@ -10,10 +10,10 @@ import { STUDIO } from "@/lib/studio";
   ai cung phai cuon do.
 */
 const MUC = [
-  { href: "#gioi-thieu", nhan: "Giới thiệu" },
   /* Lưới "Hamita chụp gì?" — thay chỗ "Hành trình": khách mở menu là để tìm
      mảng mình cần, hành trình vẫn nằm trong trang cho ai cuộn tới. */
   { href: "#dich-vu", nhan: "Dịch vụ" },
+  { href: "#gioi-thieu", nhan: "Giới thiệu" },
   { href: "#anh", nhan: "Ảnh cưới" },
   /* "Album" chu khong phai "Album & HC": HC la tieng long trong nghe, khach
      khong hieu. Ten day du nam o tieu de cua chinh khu do. */

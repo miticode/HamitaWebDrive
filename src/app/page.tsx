@@ -152,7 +152,7 @@ export default async function Home() {
           học từ mohome: nhìn vào là biết đây là phần mở đầu, tách khỏi thân trang.
         */}
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-accent-soft via-bg to-bg" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:py-20">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pt-12 pb-8 sm:px-6 sm:pt-16 sm:pb-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:pt-20 lg:pb-10">
           <FadeIn>
             <p className="text-xs font-medium tracking-[0.22em] text-accent uppercase">{STUDIO.moTa}</p>
             <h1 className="mt-5 font-display text-[2.6rem] leading-[1.05] font-light text-balance sm:text-6xl">
@@ -196,6 +196,89 @@ export default async function Home() {
               <AnhBiaChay anh={ANH_BIA} trongKhung />
             </div>
           </FadeIn>
+        </div>
+      </section>
+
+      {/* ── Hamita chụp gì? ───────────────────────────────────────────── */}
+      {/*
+        Đứng NGAY SAU đầu trang, trước "Về Hamita" (anh yêu cầu 17/09/2026): khách
+        mới vào phải thấy các dịch vụ liền để dễ bán thêm, không phải cuộn qua
+        đoạn giới thiệu. Lề trên hẹp hơn các khu khác để hàng thẻ đầu ló vào
+        ngay màn hình đầu tiên.
+      */}
+      <section id="dich-vu" className="scroll-mt-16">
+        <div className="mx-auto max-w-6xl px-5 pt-4 pb-20 sm:px-6 sm:pb-28 lg:pt-6">
+          <FadeIn>
+            <DauMuc nhan={DICH_VU.nhan} tieuDe={DICH_VU.tieuDe} />
+          </FadeIn>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+            {DICH_VU.muc.map((m, i) => {
+              const anh = anhThe[m.khu];
+              return (
+                <FadeIn key={m.ten} cham={i * 70}>
+                  {/*
+                    Chữ nằm trên ảnh, dưới một lớp tối dần từ đáy — kiểu thẻ của
+                    mohome: nhìn ảnh là biết mảng gì, không phải đọc nhãn dưới.
+                    Cả thẻ là một liên kết, bấm đâu cũng tới đúng khu đó.
+                  */}
+                  <a
+                    href={hrefThe(m)}
+                    className={`group relative block aspect-[4/5] overflow-hidden rounded-[1.75rem] ${m.khu === "baby" ? "khu-baby" : ""} ${anh ? "bg-bg-soft" : "border border-line bg-gradient-to-br from-accent-soft to-bg-soft"}`}
+                  >
+                    {anh ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={`/api/img/${anh}?w=960`}
+                        alt=""
+                        loading="lazy"
+                        className="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-105"
+                      />
+                    ) : (
+                      /*
+                        Chưa có ảnh album cho mảng này: biểu tượng lớn trên nền
+                        màu nhấn nhạt, chữ màu đậm. Ô trống xám trông như ảnh
+                        tải hỏng; ô có chủ ý thì không.
+                      */
+                      <span className="absolute top-6 left-6 grid size-16 place-items-center rounded-full border border-line-strong bg-bg-raised text-accent">
+                        <StudioIcon ten={m.icon} className="size-7" />
+                      </span>
+                    )}
+                    {anh && <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />}
+                    <span className={`absolute inset-x-0 bottom-0 p-6 ${anh ? "text-white" : "text-fg"}`}>
+                      <span className="block text-[11px] font-medium tracking-[0.2em] uppercase opacity-85">{m.nhan}</span>
+                      <span className="mt-1.5 block font-display text-[1.9rem] leading-tight">{m.ten}</span>
+                      <span className="mt-1 flex items-center justify-between gap-3 text-sm opacity-90">
+                        {m.moTa}
+                        <span
+                          aria-hidden
+                          className={`grid size-8 shrink-0 place-items-center rounded-full transition ${anh ? "bg-white/20 backdrop-blur-sm group-hover:bg-white/35" : "border border-line-strong group-hover:border-accent group-hover:text-accent"}`}
+                        >
+                          →
+                        </span>
+                      </span>
+                    </span>
+                  </a>
+                </FadeIn>
+              );
+            })}
+
+            {/* Thẻ thứ sáu: mời tư vấn, lấp đủ hàng thay vì chừa một ô trống. */}
+            <FadeIn cham={DICH_VU.muc.length * 70}>
+              <div className="flex aspect-[4/5] flex-col justify-end rounded-[1.75rem] bg-fg p-7 text-bg">
+                <StudioIcon ten="rings" className="size-9 opacity-70" />
+                <p className="mt-auto font-display text-[1.9rem] leading-tight">{DICH_VU.tuVan.tieuDe}</p>
+                <p className="mt-3 text-sm leading-relaxed opacity-75">{DICH_VU.tuVan.ke}</p>
+                <div className="mt-6 flex flex-wrap gap-2.5">
+                  <a href={STUDIO.zalo} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-full bg-bg px-5 text-sm font-medium text-fg transition hover:opacity-90">
+                    Nhắn Zalo
+                  </a>
+                  <a href={`tel:${STUDIO.dienThoaiSo}`} className="inline-flex min-h-11 items-center rounded-full border border-bg/40 px-5 text-sm transition hover:border-bg">
+                    Gọi Hamita
+                  </a>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
         </div>
       </section>
 
@@ -281,83 +364,6 @@ export default async function Home() {
                 </div>
               </FadeIn>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Hamita chụp gì? ───────────────────────────────────────────── */}
-      <section id="dich-vu" className="scroll-mt-16">
-        <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28">
-          <FadeIn>
-            <DauMuc nhan={DICH_VU.nhan} tieuDe={DICH_VU.tieuDe} />
-          </FadeIn>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-            {DICH_VU.muc.map((m, i) => {
-              const anh = anhThe[m.khu];
-              return (
-                <FadeIn key={m.ten} cham={i * 70}>
-                  {/*
-                    Chữ nằm trên ảnh, dưới một lớp tối dần từ đáy — kiểu thẻ của
-                    mohome: nhìn ảnh là biết mảng gì, không phải đọc nhãn dưới.
-                    Cả thẻ là một liên kết, bấm đâu cũng tới đúng khu đó.
-                  */}
-                  <a
-                    href={hrefThe(m)}
-                    className={`group relative block aspect-[4/5] overflow-hidden rounded-[1.75rem] ${m.khu === "baby" ? "khu-baby" : ""} ${anh ? "bg-bg-soft" : "border border-line bg-gradient-to-br from-accent-soft to-bg-soft"}`}
-                  >
-                    {anh ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={`/api/img/${anh}?w=960`}
-                        alt=""
-                        loading="lazy"
-                        className="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-105"
-                      />
-                    ) : (
-                      /*
-                        Chưa có ảnh album cho mảng này: biểu tượng lớn trên nền
-                        màu nhấn nhạt, chữ màu đậm. Ô trống xám trông như ảnh
-                        tải hỏng; ô có chủ ý thì không.
-                      */
-                      <span className="absolute top-6 left-6 grid size-16 place-items-center rounded-full border border-line-strong bg-bg-raised text-accent">
-                        <StudioIcon ten={m.icon} className="size-7" />
-                      </span>
-                    )}
-                    {anh && <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />}
-                    <span className={`absolute inset-x-0 bottom-0 p-6 ${anh ? "text-white" : "text-fg"}`}>
-                      <span className="block text-[11px] font-medium tracking-[0.2em] uppercase opacity-85">{m.nhan}</span>
-                      <span className="mt-1.5 block font-display text-[1.9rem] leading-tight">{m.ten}</span>
-                      <span className="mt-1 flex items-center justify-between gap-3 text-sm opacity-90">
-                        {m.moTa}
-                        <span
-                          aria-hidden
-                          className={`grid size-8 shrink-0 place-items-center rounded-full transition ${anh ? "bg-white/20 backdrop-blur-sm group-hover:bg-white/35" : "border border-line-strong group-hover:border-accent group-hover:text-accent"}`}
-                        >
-                          →
-                        </span>
-                      </span>
-                    </span>
-                  </a>
-                </FadeIn>
-              );
-            })}
-
-            {/* Thẻ thứ sáu: mời tư vấn, lấp đủ hàng thay vì chừa một ô trống. */}
-            <FadeIn cham={DICH_VU.muc.length * 70}>
-              <div className="flex aspect-[4/5] flex-col justify-end rounded-[1.75rem] bg-fg p-7 text-bg">
-                <StudioIcon ten="rings" className="size-9 opacity-70" />
-                <p className="mt-auto font-display text-[1.9rem] leading-tight">{DICH_VU.tuVan.tieuDe}</p>
-                <p className="mt-3 text-sm leading-relaxed opacity-75">{DICH_VU.tuVan.ke}</p>
-                <div className="mt-6 flex flex-wrap gap-2.5">
-                  <a href={STUDIO.zalo} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-full bg-bg px-5 text-sm font-medium text-fg transition hover:opacity-90">
-                    Nhắn Zalo
-                  </a>
-                  <a href={`tel:${STUDIO.dienThoaiSo}`} className="inline-flex min-h-11 items-center rounded-full border border-bg/40 px-5 text-sm transition hover:border-bg">
-                    Gọi Hamita
-                  </a>
-                </div>
-              </div>
-            </FadeIn>
           </div>
         </div>
       </section>

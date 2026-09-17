@@ -316,6 +316,11 @@ thẻ ảnh lớn chữ đè lên ảnh (`DICH_VU` trong `studio.ts`), bốn khu
 mục canh trái, hành trình năm chương thành dải thẻ, dải kêu gọi bo tròn, và ba
 nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
 
+- **Lưới dịch vụ đứng NGAY SAU đầu trang**, trước "Về Hamita" (studio chốt
+  17/09/2026: khách vào là thấy dịch vụ để dễ bán thêm). Menu cũng để "Dịch vụ"
+  lên đầu. Đầu trang bớt lề dưới, lưới dịch vụ bớt lề trên để thẻ ló vào màn
+  hình đầu — đo ở 2000×1000: thẻ bắt đầu từ 751px. Đừng dời lại xuống dưới.
+
 - **Không dựng "cảm nhận khách hàng" hay "blog"** như web mẫu — chưa có dữ liệu
   thật, dựng ra là bịa.
 - **Thẻ dịch vụ và mục menu chỉ trỏ tới khu ĐANG HIỆN.** Khu ảnh cưới / album

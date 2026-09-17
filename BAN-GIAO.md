@@ -307,6 +307,10 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
 
 ### Trang giới thiệu bày lại theo kiểu mohome.vn (16/09)
 
+**17/09:** lưới "Hamita chụp gì?" dời lên ngay dưới đầu trang (trước "Về
+Hamita"), menu để "Dịch vụ" lên đầu — anh muốn khách vào là thấy dịch vụ để dễ
+bán thêm. Màn 2000×1000: tiêu đề dịch vụ ở 659px, hàng thẻ bắt đầu 751px.
+
 Anh gửi mohome.vn để học cách bố cục. Em giữ nguyên màu, phông, bốn khu và giọng
 kể của Hamita, chỉ đổi cách bày: đầu trang hai cột (chữ lớn, nửa sau khẩu hiệu
 in nghiêng, nút Zalo / gọi / Messenger bo tròn, dải trang album chạy trong khung
