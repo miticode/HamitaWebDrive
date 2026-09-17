@@ -14,8 +14,8 @@ const MUC = [
      mảng mình cần, hành trình vẫn nằm trong trang cho ai cuộn tới. */
   { href: "#dich-vu", nhan: "Dịch vụ" },
   { href: "#gioi-thieu", nhan: "Giới thiệu" },
-  /* Sang trang riêng /anh-cuoi có các mục nhỏ (17/09/2026), không cuộn tới khu trong trang chủ nữa. */
-  { href: "/anh-cuoi", nhan: "Ảnh cưới" },
+  /* Sang trang riêng có các mục nhỏ (17/09/2026), không cuộn tới khu trong trang chủ nữa. */
+  { href: "/dich-vu/anh-cuoi", nhan: "Ảnh cưới" },
   /* "Album" chu khong phai "Album & HC": HC la tieng long trong nghe, khach
      khong hieu. Ten day du nam o tieu de cua chinh khu do. */
   { href: "#album-hc", nhan: "Album" },

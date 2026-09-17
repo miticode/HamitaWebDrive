@@ -32,7 +32,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       // Trang Ảnh cưới (17/09/2026); tự chuyển tới mục đầu tiên đang có ảnh.
-      url: `${goc}/anh-cuoi`,
+      url: `${goc}/dich-vu/anh-cuoi`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,

@@ -6,14 +6,14 @@ import { databaseIsConfigured } from "@/lib/db";
 import { listGalleries } from "@/lib/store";
 import { docThuMucGioiThieu } from "@/lib/anhGioiThieu";
 import { NutDoiTong } from "../NutDoiTong";
-import { QuanLyAnhCuoi } from "./QuanLyAnhCuoi";
+import { QuanLyGioiThieu } from "./QuanLyGioiThieu";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Quản lý nội dung trang giới thiệu (anh yêu cầu 17/09/2026).
  *
- * Hiện có nhóm Ảnh cưới với năm mục nhỏ. Mỗi mục là danh sách THƯ MỤC CON của
+ * Mỗi nhóm dịch vụ (src/lib/nhomGioiThieu.ts) có các mục nhỏ. Mỗi mục là danh sách THƯ MỤC CON của
  * các album, chọn theo mã đầu tên album. Trang này không gọi Drive lúc mở
  * (nguyên tắc 9) — tên thư mục và tấm bìa đã lưu sẵn lúc chọn; chỉ khi bấm vào
  * một album trong ô chọn mới đọc Drive để liệt kê thư mục.
@@ -45,16 +45,16 @@ export default async function GioiThieuPage() {
         <div>
           <h1 className="font-display text-2xl font-light sm:text-3xl">Trang giới thiệu</h1>
           <p className="mt-2 text-sm text-fg-muted">
-            Chọn thư mục ảnh đưa lên trang <strong className="font-medium text-fg">Ảnh cưới</strong>.
+            Chọn thư mục ảnh cho từng dịch vụ trong lưới <strong className="font-medium text-fg">Hamita chụp gì?</strong>.
             Khách bấm vào một mục sẽ thấy các thư mục trước, bấm thư mục mới xem ảnh bên trong.
           </p>
         </div>
-        <a href="/anh-cuoi" target="_blank" rel="noreferrer" className="btn">
-          Xem trang Ảnh cưới ↗
+        <a href="/#dich-vu" target="_blank" rel="noreferrer" className="btn">
+          Xem trang giới thiệu ↗
         </a>
       </div>
 
-      <QuanLyAnhCuoi
+      <QuanLyGioiThieu
         albums={galleries.map((g) => ({
           id: g.id,
           ten: g.clientName ?? g.title,

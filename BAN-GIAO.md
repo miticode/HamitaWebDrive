@@ -307,6 +307,18 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
 
 ### Trang Ảnh cưới + quản lý trang giới thiệu (17/09)
 
+**Cập nhật cùng ngày — mọi dịch vụ, không riêng ảnh cưới.** Trang quản lý
+`/admin/gioi-thieu` có 6 tab: Ảnh cưới (Dạm ngõ · Đính hôn · Nhà gái · Nhà trai ·
+Phóng sự) · Album & hình cổng (Album · Hình cổng) · Hamita Garden · Bé & gia đình
+(Thôi nôi · Bầu · Sơ sinh · Gia đình) · Váy cưới & trang điểm · Tiệm ảnh nhà Su
+(mới, mã NS). Đường công khai đổi thành `/dich-vu/<nhóm>`; link `/anh-cuoi` cũ tự
+chuyển. Trang chủ thêm thẻ "Tiệm ảnh nhà Su" (nhãn, mô tả để trống chờ anh), thẻ
+tư vấn thành dải ngang dưới lưới.
+
+**Còn chờ anh:** danh sách mục nhỏ cho Hamita Garden và Váy cưới (đang một mục
+chung); mô tả cho Tiệm ảnh nhà Su. Thôi nôi/Bầu/Sơ sinh chưa có mã riêng nên cùng
+gợi ý album mã Baby.
+
 - Bấm thẻ "Ảnh cưới" hoặc menu "Ảnh cưới" ở trang chủ → sang `/anh-cuoi`, tự tới
   mục đầu tiên có ảnh. Hàng nút: Dạm ngõ · Đính hôn · Ngày cưới – Nhà gái ·
   Ngày cưới – Nhà trai · Phóng sự cưới; mỗi mục một link riêng

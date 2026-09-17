@@ -1,11 +1,12 @@
 import { getPrisma } from "./db";
 import { loadTree } from "./gallery";
-import type { MucAnhCuoi } from "./anhCuoi";
+import { timMuc } from "./nhomGioiThieu";
 import { tenKhongMa } from "./maAlbum";
 
-/** Một thư mục đã đưa lên trang Ảnh cưới, đủ để trang quản lý hiện mà không gọi Drive. */
+/** Một thư mục đã đưa lên trang giới thiệu, đủ để trang quản lý hiện mà không gọi Drive. */
 export type ThuMucGioiThieu = {
   id: string;
+  nhom: string;
   muc: string;
   galleryId: string;
   tenAlbum: string;
@@ -18,14 +19,15 @@ export type ThuMucGioiThieu = {
   soAnh: number;
 };
 
-export async function docThuMucGioiThieu(muc?: MucAnhCuoi): Promise<ThuMucGioiThieu[]> {
+/** Mọi thư mục đã chọn (trang quản lý). */
+export async function docThuMucGioiThieu(): Promise<ThuMucGioiThieu[]> {
   const dong = await getPrisma().anhGioiThieu.findMany({
-    where: muc ? { muc } : undefined,
     orderBy: { taoLuc: "asc" },
     include: { gallery: { select: { title: true, clientName: true, slug: true, driveFolderId: true } } },
   });
   return dong.map((d) => ({
     id: d.id,
+    nhom: d.nhom,
     muc: d.muc,
     galleryId: d.galleryId,
     tenAlbum: d.gallery.clientName ?? d.gallery.title,
@@ -38,9 +40,10 @@ export async function docThuMucGioiThieu(muc?: MucAnhCuoi): Promise<ThuMucGioiTh
   }));
 }
 
-/** Những mục đang có ít nhất một thư mục — trang công khai chỉ hiện nút cho mục này. */
-export async function mucDangCo(): Promise<Set<string>> {
+/** Những mục đang có ít nhất một thư mục, của một nhóm. */
+export async function mucDangCo(nhom: string): Promise<Set<string>> {
   const dong = await getPrisma().anhGioiThieu.findMany({
+    where: { nhom },
     select: { muc: true },
     distinct: ["muc"],
   });
@@ -53,10 +56,12 @@ export async function mucDangCo(): Promise<Set<string>> {
  * thư mục đó còn tồn tại trong đúng album này.
  */
 export async function themThuMucGioiThieu(
-  muc: MucAnhCuoi,
+  nhom: string,
+  muc: string,
   galleryId: string,
   albumId: string,
 ): Promise<{ loi?: string }> {
+  if (!timMuc(nhom, muc)) return { loi: "Mục không hợp lệ." };
   const prisma = getPrisma();
   const g = await prisma.gallery.findUnique({
     where: { id: galleryId },
@@ -69,7 +74,7 @@ export async function themThuMucGioiThieu(
   if (!thuMuc) return { loi: "Không tìm thấy thư mục này trên Drive nữa." };
   if (thuMuc.photos.length === 0) return { loi: "Thư mục này chưa có ảnh nào." };
 
-  const data = { tenMuc: thuMuc.name, soAnh: thuMuc.photos.length };
+  const data = { nhom, tenMuc: thuMuc.name, soAnh: thuMuc.photos.length };
   await prisma.anhGioiThieu.upsert({
     where: { muc_galleryId_albumId: { muc, galleryId, albumId } },
     create: { muc, galleryId, albumId, anhBia: thuMuc.photos[0].id, ...data },
@@ -80,10 +85,9 @@ export async function themThuMucGioiThieu(
 }
 
 /**
- * Đổi ảnh bìa của một thư mục trên trang Ảnh cưới. Kiểm ở máy chủ rằng tấm ảnh
- * nằm ĐÚNG trong thư mục đó — không thì ai gọi thẳng action cũng gắn được một
- * tấm bất kỳ trên Drive của studio (kể cả ảnh riêng của nhà khác) lên trang
- * công khai.
+ * Đổi ảnh bìa của một thư mục. Kiểm ở máy chủ rằng tấm ảnh nằm ĐÚNG trong thư
+ * mục đó — không thì ai gọi thẳng action cũng gắn được một tấm bất kỳ trên
+ * Drive của studio (kể cả ảnh riêng của nhà khác) lên trang công khai.
  */
 export async function doiBiaThuMucGioiThieu(id: string, fileId: string): Promise<{ loi?: string }> {
   const prisma = getPrisma();
@@ -106,13 +110,12 @@ export async function xoaThuMucGioiThieu(id: string): Promise<void> {
 export type AnhCongKhai = { id: string; width: number | null; height: number | null };
 
 /**
- * Các thư mục của một mục, cho trang /anh-cuoi/<mục>. CHỈ đọc database — tên
- * và tấm bìa đã lưu lúc chọn — nên trang danh sách thư mục mở nhanh, không đợi
- * Drive. Ảnh bên trong chỉ đọc khi khách bấm vào một thư mục.
+ * Các thư mục của một mục, cho trang /dich-vu/<nhóm>/<mục>. CHỈ đọc database —
+ * tên và tấm bìa đã lưu lúc chọn — nên trang mở nhanh, không đợi Drive.
  */
-export async function docThuMucCongKhai(muc: MucAnhCuoi) {
+export async function docThuMucCongKhai(nhom: string, muc: string) {
   const dong = await getPrisma().anhGioiThieu.findMany({
-    where: { muc },
+    where: { nhom, muc },
     orderBy: { taoLuc: "asc" },
     include: { gallery: { select: { title: true, clientName: true } } },
   });
@@ -126,12 +129,12 @@ export async function docThuMucCongKhai(muc: MucAnhCuoi) {
 
 /**
  * Một thư mục và TOÀN BỘ ảnh trong đó, đọc thẳng Drive (cache 5 phút chung với
- * trang khách). null = không có thư mục này trong mục. Drive lỗi thì ném —
+ * trang khách). null = không có thư mục này trong nhóm. Drive lỗi thì ném —
  * trang tự bắt (nguyên tắc 19).
  */
-export async function docAnhThuMuc(muc: MucAnhCuoi, id: string) {
+export async function docAnhThuMuc(nhom: string, id: string) {
   const d = await getPrisma().anhGioiThieu.findFirst({
-    where: { id, muc },
+    where: { id, nhom },
     include: { gallery: { select: { title: true, clientName: true, driveFolderId: true } } },
   });
   if (!d) return null;
@@ -141,5 +144,5 @@ export async function docAnhThuMuc(muc: MucAnhCuoi, id: string) {
     width: p.width,
     height: p.height,
   }));
-  return { ten: tenKhongMa(d.gallery.clientName ?? d.gallery.title), anh };
+  return { muc: d.muc, ten: tenKhongMa(d.gallery.clientName ?? d.gallery.title), anh };
 }

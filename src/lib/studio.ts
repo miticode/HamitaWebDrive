@@ -214,11 +214,13 @@ export const DICH_VU = {
   nhan: "Dịch vụ",
   tieuDe: "Hamita chụp gì?",
   muc: [
-    { khu: "cuoi", icon: "rings", nhan: "Trọn gói ngày cưới", ten: "Ảnh cưới", moTa: "Từ lễ hỏi tới lúc tan tiệc", href: "/anh-cuoi" },
+    { khu: "cuoi", icon: "rings", nhan: "Trọn gói ngày cưới", ten: "Ảnh cưới", moTa: "Từ lễ hỏi tới lúc tan tiệc", href: "#anh" },
     { khu: "albumhc", icon: "album", nhan: "Sản phẩm in", ten: "Album & hình cổng", moTa: "Thứ anh chị cầm về sau ngày cưới", href: "#album-hc" },
     { khu: "phimtruong", icon: "camera", nhan: "Phim trường độc quyền", ten: "Hamita Garden", moTa: "Bối cảnh châu Âu ngay tại Long An", href: "/phim-truong" },
     { khu: "baby", icon: "sparkle", nhan: "Hami Baby Studio", ten: "Bé & gia đình", moTa: "Thôi nôi, bầu, sơ sinh", href: "#baby" },
     { khu: "vay", icon: "dress", nhan: "Có sẵn tại studio", ten: "Váy cưới & trang điểm", moTa: "Mặc thử ngay tại chỗ, tới lúc ưng thì thôi", href: "#hanh-trinh" },
+    /* Anh thêm 17/09/2026. Nhãn và mô tả CỐ Ý để trống — anh sẽ tự viết, đừng điền đoán. */
+    { khu: "nhasu", icon: "camera", nhan: "", ten: "Tiệm ảnh nhà Su", moTa: "", href: "#lien-he" },
   ],
   /** The thu sau, lap cho luoi du hang — moi go cua thay vi de trong mot o. */
   tuVan: {
@@ -284,13 +286,15 @@ export const HAMI_BABY = {
 } as const;
 
 /**
- * Trang Ảnh cưới (/anh-cuoi) — các mục nhỏ nằm ở src/lib/anhCuoi.ts, ảnh do
- * studio chọn ở /admin/gioi-thieu. Chỉ giới thiệu ngắn, không kể chuyện gì
- * chưa kiểm chứng được (nguyên tắc 25).
+ * Trang dịch vụ /dich-vu/<nhóm> (nhóm và mục ở src/lib/nhomGioiThieu.ts, ảnh do
+ * studio chọn ở /admin/gioi-thieu). Tiêu đề và nhãn lấy từ thẻ tương ứng trong
+ * DICH_VU; ở đây chỉ giữ phần riêng của trang. Không kể chuyện gì chưa kiểm
+ * chứng được (nguyên tắc 25).
  */
-export const TRANG_ANH_CUOI = {
-  nhan: "Trọn gói ngày cưới",
-  tieuDe: "Ảnh cưới",
-  moTa: "Từ buổi dạm ngõ, lễ đính hôn tới ngày cưới ở nhà gái, nhà trai — anh chị xem Hamita đã chụp cho những nhà khác thế nào.",
+export const TRANG_DICH_VU = {
+  /** Mô tả dài hơn dòng trên thẻ, theo `khu`. Không có thì dùng mô tả của thẻ. */
+  moTaRieng: {
+    cuoi: "Từ buổi dạm ngõ, lễ đính hôn tới ngày cưới ở nhà gái, nhà trai — anh chị xem Hamita đã chụp cho những nhà khác thế nào.",
+  } as Record<string, string>,
   moiGoi: "Ưng phong cách nào, anh chị nhắn Hamita một tiếng nhé.",
 } as const;

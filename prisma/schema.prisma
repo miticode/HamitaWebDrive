@@ -711,14 +711,17 @@ model CongViec {
   @@index([trangThai])
 }
 
-/// Thu muc con cua mot album duoc dua len trang /anh-cuoi, xep vao mot muc nho
-/// (dam-ngo, dinh-hon, nha-gai, nha-trai, phong-su — xem src/lib/anhCuoi.ts).
+/// Thu muc con cua mot album duoc dua len trang gioi thieu /dich-vu/<nhom>/<muc>
+/// (xem src/lib/nhomGioiThieu.ts).
 ///
 /// Chon tai trang quan ly "Trang gioi thieu" (/admin/gioi-thieu), anh yeu cau
 /// 17/09/2026. Tra theo MA thu muc (nguyen tac 32), giu kem ten va tam dau tien
 /// luc chon de trang quan ly hien duoc ma khong goi Drive (nguyen tac 9).
 model AnhGioiThieu {
   id        String   @id @default(cuid())
+  /// Nhom dich vu (src/lib/nhomGioiThieu.ts). Dong tao truoc 17/09 toi deu la anh cuoi.
+  /// Key muc KHONG trung giua cac nhom nen unique van theo (muc, galleryId, albumId).
+  nhom      String   @default("anh-cuoi")
   muc       String
   galleryId String
   /// Ma thu muc con. Chuoi rong = anh nam ngay thu muc goc.

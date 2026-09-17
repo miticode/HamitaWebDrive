@@ -20,6 +20,7 @@ import {
 import { listGalleries, type KhuGioiThieu } from "@/lib/store";
 import { loadTree } from "@/lib/gallery";
 import { docThuMucGioiThieu } from "@/lib/anhGioiThieu";
+import { NHOM_GIOI_THIEU } from "@/lib/nhomGioiThieu";
 import { NavGioiThieu } from "./NavGioiThieu";
 import { AnhBiaChay } from "./AnhBiaChay";
 import { NutLienHeNoi } from "./NutLienHeNoi";
@@ -77,12 +78,16 @@ export default async function Home() {
 
   const anhTieuBieu = biaCuaKhu("cuoi");
   /*
-    Thư mục đã chọn cho trang Ảnh cưới (/anh-cuoi, chọn ở /admin/gioi-thieu từ
-    17/09/2026). Có ít nhất một thư mục thì thẻ "Ảnh cưới" và mục menu dẫn sang
-    trang đó. Đọc database thôi, không gọi Drive — tấm bìa đã lưu sẵn lúc chọn.
+    Thư mục studio chọn cho từng nhóm dịch vụ (/admin/gioi-thieu, từ 17/09/2026).
+    Nhóm có ít nhất một thư mục thì thẻ của nó dẫn sang /dich-vu/<nhóm> và lấy
+    tấm bìa thư mục đầu làm ảnh thẻ khi chưa có ảnh nào khác. Chỉ đọc database,
+    không gọi Drive — tấm bìa đã lưu sẵn lúc chọn.
   */
-  const thuMucAnhCuoi = await docThuMucGioiThieu();
-  const coTrangAnhCuoi = thuMucAnhCuoi.length > 0;
+  const thuMucGioiThieu = await docThuMucGioiThieu();
+  const nhomCuaKhu = (khu: string) => NHOM_GIOI_THIEU.find((n) => n.khu === khu);
+  const thuMucCuaKhu = (khu: string) => thuMucGioiThieu.filter((t) => t.nhom === nhomCuaKhu(khu)?.key);
+  const biaNhom = (khu: string) => thuMucCuaKhu(khu).find((t) => t.anhBia)?.anhBia ?? undefined;
+  const coTrangAnhCuoi = thuMucCuaKhu("cuoi").length > 0;
   const anhAlbumHC = biaCuaKhu("albumhc");
   const anhBaby = biaCuaKhu("baby");
 
@@ -110,12 +115,13 @@ export default async function Home() {
 
   /* Ảnh đặt lên từng thẻ của lưới "Hamita chụp gì?". */
   const anhThe: Record<string, string | undefined> = {
-    cuoi: anhTieuBieu[0] ?? thuMucAnhCuoi[0]?.anhBia ?? undefined,
-    albumhc: anhAlbumHC[0],
-    phimtruong: anhPhimTruong[0],
-    baby: anhBaby[0],
-    // Váy & trang điểm không có khu ảnh riêng — ảnh cưới nào cũng là váy và trang điểm.
-    vay: anhTieuBieu[1] ?? anhTieuBieu[0] ?? thuMucAnhCuoi[1]?.anhBia ?? undefined,
+    cuoi: anhTieuBieu[0] ?? biaNhom("cuoi"),
+    albumhc: anhAlbumHC[0] ?? biaNhom("albumhc"),
+    phimtruong: anhPhimTruong[0] ?? biaNhom("phimtruong"),
+    baby: anhBaby[0] ?? biaNhom("baby"),
+    // Váy & trang điểm chưa có thư mục riêng thì mượn ảnh cưới — tấm nào cũng là váy và trang điểm.
+    vay: biaNhom("vay") ?? anhTieuBieu[1] ?? anhTieuBieu[0] ?? thuMucCuaKhu("cuoi")[1]?.anhBia ?? undefined,
+    nhasu: biaNhom("nhasu"),
   };
 
   /*
@@ -126,14 +132,19 @@ export default async function Home() {
     vẫn kể đúng mảng ấy bằng chữ.
   */
   const khuDangHien: Record<string, boolean> = {
-    cuoi: coTrangAnhCuoi,
+    cuoi: anhTieuBieu.length > 0,
     albumhc: anhAlbumHC.length > 0,
     phimtruong: anhPhimTruong.length > 0,
     baby: true,
     vay: true,
+    nhasu: true,
   };
-  const hrefThe = (m: (typeof DICH_VU.muc)[number]) =>
-    khuDangHien[m.khu] ? m.href : m.khu === "phimtruong" ? "#lien-he" : "#hanh-trinh";
+  const hrefThe = (m: (typeof DICH_VU.muc)[number]) => {
+    const nhom = nhomCuaKhu(m.khu);
+    // Nhóm đã có thư mục chọn ở /admin/gioi-thieu thì sang trang riêng của nó.
+    if (nhom && thuMucCuaKhu(m.khu).length > 0) return `/dich-vu/${nhom.key}`;
+    return khuDangHien[m.khu] ? m.href : m.khu === "phimtruong" ? "#lien-he" : "#hanh-trinh";
+  };
 
   /* "Sang trọng từ tâm — tận tình như nhà": nửa sau in nghiêng màu nhấn. */
   const [dauKhauHieu, cuoiKhauHieu] = STUDIO.khauHieu.split(/\s*—\s*/);
@@ -146,7 +157,7 @@ export default async function Home() {
       <NavGioiThieu
         coAnhNen={false}
         anMuc={[
-          ...(coTrangAnhCuoi ? [] : ["/anh-cuoi"]),
+          ...(coTrangAnhCuoi ? [] : ["/dich-vu/anh-cuoi"]),
           ...(khuDangHien.albumhc ? [] : ["#album-hc"]),
           ...(khuDangHien.phimtruong ? [] : ["#phim-truong"]),
         ]}
@@ -253,7 +264,7 @@ export default async function Home() {
                     )}
                     {anh && <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />}
                     <span className={`absolute inset-x-0 bottom-0 p-6 ${anh ? "text-white" : "text-fg"}`}>
-                      <span className="block text-[11px] font-medium tracking-[0.2em] uppercase opacity-85">{m.nhan}</span>
+                      {m.nhan && <span className="block text-[11px] font-medium tracking-[0.2em] uppercase opacity-85">{m.nhan}</span>}
                       <span className="mt-1.5 block font-display text-[1.9rem] leading-tight">{m.ten}</span>
                       <span className="mt-1 flex items-center justify-between gap-3 text-sm opacity-90">
                         {m.moTa}
@@ -270,13 +281,19 @@ export default async function Home() {
               );
             })}
 
-            {/* Thẻ thứ sáu: mời tư vấn, lấp đủ hàng thay vì chừa một ô trống. */}
-            <FadeIn cham={DICH_VU.muc.length * 70}>
-              <div className="flex aspect-[4/5] flex-col justify-end rounded-[1.75rem] bg-fg p-7 text-bg">
+            {/*
+              Mời tư vấn: một DẢI NGANG hết hàng dưới lưới. Trước 17/09/2026 nó là
+              thẻ thứ sáu lấp đủ hai hàng ba thẻ; thêm thẻ "Tiệm ảnh nhà Su" thì đủ
+              sáu thẻ dịch vụ, để nó làm thẻ thứ bảy sẽ đứng lẻ loi một mình.
+            */}
+            <FadeIn cham={DICH_VU.muc.length * 70} className="sm:col-span-2 lg:col-span-3">
+              <div className="flex flex-col gap-5 rounded-[1.75rem] bg-fg p-7 text-bg sm:p-9 lg:flex-row lg:items-center lg:justify-between">
+                <div className="max-w-xl">
                 <StudioIcon ten="rings" className="size-9 opacity-70" />
-                <p className="mt-auto font-display text-[1.9rem] leading-tight">{DICH_VU.tuVan.tieuDe}</p>
+                <p className="mt-4 font-display text-[1.9rem] leading-tight">{DICH_VU.tuVan.tieuDe}</p>
                 <p className="mt-3 text-sm leading-relaxed opacity-75">{DICH_VU.tuVan.ke}</p>
-                <div className="mt-6 flex flex-wrap gap-2.5">
+                </div>
+                <div className="flex shrink-0 flex-wrap gap-2.5">
                   <a href={STUDIO.zalo} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-full bg-bg px-5 text-sm font-medium text-fg transition hover:opacity-90">
                     Nhắn Zalo
                   </a>

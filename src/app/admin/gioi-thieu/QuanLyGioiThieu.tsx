@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { boDau } from "@/lib/constants";
-import { MUC_ANH_CUOI, coMa } from "@/lib/anhCuoi";
+import { NHOM_GIOI_THIEU, coMa, type MucGioiThieu, type NhomGioiThieu } from "@/lib/nhomGioiThieu";
 import type { ThuMucGioiThieu } from "@/lib/anhGioiThieu";
 import {
   docThuMucAlbumAction,
@@ -14,31 +14,64 @@ import {
 import { DoiBiaThuMuc } from "./DoiBiaThuMuc";
 
 type AlbumGon = { id: string; ten: string; bia: string | null; soThuMuc: number; ngayTao: string };
-type Muc = (typeof MUC_ANH_CUOI)[number];
+type Muc = MucGioiThieu;
 
-export function QuanLyAnhCuoi({ albums, daChon }: { albums: AlbumGon[]; daChon: ThuMucGioiThieu[] }) {
+/** Đường dẫn công khai của một mục. Nhóm một mục thì không có đoạn mục. */
+function duongMuc(nhom: NhomGioiThieu, muc: Muc) {
+  return nhom.muc.length > 1 ? `/dich-vu/${nhom.key}/${muc.key}` : `/dich-vu/${nhom.key}`;
+}
+
+export function QuanLyGioiThieu({ albums, daChon }: { albums: AlbumGon[]; daChon: ThuMucGioiThieu[] }) {
+  const [nhomKey, setNhomKey] = useState<string>(NHOM_GIOI_THIEU[0].key);
+  const nhom = NHOM_GIOI_THIEU.find((n) => n.key === nhomKey) ?? NHOM_GIOI_THIEU[0];
   const [dangMo, setDangMo] = useState<Muc | null>(null);
 
   return (
     <>
-      <div className="mt-8 grid gap-6">
-        {MUC_ANH_CUOI.map((m) => {
-          const ds = daChon.filter((d) => d.muc === m.key);
+      {/*
+        Mỗi nhóm một tab, khớp từng thẻ trong lưới "Hamita chụp gì?" ở trang
+        chủ. Số bên cạnh là số thư mục đã chọn — nhìn là biết nhóm nào còn trống.
+      */}
+      <nav aria-label="Nhóm dịch vụ" className="mt-6 flex flex-wrap gap-2">
+        {NHOM_GIOI_THIEU.map((n) => {
+          const dang = n.key === nhom.key;
+          const so = daChon.filter((d) => d.nhom === n.key).length;
+          return (
+            <button
+              key={n.key}
+              type="button"
+              aria-pressed={dang}
+              onClick={() => setNhomKey(n.key)}
+              className={`min-h-10 rounded-full border px-4 text-sm transition ${
+                dang
+                  ? "border-transparent bg-fg text-bg"
+                  : "border-line-strong bg-bg-raised text-fg-muted hover:border-accent hover:text-fg"
+              }`}
+            >
+              {n.ten} <span className="opacity-60">{so}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="mt-6 grid gap-6">
+        {(nhom.muc as readonly Muc[]).map((m) => {
+          const ds = daChon.filter((d) => d.nhom === nhom.key && d.muc === m.key);
           return (
             <section key={m.key} className="card p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="eyebrow">Ảnh cưới</p>
+                  <p className="eyebrow">{nhom.ten}</p>
                   <h2 className="mt-1 font-display text-2xl">
                     {m.ten}
                     <span className="ml-2 text-base text-fg-muted">{ds.length} thư mục</span>
                   </h2>
                   <p className="mt-1 text-xs text-fg-faint">
-                    {m.ma ? `Gợi ý album có mã ${m.ma}` : "Chưa có mã riêng — chọn trong mọi album"}
+                    {m.ma.length ? `Gợi ý album có mã ${m.ma.join(", ")}` : "Chưa có mã riêng — chọn trong mọi album"}
                     {ds.length > 0 && (
                       <>
                         {" · "}
-                        <a href={`/anh-cuoi/${m.key}`} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-accent">
+                        <a href={duongMuc(nhom, m)} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-accent">
                           xem trang
                         </a>
                       </>
@@ -53,7 +86,7 @@ export function QuanLyAnhCuoi({ albums, daChon }: { albums: AlbumGon[]; daChon: 
 
               {ds.length === 0 ? (
                 <p className="mt-4 text-sm text-fg-muted">
-                  Chưa có thư mục nào — mục này đang ẩn trên trang Ảnh cưới.
+                  Chưa có thư mục nào — mục này đang ẩn trên trang giới thiệu.
                 </p>
               ) : (
                 <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -69,9 +102,10 @@ export function QuanLyAnhCuoi({ albums, daChon }: { albums: AlbumGon[]; daChon: 
 
       {dangMo && (
         <OChon
+          nhom={nhom}
           muc={dangMo}
           albums={albums}
-          daChon={daChon.filter((d) => d.muc === dangMo.key)}
+          daChon={daChon.filter((d) => d.nhom === nhom.key && d.muc === dangMo.key)}
           dong={() => setDangMo(null)}
         />
       )}
@@ -134,11 +168,13 @@ function TheDaChon({ d }: { d: ThuMucGioiThieu }) {
 
 /** Khung chọn: danh sách album (lọc theo mã của mục) → bấm album → chọn thư mục con. */
 function OChon({
+  nhom,
   muc,
   albums,
   daChon,
   dong,
 }: {
+  nhom: NhomGioiThieu;
   muc: Muc;
   albums: AlbumGon[];
   daChon: ThuMucGioiThieu[];
@@ -146,7 +182,7 @@ function OChon({
 }) {
   const router = useRouter();
   const [tuKhoa, setTuKhoa] = useState("");
-  const [chiTheoMa, setChiTheoMa] = useState(muc.ma !== null);
+  const [chiTheoMa, setChiTheoMa] = useState(muc.ma.length > 0);
   const [albumMo, setAlbumMo] = useState<AlbumGon | null>(null);
   const [thuMuc, setThuMuc] = useState<ThuMucChon[] | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
@@ -170,7 +206,7 @@ function OChon({
     const q = boDau(tuKhoa.trim());
     return albums.filter(
       (a) =>
-        (!chiTheoMa || !muc.ma || coMa(a.ten, muc.ma)) &&
+        (!chiTheoMa || muc.ma.length === 0 || muc.ma.some((ma) => coMa(a.ten, ma))) &&
         (!q || q.split(/\s+/).every((p) => boDau(a.ten).includes(p))),
     );
   }, [albums, chiTheoMa, muc.ma, tuKhoa]);
@@ -195,7 +231,7 @@ function OChon({
     if (!albumMo) return;
     setLoi(null);
     start(async () => {
-      const kq = await themAnhGioiThieuAction(muc.key, albumMo.id, t.id);
+      const kq = await themAnhGioiThieuAction(nhom.key, muc.key, albumMo.id, t.id);
       if (kq.loi) {
         setLoi(kq.loi);
         return;
@@ -249,10 +285,10 @@ function OChon({
                   className="input min-w-0 flex-1"
                   autoFocus
                 />
-                {muc.ma && (
+                {muc.ma.length > 0 && (
                   <label className="flex items-center gap-2 text-sm text-fg-muted">
                     <input type="checkbox" checked={chiTheoMa} onChange={(e) => setChiTheoMa(e.target.checked)} />
-                    Chỉ album mã {muc.ma}
+                    Chỉ album mã {muc.ma.join(", ")}
                   </label>
                 )}
               </div>
@@ -293,8 +329,8 @@ function OChon({
             )
           ) : ds.length === 0 ? (
             <p className="text-sm text-fg-muted">
-              {muc.ma && chiTheoMa
-                ? `Không có album nào mang mã ${muc.ma}. Bỏ tích "Chỉ album mã ${muc.ma}" để chọn trong mọi album.`
+              {muc.ma.length > 0 && chiTheoMa
+                ? `Không có album nào mang mã ${muc.ma.join(", ")}. Bỏ tích "Chỉ album mã ${muc.ma.join(", ")}" để chọn trong mọi album.`
                 : "Không tìm thấy album nào."}
             </p>
           ) : (

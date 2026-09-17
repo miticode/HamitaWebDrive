@@ -316,18 +316,22 @@ thẻ ảnh lớn chữ đè lên ảnh (`DICH_VU` trong `studio.ts`), bốn khu
 mục canh trái, hành trình năm chương thành dải thẻ, dải kêu gọi bo tròn, và ba
 nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
 
-- **Trang Ảnh cưới riêng `/anh-cuoi/<mục>`** (17/09/2026): năm mục Dạm ngõ ·
-  Đính hôn · Nhà gái · Nhà trai · Phóng sự cưới (`MUC_ANH_CUOI` trong
-  `src/lib/anhCuoi.ts`; `key` là đường dẫn gửi khách, đừng đổi). Studio chọn
-  THƯ MỤC CON ở `/admin/gioi-thieu`: bấm "Thêm vào trang giới thiệu" → album
-  gợi ý theo mã đầu tên (DN, ĐH, HER, HIS; phóng sự chưa có mã nên hiện mọi
-  album) → chọn thư mục. Lưu bảng `AnhGioiThieu` theo MÃ thư mục, kèm tên và
-  tấm đầu để trang quản lý không gọi Drive. Bấm một mục thì hiện THẺ THƯ MỤC
-  trước (ảnh bìa + tên nhà đã bỏ mã, chỉ đọc database); bấm thẻ mới sang
-  `/anh-cuoi/<mục>/<id>` xem toàn bộ ảnh thư mục đó, đọc Drive (anh yêu cầu
-  17/09). Mục chưa có thư mục thì ẩn nút và trả 404; không có mục nào thì thẻ
-  "Ảnh cưới" và menu quay về đường cũ. KHÔNG dẫn sang `/g/[slug]` của nhà
-  khách (nguyên tắc 17).
+- **Trang từng dịch vụ `/dich-vu/<nhóm>/<mục>`** (17/09/2026). Sáu nhóm khớp sáu
+  thẻ "Hamita chụp gì?" — Ảnh cưới, Album & hình cổng, Hamita Garden, Bé & gia
+  đình, Váy cưới & trang điểm, Tiệm ảnh nhà Su — mục nhỏ và mã gợi ý ở
+  `NHOM_GIOI_THIEU` (`src/lib/nhomGioiThieu.ts`; key là đường dẫn gửi khách,
+  đừng đổi). Studio chọn THƯ MỤC CON ở `/admin/gioi-thieu` (tab theo nhóm →
+  "Thêm vào trang giới thiệu" → album gợi ý theo mã → chọn thư mục; "Đổi bìa"
+  trên từng thẻ). Bảng `AnhGioiThieu` (cột `nhom`, `muc`), tra theo MÃ thư mục,
+  lưu kèm tên và tấm bìa để trang quản lý và trang danh sách không gọi Drive;
+  chỉ trang ảnh `/dich-vu/<nhóm>/anh/<id>` mới đọc Drive. Nhóm một mục thì không
+  có hàng nút mục. Mục/nhóm chưa có thư mục thì 404, và thẻ ở trang chủ quay về
+  đường cũ. `/anh-cuoi/*` (tên cũ vài tiếng) chuyển hẳn (308) sang đường mới.
+  **KEY MỤC KHÔNG ĐƯỢC TRÙNG GIỮA CÁC NHÓM**: ràng buộc không trùng vẫn là
+  (muc, galleryId, albumId); đổi nó phải chạy `db push --accept-data-loss` trên
+  database thật — Prisma chặn lệnh đó khi trợ lý chạy, đừng lách. KHÔNG dẫn sang
+  `/g/[slug]` của nhà khách (nguyên tắc 17). Nhãn và mô tả thẻ "Tiệm ảnh nhà Su"
+  cố ý để trống chờ anh viết — đừng tự điền.
 - **Lưới dịch vụ đứng NGAY SAU đầu trang**, trước "Về Hamita" (studio chốt
   17/09/2026: khách vào là thấy dịch vụ để dễ bán thêm). Menu cũng để "Dịch vụ"
   lên đầu. Đầu trang bớt lề dưới, lưới dịch vụ bớt lề trên để thẻ ló vào màn
