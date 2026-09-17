@@ -11,20 +11,17 @@ import { xoaPhienHienTai } from "@/lib/phienNhanVien";
 import { disconnect } from "@/lib/googleAuth";
 import { MA_MAC_DINH, sinhMa } from "@/lib/access";
 import { GIA_ANH_THEM_MAC_DINH } from "@/lib/constants";
-import type { KhuGioiThieu } from "@/lib/store";
 import {
   createGallery,
   deleteGallery,
   getGalleryById,
   setAccess,
   setBiaMuc,
-  setKhuGioiThieu,
   setClientName,
   setGoiAnh,
   setGoiMuc,
   setCover,
   setExpiry,
-  setFeatured,
   setMessage,
 } from "@/lib/store";
 import { guiThongBaoAnhMoi, syncAndWarm } from "@/lib/warm";
@@ -356,46 +353,11 @@ export async function setClientNameAction(
   return {};
 }
 
-/**
- * Cho phep dua anh bia album nay len trang gioi thieu cong khai.
- *
- * Mac dinh TAT. Anh cuoi la anh cua khach, phai do studio chu dong chon tung
- * album mot moi dua ra ngoai — khong tu dong lay het.
- */
-export async function setFeaturedAction(
-  galleryId: string,
-  featured: boolean,
-): Promise<{ error?: string }> {
-  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
-  await setFeatured(galleryId, featured);
-  revalidatePath("/admin");
-  revalidatePath("/");
-  return {};
-}
-
-/**
- * Xep album vao khu nao tren trang gioi thieu: anh cuoi, chup be, hay phim truong.
- *
- * Studio co nhieu mang va khach cua tung mang khac han nhau: nguoi tim chup
- * cuoi khong di tim chup thoi noi, con nguoi hoi thue phim truong lai la mot
- * nhom khac nua. Nen tren trang gioi thieu moi mang mot khu rieng.
- *
- * Ba khu LOAI TRU NHAU nen chi mot ham duy nhat, khong tach thanh hai cong
- * tac roi rac — de roi rac thi bat duoc ca "la be" lan "la phim truong" cung
- * luc va khong ai doan duoc album do hien o dau.
- *
- * Chi co y nghia khi album da bat "dua len trang gioi thieu".
- */
-export async function setKhuAction(
-  galleryId: string,
-  khu: KhuGioiThieu,
-): Promise<{ error?: string }> {
-  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
-  await setKhuGioiThieu(galleryId, khu);
-  revalidatePath("/admin");
-  revalidatePath("/");
-  return {};
-}
+/*
+  setFeaturedAction / setKhuAction đã bỏ 17/09/2026: mọi thứ lên trang giới
+  thiệu chọn ở /admin/gioi-thieu (actionsGioiThieu.ts). Cột featured và
+  khuGioiThieu của Gallery vẫn còn trong database, không ai đọc nữa.
+*/
 
 /**
  * Dat moc het han cho album — thoi diem studio du dinh xoa anh khoi Drive.

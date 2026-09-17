@@ -17,9 +17,7 @@ import {
   STUDIO,
   VE_HAMITA,
 } from "@/lib/studio";
-import { listGalleries, type KhuGioiThieu } from "@/lib/store";
-import { loadTree } from "@/lib/gallery";
-import { docThuMucGioiThieu } from "@/lib/anhGioiThieu";
+import { docAnhNhom, docThuMucGioiThieu } from "@/lib/anhGioiThieu";
 import { NHOM_GIOI_THIEU } from "@/lib/nhomGioiThieu";
 import { NavGioiThieu } from "./NavGioiThieu";
 import { AnhBiaChay } from "./AnhBiaChay";
@@ -65,62 +63,49 @@ const THE =
  */
 export default async function Home() {
   /*
-    Chỉ lấy album nào studio đã chủ động tích chọn. Ảnh cưới là ảnh của khách,
-    không tự động bung hết lên trang công khai.
-  */
-  const galleries = await listGalleries();
-  const daChon = galleries.filter((g) => g.featured && g.coverFileId);
-  const biaCuaKhu = (khu: KhuGioiThieu) =>
-    daChon
-      .filter((g) => g.khuGioiThieu === khu)
-      .map((g) => g.coverFileId as string)
-      .slice(0, 8);
+    MỌI THỨ trên trang giới thiệu chọn ở MỘT chỗ: /admin/gioi-thieu (anh chốt
+    17/09/2026, bỏ ô tích "Trang giới thiệu" trên thẻ album). Cột featured /
+    khuGioiThieu của Gallery không còn ai đọc — giữ trong database, không xoá.
 
-  const anhTieuBieu = biaCuaKhu("cuoi");
-  /*
-    Thư mục studio chọn cho từng nhóm dịch vụ (/admin/gioi-thieu, từ 17/09/2026).
-    Nhóm có ít nhất một thư mục thì thẻ của nó dẫn sang /dich-vu/<nhóm> và lấy
-    tấm bìa thư mục đầu làm ảnh thẻ khi chưa có ảnh nào khác. Chỉ đọc database,
-    không gọi Drive — tấm bìa đã lưu sẵn lúc chọn.
+    Studio chọn THƯ MỤC cho từng nhóm dịch vụ; trang chủ lấy tấm bìa từng thư
+    mục (chỉ đọc database). Riêng khu phim trường đọc ảnh thật trong thư mục
+    (lời gọi Drive duy nhất của trang, cache 5 phút chung với trang khách).
   */
   const thuMucGioiThieu = await docThuMucGioiThieu();
   const nhomCuaKhu = (khu: string) => NHOM_GIOI_THIEU.find((n) => n.khu === khu);
   const thuMucCuaKhu = (khu: string) => thuMucGioiThieu.filter((t) => t.nhom === nhomCuaKhu(khu)?.key);
-  const biaNhom = (khu: string) => thuMucCuaKhu(khu).find((t) => t.anhBia)?.anhBia ?? undefined;
-  const coTrangAnhCuoi = thuMucCuaKhu("cuoi").length > 0;
+  const biaCuaKhu = (khu: string) =>
+    thuMucCuaKhu(khu)
+      .map((t) => t.anhBia)
+      .filter((x): x is string => !!x)
+      .slice(0, 8);
+  const biaNhom = (khu: string) => biaCuaKhu(khu)[0];
+
+  const anhTieuBieu = biaCuaKhu("cuoi");
   const anhAlbumHC = biaCuaKhu("albumhc");
   const anhBaby = biaCuaKhu("baby");
 
   /*
-    Khu phim trường đọc THẲNG nhiều ảnh trong một album duy nhất (bối cảnh của
-    studio, một tấm bìa không khoe được gì) — lời gọi Drive duy nhất của trang,
-    cache 5 phút chung với trang khách xem. Chỉ lấy ẢNH DỌC cho khung 2:3, thiếu
-    thì bù tấm còn lại (nguyên tắc 24). Drive trục trặc thì bỏ qua khu này, không
-    để cả trang quảng bá chết theo.
+    Khu phim trường: chỉ lấy ẢNH DỌC cho khung 2:3, thiếu thì bù tấm còn lại
+    (nguyên tắc 24). Drive trục trặc thì khu này tự ẩn, trang không chết theo.
   */
-  const albumPhimTruong = galleries.find((g) => g.featured && g.khuGioiThieu === "phimtruong");
   let anhPhimTruong: string[] = [];
   let tongGocChup = 0;
-  if (albumPhimTruong) {
-    try {
-      const tree = await loadTree(albumPhimTruong.driveFolderId);
-      const tatCa = tree.albums.flatMap((a) => a.photos);
-      tongGocChup = tatCa.length;
-      const doc = tatCa.filter((p) => p.width && p.height && p.height > p.width);
-      anhPhimTruong = [...doc, ...tatCa.filter((p) => !doc.includes(p))].slice(0, 8).map((p) => p.id);
-    } catch {
-      /* Xem chú thích ngay trên. */
-    }
+  if (thuMucCuaKhu("phimtruong").length > 0) {
+    const tatCa = await docAnhNhom("hamita-garden");
+    tongGocChup = tatCa.length;
+    const doc = tatCa.filter((p) => p.width && p.height && p.height > p.width);
+    anhPhimTruong = [...doc, ...tatCa.filter((p) => !doc.includes(p))].slice(0, 8).map((p) => p.id);
   }
 
   /* Ảnh đặt lên từng thẻ của lưới "Hamita chụp gì?". */
   const anhThe: Record<string, string | undefined> = {
-    cuoi: anhTieuBieu[0] ?? biaNhom("cuoi"),
-    albumhc: anhAlbumHC[0] ?? biaNhom("albumhc"),
-    phimtruong: anhPhimTruong[0] ?? biaNhom("phimtruong"),
-    baby: anhBaby[0] ?? biaNhom("baby"),
+    cuoi: biaNhom("cuoi"),
+    albumhc: biaNhom("albumhc"),
+    phimtruong: biaNhom("phimtruong") ?? anhPhimTruong[0],
+    baby: biaNhom("baby"),
     // Váy & trang điểm chưa có thư mục riêng thì mượn ảnh cưới — tấm nào cũng là váy và trang điểm.
-    vay: biaNhom("vay") ?? anhTieuBieu[1] ?? anhTieuBieu[0] ?? thuMucCuaKhu("cuoi")[1]?.anhBia ?? undefined,
+    vay: biaNhom("vay") ?? anhTieuBieu[1] ?? anhTieuBieu[0],
     nhasu: biaNhom("nhasu"),
   };
 
@@ -157,7 +142,7 @@ export default async function Home() {
       <NavGioiThieu
         coAnhNen={false}
         anMuc={[
-          ...(coTrangAnhCuoi ? [] : ["/dich-vu/anh-cuoi"]),
+          ...(thuMucCuaKhu("cuoi").length > 0 ? [] : ["/dich-vu/anh-cuoi"]),
           ...(khuDangHien.albumhc ? [] : ["#album-hc"]),
           ...(khuDangHien.phimtruong ? [] : ["#phim-truong"]),
         ]}
@@ -432,7 +417,7 @@ export default async function Home() {
                 moTa={PHIM_TRUONG.moTa}
                 phai={
                   tongGocChup > anhPhimTruong.length ? (
-                    <Link href="/phim-truong" className={NUT_PHU}>
+                    <Link href="/dich-vu/hamita-garden" className={NUT_PHU}>
                       Xem tất cả {tongGocChup} góc chụp <span aria-hidden>→</span>
                     </Link>
                   ) : null
@@ -440,7 +425,7 @@ export default async function Home() {
               />
             </FadeIn>
             {/* Bấm vào ảnh nào cũng sang trang xem đủ bối cảnh — phản xạ đầu tiên của khách là bấm vào chính tấm ảnh. */}
-            <LuoiAnh ds={anhPhimTruong} khung="aspect-[2/3]" href="/phim-truong" alt={`Bối cảnh tại ${PHIM_TRUONG.ten}`} />
+            <LuoiAnh ds={anhPhimTruong} khung="aspect-[2/3]" href="/dich-vu/hamita-garden" alt={`Bối cảnh tại ${PHIM_TRUONG.ten}`} />
             <FadeIn>
               <p className="mt-10 text-center text-sm text-fg-muted">
                 {PHIM_TRUONG.moiGoi}{" "}

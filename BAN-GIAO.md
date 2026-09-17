@@ -315,6 +315,14 @@ Phóng sự) · Album & hình cổng (Album · Hình cổng) · Hamita Garden ·
 chuyển. Trang chủ thêm thẻ "Tiệm ảnh nhà Su" (nhãn, mô tả để trống chờ anh), thẻ
 tư vấn thành dải ngang dưới lưới.
 
+**Bỏ ô tích trên thẻ album (cùng ngày).** Mọi thứ lên trang giới thiệu chỉ chọn
+ở `/admin/gioi-thieu`. Bốn khu ảnh trên trang chủ (ảnh cưới, album & HC, phim
+trường, bé) nay lấy bìa các thư mục đã chọn ở đó; khu phim trường đọc ảnh thật
+trong thư mục nhóm Hamita Garden. Hai album đang tích lúc đó được chuyển sang tự
+động: Hamita Garden → nhóm Hamita Garden; HC Hồng Tâm - Hoàng Minh → Album & hình
+cổng / Hình cổng (giữ ảnh bìa). `/phim-truong` chuyển sang
+`/dich-vu/hamita-garden`. Cột `featured`/`khuGioiThieu` không xoá.
+
 **Còn chờ anh:** danh sách mục nhỏ cho Hamita Garden và Váy cưới (đang một mục
 chung); mô tả cho Tiệm ảnh nhà Su. Thôi nôi/Bầu/Sơ sinh chưa có mã riêng nên cùng
 gợi ý album mã Baby.

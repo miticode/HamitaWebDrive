@@ -146,3 +146,27 @@ export async function docAnhThuMuc(nhom: string, id: string) {
   }));
   return { muc: d.muc, ten: tenKhongMa(d.gallery.clientName ?? d.gallery.title), anh };
 }
+
+/**
+ * Ảnh thật của cả một nhóm, gom qua mọi thư mục đã chọn — cho khu phim trường
+ * ở trang chủ (khoe nhiều góc chụp, không chỉ tấm bìa). Đọc Drive, cache 5 phút
+ * chung với trang khách; thư mục nào Drive lỗi thì bỏ qua (nguyên tắc 19).
+ */
+export async function docAnhNhom(nhom: string) {
+  const dong = await getPrisma().anhGioiThieu.findMany({
+    where: { nhom },
+    orderBy: { taoLuc: "asc" },
+    include: { gallery: { select: { driveFolderId: true } } },
+  });
+  const phan = await Promise.all(
+    dong.map(async (d) => {
+      try {
+        const tree = await loadTree(d.gallery.driveFolderId);
+        return tree.albums.find((a) => a.id === d.albumId)?.photos ?? [];
+      } catch {
+        return [];
+      }
+    }),
+  );
+  return phan.flat();
+}

@@ -13,7 +13,6 @@ import { TenAlbum } from "./TenAlbum";
 import { GoiAnh } from "./GoiAnh";
 import { NutLamMoi } from "./NutLamMoi";
 import { NutGuiThongBao } from "./NutGuiThongBao";
-import { AnhTieuBieu } from "./AnhTieuBieu";
 import { ThoiHan } from "./ThoiHan";
 import { XoaAlbumDialog } from "./XoaAlbumDialog";
 
@@ -367,7 +366,6 @@ export function GalleryCard({
               : gallery.soAnhTrongGoi === 0
                 ? "gói chỉ lấy file"
                 : `gói ${gallery.soAnhTrongGoi} ảnh`}
-            {gallery.featured ? " · trên trang giới thiệu" : ""}
           </span>
           <button
             type="button"
@@ -394,12 +392,6 @@ export function GalleryCard({
             soAnhTrongGoi={gallery.soAnhTrongGoi}
             giaAnhThem={gallery.giaAnhThem}
             goiMuc={goiMuc}
-          />
-          <AnhTieuBieu
-            galleryId={gallery.id}
-            featured={gallery.featured}
-            khuHienTai={gallery.khuGioiThieu}
-            coTheHien={gallery.coverFileId !== null}
           />
         </div>
         )}

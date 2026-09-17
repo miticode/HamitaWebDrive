@@ -237,6 +237,14 @@ mỗi 15 giây tốn 1.329 byte / 0,25 giây mỗi lượt — rẻ hơn, và ch
 hai máy ở hai instance khác nhau.
 
 **24. Trang giới thiệu chia BỐN khu, chọn bằng MỘT cột chữ `khuGioiThieu`.**
+
+> **ĐÃ THAY từ 17/09/2026:** ô tích "Trang giới thiệu" trên thẻ album đã BỎ. Mọi
+> thứ lên trang giới thiệu chọn ở `/admin/gioi-thieu` (bảng `AnhGioiThieu`, xem
+> nguyên tắc 25). Cột `featured`/`khuGioiThieu` còn trong database nhưng KHÔNG
+> ai đọc — đừng dựng lại chỗ tích trên thẻ. Hai album đang tích lúc đó (Hamita
+> Garden, HC Hồng Tâm - Hoàng Minh) đã được chuyển sang, giữ nguyên ảnh bìa.
+> `/phim-truong` chuyển hẳn (308) sang `/dich-vu/hamita-garden`. Phần dưới giữ
+> lại để hiểu lịch sử và lý do tỉ lệ khung ảnh từng khu (vẫn đúng).
 Giá trị: `cuoi` · `albumhc` · `phimtruong` · `baby`. Chỉ có nghĩa khi `featured`
 bật. Hai cột cũ `laBaby`/`laPhimTruong` **không còn dùng**, giữ lại theo tiền lệ
 `accessMode` (xoá cột là không lùi được).

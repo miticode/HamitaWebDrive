@@ -25,7 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         cuoi Long An"). Anh doi bo canh thi trang doi theo nen bao Google ghe
         lai hang tuan.
       */
-      url: `${goc}/phim-truong`,
+      url: `${goc}/dich-vu/hamita-garden`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,

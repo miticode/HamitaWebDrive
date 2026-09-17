@@ -216,7 +216,7 @@ export const DICH_VU = {
   muc: [
     { khu: "cuoi", icon: "rings", nhan: "Trọn gói ngày cưới", ten: "Ảnh cưới", moTa: "Từ lễ hỏi tới lúc tan tiệc", href: "#anh" },
     { khu: "albumhc", icon: "album", nhan: "Sản phẩm in", ten: "Album & hình cổng", moTa: "Thứ anh chị cầm về sau ngày cưới", href: "#album-hc" },
-    { khu: "phimtruong", icon: "camera", nhan: "Phim trường độc quyền", ten: "Hamita Garden", moTa: "Bối cảnh châu Âu ngay tại Long An", href: "/phim-truong" },
+    { khu: "phimtruong", icon: "camera", nhan: "Phim trường độc quyền", ten: "Hamita Garden", moTa: "Bối cảnh châu Âu ngay tại Long An", href: "#phim-truong" },
     { khu: "baby", icon: "sparkle", nhan: "Hami Baby Studio", ten: "Bé & gia đình", moTa: "Thôi nôi, bầu, sơ sinh", href: "#baby" },
     { khu: "vay", icon: "dress", nhan: "Có sẵn tại studio", ten: "Váy cưới & trang điểm", moTa: "Mặc thử ngay tại chỗ, tới lúc ưng thì thôi", href: "#hanh-trinh" },
     /* Anh thêm 17/09/2026. Nhãn và mô tả CỐ Ý để trống — anh sẽ tự viết, đừng điền đoán. */
