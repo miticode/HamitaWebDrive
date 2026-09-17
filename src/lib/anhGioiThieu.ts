@@ -1,6 +1,7 @@
 import { getPrisma } from "./db";
 import { loadTree } from "./gallery";
 import type { MucAnhCuoi } from "./anhCuoi";
+import { tenKhongMa } from "./maAlbum";
 
 /** Một thư mục đã đưa lên trang Ảnh cưới, đủ để trang quản lý hiện mà không gọi Drive. */
 export type ThuMucGioiThieu = {
@@ -82,51 +83,43 @@ export async function xoaThuMucGioiThieu(id: string): Promise<void> {
   await getPrisma().anhGioiThieu.deleteMany({ where: { id } });
 }
 
-/** Mỗi thư mục góp tối đa bấy nhiêu tấm lên trang công khai. */
-export const TRAN_ANH_MOT_THU_MUC = 24;
-
 export type AnhCongKhai = { id: string; width: number | null; height: number | null };
 
 /**
- * Ảnh thật của một mục, đọc thẳng Drive (cache 5 phút dùng chung với trang
- * khách).
- *
- * Một thư mục "File gốc" có thể vài trăm tấm — đổ hết lên thì trang nặng và
- * khách lướt mãi không hết. Mỗi thư mục lấy tối đa TRAN_ANH_MOT_THU_MUC tấm
- * CÁCH ĐỀU nhau trong thư mục, không lấy 24 tấm đầu: tấm liền nhau trong một
- * buổi chụp thường cùng một dáng, lấy rải ra mới thấy đủ các cảnh.
- *
- * Album nào Drive lỗi hay thư mục đã bị xoá thì bỏ qua thư mục đó, không làm
- * chết cả trang (nguyên tắc 19).
+ * Các thư mục của một mục, cho trang /anh-cuoi/<mục>. CHỈ đọc database — tên
+ * và tấm bìa đã lưu lúc chọn — nên trang danh sách thư mục mở nhanh, không đợi
+ * Drive. Ảnh bên trong chỉ đọc khi khách bấm vào một thư mục.
  */
-export async function docAnhCongKhai(muc: MucAnhCuoi): Promise<AnhCongKhai[]> {
+export async function docThuMucCongKhai(muc: MucAnhCuoi) {
   const dong = await getPrisma().anhGioiThieu.findMany({
     where: { muc },
     orderBy: { taoLuc: "asc" },
-    include: { gallery: { select: { driveFolderId: true } } },
+    include: { gallery: { select: { title: true, clientName: true } } },
   });
-
-  const phan = await Promise.all(
-    dong.map(async (d) => {
-      try {
-        const tree = await loadTree(d.gallery.driveFolderId);
-        const anh = tree.albums.find((a) => a.id === d.albumId)?.photos ?? [];
-        return rai(anh, TRAN_ANH_MOT_THU_MUC).map((p) => ({
-          id: p.id,
-          width: p.width,
-          height: p.height,
-        }));
-      } catch {
-        return [];
-      }
-    }),
-  );
-  return phan.flat();
+  return dong.map((d) => ({
+    id: d.id,
+    ten: tenKhongMa(d.gallery.clientName ?? d.gallery.title),
+    anhBia: d.anhBia,
+    soAnh: d.soAnh,
+  }));
 }
 
-/** Lấy `n` phần tử cách đều nhau trong danh sách (giữ nguyên thứ tự). */
-function rai<T>(ds: T[], n: number): T[] {
-  if (ds.length <= n) return ds;
-  const buoc = ds.length / n;
-  return Array.from({ length: n }, (_, i) => ds[Math.floor(i * buoc)]);
+/**
+ * Một thư mục và TOÀN BỘ ảnh trong đó, đọc thẳng Drive (cache 5 phút chung với
+ * trang khách). null = không có thư mục này trong mục. Drive lỗi thì ném —
+ * trang tự bắt (nguyên tắc 19).
+ */
+export async function docAnhThuMuc(muc: MucAnhCuoi, id: string) {
+  const d = await getPrisma().anhGioiThieu.findFirst({
+    where: { id, muc },
+    include: { gallery: { select: { title: true, clientName: true, driveFolderId: true } } },
+  });
+  if (!d) return null;
+  const tree = await loadTree(d.gallery.driveFolderId);
+  const anh: AnhCongKhai[] = (tree.albums.find((a) => a.id === d.albumId)?.photos ?? []).map((p) => ({
+    id: p.id,
+    width: p.width,
+    height: p.height,
+  }));
+  return { ten: tenKhongMa(d.gallery.clientName ?? d.gallery.title), anh };
 }

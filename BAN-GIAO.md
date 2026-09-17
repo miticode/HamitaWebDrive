@@ -315,8 +315,9 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   album). Mỗi mục có nút "Thêm vào trang giới thiệu" → danh sách album mang mã
   của mục (DN / ĐH / HER / HIS; bỏ tích để xem mọi album) → bấm album → chọn thư
   mục "Đưa lên". Gỡ bằng "Gỡ khỏi trang" dưới thẻ.
-- Mỗi thư mục góp tối đa 24 tấm rải đều. Nên chọn thư mục ảnh ĐÃ CHỈNH, không
-  phải file gốc.
+- Bấm một mục thì hiện các THƯ MỤC trước (thẻ ảnh bìa, tên nhà bỏ mã HIS/HER),
+  bấm thẻ mới xem toàn bộ ảnh của thư mục đó (`/anh-cuoi/nha-gai/<id>`), có nút
+  quay lại mục. Nên chọn thư mục ảnh ĐÃ CHỈNH, không phải file gốc.
 - Bảng mới `AnhGioiThieu` đã có trong sao lưu và lệnh phục hồi. `DN` nay ghi
   nghĩa "dạm ngõ" (anh nói).
 - Lúc bàn giao chưa có thư mục nào được chọn (dữ liệu thử đã gỡ) → thẻ Ảnh cưới

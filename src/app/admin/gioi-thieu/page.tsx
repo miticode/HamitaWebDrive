@@ -46,7 +46,7 @@ export default async function GioiThieuPage() {
           <h1 className="font-display text-2xl font-light sm:text-3xl">Trang giới thiệu</h1>
           <p className="mt-2 text-sm text-fg-muted">
             Chọn thư mục ảnh đưa lên trang <strong className="font-medium text-fg">Ảnh cưới</strong>.
-            Mỗi thư mục góp tối đa 24 tấm, lấy rải đều trong thư mục.
+            Khách bấm vào một mục sẽ thấy các thư mục trước, bấm thư mục mới xem ảnh bên trong.
           </p>
         </div>
         <a href="/anh-cuoi" target="_blank" rel="noreferrer" className="btn">

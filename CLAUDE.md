@@ -322,9 +322,10 @@ nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
   THƯ MỤC CON ở `/admin/gioi-thieu`: bấm "Thêm vào trang giới thiệu" → album
   gợi ý theo mã đầu tên (DN, ĐH, HER, HIS; phóng sự chưa có mã nên hiện mọi
   album) → chọn thư mục. Lưu bảng `AnhGioiThieu` theo MÃ thư mục, kèm tên và
-  tấm đầu để trang quản lý không gọi Drive. Trang công khai đọc Drive, mỗi thư
-  mục tối đa 24 tấm RẢI ĐỀU (không lấy 24 tấm đầu — tấm liền nhau cùng một
-  dáng). Mục chưa có thư mục thì ẩn nút và trả 404; không có mục nào thì thẻ
+  tấm đầu để trang quản lý không gọi Drive. Bấm một mục thì hiện THẺ THƯ MỤC
+  trước (ảnh bìa + tên nhà đã bỏ mã, chỉ đọc database); bấm thẻ mới sang
+  `/anh-cuoi/<mục>/<id>` xem toàn bộ ảnh thư mục đó, đọc Drive (anh yêu cầu
+  17/09). Mục chưa có thư mục thì ẩn nút và trả 404; không có mục nào thì thẻ
   "Ảnh cưới" và menu quay về đường cũ. KHÔNG dẫn sang `/g/[slug]` của nhà
   khách (nguyên tắc 17).
 - **Lưới dịch vụ đứng NGAY SAU đầu trang**, trước "Về Hamita" (studio chốt

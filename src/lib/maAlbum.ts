@@ -103,3 +103,18 @@ function boMa(ten: string): string {
     .replace(/^[\s\-–—]+/, "")
     .trim();
 }
+
+/**
+ * Tên album bỏ HẾT các mã ở đầu — "HIS - HER - Công Hiếu & Ngọc Hằng" thành
+ * "Công Hiếu & Ngọc Hằng". Dùng cho chữ khách đọc (trang Ảnh cưới): mã là
+ * ký hiệu nội bộ, khách không hiểu.
+ */
+export function tenKhongMa(ten: string): string {
+  let con = ten.trim();
+  while (maDangCo(con)) {
+    const tiep = boMa(con);
+    if (tiep === con) break;
+    con = tiep;
+  }
+  return con || ten.trim();
+}
