@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { quyenAlbum } from "@/lib/quyenAlbum";
 import { laMucAnhCuoi } from "@/lib/anhCuoi";
-import { themThuMucGioiThieu, xoaThuMucGioiThieu } from "@/lib/anhGioiThieu";
+import { doiBiaThuMucGioiThieu, themThuMucGioiThieu, xoaThuMucGioiThieu } from "@/lib/anhGioiThieu";
 import { loadTree } from "@/lib/gallery";
 import { getPrisma } from "@/lib/db";
 
@@ -46,6 +46,18 @@ export async function themAnhGioiThieuAction(
   if (!laMucAnhCuoi(muc)) return { loi: "Mục không hợp lệ." };
   try {
     const kq = await themThuMucGioiThieu(muc, galleryId, albumId);
+    if (kq.loi) return kq;
+  } catch {
+    return { loi: "Không đọc được Drive lúc này, anh chị thử lại sau ít phút." };
+  }
+  lamMoi();
+  return {};
+}
+
+export async function doiBiaGioiThieuAction(id: string, fileId: string): Promise<{ loi?: string }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  try {
+    const kq = await doiBiaThuMucGioiThieu(id, fileId);
     if (kq.loi) return kq;
   } catch {
     return { loi: "Không đọc được Drive lúc này, anh chị thử lại sau ít phút." };

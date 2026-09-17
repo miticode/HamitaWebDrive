@@ -315,6 +315,9 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   album). Mỗi mục có nút "Thêm vào trang giới thiệu" → danh sách album mang mã
   của mục (DN / ĐH / HER / HIS; bỏ tích để xem mọi album) → bấm album → chọn thư
   mục "Đưa lên". Gỡ bằng "Gỡ khỏi trang" dưới thẻ.
+  Nút **"Đổi bìa"** đè góc ảnh mỗi thẻ: chọn tấm bìa trong chính thư mục đó (60
+  tấm mỗi đợt). Máy chủ kiểm tấm được chọn nằm đúng thư mục; thêm lại thư mục đã
+  có không đè bìa đã chọn.
 - Bấm một mục thì hiện các THƯ MỤC trước (thẻ ảnh bìa, tên nhà bỏ mã HIS/HER),
   bấm thẻ mới xem toàn bộ ảnh của thư mục đó (`/anh-cuoi/nha-gai/<id>`), có nút
   quay lại mục. Nên chọn thư mục ảnh ĐÃ CHỈNH, không phải file gốc.

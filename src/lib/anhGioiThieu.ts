@@ -10,6 +10,8 @@ export type ThuMucGioiThieu = {
   galleryId: string;
   tenAlbum: string;
   slug: string;
+  /** Thư mục gốc Drive của album — ô đổi bìa cần để liệt kê ảnh. */
+  driveFolderId: string;
   albumId: string;
   tenMuc: string;
   anhBia: string | null;
@@ -20,7 +22,7 @@ export async function docThuMucGioiThieu(muc?: MucAnhCuoi): Promise<ThuMucGioiTh
   const dong = await getPrisma().anhGioiThieu.findMany({
     where: muc ? { muc } : undefined,
     orderBy: { taoLuc: "asc" },
-    include: { gallery: { select: { title: true, clientName: true, slug: true } } },
+    include: { gallery: { select: { title: true, clientName: true, slug: true, driveFolderId: true } } },
   });
   return dong.map((d) => ({
     id: d.id,
@@ -28,6 +30,7 @@ export async function docThuMucGioiThieu(muc?: MucAnhCuoi): Promise<ThuMucGioiTh
     galleryId: d.galleryId,
     tenAlbum: d.gallery.clientName ?? d.gallery.title,
     slug: d.gallery.slug,
+    driveFolderId: d.gallery.driveFolderId,
     albumId: d.albumId,
     tenMuc: d.tenMuc,
     anhBia: d.anhBia,
@@ -66,16 +69,33 @@ export async function themThuMucGioiThieu(
   if (!thuMuc) return { loi: "Không tìm thấy thư mục này trên Drive nữa." };
   if (thuMuc.photos.length === 0) return { loi: "Thư mục này chưa có ảnh nào." };
 
-  const data = {
-    tenMuc: thuMuc.name,
-    anhBia: thuMuc.photos[0].id,
-    soAnh: thuMuc.photos.length,
-  };
+  const data = { tenMuc: thuMuc.name, soAnh: thuMuc.photos.length };
   await prisma.anhGioiThieu.upsert({
     where: { muc_galleryId_albumId: { muc, galleryId, albumId } },
-    create: { muc, galleryId, albumId, ...data },
+    create: { muc, galleryId, albumId, anhBia: thuMuc.photos[0].id, ...data },
+    // Thêm lại thư mục đã có thì KHÔNG đè ảnh bìa studio đã tự chọn.
     update: data,
   });
+  return {};
+}
+
+/**
+ * Đổi ảnh bìa của một thư mục trên trang Ảnh cưới. Kiểm ở máy chủ rằng tấm ảnh
+ * nằm ĐÚNG trong thư mục đó — không thì ai gọi thẳng action cũng gắn được một
+ * tấm bất kỳ trên Drive của studio (kể cả ảnh riêng của nhà khác) lên trang
+ * công khai.
+ */
+export async function doiBiaThuMucGioiThieu(id: string, fileId: string): Promise<{ loi?: string }> {
+  const prisma = getPrisma();
+  const d = await prisma.anhGioiThieu.findUnique({
+    where: { id },
+    include: { gallery: { select: { driveFolderId: true } } },
+  });
+  if (!d) return { loi: "Thư mục này đã bị gỡ khỏi trang." };
+  const tree = await loadTree(d.gallery.driveFolderId);
+  const thuMuc = tree.albums.find((a) => a.id === d.albumId);
+  if (!thuMuc?.photos.some((p) => p.id === fileId)) return { loi: "Ảnh này không nằm trong thư mục." };
+  await prisma.anhGioiThieu.update({ where: { id }, data: { anhBia: fileId } });
   return {};
 }
 

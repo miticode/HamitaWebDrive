@@ -11,6 +11,7 @@ import {
   xoaAnhGioiThieuAction,
   type ThuMucChon,
 } from "../actionsGioiThieu";
+import { DoiBiaThuMuc } from "./DoiBiaThuMuc";
 
 type AlbumGon = { id: string; ten: string; bia: string | null; soThuMuc: number; ngayTao: string };
 type Muc = (typeof MUC_ANH_CUOI)[number];
@@ -81,14 +82,33 @@ export function QuanLyAnhCuoi({ albums, daChon }: { albums: AlbumGon[]; daChon: 
 function TheDaChon({ d }: { d: ThuMucGioiThieu }) {
   const router = useRouter();
   const [dangXoa, start] = useTransition();
+  const [moBia, setMoBia] = useState(false);
   return (
     <li className={`overflow-hidden rounded-lg border border-line bg-bg-raised ${dangXoa ? "opacity-50" : ""}`}>
-      <div className="skeleton aspect-[4/5] bg-bg-soft">
+      <div className="skeleton relative aspect-[4/5] bg-bg-soft">
         {d.anhBia && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={`/api/img/${d.anhBia}?w=640`} alt="" loading="lazy" className="size-full object-cover" />
         )}
+        {/* Cùng kiểu nút "Đổi bìa" đè góc ảnh như thẻ album ở trang quản lý album. */}
+        <button
+          type="button"
+          onClick={() => setMoBia(true)}
+          className="absolute top-2 right-2 rounded-full bg-black/55 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition hover:bg-black/70"
+        >
+          Đổi bìa
+        </button>
       </div>
+      {moBia && (
+        <DoiBiaThuMuc
+          id={d.id}
+          driveFolderId={d.driveFolderId}
+          albumId={d.albumId}
+          ten={`${d.tenAlbum} · ${d.tenMuc}`}
+          anhBia={d.anhBia}
+          dong={() => setMoBia(false)}
+        />
+      )}
       <div className="p-3">
         <p className="truncate text-sm font-medium" title={d.tenAlbum}>{d.tenAlbum}</p>
         <p className="truncate text-xs text-fg-muted" title={d.tenMuc}>
