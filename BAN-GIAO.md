@@ -295,6 +295,10 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
 - Màn từ 1536px vẫn giữ kiểu anh chọn hôm 07/09: trang không cuộn, chỉ lưới album
   cuộn. Nhưng khối Drive, sao lưu và kho ảnh dọn vào **cột trái** — nhờ vậy khung
   cuộn album cao 793px (trước 529px, không chứa nổi một thẻ lớn).
+- Trang **"Ảnh khách chọn"** của từng album cũng to ra: trước cố định 6 cột trong
+  khung 896px (mỗi tấm ~105px). Giờ trang rộng tới 2048px, số cột theo màn hình —
+  màn 2000px 6 cột mỗi tấm 310×413, màn 1280px 5 cột, điện thoại 2 cột; tên file
+  và lời dặn chữ to hơn.
 
 ### Trang giới thiệu bày lại theo kiểu mohome.vn (16/09)
 

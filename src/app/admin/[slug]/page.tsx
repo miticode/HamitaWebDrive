@@ -52,7 +52,7 @@ export default async function ResultsPage({ params }: Props) {
   const tongToi = (await cookies()).get("admin-tong")?.value === "toi";
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-6 sm:py-12">
+    <main className="mx-auto w-full max-w-[128rem] px-5 py-10 sm:px-6 sm:py-12">
       <div className="flex items-center justify-between gap-4">
         <Link href="/admin" className="eyebrow transition hover:text-accent">
           ← Tất cả album

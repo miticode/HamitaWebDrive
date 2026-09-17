@@ -26,11 +26,18 @@ export function LuoiAnhChon({ anh }: { anh: AnhChon[] }) {
 
   return (
     <>
-      <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-6">
+      {/*
+        O anh to ra (17/09/2026, anh yeu cau "to len cho de coi" nhu trang quan ly
+        album): truoc day co dinh 6 cot trong khung 896px, moi tam chi ~105px —
+        nhin khong ra chu re co can "cao len" hay khong. Gio trang rong toi
+        2048px, so cot tang dan theo man hinh: man 2000px con 6 cot nhung moi
+        tam ~300px.
+      */}
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {anh.map((row, i) => (
           <figure
             key={row.id}
-            className="skeleton overflow-hidden rounded-sm bg-bg-raised"
+            className="skeleton overflow-hidden rounded-lg bg-bg-raised"
           >
             {/*
               Nút bọc quanh ảnh chứ không gắn onClick thẳng lên thẻ ảnh: có nút
@@ -45,7 +52,7 @@ export function LuoiAnhChon({ anh }: { anh: AnhChon[] }) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`/api/img/${row.driveFileId}?w=320`}
+                src={`/api/img/${row.driveFileId}?w=640`}
                 alt={row.fileName}
                 loading="lazy"
                 className="aspect-[3/4] w-full object-cover transition duration-300 hover:opacity-85"
@@ -62,12 +69,12 @@ export function LuoiAnhChon({ anh }: { anh: AnhChon[] }) {
               khách từng ghi trên tấm vừa tick vừa tim đã được chép sang lượt
               tim, để đơn giao in không mất "ảnh bìa", "ảnh bàn".
             */}
-            <figcaption className="px-1.5 py-1.5">
-              <span className="block truncate text-[11px] text-fg-faint">
+            <figcaption className="px-2.5 py-2">
+              <span className="block truncate text-[13px] text-fg-faint">
                 {row.fileName}
               </span>
               {row.note && (
-                <span className="mt-1 block rounded-sm bg-amber-100 px-1.5 py-1 text-[11px] leading-snug text-amber-900">
+                <span className="mt-1.5 block rounded-md bg-amber-100 px-2 py-1.5 text-sm leading-snug text-amber-900">
                   {row.note}
                 </span>
               )}
