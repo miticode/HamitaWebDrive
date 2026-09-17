@@ -278,6 +278,24 @@ album, số tấm khách đã thả tim, lúc khách báo chọn xong và link �
 Nếu khách đã báo chọn xong mà hợp đồng bên AppSheet còn ở bước "chờ khách
 chọn", trang hợp đồng sẽ nhắc để nhân viên chuyển bước bên AppSheet.
 
+### Trang quản lý album to và thoáng như Gump (17/09)
+
+Anh muốn lưới album to cho dễ coi như trên Gump. Trước đó màn hình chia ba cột,
+cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ album chỉ còn khoảng
+235px, chữ gãy dòng, ảnh bìa nhỏ. Giờ:
+
+- **"Tạo link mới" thành một nút ở đầu trang**, bấm mới mở khung tạo link
+  (Esc hoặc bấm ra ngoài để đóng).
+- **Thẻ album to gấp đôi**: đo ở màn 2000×1060 của anh, thẻ rộng 520px, ảnh bìa
+  tỉ lệ 3:2 cỡ 520×347; tên album và số liệu chữ to hơn. Màn 1280px vẫn 3 cột
+  (thẻ 390px), điện thoại 1 cột.
+- **Khối cài đặt thu gọn**: mỗi thẻ chỉ hiện một dòng "Mã … · gói … ảnh" và nút
+  **Cài đặt** — bấm ra đủ năm dòng (mã chọn ảnh, lời nhắn, hạn giữ ảnh, gói ảnh,
+  trang giới thiệu) như cũ.
+- Màn từ 1536px vẫn giữ kiểu anh chọn hôm 07/09: trang không cuộn, chỉ lưới album
+  cuộn. Nhưng khối Drive, sao lưu và kho ảnh dọn vào **cột trái** — nhờ vậy khung
+  cuộn album cao 793px (trước 529px, không chứa nổi một thẻ lớn).
+
 ### Trang giới thiệu bày lại theo kiểu mohome.vn (16/09)
 
 Anh gửi mohome.vn để học cách bố cục. Em giữ nguyên màu, phông, bốn khu và giọng

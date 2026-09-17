@@ -48,6 +48,7 @@ export function AlbumList({
   baoTinLuc,
   thongBao,
   quanLy,
+  heThong,
 }: {
   galleries: Gallery[];
   counts: ListCount[];
@@ -74,6 +75,8 @@ export function AlbumList({
    * và Turbopack đổ ngay lúc build (nguyên tắc 43).
    */
   thongBao: ReactNode;
+  /** Drive, sao lưu, kho ảnh — chỉ dựng ở màn từ 1536px (xem ChiManLon ở page.tsx). */
+  heThong: ReactNode;
 }) {
   const [tuKhoa, setTuKhoa] = useState("");
   const [nhan, setNhan] = useState<string | null>(null);
@@ -155,8 +158,9 @@ export function AlbumList({
     bình thường như cũ, chỉ từ 1536px mới khoá chiều cao lại.
   */
   return (
-    <div className="grid items-start gap-5 2xl:h-full 2xl:min-h-0 2xl:grid-cols-[17rem_minmax(0,1fr)] 2xl:items-stretch">
+    <div className="grid items-start gap-5 2xl:h-full 2xl:min-h-0 2xl:grid-cols-[19rem_minmax(0,1fr)] 2xl:items-stretch">
       <aside className="grid max-h-72 content-start gap-4 overflow-y-auto sm:grid-cols-2 2xl:h-full 2xl:max-h-none 2xl:min-h-0 2xl:grid-cols-1">
+        <div className="hidden min-w-0 2xl:block">{heThong}</div>
         <LocTheoThang ngayTao={ngayTao} moc={moc} doiMoc={doiMoc} />
         {/*
           Bọc trong một thẻ chứ không thả `{thongBao}` trần: hai thẻ con tĩnh
@@ -284,7 +288,7 @@ export function AlbumList({
             </div>
           ) : (
             <>
-              <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {ketQua.slice(0, hienBaoNhieu).map((g) => (
                   <GalleryCard
                     key={g.id}

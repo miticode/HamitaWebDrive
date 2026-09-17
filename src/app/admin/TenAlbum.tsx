@@ -60,7 +60,7 @@ export function TenAlbum({
         <Link
           href={`/g/${slug}`}
           title={ten}
-          className="truncate font-display text-xl leading-snug transition group-hover:text-accent"
+          className="truncate font-display text-2xl leading-snug transition group-hover:text-accent"
         >
           {ten}
         </Link>

@@ -25,7 +25,8 @@ import { NutSaoLuu } from "./NutSaoLuu";
 import { KhoAnh } from "./KhoAnh";
 import { DriveConnection } from "./DriveConnection";
 import { AlbumList } from "./AlbumList";
-import { GalleryForm } from "./GalleryForm";
+import { NutTaoLink } from "./NutTaoLink";
+import { ChiManLon, ChiManNho } from "./TheoManHinh";
 import { ThongBao } from "./ThongBao";
 
 export const dynamic = "force-dynamic";
@@ -190,7 +191,7 @@ export default async function AdminPage() {
       `h-dvh` chứ không `h-screen`: thanh địa chỉ của trình duyệt di động co ra
       giãn vào, `h-screen` sẽ để một dải nội dung nằm dưới mép màn hình.
     */
-    <main className="mx-auto w-full max-w-[104rem] px-5 py-10 sm:px-6 sm:py-12 2xl:flex 2xl:h-dvh 2xl:flex-col 2xl:overflow-hidden">
+    <main className="mx-auto w-full max-w-[128rem] px-5 py-10 sm:px-6 sm:py-12 2xl:flex 2xl:h-dvh 2xl:flex-col 2xl:overflow-hidden 2xl:py-6">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-6">
         <div className="flex items-center gap-4">
           <Logo size="sm" />
@@ -204,7 +205,8 @@ export default async function AdminPage() {
         */}
         <TheoDoiKhach />
 
-        <div className="flex items-center gap-5">
+        <div className="flex flex-wrap items-center gap-5">
+          <NutTaoLink />
           {/*
             Lối sang phần quản lý studio (thay dần AppSheet, bắt đầu 15/09/2026).
             Đang cầm mật khẩu quản lý album thì vào thẳng, không phải đăng nhập lại.
@@ -237,6 +239,14 @@ export default async function AdminPage() {
         chăm sóc hệ thống, không phải việc làm với từng album. Gộp lại thì phần
         trên trang gọn còn một hàng, chừa chỗ cho khung kho ảnh ngay dưới.
       */}
+      {/*
+        Từ 1536px, khối Drive, sao lưu và kho ảnh dọn vào CỘT TRÁI (17/09/2026):
+        ở đầu trang chúng ăn gần 200px chiều cao của khung cuộn album, mà thẻ
+        album lớn cao khoảng 700px — đo ở màn 2000×1060, khung cuộn chỉ còn
+        529px, không chứa nổi một thẻ. Vào cột trái thì vẫn luôn nhìn thấy (đúng
+        yêu cầu 07/09) mà khung cuộn cao gần hết màn hình.
+      */}
+      <ChiManNho>
       {quanLy && (
         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
           <div className="min-w-0 flex-1">
@@ -261,6 +271,7 @@ export default async function AdminPage() {
       <div className="mt-4">
         <KhoAnh quaHan={quaHan} sapHetHan={sapHetHan} />
       </div>
+      </ChiManNho>
 
       {(!adminPasswordIsSet() || onJsonStore) && (
         <div className="mt-4 space-y-2">
@@ -281,17 +292,13 @@ export default async function AdminPage() {
         </div>
       )}
 
-      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px] 2xl:min-h-0 2xl:flex-1 2xl:items-stretch">
-        {/*
-          Cột phải cũng cuộn riêng: ô tạo link cao hơn màn hình 13 inch, khoá
-          chiều cao mà không cho nó cuộn là nhân viên không tới được nút "Tạo
-          link".
-        */}
-        <div className="lg:order-2 2xl:min-h-0 2xl:overflow-y-auto">
-          <GalleryForm />
-        </div>
-
-        <div className="lg:order-1 2xl:min-h-0">
+      {/*
+        Không còn cột phải "Tạo link mới" (17/09/2026): khung đó thu vào nút ở
+        đầu trang (NutTaoLink), nhường cả bề ngang cho lưới album — thẻ to gấp
+        đôi, như cách Gump bày album.
+      */}
+      <div className="mt-8 2xl:flex 2xl:min-h-0 2xl:flex-1 2xl:flex-col">
+        <div className="2xl:min-h-0 2xl:flex-1">
           {galleries.length === 0 ? (
             <>
               <h2 className="eyebrow">Album đã tạo · 0</h2>
@@ -315,6 +322,23 @@ export default async function AdminPage() {
               baoTinLuc={baoTinLuc}
               quanLy={quanLy}
               thongBao={<ThongBao tin={tinThongBao} />}
+              heThong={
+                <ChiManLon>
+                  <div className="grid gap-4">
+                    {quanLy && (
+                      <div className="card grid gap-3 p-4">
+                        <DriveConnection
+                          account={driveAccount}
+                          oauthConfigured={oauthIsConfigured()}
+                          serviceAccount={serviceAccount}
+                        />
+                        <NutSaoLuu soNgayTruoc={saoLuuCachDay} tuDongCachDay={saoLuuTuDongCachDay} />
+                      </div>
+                    )}
+                    <KhoAnh quaHan={quaHan} sapHetHan={sapHetHan} />
+                  </div>
+                </ChiManLon>
+              }
             />
           )}
         </div>

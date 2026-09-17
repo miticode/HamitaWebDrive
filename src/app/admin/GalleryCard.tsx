@@ -45,7 +45,7 @@ function Stat({
     <span className="flex items-center gap-1.5" title={label}>
       <svg
         viewBox="0 0 24 24"
-        className={`size-[15px] shrink-0 ${colors[icon]}`}
+        className={`size-[17px] shrink-0 ${colors[icon]}`}
         fill="none"
         stroke="currentColor"
         strokeWidth="1.7"
@@ -174,17 +174,23 @@ export function GalleryCard({
   const demDuocLuotTai = new Date(gallery.createdAt) >= MOC_DEM_LUOT_TAI;
   const [moChonBia, setMoChonBia] = useState(false);
   const [moXoa, setMoXoa] = useState(false);
+  /*
+    Khối cài đặt thu gọn mặc định (17/09/2026). Năm dòng cài đặt đứng sẵn trên
+    mọi thẻ làm lưới dài và rối; anh muốn lưới album thoáng như Gump. Dòng tóm
+    tắt ngay trên nút vẫn cho thấy mã và gói — hai thứ hay cần liếc nhất.
+  */
+  const [moCaiDat, setMoCaiDat] = useState(false);
 
   return (
     <article className="card group relative flex flex-col overflow-hidden">
       <Link
         href={`/g/${gallery.slug}`}
-        className="relative block aspect-[4/3] overflow-hidden bg-bg-soft"
+        className="relative block aspect-[3/2] overflow-hidden bg-bg-soft"
       >
         {gallery.coverFileId ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={`/api/img/${gallery.coverFileId}?w=640`}
+            src={`/api/img/${gallery.coverFileId}?w=960`}
             alt={title}
             loading="lazy"
             className="size-full object-cover transition duration-700 group-hover:scale-105"
@@ -294,7 +300,7 @@ export function GalleryCard({
           )}
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-fg-muted">
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-5 gap-y-1 text-[15px] text-fg-muted">
           <Stat icon="photo" value={gallery.photoCount} label="Số ảnh" />
           <Stat
             icon="folder"
@@ -352,7 +358,29 @@ export function GalleryCard({
           rieng voi mt-2 cua rieng no, xep chong len nhau khong thang hang,
           nhin nhu mot danh sach roi rac thay vi mot bang cai dat.
         */}
-        <div className="mt-3 divide-y divide-line rounded-md border border-line px-3">
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-bg-soft px-3.5 py-2.5 text-sm text-fg-muted">
+          <span className="min-w-0 truncate">
+            Mã <span className="font-medium text-fg tabular-nums">{gallery.accessCode ?? "—"}</span>
+            {" · "}
+            {gallery.soAnhTrongGoi === null
+              ? "chưa đặt gói"
+              : gallery.soAnhTrongGoi === 0
+                ? "gói chỉ lấy file"
+                : `gói ${gallery.soAnhTrongGoi} ảnh`}
+            {gallery.featured ? " · trên trang giới thiệu" : ""}
+          </span>
+          <button
+            type="button"
+            onClick={() => setMoCaiDat((m) => !m)}
+            aria-expanded={moCaiDat}
+            className="shrink-0 font-medium text-fg underline underline-offset-4 hover:text-accent"
+          >
+            {moCaiDat ? "Thu gọn" : "Cài đặt"}
+          </button>
+        </div>
+
+        {moCaiDat && (
+        <div className="mt-2 divide-y divide-line rounded-md border border-line px-3">
           <AccessControl galleryId={gallery.id} code={gallery.accessCode} />
           <LoiNhan galleryId={gallery.id} message={gallery.message} />
           <ThoiHan
@@ -374,6 +402,7 @@ export function GalleryCard({
             coTheHien={gallery.coverFileId !== null}
           />
         </div>
+        )}
 
         {/* title: dòng này bị cắt bằng ba chấm trên thẻ hẹp, mà nó chứa cả
             đường dẫn lẫn ngày tạo — rê chuột phải đọc lại được đủ. */}
