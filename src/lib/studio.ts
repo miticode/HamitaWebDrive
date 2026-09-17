@@ -214,7 +214,7 @@ export const DICH_VU = {
   nhan: "Dịch vụ",
   tieuDe: "Hamita chụp gì?",
   muc: [
-    { khu: "cuoi", icon: "rings", nhan: "Trọn gói ngày cưới", ten: "Ảnh cưới", moTa: "Từ lễ hỏi tới lúc tan tiệc", href: "#anh" },
+    { khu: "cuoi", icon: "rings", nhan: "Trọn gói ngày cưới", ten: "Ảnh cưới", moTa: "Từ lễ hỏi tới lúc tan tiệc", href: "/anh-cuoi" },
     { khu: "albumhc", icon: "album", nhan: "Sản phẩm in", ten: "Album & hình cổng", moTa: "Thứ anh chị cầm về sau ngày cưới", href: "#album-hc" },
     { khu: "phimtruong", icon: "camera", nhan: "Phim trường độc quyền", ten: "Hamita Garden", moTa: "Bối cảnh châu Âu ngay tại Long An", href: "/phim-truong" },
     { khu: "baby", icon: "sparkle", nhan: "Hami Baby Studio", ten: "Bé & gia đình", moTa: "Thôi nôi, bầu, sơ sinh", href: "#baby" },
@@ -281,4 +281,16 @@ export const HAMI_BABY = {
   soNguoiTheoDoi: "3,1K",
   mapEmbed:
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3923.7852423002405!2d106.47000407682195!3d10.438609365330311!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310ab3af09b27cd3%3A0xb5f7fc7310688edd!2sHami%20Baby%20Studio!5e0!3m2!1svi!2s!4v1787558693834!5m2!1svi!2s",
+} as const;
+
+/**
+ * Trang Ảnh cưới (/anh-cuoi) — các mục nhỏ nằm ở src/lib/anhCuoi.ts, ảnh do
+ * studio chọn ở /admin/gioi-thieu. Chỉ giới thiệu ngắn, không kể chuyện gì
+ * chưa kiểm chứng được (nguyên tắc 25).
+ */
+export const TRANG_ANH_CUOI = {
+  nhan: "Trọn gói ngày cưới",
+  tieuDe: "Ảnh cưới",
+  moTa: "Từ buổi dạm ngõ, lễ đính hôn tới ngày cưới ở nhà gái, nhà trai — anh chị xem Hamita đã chụp cho những nhà khác thế nào.",
+  moiGoi: "Ưng phong cách nào, anh chị nhắn Hamita một tiếng nhé.",
 } as const;

@@ -14,7 +14,8 @@ const MUC = [
      mảng mình cần, hành trình vẫn nằm trong trang cho ai cuộn tới. */
   { href: "#dich-vu", nhan: "Dịch vụ" },
   { href: "#gioi-thieu", nhan: "Giới thiệu" },
-  { href: "#anh", nhan: "Ảnh cưới" },
+  /* Sang trang riêng /anh-cuoi có các mục nhỏ (17/09/2026), không cuộn tới khu trong trang chủ nữa. */
+  { href: "/anh-cuoi", nhan: "Ảnh cưới" },
   /* "Album" chu khong phai "Album & HC": HC la tieng long trong nghe, khach
      khong hieu. Ten day du nam o tieu de cua chinh khu do. */
   { href: "#album-hc", nhan: "Album" },
@@ -60,7 +61,7 @@ export function NavGioiThieu({
   }, []);
 
   const noiSang = coAnhNen && !daCuon;
-  const duong = (href: string) => (trangKhac ? `/${href}` : href);
+  const duong = (href: string) => (trangKhac && href.startsWith("#") ? `/${href}` : href);
 
   return (
     <header

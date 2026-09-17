@@ -316,6 +316,17 @@ thẻ ảnh lớn chữ đè lên ảnh (`DICH_VU` trong `studio.ts`), bốn khu
 mục canh trái, hành trình năm chương thành dải thẻ, dải kêu gọi bo tròn, và ba
 nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
 
+- **Trang Ảnh cưới riêng `/anh-cuoi/<mục>`** (17/09/2026): năm mục Dạm ngõ ·
+  Đính hôn · Nhà gái · Nhà trai · Phóng sự cưới (`MUC_ANH_CUOI` trong
+  `src/lib/anhCuoi.ts`; `key` là đường dẫn gửi khách, đừng đổi). Studio chọn
+  THƯ MỤC CON ở `/admin/gioi-thieu`: bấm "Thêm vào trang giới thiệu" → album
+  gợi ý theo mã đầu tên (DN, ĐH, HER, HIS; phóng sự chưa có mã nên hiện mọi
+  album) → chọn thư mục. Lưu bảng `AnhGioiThieu` theo MÃ thư mục, kèm tên và
+  tấm đầu để trang quản lý không gọi Drive. Trang công khai đọc Drive, mỗi thư
+  mục tối đa 24 tấm RẢI ĐỀU (không lấy 24 tấm đầu — tấm liền nhau cùng một
+  dáng). Mục chưa có thư mục thì ẩn nút và trả 404; không có mục nào thì thẻ
+  "Ảnh cưới" và menu quay về đường cũ. KHÔNG dẫn sang `/g/[slug]` của nhà
+  khách (nguyên tắc 17).
 - **Lưới dịch vụ đứng NGAY SAU đầu trang**, trước "Về Hamita" (studio chốt
   17/09/2026: khách vào là thấy dịch vụ để dễ bán thêm). Menu cũng để "Dịch vụ"
   lên đầu. Đầu trang bớt lề dưới, lưới dịch vụ bớt lề trên để thẻ ló vào màn

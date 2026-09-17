@@ -14,8 +14,8 @@
  *
  * `nghia` để null khi KHÔNG BIẾT CHẮC mã đó viết tắt của gì. Ghi bừa một chú
  * thích sai còn hại hơn để trống: nhân viên đọc rồi đặt tên theo cái nghĩa bịa
- * đó. `DN` và `TET` đang ở tình trạng này — hai mã có sẵn từ trước, chưa ai nói
- * rõ nghĩa.
+ * đó. `TET` đang ở tình trạng này — mã có sẵn từ trước, chưa ai nói
+ * rõ nghĩa. (`DN` = dạm ngõ, anh nói rõ ngày 17/09/2026.)
  */
 export type MaAlbum = {
   ma: string;
@@ -32,7 +32,7 @@ export const MA_ALBUM: readonly MaAlbum[] = [
   { ma: "Baby", nghia: "chụp bé" },
   { ma: "GD", nghia: "gia đình" },
   { ma: "NS", nghia: "nhà Su" },
-  { ma: "DN", nghia: null },
+  { ma: "DN", nghia: "dạm ngõ" },
   { ma: "TET", nghia: null },
 ] as const;
 

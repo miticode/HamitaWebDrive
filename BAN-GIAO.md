@@ -305,6 +305,25 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   chốt 17/09, bỏ luôn nút "Xong một phần"), khớp với nhãn xanh trên thẻ. Đo lúc
   làm: 24 / 25 trên 49 album. Kết hợp được với ô tìm, mã, tháng.
 
+### Trang Ảnh cưới + quản lý trang giới thiệu (17/09)
+
+- Bấm thẻ "Ảnh cưới" hoặc menu "Ảnh cưới" ở trang chủ → sang `/anh-cuoi`, tự tới
+  mục đầu tiên có ảnh. Hàng nút: Dạm ngõ · Đính hôn · Ngày cưới – Nhà gái ·
+  Ngày cưới – Nhà trai · Phóng sự cưới; mỗi mục một link riêng
+  (`/anh-cuoi/dinh-hon`…) gửi được cho khách. Mục chưa có ảnh thì ẩn.
+- Trang quản lý: `/admin/gioi-thieu` (link "Trang giới thiệu" đầu trang quản lý
+  album). Mỗi mục có nút "Thêm vào trang giới thiệu" → danh sách album mang mã
+  của mục (DN / ĐH / HER / HIS; bỏ tích để xem mọi album) → bấm album → chọn thư
+  mục "Đưa lên". Gỡ bằng "Gỡ khỏi trang" dưới thẻ.
+- Mỗi thư mục góp tối đa 24 tấm rải đều. Nên chọn thư mục ảnh ĐÃ CHỈNH, không
+  phải file gốc.
+- Bảng mới `AnhGioiThieu` đã có trong sao lưu và lệnh phục hồi. `DN` nay ghi
+  nghĩa "dạm ngõ" (anh nói).
+- Lúc bàn giao chưa có thư mục nào được chọn (dữ liệu thử đã gỡ) → thẻ Ảnh cưới
+  vẫn đi đường cũ cho tới khi studio chọn thư mục đầu tiên. Chưa có album mã DN.
+- Đo trên máy dev: lọc mã ra ĐH 1 · HER 6 · HIS 7 album; thư mục 990 tấm → trang
+  hiện 24 tấm; điện thoại 375px không tràn ngang, nút mục cao 44px.
+
 ### Trang giới thiệu bày lại theo kiểu mohome.vn (16/09)
 
 **17/09:** lưới "Hamita chụp gì?" dời lên ngay dưới đầu trang (trước "Về

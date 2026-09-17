@@ -38,6 +38,7 @@ const BANG_SAO_LUU = [
   "PushSub",
   "BiaMuc",
   "GoiMuc",
+  "AnhGioiThieu",
   "Moc",
   "GoogleAccount",
   "NhanVien",
@@ -116,6 +117,7 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     pushSub,
     biaMuc,
     goiMuc,
+    anhGioiThieu,
     moc,
     googleAccount,
     nhanVien,
@@ -138,6 +140,7 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     prisma.pushSub.findMany(),
     prisma.biaMuc.findMany(),
     prisma.goiMuc.findMany(),
+    prisma.anhGioiThieu.findMany({ orderBy: { taoLuc: "asc" } }),
     prisma.moc.findMany(),
     prisma.googleAccount.findMany({
       // Cố tình KHÔNG lấy refreshToken — xem chú thích đầu tệp.
@@ -174,6 +177,7 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     pushSub,
     biaMuc,
     goiMuc,
+    anhGioiThieu,
     moc,
     googleAccount,
     nhanVien,

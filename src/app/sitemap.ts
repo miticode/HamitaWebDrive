@@ -4,7 +4,7 @@ import { siteUrl } from "@/lib/constants";
 /**
  * Sinh /sitemap.xml tu dong.
  *
- * Chi co hai trang quang ba cong khai. Album khach (/g/[slug]) khong dua vao
+ * Chi co cac trang quang ba cong khai (trang chu, phim truong, anh cuoi). Album khach (/g/[slug]) khong dua vao
  * day: chung da tu khai bao "khong index" nen dua vao sitemap — noi chuyen de
  * bao Google "hay index nhung trang nay" — la mau thuan voi chinh chi thi cua
  * trang do.
@@ -26,6 +26,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
         lai hang tuan.
       */
       url: `${goc}/phim-truong`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      // Trang Ảnh cưới (17/09/2026); tự chuyển tới mục đầu tiên đang có ảnh.
+      url: `${goc}/anh-cuoi`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,

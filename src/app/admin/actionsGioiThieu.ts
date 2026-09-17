@@ -1,0 +1,68 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { quyenAlbum } from "@/lib/quyenAlbum";
+import { laMucAnhCuoi } from "@/lib/anhCuoi";
+import { themThuMucGioiThieu, xoaThuMucGioiThieu } from "@/lib/anhGioiThieu";
+import { loadTree } from "@/lib/gallery";
+import { getPrisma } from "@/lib/db";
+
+/*
+  Quyền: ai vào được trang quản lý album cũng làm được (quyenAlbum), cùng mức
+  với ô tích "hiện lên trang giới thiệu" trên thẻ album. Việc này sửa được, xoá
+  nhầm thì thêm lại — không nằm trong nhóm việc nguy hiểm.
+*/
+
+export type ThuMucChon = { id: string; ten: string; soAnh: number };
+
+/** Danh sách thư mục con của một album, để chọn thư mục đưa lên. Đọc Drive. */
+export async function docThuMucAlbumAction(
+  galleryId: string,
+): Promise<{ loi?: string; thuMuc?: ThuMucChon[] }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  const g = await getPrisma().gallery.findUnique({
+    where: { id: galleryId },
+    select: { driveFolderId: true },
+  });
+  if (!g) return { loi: "Không tìm thấy album." };
+  try {
+    const tree = await loadTree(g.driveFolderId);
+    return {
+      thuMuc: tree.albums
+        .filter((a) => a.photos.length > 0)
+        .map((a) => ({ id: a.id, ten: a.id === "" ? "Ảnh ngoài thư mục gốc" : a.name, soAnh: a.photos.length })),
+    };
+  } catch {
+    return { loi: "Không đọc được Drive lúc này, anh chị thử lại sau ít phút." };
+  }
+}
+
+export async function themAnhGioiThieuAction(
+  muc: string,
+  galleryId: string,
+  albumId: string,
+): Promise<{ loi?: string }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  if (!laMucAnhCuoi(muc)) return { loi: "Mục không hợp lệ." };
+  try {
+    const kq = await themThuMucGioiThieu(muc, galleryId, albumId);
+    if (kq.loi) return kq;
+  } catch {
+    return { loi: "Không đọc được Drive lúc này, anh chị thử lại sau ít phút." };
+  }
+  lamMoi();
+  return {};
+}
+
+export async function xoaAnhGioiThieuAction(id: string): Promise<{ loi?: string }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  await xoaThuMucGioiThieu(id);
+  lamMoi();
+  return {};
+}
+
+function lamMoi() {
+  revalidatePath("/admin/gioi-thieu");
+  revalidatePath("/");
+  revalidatePath("/anh-cuoi", "layout");
+}

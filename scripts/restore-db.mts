@@ -42,6 +42,7 @@ const COT_NGAY: Record<string, string[]> = {
   // Tu ban sao luu phien ban 2 (15/09/2026):
   biaMuc: [],
   goiMuc: [],
+  anhGioiThieu: [],
   moc: ["luc"],
   nhanVien: ["ngayVaoLam", "dangNhapLuc", "taoLuc", "capNhatLuc"],
   nhatKy: ["luc"],
@@ -169,6 +170,8 @@ const dsMucXong = (ban.bang.mucXong ?? []).filter((m) =>
 // Anh bia va goi anh tung thu muc — chi co tu ban sao luu phien ban 2.
 const dsBiaMuc = (ban.bang.biaMuc ?? []).filter((m) => idGallery.has(m.galleryId as string));
 const dsGoiMuc = (ban.bang.goiMuc ?? []).filter((m) => idGallery.has(m.galleryId as string));
+// Thu muc dua len trang Anh cuoi (tu 17/09/2026) — di theo album nhu GoiMuc.
+const dsAnhGioiThieu = (ban.bang.anhGioiThieu ?? []).filter((m) => idGallery.has(m.galleryId as string));
 
 /*
   PushSub co tinh khong phuc hoi: phieu do gan voi mot trinh duyet cu the va
@@ -197,6 +200,7 @@ for (const g of dsGallery) {
   const mucCuaNo = dsMucXong.filter((m) => m.galleryId === g.id);
   const biaCuaNo = dsBiaMuc.filter((m) => m.galleryId === g.id);
   const goiCuaNo = dsGoiMuc.filter((m) => m.galleryId === g.id);
+  const gtCuaNo = dsAnhGioiThieu.filter((m) => m.galleryId === g.id);
 
   console.log(
     `  ${ghiThat ? "phuc hoi" : "SE them "} ${String(g.slug).padEnd(36)} ${ten}` +
@@ -221,6 +225,7 @@ for (const g of dsGallery) {
       ),
       ...biaCuaNo.map((m) => prisma.biaMuc.create({ data: m as never })),
       ...goiCuaNo.map((m) => prisma.goiMuc.create({ data: m as never })),
+      ...gtCuaNo.map((m) => prisma.anhGioiThieu.create({ data: { ...m, taoLuc: new Date(m.taoLuc as string) } as never })),
     ]);
   }
   daThem++;

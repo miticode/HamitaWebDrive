@@ -19,6 +19,7 @@ import {
 } from "@/lib/studio";
 import { listGalleries, type KhuGioiThieu } from "@/lib/store";
 import { loadTree } from "@/lib/gallery";
+import { docThuMucGioiThieu } from "@/lib/anhGioiThieu";
 import { NavGioiThieu } from "./NavGioiThieu";
 import { AnhBiaChay } from "./AnhBiaChay";
 import { NutLienHeNoi } from "./NutLienHeNoi";
@@ -75,6 +76,13 @@ export default async function Home() {
       .slice(0, 8);
 
   const anhTieuBieu = biaCuaKhu("cuoi");
+  /*
+    Thư mục đã chọn cho trang Ảnh cưới (/anh-cuoi, chọn ở /admin/gioi-thieu từ
+    17/09/2026). Có ít nhất một thư mục thì thẻ "Ảnh cưới" và mục menu dẫn sang
+    trang đó. Đọc database thôi, không gọi Drive — tấm bìa đã lưu sẵn lúc chọn.
+  */
+  const thuMucAnhCuoi = await docThuMucGioiThieu();
+  const coTrangAnhCuoi = thuMucAnhCuoi.length > 0;
   const anhAlbumHC = biaCuaKhu("albumhc");
   const anhBaby = biaCuaKhu("baby");
 
@@ -102,12 +110,12 @@ export default async function Home() {
 
   /* Ảnh đặt lên từng thẻ của lưới "Hamita chụp gì?". */
   const anhThe: Record<string, string | undefined> = {
-    cuoi: anhTieuBieu[0],
+    cuoi: anhTieuBieu[0] ?? thuMucAnhCuoi[0]?.anhBia ?? undefined,
     albumhc: anhAlbumHC[0],
     phimtruong: anhPhimTruong[0],
     baby: anhBaby[0],
     // Váy & trang điểm không có khu ảnh riêng — ảnh cưới nào cũng là váy và trang điểm.
-    vay: anhTieuBieu[1] ?? anhTieuBieu[0],
+    vay: anhTieuBieu[1] ?? anhTieuBieu[0] ?? thuMucAnhCuoi[1]?.anhBia ?? undefined,
   };
 
   /*
@@ -118,7 +126,7 @@ export default async function Home() {
     vẫn kể đúng mảng ấy bằng chữ.
   */
   const khuDangHien: Record<string, boolean> = {
-    cuoi: anhTieuBieu.length > 0,
+    cuoi: coTrangAnhCuoi,
     albumhc: anhAlbumHC.length > 0,
     phimtruong: anhPhimTruong.length > 0,
     baby: true,
@@ -138,7 +146,7 @@ export default async function Home() {
       <NavGioiThieu
         coAnhNen={false}
         anMuc={[
-          ...(khuDangHien.cuoi ? [] : ["#anh"]),
+          ...(coTrangAnhCuoi ? [] : ["/anh-cuoi"]),
           ...(khuDangHien.albumhc ? [] : ["#album-hc"]),
           ...(khuDangHien.phimtruong ? [] : ["#phim-truong"]),
         ]}

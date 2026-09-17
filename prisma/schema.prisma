@@ -8,14 +8,14 @@ datasource db {
 }
 
 model Gallery {
-  id            String   @id @default(cuid())
-  slug          String   @unique
-  title         String
-  clientName    String?
+  id         String  @id @default(cuid())
+  slug       String  @unique
+  title      String
+  clientName String?
   /// Loi nhan studio gui rieng cho khach nay. Bo trong thi dung loi chuc chung.
-  message       String?
+  message    String?
   /// Cho phep hien anh bia cua album nay tren trang gioi thieu cong khai.
-  featured      Boolean  @default(false)
+  featured   Boolean @default(false)
 
   /// Album nay thuoc mang chup be (Hami Baby) chu khong phai mang cuoi.
   /// Chi co y nghia khi featured bat: quyet dinh anh bia roi vao khu "Mot vai
@@ -23,9 +23,9 @@ model Gallery {
   /// phan lon album cua studio la anh cuoi.
   /// KHONG CON DUNG — thay bang cot khuGioiThieu. Giu lai de khong phai xoa
   /// cot (thao tac khong lui duoc), giong cach da lam voi accessMode.
-  laBaby        Boolean  @default(false)
+  laBaby       Boolean @default(false)
   /// KHONG CON DUNG — thay bang cot khuGioiThieu. Xem chu thich o laBaby.
-  laPhimTruong  Boolean  @default(false)
+  laPhimTruong Boolean @default(false)
 
   /// Album nay hien o KHU NAO tren trang gioi thieu.
   ///
@@ -42,7 +42,7 @@ model Gallery {
   /// - "phimtruong": chi mot album duy nhat, va doc THANG nhieu anh tu trong
   ///   no ra — day la boi canh cua studio, mot tam bia khong khoe duoc gi.
   ///   Bat cho album thu hai thi album do bi bo qua (xem src/app/page.tsx).
-  khuGioiThieu  String   @default("cuoi")
+  khuGioiThieu String @default("cuoi")
 
   driveFolderId String
   allowDownload Boolean  @default(true)
@@ -51,21 +51,21 @@ model Gallery {
   /// KHONG CON DUNG. Truoc day co ba che do truy cap; gio chi con mot cach duy
   /// nhat la "xem tu do, can ma de chon anh". Giu lai cot de khong phai xoa du
   /// lieu trong database — xoa cot khong loi gi ma lai la thao tac khong lui duoc.
-  accessMode    String   @default("SELECT")
+  accessMode String @default("SELECT")
 
   /// Ma khach nhap de chon anh. Luu dang doc duoc vi trang quan tri phai hien
   /// cho anh doc lai cho khach — day la ma chon anh, khong phai mat khau tai khoan.
-  accessCode    String?
+  accessCode String?
 
   /// So lieu chup lai tu Drive luc tao link va moi lan bam "Lam moi".
   /// Luu san de trang quan tri khong phai duyet cay thu muc cua tung album —
   /// 9 album la khoang 70 lan goi Drive, cham 8-10 giay moi lan mo trang.
-  coverFileId   String?
+  coverFileId String?
   /// true khi anh tu chon anh bia — luc do lan dong bo sau khong duoc ghi de.
-  coverPinned   Boolean  @default(false)
-  photoCount    Int      @default(0)
-  albumCount    Int      @default(0)
-  subfolders    String[]
+  coverPinned Boolean  @default(false)
+  photoCount  Int      @default(0)
+  albumCount  Int      @default(0)
+  subfolders  String[]
 
   /// Tong dung luong anh cua album tren Drive, tinh bang MEGABYTE.
   ///
@@ -80,7 +80,7 @@ model Gallery {
   ///
   /// 0 nghia la CHUA DO chu khong phai album rong — album tao truoc 26/08/2026
   /// mang gia tri nay cho toi lan "Lam moi" ke tiep.
-  dungLuongMB   Int      @default(0)
+  dungLuongMB Int @default(0)
 
   /// So lan khach mo trang bia cua album.
   ///
@@ -94,9 +94,9 @@ model Gallery {
   /// 0 co the nghia la CHUA AI MO, ma cung co the la album tao truoc ngay
   /// 26/08/2026 — luc do chua co cot nay. Trang thong ke phai phan biet bang
   /// ngay tao, dung ket luan la khach bo be.
-  luotXem       Int      @default(0)
-  xemLanDau     DateTime?
-  xemLanCuoi    DateTime?
+  luotXem    Int       @default(0)
+  xemLanDau  DateTime?
+  xemLanCuoi DateTime?
 
   /// So TAM ANH khach da tai ve tu album nay.
   ///
@@ -112,14 +112,14 @@ model Gallery {
   ///
   /// 0 co the nghia la CHUA AI TAI, ma cung co the la album tao truoc ngay
   /// 06/09/2026 (luc do chua co cot nay). Phan biet bang MOC_DEM_LUOT_TAI.
-  luotTai       Int      @default(0)
-  taiLanCuoi    DateTime?
+  luotTai    Int       @default(0)
+  taiLanCuoi DateTime?
 
-  syncedAt      DateTime?
+  syncedAt DateTime?
 
   /// Moc studio du dinh xoa anh khoi Drive. Khach thay dem nguoc de tranh thu
   /// tai ve. Chi la loi nhac — het han khong tu chan link, vi anh nam tren Drive.
-  expiresAt     DateTime?
+  expiresAt DateTime?
 
   /// Khach tu bao "da chon xong anh" luc nao — null nghia la chua bao. Ap dung
   /// cho ca gallery (moi thu muc con dung chung mot danh sach chon) nen khong
@@ -129,23 +129,24 @@ model Gallery {
   /// So anh in da bao gom trong goi khach da mua. null = khong noi toi goi
   /// (phan huong dan se bo qua doan gia ca). Moi goi moi khac nen phai dat
   /// rieng cho tung album.
-  soAnhTrongGoi    Int?
+  soAnhTrongGoi Int?
 
   /// Gia moi tam vuot goi, tinh bang dong, da gom ca chinh sua lan in.
   /// Chi co y nghia khi soAnhTrongGoi co gia tri.
-  giaAnhThem       Int      @default(12000)
+  giaAnhThem Int @default(12000)
 
   /// Hop dong cua nha khach nay (dot 2b, 16/09/2026) — nhan vien tu gan o
   /// trang album. AppSheet khong biet gi ve album nen day la du lieu CUA WEB:
   /// bo dong bo dem khong bao gio dung toi cot nay.
-  hopDongId     String?
-  hopDong       HopDong? @relation(fields: [hopDongId], references: [id], onDelete: SetNull)
+  hopDongId String?
+  hopDong   HopDong? @relation(fields: [hopDongId], references: [id], onDelete: SetNull)
 
-  lists SelectionList[]
-  pushSubs PushSub[]
-  mucXong  MucXong[]
-  biaMuc   BiaMuc[]
-  goiMuc   GoiMuc[]
+  lists        SelectionList[]
+  pushSubs     PushSub[]
+  mucXong      MucXong[]
+  biaMuc       BiaMuc[]
+  goiMuc       GoiMuc[]
+  anhGioiThieu AnhGioiThieu[]
 
   @@index([driveFolderId])
   @@index([hopDongId])
@@ -181,15 +182,15 @@ model MucXong {
 /// co the vua cai tren dien thoai vua cai tren may tinh. Xoa album thi xoa
 /// theo (onDelete: Cascade) — khong con anh thi khong con gi de bao.
 model PushSub {
-  id        String   @id @default(cuid())
+  id        String @id @default(cuid())
   galleryId String
 
   /// Dia chi rieng cua may khach do ben dich vu day tin cua trinh duyet.
   /// Unique de mot may dang ky lai nhieu lan khong sinh ra nhieu dong.
-  endpoint  String   @unique
+  endpoint String @unique
   /// Hai khoa de ma hoa noi dung, dich vu day tin khong doc duoc tin nhan.
-  p256dh    String
-  auth      String
+  p256dh   String
+  auth     String
 
   createdAt DateTime @default(now())
 
@@ -321,7 +322,6 @@ model GoogleAccount {
   refreshToken String
   connectedAt  DateTime @default(now())
 }
-
 
 /// Nhan vien cua studio — nguoi dang nhap vao phan quan ly studio (/quan-ly).
 ///
@@ -709,4 +709,27 @@ model CongViec {
   @@index([nguoiPhuTrachMaNV])
   @@index([thoiHan])
   @@index([trangThai])
+}
+
+/// Thu muc con cua mot album duoc dua len trang /anh-cuoi, xep vao mot muc nho
+/// (dam-ngo, dinh-hon, nha-gai, nha-trai, phong-su — xem src/lib/anhCuoi.ts).
+///
+/// Chon tai trang quan ly "Trang gioi thieu" (/admin/gioi-thieu), anh yeu cau
+/// 17/09/2026. Tra theo MA thu muc (nguyen tac 32), giu kem ten va tam dau tien
+/// luc chon de trang quan ly hien duoc ma khong goi Drive (nguyen tac 9).
+model AnhGioiThieu {
+  id        String   @id @default(cuid())
+  muc       String
+  galleryId String
+  /// Ma thu muc con. Chuoi rong = anh nam ngay thu muc goc.
+  albumId   String
+  tenMuc    String
+  anhBia    String?
+  soAnh     Int      @default(0)
+  taoLuc    DateTime @default(now())
+
+  gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  @@unique([muc, galleryId, albumId])
+  @@index([muc])
 }

@@ -218,6 +218,12 @@ export default async function AdminPage() {
             Quản lý studio
           </Link>
           <Link
+            href="/admin/gioi-thieu"
+            className="eyebrow transition hover:text-accent"
+          >
+            Trang giới thiệu
+          </Link>
+          <Link
             href="/admin/thong-ke"
             className="eyebrow transition hover:text-accent"
           >
