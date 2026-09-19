@@ -1639,6 +1639,16 @@ không có gì, và một buổi rà soát có thể bỏ sót nguyên một t�
 Cách phát hiện nhanh: `file src/**/*.tsx` — tệp lành phải là *"Unicode text,
 UTF-8 text"*, tệp hỏng ra *"data"*. Sửa = lọc bỏ byte 0, không cần viết lại gì.
 
+**Lưới ảnh có tải thêm KHÔNG được dùng cột báo (`columns-*`).** Anh báo
+19/09/2026: ảnh "sắp xếp lộn xộn", "lướt tới ảnh mới thì bị reload mất ảnh".
+Cột báo xếp ảnh DỌC hết cột này mới sang cột kia (đo: 6 tấm đầu chồng cả trong
+cột trái), và mỗi lần nối thêm 60 tấm trình duyệt chia lại mọi cột — tấm thứ
+30 đang xem bị đẩy từ (334, 4372) sang (24, 8409). `PhotoGrid` nay xếp HÀNG
+(flex-wrap, `flex-grow` = tỉ lệ ảnh quanh chiều cao `--h`): đúng thứ tự tên
+file, không xén, ảnh tải thêm chỉ nối hàng mới. Cột báo chỉ dùng được ở trang
+hiện HẾT ảnh một lần (trang ảnh `/dich-vu/.../anh/<id>` vẫn dùng — nhưng thứ tự
+đọc ở đó cũng là theo cột).
+
 **State cũ trong closure khi vừa set state vừa gọi lại hàm trong cùng lượt
 bấm.** React chưa kịp cập nhật state trước khi hàm chạy lại, đọc phải giá trị
 cũ. Sửa bằng cách truyền thẳng tham số vào hàm thay vì dựa vào state cho quyết

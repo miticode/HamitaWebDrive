@@ -275,13 +275,23 @@ const GridPhoto = memo(function GridPhoto({
   onOpen: (photo: ClientPhoto) => void;
 }) {
   const [loaded, setLoaded] = useState(false);
+  /*
+    Tỉ lệ ngang/dọc của tấm, kẹp trong [0,5; 2,2]: ảnh toàn cảnh siêu dài mà để
+    nguyên thì chiếm trọn một hàng và bị ép thấp tè. Thiếu kích thước thì coi là
+    ảnh dọc 3:4 — loại phổ biến nhất trong album cưới.
+  */
+  const tiLe =
+    photo.width && photo.height ? Math.min(2.2, Math.max(0.5, photo.width / photo.height)) : 0.75;
 
   return (
     <figure
-      className={`group relative mb-2 break-inside-avoid overflow-hidden rounded-sm sm:mb-3 ${
-        loaded ? "" : "skeleton"
-      }`}
-      style={{ aspectRatio: photo.width && photo.height ? `${photo.width}/${photo.height}` : "3/4" }}
+      className={`group relative overflow-hidden rounded-sm ${loaded ? "" : "skeleton"}`}
+      /*
+        Hàng đều kiểu Gump / Google Photos: mỗi tấm giãn theo tỉ lệ của nó
+        (flex-grow = tỉ lệ) quanh một chiều cao chuẩn --h, nên mọi tấm trong một
+        hàng cao bằng nhau và không tấm nào bị xén.
+      */
+      style={{ flexGrow: tiLe, flexBasis: `calc(var(--h) * ${tiLe})`, aspectRatio: String(tiLe) }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -372,7 +382,22 @@ export function PhotoGrid({ photos, album }: { photos: ClientPhoto[]; album: str
 
   return (
     <>
-      <div className="columns-2 gap-2 sm:columns-3 sm:gap-3 lg:columns-4 2xl:columns-5">
+      {/*
+        XẾP THEO HÀNG, không theo cột báo (sửa 19/09/2026, anh báo "ảnh sắp xếp
+        lộn xộn, lướt tới ảnh mới thì bị reload mất ảnh").
+
+        Bản cũ dùng `columns-*`: ảnh chảy DỌC hết cột một rồi mới sang cột hai,
+        nên đọc từ trái sang phải thấy thứ tự nhảy lung tung — đo 6 tấm đầu nằm
+        chồng cả trong cột trái. Tệ hơn, mỗi lần cuộn tới đáy và tải thêm 60 tấm,
+        trình duyệt CHIA LẠI toàn bộ cột: đo tấm thứ 30 đang xem ở (334, 4372)
+        bị đẩy sang (24, 8409) — biến khỏi màn hình, khách tưởng trang tải lại.
+
+        Hàng flex-wrap thì thứ tự đúng tên file, trái→phải rồi xuống dòng, và
+        ảnh tải thêm chỉ NỐI THÊM hàng bên dưới; hàng đã có không xê dịch. Phần
+        tử giả cuối cùng (flex-grow rất lớn) nuốt chỗ trống của hàng lẻ cuối,
+        không để 1–2 tấm cuối bị kéo to bè ra.
+      */}
+      <div className="flex flex-wrap gap-2 [--h:170px] after:grow-[999] after:content-[''] sm:gap-3 sm:[--h:220px] lg:[--h:260px]">
         {visible.slice(0, shown).map((p) => (
           <GridPhoto
             key={p.id}
