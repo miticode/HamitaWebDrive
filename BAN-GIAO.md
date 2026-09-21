@@ -305,6 +305,34 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   chốt 17/09, bỏ luôn nút "Xong một phần"), khớp với nhãn xanh trên thẻ. Đo lúc
   làm: 24 / 25 trên 49 album. Kết hợp được với ô tìm, mã, tháng.
 
+### Sáu album đầu lọt trọn một màn hình (21/09)
+
+Anh nói mở `/admin` là ba thẻ hàng dưới bị cắt nửa. Đo trên 1920×1080: khung
+cuộn cao 813px mà mỗi thẻ 682px — hai hàng cần 1388px. Nay mỗi thẻ còn **361px**,
+sáu thẻ hết 745px, vừa khung và còn ló hàng thứ ba ra một chút cho biết bên dưới
+còn album. Thẻ có nhãn "đã chọn xong" cũng bằng đúng chừng đó.
+
+Cắt ở đâu:
+
+- **Ảnh bìa thấp lại và tự co theo màn hình** — màn càng cao bìa càng cao (công
+  thức `50vh − 400px`; màn 1080 ra 140px, màn 1200 ra 200px). Dưới 1536px trang
+  vẫn cuộn như cũ nên bìa để nguyên cỡ to.
+- **Nhãn "Đã chọn xong / Xong · tên thư mục" chuyển lên nằm đè góc dưới ảnh
+  bìa** (chữ trắng nền đen trong mờ). Đứng cạnh tên album như trước thì nó đẩy
+  tên xuống dòng hai, thẻ cao thêm 30px.
+- **Hàng nút ngoài mặt thẻ còn ba nút** — *Chép tin nhắn* · *Ảnh khách chọn* ·
+  *Gửi thông báo*. Ba nút ít dùng hơn — *Chép link*, *Làm mới*, *Xoá* — dọn vào
+  trong nút **Cài đặt** của chính thẻ đó. Anh thấy nút nào hay dùng hơn thì nói,
+  em đổi chỗ lại.
+- **Ba dòng chữ nhỏ gộp đi, không mất thông tin:** tên các thư mục con nay nằm
+  trong chú thích của con số thư mục (rê chuột vào); dòng `/g/…· ngày tạo` nằm
+  trong chú thích của ảnh bìa; dòng "đã gửi thông báo chưa" dọn về cuối hàng số
+  liệu, vẫn đọc thẳng được.
+
+Màn hình thấp hơn (1536×864 chẳng hạn) thì khung cuộn chỉ cao 597px, không đủ
+chỗ cho hai hàng thẻ dù thẻ có nhỏ tới đâu — lúc đó bìa dừng ở mức thấp nhất
+112px chứ không bóp thành một vạch.
+
 ### Phân quyền phần quản lý studio (21/09)
 
 Anh chốt lại ai xem được gì:

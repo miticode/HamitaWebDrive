@@ -182,9 +182,30 @@ export function GalleryCard({
 
   return (
     <article className="card group relative flex flex-col overflow-hidden">
+      {/*
+        Anh bia CAO BAO NHIEU la thu quyet dinh mot man hinh thay duoc may the.
+
+        Anh yeu cau 21/09/2026: mo /admin la phai thay tron SAU album dau, truoc
+        do hang thu hai bi o cuon cat ngang. Do tren man 1920x1080: o cuon cao
+        813px, moi the 682px — hai hang can 1388px, thua gap ruoi.
+
+        `aspect-[3/2]` mot minh khong kiem soat duoc chieu cao: cot cang rong
+        anh bia cang cao (492px rong => 328px cao). Nen chan them TRAN chieu cao
+        tinh theo chinh chieu cao man hinh — phan con lai cua the (chu, so lieu,
+        hang cai dat, hang nut) do duoc la 222px, nen:
+            2 x (bia + 222) + 24 (khe) + 20 (le tren luoi) <= chieu cao o cuon
+        Chieu cao o cuon = chieu cao man hinh - 267px (dau trang + o tim + hang
+        loc + le duoi). Giai ra: bia <= 50vh - 378px. Tru thanh 400 cho du 45px
+        du phong — ten album dai hai dong hay hang nut vo doi la con cho.
+
+        Chi chan tu 1536px tro len: duoi moc do ca trang cuon binh thuong
+        (nguyen tac 45), khong co gi de cat nen anh bia cu de to cho de nhin.
+        `min-h-28` la san: man qua thap thi cung khong bop bia thanh mot vach.
+      */}
       <Link
         href={`/g/${gallery.slug}`}
-        className="relative block aspect-[3/2] overflow-hidden bg-bg-soft"
+        title={`/g/${gallery.slug} · tạo ngày ${new Date(gallery.createdAt).toLocaleDateString("vi-VN")}`}
+        className="relative block aspect-[3/2] overflow-hidden bg-bg-soft 2xl:max-h-[calc(50vh-400px)] 2xl:min-h-28"
       >
         {gallery.coverFileId ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -208,6 +229,61 @@ export function GalleryCard({
           <span className="absolute top-2 left-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] tracking-wider text-white uppercase backdrop-blur">
             Không cho tải
           </span>
+        )}
+
+        {/*
+          Nhan "khach da chon xong" nam TREN anh bia, khong con dung canh ten
+          album nua (21/09/2026).
+
+          Ly do la chieu cao: dung canh ten thi the nao cung day ten xuong dong
+          thu hai — do duoc the cao them 30px, va chi can the nao trong sau the
+          dau co nhan la hang thu hai bi o cuon cat mat. Nam de len anh bia thi
+          khong ton them mot ly chieu cao nao ca.
+
+          Van la thu de thay nhat trong the: nen den trong mo tren anh sang.
+          Moi thu muc khach bao xong van la MOT nhan rieng nhu cu — album nam
+          sau thu muc thi studio phai biet khach vua xong cai nao.
+        */}
+        {mucXong.length > 0 && (
+          <div className="absolute right-2 bottom-2 left-2 flex flex-wrap items-center justify-start gap-1.5">
+            {mucXong.map((m) => (
+              <span
+                key={m.albumId}
+                title={`Khách báo xong thư mục "${m.tenMuc}" lúc ${new Date(
+                  m.xongLuc,
+                ).toLocaleString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  day: "2-digit",
+                  month: "2-digit",
+                })}`}
+                className="flex max-w-full items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur"
+              >
+                <span
+                  aria-hidden
+                  className="size-1.5 shrink-0 rounded-full bg-emerald-400"
+                />
+                {/*
+                  Nhan PHAI mang chu "Da chon xong", khong chi ten thu muc.
+
+                  Truoc day nhan chi ghi "file gốc" — y nghia nam trong tooltip,
+                  phai RE CHUOT moi thay. Tren dien thoai khong re duoc, ma day
+                  lai la thu studio can liec mot cai la biet: nha nao xong roi,
+                  san sang giao in.
+
+                  Album mot thu muc thi bo ten di: da biet la album nao roi,
+                  them ten thu muc chi lam nhan dai ra ma khong noi them gi.
+                  Album nhieu thu muc thi ten la phan quan trong nhat — no tra
+                  loi "xong CAI NAO trong tam cai".
+                */}
+                <span className="truncate">
+                  {gallery.albumCount > 1
+                    ? `Xong · ${m.tenMuc}`
+                    : "Đã chọn xong"}
+                </span>
+              </span>
+            ))}
+          </div>
         )}
       </Link>
 
@@ -233,78 +309,29 @@ export function GalleryCard({
       </button>
 
       <div className="flex flex-1 flex-col p-4">
-        <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
-          <TenAlbum
-            galleryId={gallery.id}
-            slug={gallery.slug}
-            ten={title}
-            tenThuMuc={gallery.title}
-          />
-
-          {/*
-            Mỗi thư mục khách báo xong là một nhãn riêng. Trước đây chỉ có một
-            nhãn "Đã chọn xong" cho cả album, nên album năm sáu thư mục thì
-            studio không biết khách mới xong cái nào — mà đó lại chính là thứ
-            cần biết để bắt tay làm.
-          */}
-          {mucXong.length > 0 && (
-            /*
-              `min-w-0`, KHÔNG phải `shrink-0`. Đây là chỗ đã hỏng thật: bản cũ
-              để `shrink-0` nên khối nhãn từ chối co lại, hai nhãn nằm cạnh nhau
-              dài hơn thẻ và nhãn thứ hai chạy hẳn ra ngoài mép rồi bị cắt cụt
-              giữa chữ — anh phát hiện 09/09/2026. Đo trên thẻ 298px: tràn 76px.
-
-              Có `min-w-0` thì khối co được, và `flex-wrap` xếp nhãn xuống dòng
-              thay vì đẩy ra ngoài.
-            */
-            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-              {mucXong.map((m) => (
-                <span
-                  key={m.albumId}
-                  title={`Khách báo xong thư mục "${m.tenMuc}" lúc ${new Date(
-                    m.xongLuc,
-                  ).toLocaleString("vi-VN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    day: "2-digit",
-                    month: "2-digit",
-                  })}`}
-                  className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700"
-                >
-                  <span
-                    aria-hidden
-                    className="size-1.5 rounded-full bg-emerald-500"
-                  />
-                  {/*
-                    Nhan PHAI mang chu "Da chon xong", khong chi ten thu muc.
-
-                    Truoc day nhan chi ghi "file gốc" — y nghia nam trong
-                    tooltip, phai RE CHUOT moi thay. Tren dien thoai khong re
-                    duoc, ma day lai la thu studio can liec mot cai la biet:
-                    nha nao xong roi, san sang giao in.
-
-                    Album mot thu muc thi bo ten di: da biet la album nao roi,
-                    them ten thu muc chi lam nhan dai ra ma khong noi them gi.
-                    Album nhieu thu muc thi ten la phan quan trong nhat — no
-                    tra loi "xong CAI NAO trong tam cai".
-                  */}
-                  <span className="max-w-[12rem] truncate">
-                    {gallery.albumCount > 1
-                      ? `Xong · ${m.tenMuc}`
-                      : "Đã chọn xong"}
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+        <TenAlbum
+          galleryId={gallery.id}
+          slug={gallery.slug}
+          ten={title}
+          tenThuMuc={gallery.title}
+        />
 
         <div className="mt-2.5 flex flex-wrap items-center gap-x-5 gap-y-1 text-[15px] text-fg-muted">
           <Stat icon="photo" value={gallery.photoCount} label="Số ảnh" />
+          {/*
+            Ten cac thu muc con chuyen han vao chu thich cua chinh con so nay
+            (21/09/2026). Truoc do chung dung rieng mot dong chu nho duoi hang
+            so lieu, an 24px chieu cao cua MOI the — ma do la dong it nguoi doc
+            nhat: can biet ten thu muc thi bam vao album xem.
+          */}
           <Stat
             icon="folder"
             value={gallery.albumCount}
-            label="Số thư mục con"
+            label={
+              gallery.subfolders.length > 0
+                ? `Thư mục con: ${gallery.subfolders.join(" · ")}`
+                : "Số thư mục con"
+            }
           />
           {counts.map((c) => (
             <Stat
@@ -343,13 +370,25 @@ export function GalleryCard({
               }
             />
           )}
-        </div>
 
-        {gallery.subfolders.length > 0 && (
-          <p className="mt-2 line-clamp-2 text-xs text-fg-faint">
-            {gallery.subfolders.join(" · ")}
-          </p>
-        )}
+          {/*
+            Trang thai gui tin ve NAM CHUNG hang so lieu, day ve mep phai
+            (21/09/2026). No von dung rieng mot dong duoi cung the, ton 26px.
+            Hang so lieu chi dung het chung mot phan ba be ngang the nen con
+            thua cho; `ml-auto` day sang phai de mat van doc thanh hai cum.
+            Chat qua thi `flex-wrap` tu cho no xuong dong — khong bi cat cut.
+          */}
+          {trangThaiBaoTin && (
+            <span
+              className={`ml-auto text-[11px] ${
+                trangThaiBaoTin.mau === "xong" ? "text-accent" : "text-fg-faint"
+              }`}
+              title={trangThaiBaoTin.giaiThich}
+            >
+              {trangThaiBaoTin.chu}
+            </span>
+          )}
+        </div>
 
         {/*
           Bon dong cai dat gop vao mot khung, cung do rong nhan (w-24 o tung
@@ -393,72 +432,71 @@ export function GalleryCard({
             giaAnhThem={gallery.giaAnhThem}
             goiMuc={goiMuc}
           />
+
+          {/*
+            BA viec it dung hon don vao day (21/09/2026), de hang nut ngoai mat
+            the con dung MOT dong — do la 52px moi the, nhan voi sau the la ca
+            mot hang album.
+
+            Chon theo so lan bam trong ngay, khong theo cam tinh: "Chép link"
+            gan nhu luon thua vi "Chép tin nhắn" da co san link ben trong;
+            "Làm mới" chi can khi vua up them anh len Drive; "Xoá" thi ca thang
+            moi mot lan. Ba viec o lai ngoai — chep tin cho khach, xem anh khach
+            chon, nhan tin bao anh moi — la viec lam moi ngay.
+          */}
+          <div className="flex flex-wrap items-center gap-2 py-3">
+            <CopyLink
+              path={`/g/${gallery.slug}`}
+              code={gallery.accessCode}
+              expiresAt={gallery.expiresAt}
+              hien="link"
+            />
+
+            <form action={refreshGalleryAction}>
+              <input
+                type="hidden"
+                name="folderId"
+                value={gallery.driveFolderId}
+              />
+              <input type="hidden" name="galleryId" value={gallery.id} />
+              {/* Nút nằm trong component riêng để đọc được trạng thái của form. */}
+              <NutLamMoi />
+            </form>
+
+            {/* Chỉ quản lý được xoá album — xoá nhầm là mất cả lựa chọn ảnh của khách. */}
+            {quanLy && (
+              <button
+                type="button"
+                onClick={() => setMoXoa(true)}
+                title={`Xoá album "${title}"`}
+                className="btn btn-danger ml-auto"
+              >
+                Xoá
+              </button>
+            )}
+          </div>
         </div>
         )}
 
-        {/* title: dòng này bị cắt bằng ba chấm trên thẻ hẹp, mà nó chứa cả
-            đường dẫn lẫn ngày tạo — rê chuột phải đọc lại được đủ. */}
-        <p
-          title={`/g/${gallery.slug} · tạo ngày ${new Date(gallery.createdAt).toLocaleDateString("vi-VN")}`}
-          className="mt-3 truncate text-xs text-fg-faint"
-        >
-          /g/{gallery.slug} ·{" "}
-          {new Date(gallery.createdAt).toLocaleDateString("vi-VN")}
-        </p>
-
-        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
           <CopyLink
             path={`/g/${gallery.slug}`}
             code={gallery.accessCode}
             expiresAt={gallery.expiresAt}
+            hien="tin"
           />
 
           <Link href={`/admin/${gallery.slug}`} className="btn">
             Ảnh khách chọn
           </Link>
 
-          <form action={refreshGalleryAction}>
-            <input
-              type="hidden"
-              name="folderId"
-              value={gallery.driveFolderId}
-            />
-            <input type="hidden" name="galleryId" value={gallery.id} />
-            {/* Nút nằm trong component riêng để đọc được trạng thái của form. */}
-            <NutLamMoi />
-          </form>
-
           {/*
-            Nút gửi tin đứng NGAY CẠNH nút "Làm mới" nhưng là hai nút tách bạch.
-            Đặt cạnh nhau vì hai việc thường đi liền: đọc lại Drive xong, thấy
-            ảnh đã lên đủ thì mới nhắn khách. Tách ra vì hậu quả khác hẳn nhau —
-            một cái chỉ đụng số liệu trong nhà, một cái chạm tới điện thoại khách.
+            Nút gửi tin là việc chạm tới điện thoại khách nên luôn đứng ngoài
+            mặt thẻ, tách bạch với "Làm mới" (đã dọn vào khối cài đặt): một cái
+            chỉ đụng số liệu trong nhà, một cái khách nghe chuông thật.
           */}
           <NutGuiThongBao galleryId={gallery.id} soMay={soMayChoTin} />
-
-          {/* Chỉ quản lý được xoá album — xoá nhầm là mất cả lựa chọn ảnh của khách. */}
-          {quanLy && (
-            <button
-              type="button"
-              onClick={() => setMoXoa(true)}
-              title={`Xoá album "${title}"`}
-              className="btn btn-danger ml-auto"
-            >
-              Xoá
-            </button>
-          )}
         </div>
-
-        {trangThaiBaoTin && (
-          <p
-            className={`mt-2 text-[11px] leading-relaxed ${
-              trangThaiBaoTin.mau === "xong" ? "text-accent" : "text-fg-faint"
-            }`}
-            title={trangThaiBaoTin.giaiThich}
-          >
-            {trangThaiBaoTin.chu}
-          </p>
-        )}
       </div>
 
       {moXoa && quanLy && (

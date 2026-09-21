@@ -905,6 +905,40 @@ khách và Turbopack đổ lúc build (cùng bẫy ở nguyên tắc 43). Phải
 dịch thành một **mảng**, mà phần tử dựng từ trang cha rơi vào vị trí mảng thì
 bị đòi `key`. Bọc nó trong một thẻ là hết.
 
+**SÁU THẺ ALBUM ĐẦU PHẢI LỌT TRỌN MỘT MÀN HÌNH** — anh yêu cầu 21/09/2026:
+mở `/admin` là thấy đủ hai hàng ba thẻ, trước đó hàng thứ hai bị ô cuộn cắt
+ngang. Đo trên 1920×1080: ô cuộn cao 813px mà mỗi thẻ 682px — hai hàng cần
+1388px, thừa gấp rưỡi.
+
+Thứ quyết định là **chiều cao ảnh bìa**, và `aspect-[3/2]` một mình không kiểm
+soát được nó: cột càng rộng bìa càng cao (cột 492px → bìa 328px). Nên bìa có
+thêm trần tính theo chính chiều cao màn hình, ở `GalleryCard`:
+`2xl:max-h-[calc(50vh-400px)] 2xl:min-h-28`. Con số 400 ra từ phép tính:
+
+```
+2 × (bìa + 222) + 24 (khe) + 20 (lề trên lưới) ≤ chiều cao ô cuộn
+chiều cao ô cuộn = chiều cao màn hình − 267 (đầu trang + ô tìm + hàng lọc + lề)
+⇒ bìa ≤ 50vh − 378px, lấy 400 cho dư 45px phòng hờ
+```
+
+**222px là phần còn lại của thẻ** (tên, hàng số liệu, hàng "Mã · gói", hàng
+nút). Sửa gì làm phần đó cao lên thì phải sửa luôn con số 400, không thì hàng
+thứ hai lại bị cắt. Đo lại bằng cách so `getBoundingClientRect().bottom` của
+thẻ thứ sáu với đáy ô cuộn.
+
+Ba thứ đã bị cắt bớt để xuống được 222px, **mỗi thứ đều còn đường xem lại**:
+tên các thư mục con → chú thích của con số thư mục; dòng `/g/slug · ngày tạo` →
+chú thích của ảnh bìa; dòng "đã gửi thông báo chưa" → nằm chung hàng số liệu,
+đẩy về mép phải. Và **nhãn "đã chọn xong" nằm ĐÈ lên ảnh bìa**, không đứng cạnh
+tên album nữa: đứng cạnh tên thì nhãn đẩy tên xuống dòng hai, thẻ cao thêm 30px
+và sáu thẻ lại không lọt (đo đúng lúc làm, lọc "Đã chọn xong").
+
+**Hàng nút ngoài mặt thẻ chỉ còn ba nút** — "Chép tin nhắn", "Ảnh khách chọn",
+"Gửi thông báo" — là ba việc làm mỗi ngày. "Chép link", "Làm mới", "Xoá" dọn
+vào trong khối **Cài đặt** của chính thẻ đó. Hàng nút vỡ hai dòng là 52px mỗi
+thẻ. Nút "Chép tin nhắn" phải thêm `px-3.5` đè lên `.btn-primary` (vốn để
+1.6rem mỗi bên cho nút lớn giữa trang) thì ba nút mới vừa một dòng ở màn 1920.
+
 **46. Khay chia sẻ CHỈ dành cho iPhone — máy tính và Android tải thẳng.**
 Anh phát hiện ngày 07/09/2026: bấm nút tải một tấm ảnh trên **máy bàn Windows**
 thì hiện ra bảng *"Share using: Nearby Sharing, Paint, Discord, Feedback Hub…"*

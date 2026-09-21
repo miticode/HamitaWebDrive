@@ -18,12 +18,19 @@ export function CopyLink({
   path,
   code,
   expiresAt,
+  hien = "ca-hai",
 }: {
   path: string;
   /** Ma chon anh. null = album chua dat ma, luc do bo han dong ma trong tin nhan. */
   code: string | null;
   /** Han giu anh dang ISO. null = khong dat han. */
   expiresAt: string | null;
+  /**
+   * Hien nut nao. Tu 21/09/2026 the album chia doi: "Chép tin nhắn" o hang nut
+   * ngoai mat the, "Chép link" nam trong khoi "Cài đặt" — hang nut ngoai phai
+   * gon MOT dong thi sau the album moi lot mot man hinh (xem GalleryCard).
+   */
+  hien?: "tin" | "link" | "ca-hai";
 }) {
   const [daChep, setDaChep] = useState<null | "link" | "tin">(null);
 
@@ -67,29 +74,39 @@ export function CopyLink({
         album. Chep rieng duong dan la truong hop it hon — dan vao ghi chu,
         gui qua kenh khac — nen de nut thuong phia sau.
       */}
-      <button
-        type="button"
-        onClick={async () => {
-          await navigator.clipboard.writeText(soanTin());
-          bao("tin");
-        }}
-        title="Chép sẵn tin nhắn có đủ link, mã và lời hướng dẫn — dán thẳng vào Zalo"
-        className="btn-primary"
-      >
-        {daChep === "tin" ? "Đã chép ✓" : "Chép tin nhắn"}
-      </button>
+      {hien !== "link" && (
+        <button
+          type="button"
+          onClick={async () => {
+            await navigator.clipboard.writeText(soanTin());
+            bao("tin");
+          }}
+          title="Chép sẵn tin nhắn có đủ link, mã và lời hướng dẫn — dán thẳng vào Zalo"
+          /*
+            `px-3.5` bóp lại hai bên: `.btn-primary` để sẵn 1.6rem mỗi bên cho
+            nút lớn giữa trang, trong thẻ album thì chừng ấy làm nút rộng 156px
+            và hàng nút vỡ hai dòng. Đo 21/09/2026 trên màn 1920: bóp lại còn
+            133px, ba nút vừa đúng một dòng.
+          */
+          className="btn-primary px-3.5"
+        >
+          {daChep === "tin" ? "Đã chép ✓" : "Chép tin nhắn"}
+        </button>
+      )}
 
-      <button
-        type="button"
-        onClick={async () => {
-          await navigator.clipboard.writeText(`${location.origin}${path}`);
-          bao("link");
-        }}
-        title="Chỉ chép riêng đường dẫn"
-        className="btn"
-      >
-        {daChep === "link" ? "Đã chép ✓" : "Chép link"}
-      </button>
+      {hien !== "tin" && (
+        <button
+          type="button"
+          onClick={async () => {
+            await navigator.clipboard.writeText(`${location.origin}${path}`);
+            bao("link");
+          }}
+          title="Chỉ chép riêng đường dẫn"
+          className="btn"
+        >
+          {daChep === "link" ? "Đã chép ✓" : "Chép link"}
+        </button>
+      )}
     </>
   );
 }
