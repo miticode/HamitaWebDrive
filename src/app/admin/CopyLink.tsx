@@ -19,18 +19,21 @@ export function CopyLink({
   code,
   expiresAt,
   hien = "ca-hai",
+  lop,
 }: {
   path: string;
   /** Ma chon anh. null = album chua dat ma, luc do bo han dong ma trong tin nhan. */
   code: string | null;
   /** Han giu anh dang ISO. null = khong dat han. */
   expiresAt: string | null;
-  /**
-   * Hien nut nao. Tu 21/09/2026 the album chia doi: "Chép tin nhắn" o hang nut
-   * ngoai mat the, "Chép link" nam trong khoi "Cài đặt" — hang nut ngoai phai
-   * gon MOT dong thi sau the album moi lot mot man hinh (xem GalleryCard).
-   */
+  /** Hien nut nao — the album chi goi rieng tung nut trong bang "…" cua no. */
   hien?: "tin" | "link" | "ca-hai";
+  /**
+   * Lop CSS de nut hoa vao cho no dung. Thua ke chu khong doan: cung mot nut
+   * nay dung o hang nut binh thuong (.btn) va o mot dong trong bang "…" cua
+   * the album (.muc-menu) — hai cho hinh dang khac han nhau.
+   */
+  lop?: string;
 }) {
   const [daChep, setDaChep] = useState<null | "link" | "tin">(null);
 
@@ -82,21 +85,9 @@ export function CopyLink({
             bao("tin");
           }}
           title="Chép sẵn tin nhắn có đủ link, mã và lời hướng dẫn — dán thẳng vào Zalo"
-          /*
-            `px-3.5` bóp lại hai bên: `.btn-primary` để sẵn 1.6rem mỗi bên cho
-            nút lớn giữa trang, trong thẻ album thì chừng ấy làm nút rộng 156px
-            và hàng nút vỡ hai dòng. Đo 21/09/2026 trên màn 1920: bóp lại còn
-            133px, ba nút vừa đúng một dòng.
-          */
-          className="btn-primary px-3.5"
+          className={lop ?? "btn-primary px-3.5"}
         >
-          {/*
-            "Chép tin" chu khong "Chép tin nhắn" (21/09/2026): anh bao dua nut
-            "Làm mới" tro ra hang nay, bon nut de nguyen chu thi het 516px
-            trong long the 460px va vo hai dong. Chu thich khi re chuot van noi
-            day du no chep ca link, ma va loi huong dan.
-          */}
-          {daChep === "tin" ? "Đã chép ✓" : "Chép tin"}
+          {daChep === "tin" ? "Đã chép ✓" : "Chép tin nhắn"}
         </button>
       )}
 
@@ -108,7 +99,7 @@ export function CopyLink({
             bao("link");
           }}
           title="Chỉ chép riêng đường dẫn"
-          className="btn"
+          className={lop ?? "btn"}
         >
           {daChep === "link" ? "Đã chép ✓" : "Chép link"}
         </button>

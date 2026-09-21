@@ -372,18 +372,42 @@ Cắt ở đâu:
 - **Nhãn "Đã chọn xong / Xong · tên thư mục" chuyển lên nằm đè góc dưới ảnh
   bìa** (chữ trắng nền đen trong mờ). Đứng cạnh tên album như trước thì nó đẩy
   tên xuống dòng hai, thẻ cao thêm 30px.
-- **Hàng nút ngoài mặt thẻ còn bốn nút, vừa đúng một dòng** — *Chép tin* ·
-  *Ảnh khách chọn* · *Làm mới* · *Gửi tin · N máy*. Hai nút ít dùng hơn —
-  *Chép link* và *Xoá* — nằm trong nút **Cài đặt** của chính thẻ đó.
-  Anh yêu cầu đưa *Làm mới* trở ra hàng này (21/09); để vừa một dòng thì hai
-  nút phải rút chữ: **"Chép tin nhắn" → "Chép tin"** và **"Gửi thông báo" →
-  "Gửi tin"** — rê chuột vào vẫn đọc được câu đầy đủ, và bấm gửi tin thì hộp
-  hỏi lại vẫn y như cũ. Bốn nút để nguyên chữ cũ thì hết 516px trong lòng thẻ
-  460px, vỡ hai dòng và hàng album thứ hai bị cắt lại.
 - **Ba dòng chữ nhỏ gộp đi, không mất thông tin:** tên các thư mục con nay nằm
   trong chú thích của con số thư mục (rê chuột vào); dòng `/g/…· ngày tạo` nằm
-  trong chú thích của ảnh bìa; dòng "đã gửi thông báo chưa" dọn về cuối hàng số
-  liệu, vẫn đọc thẳng được.
+  trong chú thích của ảnh bìa.
+
+> **Sửa tiếp trong ngày:** anh xem lại thấy *"ảnh bìa bị hẹp quá"* và muốn thẻ
+> album **giống y hệt Gump**, nút thì nhỏ lại — xem mục ngay dưới đây.
+
+### Thẻ album dựng lại theo kiểu Gump (21/09)
+
+Ảnh bìa từ **140px lên 285px** (đo ở màn 1920×1080), mà một màn vẫn thấy trọn
+sáu album và ló hàng thứ bảy. Cách lấy chỗ cho ảnh: bỏ hàng nút và dòng
+"Mã · gói · Cài đặt" khỏi mặt thẻ — hai thứ đó ngốn đúng 146px.
+
+Thẻ bây giờ chỉ còn ba phần, đúng như Gump:
+
+- **Ảnh bìa to**, mọi nhãn đè lên ảnh nên không tốn chiều cao: "Không cho tải"
+  góc trái trên; góc phải trên là tình trạng nhắn khách (**chấm vàng** = chưa
+  gửi thông báo, **chấm xanh** = đã báo tin, kèm ngày giờ); đáy ảnh là nhãn
+  "Đã chọn xong" của từng thư mục.
+- **Một hàng tên album** + nút **"…"** bên phải.
+- **Một hàng số liệu nhỏ**: số ảnh · số thư mục · tim · lượt tải, và dồn về
+  bên phải là **Mã chọn ảnh · gói ảnh**.
+
+**Nút "…" gom đủ tám việc**: Chép tin nhắn · Ảnh khách chọn · Làm mới · Gửi
+thông báo · N máy — rồi tới Chép link · Đổi ảnh bìa · Cài đặt album · Xoá
+album. Vì không còn phải nhét vừa một hàng nữa, chữ trên nút **trở lại đầy đủ**
+("Chép tin nhắn", "Gửi thông báo" thay cho "Chép tin", "Gửi tin" hồi sáng).
+Thẻ ở hàng dưới thì bảng tự mở ngược lên cho khỏi thò ra ngoài màn.
+
+**Các nút nhỏ lại** như anh yêu cầu: trong thẻ và trong bảng "…" chỉ còn 32–36px
+cao thay vì 44px. Riêng trên điện thoại chúng tự trở về 44px — dưới mức đó ngón
+tay bấm hay trượt.
+
+Nút **sửa tên album** nay ẩn đi, rê chuột vào thẻ mới hiện (trên điện thoại vẫn
+hiện sẵn). Ở màn dưới 1536px — máy tính nhỏ, máy bảng, điện thoại — ảnh bìa để
+nguyên tỉ lệ 3:2 đầy đủ vì trang cuộn bình thường, không phải nhường chỗ cho ai.
 
 Màn hình thấp hơn (1536×864 chẳng hạn) thì khung cuộn chỉ cao 597px, không đủ
 chỗ cho hai hàng thẻ dù thẻ có nhỏ tới đâu — lúc đó bìa dừng ở mức thấp nhất

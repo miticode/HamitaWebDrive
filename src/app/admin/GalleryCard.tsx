@@ -11,6 +11,7 @@ import { CoverPicker } from "./CoverPicker";
 import { LoiNhan } from "./LoiNhan";
 import { TenAlbum } from "./TenAlbum";
 import { GoiAnh } from "./GoiAnh";
+import { MenuThe, MucMenuLink } from "./MenuThe";
 import { NutLamMoi } from "./NutLamMoi";
 import { NutGuiThongBao } from "./NutGuiThongBao";
 import { ThoiHan } from "./ThoiHan";
@@ -41,10 +42,10 @@ function Stat({
   };
 
   return (
-    <span className="flex items-center gap-1.5" title={label}>
+    <span className="flex items-center gap-1" title={label}>
       <svg
         viewBox="0 0 24 24"
-        className={`size-[17px] shrink-0 ${colors[icon]}`}
+        className={`size-[15px] shrink-0 ${colors[icon]}`}
         fill="none"
         stroke="currentColor"
         strokeWidth="1.7"
@@ -82,7 +83,7 @@ function lucGon(iso: string): string {
 }
 
 /**
- * Dòng "đã gửi thông báo chưa" dưới hàng nút.
+ * Dòng "đã gửi thông báo chưa" — nay là một nhãn nhỏ nằm trên ảnh bìa.
  *
  * Studio yêu cầu 07/09/2026: hai mươi bảy album, bấm gửi rải rác cả ngày, rồi
  * không nhớ đã bấm cho nhà nào. Không nhớ thì hoặc bỏ sót một nhà đang chờ,
@@ -98,7 +99,7 @@ function lucGon(iso: string): string {
  *   đang muốn dẹp. Cùng cách trang thống kê phân biệt lượt xem (nguyên tắc 29).
  *
  * Trả `null` khi chưa có mốc VÀ không máy nào chờ tin: album đó không gửi được
- * cho ai, nói "chưa gửi" chỉ thành một dòng nhiễu trên hai phần ba số thẻ.
+ * cho ai, nói "chưa gửi" chỉ thành một nhãn nhiễu trên hai phần ba số thẻ.
  */
 function trangThaiTin(
   baoTinLuc: string | null,
@@ -107,7 +108,7 @@ function trangThaiTin(
 ): { chu: string; giaiThich: string; mau: "xong" | "chua" } | null {
   if (baoTinLuc) {
     return {
-      chu: `Đã gửi thông báo · ${lucGon(baoTinLuc)}`,
+      chu: `Đã báo tin ${lucGon(baoTinLuc)}`,
       giaiThich:
         "Lần gần nhất bấm nút gửi cho album này, tính theo giờ Việt Nam. Chỉ ghi khi thật sự có máy nhận được.",
       mau: "xong",
@@ -118,7 +119,7 @@ function trangThaiTin(
 
   if (new Date(ngayTao) >= MOC_GHI_LAN_BAO) {
     return {
-      chu: "Chưa gửi thông báo lần nào",
+      chu: "Chưa gửi thông báo",
       giaiThich: `Có ${soMay} máy đang chờ tin của album này mà chưa lần nào bấm gửi.`,
       mau: "chua",
     };
@@ -174,38 +175,45 @@ export function GalleryCard({
   const [moChonBia, setMoChonBia] = useState(false);
   const [moXoa, setMoXoa] = useState(false);
   /*
-    Khối cài đặt thu gọn mặc định (17/09/2026). Năm dòng cài đặt đứng sẵn trên
-    mọi thẻ làm lưới dài và rối; anh muốn lưới album thoáng như Gump. Dòng tóm
-    tắt ngay trên nút vẫn cho thấy mã và gói — hai thứ hay cần liếc nhất.
+    Khối cài đặt mở từ bảng "…". Năm dòng cài đặt đứng sẵn trên mọi thẻ làm
+    lưới dài và rối; anh muốn lưới album thoáng như Gump.
   */
   const [moCaiDat, setMoCaiDat] = useState(false);
 
+  /*
+    Thẻ ngoài KHÔNG có `overflow-hidden`: bảng "…" mở xuống dưới, thẻ mà cắt
+    phần tràn thì bảng bị xén mất một nửa. Ảnh bìa tự lo phần bo góc và cắt ảnh
+    của nó (`overflow-hidden rounded-t-[3px]` ngay trên thẻ Link) nên bỏ ở thẻ
+    ngoài không mất gì.
+  */
   return (
-    <article className="card group relative flex flex-col overflow-hidden">
+    <article className="card group relative flex flex-col">
       {/*
-        Anh bia CAO BAO NHIEU la thu quyet dinh mot man hinh thay duoc may the.
+        THẺ ALBUM DỰNG THEO KIỂU GUMP — anh yêu cầu 21/09/2026: ảnh bìa to,
+        dưới ảnh chỉ còn tên album và một hàng số liệu nhỏ, mọi việc gom vào
+        nút "…". Bản trước có thêm hàng bốn nút và dòng "Mã · gói · Cài đặt"
+        đứng riêng; hai thứ đó ăn 107px mỗi thẻ, mà 107px đó chính là phần ảnh
+        bìa bị cắt cụt — anh nói "ảnh bìa bị hẹp quá" là vì vậy.
 
-        Anh yeu cau 21/09/2026: mo /admin la phai thay tron SAU album dau, truoc
-        do hang thu hai bi o cuon cat ngang. Do tren man 1920x1080: o cuon cao
-        813px, moi the 682px — hai hang can 1388px, thua gap ruoi.
+        ẢNH BÌA CAO BAO NHIÊU vẫn là thứ quyết định một màn hình thấy được mấy
+        thẻ (nguyên tắc 45). `aspect-[3/2]` một mình không kiểm soát được: cột
+        càng rộng bìa càng cao (492px rộng ⇒ 328px cao). Nên chặn thêm TRẦN
+        tính theo chiều cao màn hình — phần còn lại của thẻ nay chỉ còn 76px:
 
-        `aspect-[3/2]` mot minh khong kiem soat duoc chieu cao: cot cang rong
-        anh bia cang cao (492px rong => 328px cao). Nen chan them TRAN chieu cao
-        tinh theo chinh chieu cao man hinh — phan con lai cua the (chu, so lieu,
-        hang cai dat, hang nut) do duoc la 222px, nen:
-            2 x (bia + 222) + 24 (khe) + 20 (le tren luoi) <= chieu cao o cuon
-        Chieu cao o cuon = chieu cao man hinh - 267px (dau trang + o tim + hang
-        loc + le duoi). Giai ra: bia <= 50vh - 378px. Tru thanh 400 cho du 45px
-        du phong — ten album dai hai dong hay hang nut vo doi la con cho.
+            2 × (bìa + 76) + 24 (khe) + 20 (lề trên lưới) ≤ chiều cao ô cuộn
+            chiều cao ô cuộn = chiều cao màn hình − 267px
 
-        Chi chan tu 1536px tro len: duoi moc do ca trang cuon binh thuong
-        (nguyen tac 45), khong co gi de cat nen anh bia cu de to cho de nhin.
-        `min-h-28` la san: man qua thap thi cung khong bop bia thanh mot vach.
+        Giải ra: bìa ≤ 50vh − 232px. Lấy 255 để dư 39px — đủ cho hàng số liệu
+        vỡ thành hai dòng ở cả hai hàng thẻ mà vẫn không bị cắt. Ở màn 1080 ra
+        285px, gấp đôi bản hôm qua (140px).
+
+        Chỉ chặn từ 1536px trở lên: dưới mốc đó cả trang cuộn bình thường, để
+        bìa đúng 3:2 cho đẹp. `min-h-36` là sàn cho màn quá thấp.
       */}
       <Link
         href={`/g/${gallery.slug}`}
         title={`/g/${gallery.slug} · tạo ngày ${new Date(gallery.createdAt).toLocaleDateString("vi-VN")}`}
-        className="relative block aspect-[3/2] overflow-hidden bg-bg-soft 2xl:max-h-[calc(50vh-400px)] 2xl:min-h-28"
+        className="relative block aspect-[3/2] overflow-hidden rounded-t-[3px] bg-bg-soft 2xl:max-h-[calc(50vh-255px)] 2xl:min-h-36"
       >
         {gallery.coverFileId ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -232,20 +240,40 @@ export function GalleryCard({
         )}
 
         {/*
-          Nhan "khach da chon xong" nam TREN anh bia, khong con dung canh ten
-          album nua (21/09/2026).
+          Ba nhãn trên ảnh bìa — nền đen trong mờ để đọc được trên ảnh sáng.
+          Nằm đè lên ảnh thì KHÔNG tốn một ly chiều cao nào của thẻ, đó là cách
+          duy nhất giữ đủ thông tin mà ảnh bìa vẫn to.
+        */}
+        {trangThaiBaoTin && (
+          <span
+            title={trangThaiBaoTin.giaiThich}
+            className="absolute top-2 right-2 flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] text-white backdrop-blur"
+          >
+            {/*
+              Nhãn nào cũng nền đen trong mờ, chỉ khác cái chấm: vàng là chưa
+              nhắn khách, xanh là đã nhắn. Bản đầu để nguyên miếng vàng đậm cho
+              "chưa gửi", nhìn trên lưới thì mấy miếng vàng nhảy hẳn ra khỏi
+              ảnh — mà đây là lời nhắc, không phải báo động.
+            */}
+            <span
+              aria-hidden
+              className={`size-1.5 shrink-0 rounded-full ${
+                trangThaiBaoTin.mau === "xong" ? "bg-emerald-400" : "bg-amber-400"
+              }`}
+            />
+            {trangThaiBaoTin.chu}
+          </span>
+        )}
 
-          Ly do la chieu cao: dung canh ten thi the nao cung day ten xuong dong
-          thu hai — do duoc the cao them 30px, va chi can the nao trong sau the
-          dau co nhan la hang thu hai bi o cuon cat mat. Nam de len anh bia thi
-          khong ton them mot ly chieu cao nao ca.
-
-          Van la thu de thay nhat trong the: nen den trong mo tren anh sang.
-          Moi thu muc khach bao xong van la MOT nhan rieng nhu cu — album nam
-          sau thu muc thi studio phai biet khach vua xong cai nao.
+        {/*
+          Nhãn "khách đã chọn xong": mỗi thư mục khách báo xong là MỘT nhãn
+          riêng — album năm sáu thư mục thì studio phải biết khách vừa xong cái
+          nào. Nhãn mang hẳn chữ "Đã chọn xong" chứ không chỉ tên thư mục: bản
+          cũ ghi mỗi "file gốc", ý nghĩa nằm trong tooltip mà trên điện thoại
+          thì không rê chuột được.
         */}
         {mucXong.length > 0 && (
-          <div className="absolute right-2 bottom-2 left-2 flex flex-wrap items-center justify-start gap-1.5">
+          <div className="absolute right-2 bottom-2 left-2 flex flex-wrap items-center gap-1.5">
             {mucXong.map((m) => (
               <span
                 key={m.albumId}
@@ -259,27 +287,9 @@ export function GalleryCard({
                 })}`}
                 className="flex max-w-full items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur"
               >
-                <span
-                  aria-hidden
-                  className="size-1.5 shrink-0 rounded-full bg-emerald-400"
-                />
-                {/*
-                  Nhan PHAI mang chu "Da chon xong", khong chi ten thu muc.
-
-                  Truoc day nhan chi ghi "file gốc" — y nghia nam trong tooltip,
-                  phai RE CHUOT moi thay. Tren dien thoai khong re duoc, ma day
-                  lai la thu studio can liec mot cai la biet: nha nao xong roi,
-                  san sang giao in.
-
-                  Album mot thu muc thi bo ten di: da biet la album nao roi,
-                  them ten thu muc chi lam nhan dai ra ma khong noi them gi.
-                  Album nhieu thu muc thi ten la phan quan trong nhat — no tra
-                  loi "xong CAI NAO trong tam cai".
-                */}
+                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-emerald-400" />
                 <span className="truncate">
-                  {gallery.albumCount > 1
-                    ? `Xong · ${m.tenMuc}`
-                    : "Đã chọn xong"}
+                  {gallery.albumCount > 1 ? `Xong · ${m.tenMuc}` : "Đã chọn xong"}
                 </span>
               </span>
             ))}
@@ -287,43 +297,89 @@ export function GalleryCard({
         )}
       </Link>
 
-      {/* Nam ngoai the Link o tren de bam khong bi nhay sang trang khach. */}
-      <button
-        type="button"
-        onClick={() => setMoChonBia(true)}
-        title="Đổi ảnh bìa"
-        className="absolute top-2 right-2 flex min-h-8 items-center gap-1.5 rounded-full bg-black/55 px-3 text-xs text-white backdrop-blur transition hover:bg-black/75"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          className="size-[14px]"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M3 5h18v14H3z M3 16l5-5 4 4 3-3 6 6" />
-        </svg>
-        Đổi bìa
-      </button>
+      <div className="flex flex-1 flex-col gap-1.5 p-3">
+        <div className="flex items-start justify-between gap-1">
+          <TenAlbum
+            galleryId={gallery.id}
+            slug={gallery.slug}
+            ten={title}
+            tenThuMuc={gallery.title}
+            lop="truncate font-display text-lg leading-snug transition group-hover:text-accent"
+          />
 
-      <div className="flex flex-1 flex-col p-4">
-        <TenAlbum
-          galleryId={gallery.id}
-          slug={gallery.slug}
-          ten={title}
-          tenThuMuc={gallery.title}
-        />
-
-        <div className="mt-2.5 flex flex-wrap items-center gap-x-5 gap-y-1 text-[15px] text-fg-muted">
-          <Stat icon="photo" value={gallery.photoCount} label="Số ảnh" />
           {/*
-            Ten cac thu muc con chuyen han vao chu thich cua chinh con so nay
-            (21/09/2026). Truoc do chung dung rieng mot dong chu nho duoi hang
-            so lieu, an 24px chieu cao cua MOI the — ma do la dong it nguoi doc
-            nhat: can biet ten thu muc thi bam vao album xem.
+            Mọi việc làm với album nằm trong bảng này. Thứ tự theo số lần bấm
+            trong ngày: chép tin cho khách, xem ảnh khách chọn, đọc lại Drive,
+            nhắn khách — rồi mới tới mấy việc thỉnh thoảng.
           */}
+          <MenuThe ten={title}>
+            <CopyLink
+              path={`/g/${gallery.slug}`}
+              code={gallery.accessCode}
+              expiresAt={gallery.expiresAt}
+              hien="tin"
+              lop="muc-menu"
+            />
+
+            <MucMenuLink href={`/admin/${gallery.slug}`}>Ảnh khách chọn</MucMenuLink>
+
+            <form action={refreshGalleryAction}>
+              <input type="hidden" name="folderId" value={gallery.driveFolderId} />
+              <input type="hidden" name="galleryId" value={gallery.id} />
+              {/* Nút nằm trong component riêng để đọc được trạng thái của form. */}
+              <NutLamMoi lop="muc-menu" />
+            </form>
+
+            {/*
+              Nút gửi tin là việc chạm tới điện thoại khách, tách bạch với "Làm
+              mới": một cái chỉ đụng số liệu trong nhà, một cái khách nghe
+              chuông thật. Bấm vào vẫn có hộp hỏi lại như cũ.
+            */}
+            <NutGuiThongBao galleryId={gallery.id} soMay={soMayChoTin} lop="muc-menu" />
+
+            <span aria-hidden className="my-1 block h-px bg-line" />
+
+            <CopyLink
+              path={`/g/${gallery.slug}`}
+              code={gallery.accessCode}
+              expiresAt={gallery.expiresAt}
+              hien="link"
+              lop="muc-menu"
+            />
+
+            <button type="button" className="muc-menu" onClick={() => setMoChonBia(true)}>
+              Đổi ảnh bìa
+            </button>
+
+            <button
+              type="button"
+              className="muc-menu"
+              aria-expanded={moCaiDat}
+              onClick={() => setMoCaiDat((m) => !m)}
+            >
+              {moCaiDat ? "Đóng cài đặt" : "Cài đặt album"}
+            </button>
+
+            {/* Chỉ quản lý được xoá album — xoá nhầm là mất cả lựa chọn ảnh của khách. */}
+            {quanLy && (
+              <button
+                type="button"
+                className="muc-menu text-red-700 hover:bg-red-50"
+                onClick={() => setMoXoa(true)}
+              >
+                Xoá album
+              </button>
+            )}
+          </MenuThe>
+        </div>
+
+        {/*
+          Hàng số liệu: bên trái là mấy con số của album, bên phải là mã chọn
+          ảnh và gói — hai thứ studio hay liếc nhất. Cùng một hàng nên không
+          tốn thêm chiều cao; chật quá thì `flex-wrap` tự cho xuống dòng.
+        */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-muted">
+          <Stat icon="photo" value={gallery.photoCount} label="Số ảnh" />
           <Stat
             icon="folder"
             value={gallery.albumCount}
@@ -334,23 +390,13 @@ export function GalleryCard({
             }
           />
           {counts.map((c) => (
-            <Stat
-              key={c.listId}
-              icon={c.icon}
-              value={c.count}
-              label={`${c.name} khách đã chọn`}
-            />
+            <Stat key={c.listId} icon={c.icon} value={c.count} label={`${c.name} khách đã chọn`} />
           ))}
 
           {/*
-            So tam khach da tai ve.
-
-            Chi hien khi album CHO TAI: album da tat quyen tai thi con so luon
-            bang 0, hien ra chi thanh mot o rong lam nhieu hang so lieu.
-
-            Album tao truoc mốc bắt đầu đếm cũng giấu đi thay vì hiện số 0 —
-            0 ở đó không có nghĩa "khách chưa tải" mà là "hồi đó chưa đếm", mà
-            studio nhìn số 0 thì đâu biết phân biệt (xem MOC_DEM_LUOT_TAI).
+            So tam khach da tai ve. Chi hien khi album CHO TAI va tao tu moc bat
+            dau dem tro di — so 0 o hai truong hop kia khong co nghia "khach
+            chua tai" (xem MOC_DEM_LUOT_TAI).
           */}
           {gallery.allowDownload && demDuocLuotTai && (
             <Stat
@@ -359,7 +405,7 @@ export function GalleryCard({
               label={
                 gallery.taiLanCuoi
                   ? `Khách đã tải ${gallery.luotTai} tấm · lần cuối ${new Date(
-                      gallery.taiLanCuoi
+                      gallery.taiLanCuoi,
                     ).toLocaleString("vi-VN", {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -371,33 +417,7 @@ export function GalleryCard({
             />
           )}
 
-          {/*
-            Trang thai gui tin ve NAM CHUNG hang so lieu, day ve mep phai
-            (21/09/2026). No von dung rieng mot dong duoi cung the, ton 26px.
-            Hang so lieu chi dung het chung mot phan ba be ngang the nen con
-            thua cho; `ml-auto` day sang phai de mat van doc thanh hai cum.
-            Chat qua thi `flex-wrap` tu cho no xuong dong — khong bi cat cut.
-          */}
-          {trangThaiBaoTin && (
-            <span
-              className={`ml-auto text-[11px] ${
-                trangThaiBaoTin.mau === "xong" ? "text-accent" : "text-fg-faint"
-              }`}
-              title={trangThaiBaoTin.giaiThich}
-            >
-              {trangThaiBaoTin.chu}
-            </span>
-          )}
-        </div>
-
-        {/*
-          Bon dong cai dat gop vao mot khung, cung do rong nhan (w-24 o tung
-          component con) de thang cot — truoc day moi thu tu them mot dong
-          rieng voi mt-2 cua rieng no, xep chong len nhau khong thang hang,
-          nhin nhu mot danh sach roi rac thay vi mot bang cai dat.
-        */}
-        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-bg-soft px-3.5 py-2.5 text-sm text-fg-muted">
-          <span className="min-w-0 truncate">
+          <span className="ml-auto truncate text-fg-faint">
             Mã <span className="font-medium text-fg tabular-nums">{gallery.accessCode ?? "—"}</span>
             {" · "}
             {gallery.soAnhTrongGoi === null
@@ -406,107 +426,26 @@ export function GalleryCard({
                 ? "gói chỉ lấy file"
                 : `gói ${gallery.soAnhTrongGoi} ảnh`}
           </span>
-          <button
-            type="button"
-            onClick={() => setMoCaiDat((m) => !m)}
-            aria-expanded={moCaiDat}
-            className="shrink-0 font-medium text-fg underline underline-offset-4 hover:text-accent"
-          >
-            {moCaiDat ? "Thu gọn" : "Cài đặt"}
-          </button>
         </div>
 
         {moCaiDat && (
-        <div className="mt-2 divide-y divide-line rounded-md border border-line px-3">
-          <AccessControl galleryId={gallery.id} code={gallery.accessCode} />
-          <LoiNhan galleryId={gallery.id} message={gallery.message} />
-          <ThoiHan
-            galleryId={gallery.id}
-            createdAt={gallery.createdAt}
-            expiresAt={gallery.expiresAt}
-          />
-          <GoiAnh
-            galleryId={gallery.id}
-            folderId={gallery.driveFolderId}
-            soAnhTrongGoi={gallery.soAnhTrongGoi}
-            giaAnhThem={gallery.giaAnhThem}
-            goiMuc={goiMuc}
-          />
-
-          {/*
-            HAI viec it dung hon don vao day (21/09/2026), de hang nut ngoai mat
-            the con dung MOT dong — do la 52px moi the, nhan voi sau the la ca
-            mot hang album.
-
-            Chon theo so lan bam trong ngay, khong theo cam tinh: "Chép link"
-            gan nhu luon thua vi "Chép tin nhắn" da co san link ben trong;
-            "Xoá" thi ca thang moi mot lan. ("Làm mới" cung tung nam trong day,
-            nhung anh bao dua tro ra hang ngoai ngay 21/09 — do la nut bam moi
-            lan vua up them anh len Drive.)
-          */}
-          <div className="flex flex-wrap items-center gap-2 py-3">
-            <CopyLink
-              path={`/g/${gallery.slug}`}
-              code={gallery.accessCode}
+          <div className="mt-1 divide-y divide-line rounded-md border border-line px-3">
+            <AccessControl galleryId={gallery.id} code={gallery.accessCode} />
+            <LoiNhan galleryId={gallery.id} message={gallery.message} />
+            <ThoiHan
+              galleryId={gallery.id}
+              createdAt={gallery.createdAt}
               expiresAt={gallery.expiresAt}
-              hien="link"
             />
-
-            {/* Chỉ quản lý được xoá album — xoá nhầm là mất cả lựa chọn ảnh của khách. */}
-            {quanLy && (
-              <button
-                type="button"
-                onClick={() => setMoXoa(true)}
-                title={`Xoá album "${title}"`}
-                className="btn btn-danger ml-auto"
-              >
-                Xoá
-              </button>
-            )}
+            <GoiAnh
+              galleryId={gallery.id}
+              folderId={gallery.driveFolderId}
+              soAnhTrongGoi={gallery.soAnhTrongGoi}
+              giaAnhThem={gallery.giaAnhThem}
+              goiMuc={goiMuc}
+            />
           </div>
-        </div>
         )}
-
-        {/*
-          BON nut, VUA DUNG MOT DONG — anh yeu cau 21/09/2026 dua "Làm mới" tro
-          ra day.
-
-          Do tren man 1920: long trong the rong 460px, bon nut de nguyen co cu
-          het 515px nen vo thanh hai dong, ma hai dong la the cao them 52px va
-          hang album thu hai lai bi cat (nguyen tac 45). Hai chu nho lai: khe
-          `gap-1.5` thay `gap-2`, va `[&_.btn]:px-2.5` bop le hai ben moi nut
-          `.btn` tu 0.8rem con 0.625rem. Chu tren nut khong cat chu nao.
-
-          Them nut nua vao day thi phai do lai chieu cao hang nut (44px la mot
-          dong, 96px la hai) truoc khi cho len web.
-        */}
-        <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-3 [&_.btn]:px-2.5">
-          <CopyLink
-            path={`/g/${gallery.slug}`}
-            code={gallery.accessCode}
-            expiresAt={gallery.expiresAt}
-            hien="tin"
-          />
-
-          <Link href={`/admin/${gallery.slug}`} className="btn">
-            Ảnh khách chọn
-          </Link>
-
-          <form action={refreshGalleryAction}>
-            <input type="hidden" name="folderId" value={gallery.driveFolderId} />
-            <input type="hidden" name="galleryId" value={gallery.id} />
-            {/* Nút nằm trong component riêng để đọc được trạng thái của form. */}
-            <NutLamMoi />
-          </form>
-
-          {/*
-            Nút gửi tin đứng NGAY CẠNH nút "Làm mới" nhưng là hai nút tách bạch.
-            Đặt cạnh nhau vì hai việc thường đi liền: đọc lại Drive xong, thấy
-            ảnh đã lên đủ thì mới nhắn khách. Tách ra vì hậu quả khác hẳn nhau —
-            một cái chỉ đụng số liệu trong nhà, một cái chạm tới điện thoại khách.
-          */}
-          <NutGuiThongBao galleryId={gallery.id} soMay={soMayChoTin} />
-        </div>
       </div>
 
       {moXoa && quanLy && (

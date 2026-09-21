@@ -13,12 +13,12 @@ import { useFormStatus } from "react-dom";
  * Phải tách thành component riêng vì `useFormStatus` chỉ đọc được trạng thái
  * khi nó nằm BÊN TRONG thẻ form — đặt ngang hàng với form thì luôn báo rảnh.
  */
-export function NutLamMoi() {
+export function NutLamMoi({ lop }: { lop?: string }) {
   const { pending } = useFormStatus();
 
   return (
     <button
-      className="btn"
+      className={lop ?? "btn"}
       disabled={pending}
       title={
         pending

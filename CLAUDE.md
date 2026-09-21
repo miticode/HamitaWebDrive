@@ -905,51 +905,76 @@ khách và Turbopack đổ lúc build (cùng bẫy ở nguyên tắc 43). Phải
 dịch thành một **mảng**, mà phần tử dựng từ trang cha rơi vào vị trí mảng thì
 bị đòi `key`. Bọc nó trong một thẻ là hết.
 
-**SÁU THẺ ALBUM ĐẦU PHẢI LỌT TRỌN MỘT MÀN HÌNH** — anh yêu cầu 21/09/2026:
-mở `/admin` là thấy đủ hai hàng ba thẻ, trước đó hàng thứ hai bị ô cuộn cắt
-ngang. Đo trên 1920×1080: ô cuộn cao 813px mà mỗi thẻ 682px — hai hàng cần
-1388px, thừa gấp rưỡi.
-
-Thứ quyết định là **chiều cao ảnh bìa**, và `aspect-[3/2]` một mình không kiểm
-soát được nó: cột càng rộng bìa càng cao (cột 492px → bìa 328px). Nên bìa có
-thêm trần tính theo chính chiều cao màn hình, ở `GalleryCard`:
-`2xl:max-h-[calc(50vh-400px)] 2xl:min-h-28`. Con số 400 ra từ phép tính:
+**THẺ ALBUM DỰNG THEO KIỂU GUMP, VÀ SÁU THẺ ĐẦU PHẢI LỌT TRỌN MỘT MÀN HÌNH.**
+Anh yêu cầu 21/09/2026, qua hai vòng trong cùng một ngày: đầu tiên là "mở
+`/admin` phải thấy trọn sáu album", sau đó là "giao diện giống y hệt Gump, ảnh
+bìa đang bị hẹp quá, các nút làm nhỏ lại". Hai yêu cầu đó kéo ngược nhau, nên
+hình dạng thẻ bây giờ là lời giải chung cho cả hai:
 
 ```
-2 × (bìa + 222) + 24 (khe) + 20 (lề trên lưới) ≤ chiều cao ô cuộn
+┌─────────────────────────────┐
+│  ảnh bìa to (3:2, có trần)  │  ← nhãn "không cho tải", "đã báo tin",
+│                             │     "đã chọn xong" đè lên ảnh
+├─────────────────────────────┤
+│ Tên album            [ … ]  │  ← mọi việc nằm trong bảng "…"
+│ 1046 · 3 · ♥0 · ↓2  Mã · gói│  ← một hàng số liệu duy nhất
+└─────────────────────────────┘
+```
+
+**Chiều cao ảnh bìa là thứ quyết định một màn thấy mấy thẻ** (đây là lý do cả
+mục này tồn tại). `aspect-[3/2]` một mình không kiểm soát được: cột càng rộng
+bìa càng cao (cột 492px → bìa 328px). Nên bìa có thêm trần tính theo chính
+chiều cao màn hình, ở `GalleryCard`:
+`2xl:max-h-[calc(50vh-255px)] 2xl:min-h-36`. Con số 255 ra từ phép tính:
+
+```
+2 × (bìa + 76) + 24 (khe) + 20 (lề trên lưới) ≤ chiều cao ô cuộn
 chiều cao ô cuộn = chiều cao màn hình − 267 (đầu trang + ô tìm + hàng lọc + lề)
-⇒ bìa ≤ 50vh − 378px, lấy 400 cho dư 45px phòng hờ
+⇒ bìa ≤ 50vh − 232px, lấy 255 để dư 39px
 ```
 
-**222px là phần còn lại của thẻ** (tên, hàng số liệu, hàng "Mã · gói", hàng
-nút). Sửa gì làm phần đó cao lên thì phải sửa luôn con số 400, không thì hàng
-thứ hai lại bị cắt. Đo lại bằng cách so `getBoundingClientRect().bottom` của
-thẻ thứ sáu với đáy ô cuộn.
+**76px là phần còn lại của thẻ** (tên + hàng số liệu + lề `p-3`). Sửa gì làm
+phần đó cao lên thì phải sửa luôn con số 255, không thì hàng thứ hai bị cắt.
+Đo lại bằng cách so `getBoundingClientRect().bottom` của thẻ thứ sáu với đáy ô
+cuộn — đo ngày làm: bìa 285px, thẻ 365px, thẻ thứ sáu kết thúc ở 1017 so với
+đáy ô cuộn 1056, thẻ thứ bảy ló ra 15px cho biết bên dưới còn album.
 
-Ba thứ đã bị cắt bớt để xuống được 222px, **mỗi thứ đều còn đường xem lại**:
-tên các thư mục con → chú thích của con số thư mục; dòng `/g/slug · ngày tạo` →
-chú thích của ảnh bìa; dòng "đã gửi thông báo chưa" → nằm chung hàng số liệu,
-đẩy về mép phải. Và **nhãn "đã chọn xong" nằm ĐÈ lên ảnh bìa**, không đứng cạnh
-tên album nữa: đứng cạnh tên thì nhãn đẩy tên xuống dòng hai, thẻ cao thêm 30px
-và sáu thẻ lại không lọt (đo đúng lúc làm, lọc "Đã chọn xong").
+Đường đi của con số này đáng nhớ, vì nó đúng là cái bẫy: bản trước có thêm
+hàng bốn nút và dòng "Mã · gói · Cài đặt" đứng riêng, phần dưới thẻ ngốn 222px
+nên bìa chỉ còn **140px** — anh nhìn ra ngay ("ảnh bìa bị hẹp quá"). Gom nút
+vào bảng "…" lấy lại được 146px, và toàn bộ 146px đó chảy thẳng vào ảnh bìa.
 
-**Hàng nút ngoài mặt thẻ chỉ còn bốn nút, VÀ PHẢI VỪA MỘT DÒNG** — "Chép tin",
-"Ảnh khách chọn", "Làm mới", "Gửi tin · N máy". "Chép link" và "Xoá" dọn vào
-trong khối **Cài đặt** của chính thẻ đó. Hàng nút vỡ hai dòng là 52px mỗi thẻ,
-tức hàng album thứ hai bị cắt trở lại.
+**Mọi thông tin phụ đều đè lên ảnh bìa, không ăn chiều cao:** nhãn "không cho
+tải" (trái trên), nhãn báo tin (phải trên, chấm vàng = chưa nhắn khách, chấm
+xanh = đã nhắn), nhãn "đã chọn xong" từng thư mục (đáy). Nhãn nào cũng nền đen
+trong mờ — bản đầu để miếng vàng đậm cho "chưa gửi" thì mấy miếng ấy nhảy hẳn
+ra khỏi ảnh, mà đó là lời nhắc chứ không phải báo động.
 
-Lòng thẻ chỉ rộng **460px ở màn 1920**, nên bốn nút phải đủ ngắn — đo ngày
-21/09/2026 khi anh bảo đưa "Làm mới" trở ra: để nguyên chữ cũ thì bốn nút hết
-516px và vỡ hai dòng ngay. Bốn chỗ đã bóp, cộng lại còn 427px:
+Ba thứ đã bỏ khỏi mặt thẻ, **mỗi thứ đều còn đường xem lại**: tên các thư mục
+con → chú thích của con số thư mục; dòng `/g/slug · ngày tạo` → chú thích của
+ảnh bìa; nút "sửa" cạnh tên album → mờ đi, chỉ hiện khi rê chuột (dưới 640px
+thì luôn hiện, không thì trên điện thoại không ai đổi tên được nữa).
 
-- `gap-1.5` thay `gap-2`, và `[&_.btn]:px-2.5` bóp lề hai bên mỗi nút `.btn`;
-- `px-3.5` đè lên `.btn-primary` của nút chép tin (vốn để 1.6rem mỗi bên cho
-  nút lớn giữa trang);
-- **"Chép tin nhắn" → "Chép tin"**, **"Gửi thông báo" → "Gửi tin"** (chú thích
-  khi rê chuột và hộp hỏi lại vẫn nói đủ, không rút chữ nào ở đó).
+**Bảng "…" (`MenuThe.tsx`) — ba điều phải giữ:**
 
-Thêm nút thứ năm vào hàng này thì phải **đo lại chiều cao hàng nút** — 44px là
-một dòng, 96px là hai — chứ đừng tin mắt nhìn trên màn rộng hơn.
+- Thẻ ngoài **không được `overflow-hidden`**, không thì bảng bị xén mất một
+  nửa. Ảnh bìa tự lo phần bo góc bằng `overflow-hidden rounded-t-[3px]`.
+- Thẻ ở hàng dưới thì bảng **mở ngược lên** (`bottom-full`), vì lưới album là
+  một ô cuộn riêng: mở xuống là thò quá đáy ô, phải cuộn mới thấy mục cuối mà
+  cuộn thì thẻ chạy mất.
+- Đóng bảng bằng **một tấm phủ `fixed inset-0`** chứ không nghe `click` trên
+  `document`: không phải gỡ listener, không lo thứ tự sự kiện, và cú bấm ra
+  ngoài bị tấm phủ nuốt nên không đồng thời bấm trúng thứ nằm dưới.
+
+**Nút trong thẻ album nhỏ hơn nút thường** (anh yêu cầu "làm các nút nhỏ lại"):
+lớp `.btn-gon` và `.muc-menu` trong `globals.css` để 32px/36px **từ 640px trở
+lên**, và **tự trở lại 44px dưới mốc đó** — 44px là mức tối thiểu cho đầu ngón
+tay, đừng bỏ đoạn media query ấy. Màn từ 640px là màn có chuột, trỏ chuột nhắm
+32px thoải mái.
+
+Mấy nút dùng chung (`CopyLink`, `NutLamMoi`, `NutGuiThongBao`) nhận prop `lop`
+để đổi hình dạng theo chỗ đứng — cùng một nút vừa dùng ở hàng nút thường
+(`.btn`) vừa dùng trong bảng "…" (`.muc-menu`). Thừa kế lớp chứ đừng đoán.
 
 **46. Khay chia sẻ CHỈ dành cho iPhone — máy tính và Android tải thẳng.**
 Anh phát hiện ngày 07/09/2026: bấm nút tải một tấm ảnh trên **máy bàn Windows**

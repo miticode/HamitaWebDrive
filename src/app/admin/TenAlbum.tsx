@@ -21,6 +21,7 @@ export function TenAlbum({
   slug,
   ten,
   tenThuMuc,
+  lop,
 }: {
   galleryId: string;
   slug: string;
@@ -28,6 +29,8 @@ export function TenAlbum({
   ten: string;
   /** Tên thư mục trên Drive — cái sẽ dùng lại nếu bỏ trống ô nhập. */
   tenThuMuc: string;
+  /** Cỡ chữ của tên — thẻ album kiểu Gump dùng chữ nhỏ hơn mặc định. */
+  lop?: string;
 }) {
   const router = useRouter();
   const [mo, setMo] = useState(false);
@@ -60,15 +63,21 @@ export function TenAlbum({
         <Link
           href={`/g/${slug}`}
           title={ten}
-          className="truncate font-display text-2xl leading-snug transition group-hover:text-accent"
+          className={lop ?? "truncate font-display text-2xl leading-snug transition group-hover:text-accent"}
         >
           {ten}
         </Link>
+        {/*
+          Nút "sửa" mờ đi cho tới khi rê chuột vào thẻ — thẻ kiểu Gump chỉ nên
+          có tên và số liệu, thêm một chữ gạch chân cạnh mỗi tên là lưới rối
+          ngay. Từ 640px trở xuống (điện thoại, không rê chuột được) nó hiện
+          bình thường, không thì không ai đổi tên được nữa.
+        */}
         <button
           type="button"
           onClick={() => setMo(true)}
           title="Đổi tên album — không làm đổi link đã gửi khách"
-          className="shrink-0 text-xs text-fg-faint underline underline-offset-2 hover:text-accent"
+          className="shrink-0 text-xs text-fg-faint underline underline-offset-2 transition hover:text-accent sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         >
           sửa
         </button>
