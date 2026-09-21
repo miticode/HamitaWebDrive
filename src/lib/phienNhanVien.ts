@@ -40,6 +40,12 @@ export type NguoiDung = {
    * lịch) chỉ ghi mã này, nên cần nó mới lọc được "việc của tôi".
    */
   maNV: string | null;
+  /**
+   * Tên đăng nhập. null = quản trị chung (mật khẩu quản lý album). Dùng làm mã
+   * dự phòng khi lập hợp đồng cho người chưa có mã nhân viên bên AppSheet —
+   * mã hợp đồng bắt buộc mang một cụm nhận ra người lập.
+   */
+  tenDangNhap: string | null;
 };
 
 /** Database chỉ giữ dấu băm của chuỗi trong cookie — lộ database cũng không ai dùng được phiên. */
@@ -107,12 +113,21 @@ export const layNguoiDung = cache(async (): Promise<NguoiDung | null> => {
         doiMatKhau: nv.doiMatKhau,
         phongBan: nv.phongBan,
         maNV: nv.maNV,
+        tenDangNhap: nv.tenDangNhap,
       };
     }
   }
 
   if (await isAdmin()) {
-    return { id: null, ten: "Quản lý", vaiTro: "quan-tri", doiMatKhau: false, phongBan: null, maNV: null };
+    return {
+      id: null,
+      ten: "Quản lý",
+      vaiTro: "quan-tri",
+      doiMatKhau: false,
+      phongBan: null,
+      maNV: null,
+      tenDangNhap: null,
+    };
   }
   return null;
 });
@@ -178,6 +193,21 @@ export function xemHopDong(nguoi: NguoiDung | null): boolean {
 /** Khach hang va phieu thu: CHI quan ly. */
 export function xemTienVaKhach(nguoi: NguoiDung | null): boolean {
   return laQuanTri(nguoi);
+}
+
+/**
+ * LAP hop dong tren web (anh chot 21/09/2026): quan ly + sale — dung nhung
+ * nguoi da duoc xem hop dong.
+ *
+ * Nguoi dang cam mat khau tam chua lam gi duoc ngoai doi mat khau, nen ham nay
+ * tu loai ho ra luon: mat khau tam la mat khau quan ly vua doc cho qua dien
+ * thoai, chua phai bang chung ai dang ngoi truoc may.
+ *
+ * De rieng khoi `xemHopDong` du dieu kien dang giong nhau: xem va lap la hai
+ * viec khac nhau, mai mot anh doi y cho ai do chi xem thi sua mot cho.
+ */
+export function lapHopDong(nguoi: NguoiDung | null): boolean {
+  return xemHopDong(nguoi) && !nguoi?.doiMatKhau;
 }
 
 /**

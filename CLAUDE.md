@@ -1252,21 +1252,55 @@ thay dần app AppSheet mua lại (kế hoạch G0–G5, xem `BAN-GIAO.md`).
 - Script đọc AppSheet dùng chung `src/lib/appsheet.ts` (tải file vào bộ nhớ,
   không ghi xuống đĩa).
 
-**52. Hợp đồng, lịch, đầu việc: APPSHEET LÀ NƠI TẠO, web tự kéo sang — CHỈ XEM.**
-Studio chốt 16/09/2026 (đổi ý so với 15/09, lúc đó tính sẽ chuyển hẳn): **về lâu
-dài nhân viên vẫn tạo hợp đồng bên AppSheet**, web tự mang sang. Vì vậy ĐỪNG làm
-chức năng tạo / sửa hợp đồng, phiếu thu, lịch, đầu việc trên web trừ khi studio
-đổi ý lần nữa — sửa ở web thì lượt chép sau ghi đè.
+**52. Hợp đồng: WEB LÀ NƠI LẬP (từ 21/09/2026). AppSheet chỉ còn để tra dữ liệu cũ.**
+Anh chốt 21/09/2026, đảo hẳn luật cũ ("AppSheet là nơi tạo", 16/09). Lịch chép
+`dong-bo` **đã tắt trong `vercel.json` và phải ở nguyên đó** — bật lại là bản
+AppSheet cũ đè lên hợp đồng vừa lập trên web, đúng cái bẫy luật cũ đã cảnh báo.
 
-Chép **mỗi giờ** 07:05–22:05 giờ Việt Nam, thêm một lượt 02:05 ngay trước bản sao
-lưu 03:00 (`vercel.json` → `/api/cron/dong-bo` → `src/lib/dongBoAppSheet.ts`).
-Quản lý bấm "Đồng bộ ngay" được; chạy tay: `npx tsx scripts/dong-bo-appsheet.mts`.
-Mỗi lượt hỏi Drive "file sửa lần cuối lúc nào" trước (`lucSuaFileAppSheet`), không
-đổi thì dừng luôn — nên chạy mỗi giờ gần như không tốn gì.
+Lập hợp đồng ở `/quan-ly/hop-dong/moi`: `src/lib/hopDongChung.ts` (hằng số và
+hàm kiểm dùng chung), `src/lib/taoHopDong.ts` (sinh mã, ghi database),
+`src/app/quan-ly/actionsHopDong.ts` (server action), `moi/FormHopDongMoi.tsx`.
+**Quyền lập: quản lý + sale** (`lapHopDong` trong `phienNhanVien.ts`), kiểm ở cả
+trang lẫn server action.
 
-- **Đừng thêm nút sửa** vào sáu bảng chép từ AppSheet — KhachHang, HopDong,
-  ChiTietHopDong, PhieuThu, LichChup, CongViec. Nếu có ngày studio đổi ý muốn
-  chuyển hẳn: **tắt lịch `dong-bo` trong `vercel.json` TRƯỚC**, rồi mới mở sửa.
+Một lần lập sinh đủ bộ trong MỘT giao dịch, đúng như bên AppSheet vẫn làm:
+khách (nếu là nhà mới) → hợp đồng → từng dòng dịch vụ → phiếu thu cọc → lịch
+chụp → đầu việc. Những chỗ dễ làm sai:
+
+- **Mã hợp đồng giữ hình dạng AppSheet**: `STT_26.0900-3_MT1206_14-30` = năm,
+  tháng, số thứ tự trong tháng, mã nhân viên người lập, giờ-phút. Bên AppSheet
+  con số sau dấu gạch **lặp lại giữa các tháng** (riêng tháng 1/2026 có 46 mã
+  trùng số đó), nên đừng tưởng nó là khoá — khoá là cả chuỗi.
+- **Mã khách chính là số điện thoại** (1.992/1.992 nhà đang vậy). Số đã có thì
+  dùng lại nhà cũ, không tạo thêm hồ sơ trùng số.
+- **Mã dòng chi tiết** = mã hợp đồng + `_1`, `_2`… (cột `maAppSheet`, bắt buộc
+  và unique). Phiếu thu, lịch, đầu việc lập trên web để `maAppSheet` null —
+  cột đó chỉ dành cho dòng chép từ AppSheet.
+- **Tiền tính ở máy chủ** trong `kiemHopDongMoi`, không nhận con số form gửi
+  lên: tổng = cộng dòng − khuyến mãi; đã thu = cộng MỌI phiếu kể cả phiếu chờ
+  duyệt (đúng cách AppSheet tính, kiểm 300 hợp đồng mới nhất không lệch dòng).
+- **Phiếu thu của sale nằm "Chờ duyệt"**, quản lý lập thì ghi thẳng "Đã thu…"
+  và chính họ là người duyệt (`trangThaiThu`).
+- **Đầu việc sinh theo bảng giá hạng mục của dịch vụ** (`GiaHangMuc`) — chỉ
+  96/1.018 dịch vụ có bảng giá nên nhiều dòng không sinh việc, đó không phải
+  lỗi. Tên việc lấy tên hạng mục; bên AppSheet tên việc nhiều khi khác hẳn
+  ("CHỤP TIỆC" cho hạng mục "PHOTO", chỉ 121/380 việc trùng tên) — **quy tắc
+  đổi tên đó không suy ra được**, nên đừng đoán, để người lập sửa.
+- **Người lập phải có mã nhân viên** (`NhanVien.maNV`) thì mã hợp đồng mới đọc
+  ra tên; chưa có mã thì web dùng tên đăng nhập.
+
+Sáu bảng KhachHang, HopDong, ChiTietHopDong, PhieuThu, LichChup, CongViec nay
+**có dòng của web lẫn dòng chép từ AppSheet**. Phân biệt bằng `bamAppSheet`:
+dòng web luôn null, và bộ đồng bộ chỉ đụng dòng CÓ dấu vân tay ấy.
+
+Dữ liệu cũ vẫn chép được khi cần: quản lý bấm "Đồng bộ ngay" trên trang Hợp
+đồng, hoặc chạy `npx tsx scripts/dong-bo-appsheet.mts`
+(`src/lib/dongBoAppSheet.ts`). Mỗi lượt hỏi Drive "file sửa lần cuối lúc nào"
+trước (`lucSuaFileAppSheet`), không đổi thì dừng luôn.
+
+- **Sửa hợp đồng cũ trên web thì chưa có** — mới chỉ lập mới. Trước khi mở
+  chức năng sửa, nhớ: dòng chép từ AppSheet vẫn mang `bamAppSheet`, nên nếu ai
+  bật lại lịch `dong-bo` thì mọi sửa đổi trên web sẽ bị đè.
 - Chép theo dấu vân tay (`bamAppSheet`): dòng không đổi thì không ghi. Dòng
   biến mất bên AppSheet chỉ đánh dấu `matBenAppSheet`, không xoá; và chỉ đụng
   dòng CÓ `bamAppSheet` — dòng tạo trên web sau này không bao giờ bị đánh dấu.
@@ -1279,7 +1313,7 @@ Mỗi lượt hỏi Drive "file sửa lần cuối lúc nào" trước (`lucSuaF
 
   | Trang | Ai xem được |
   |---|---|
-  | Hợp đồng (danh sách + chi tiết) | quản lý + **sale** (sale là người tạo hợp đồng bên AppSheet) |
+  | Hợp đồng (xem, và **lập mới** từ 21/09) | quản lý + **sale** (sale là người lập hợp đồng) |
   | Khách hàng, Phiếu thu | **chỉ quản lý** — tiền, công nợ và số điện thoại của hàng trăm nhà khách |
   | Lịch chụp | cả tiệm |
   | Đầu việc | quản lý thấy hết; người khác chỉ thấy việc **ghi tên mình** cộng việc **chưa giao cho ai** (anh muốn ai rảnh thì nhận) |

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/db";
 import { tien } from "@/lib/constants";
-import { batBuocDangNhap, batBuocQuyen, laQuanTri, xemHopDong } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, batBuocQuyen, laQuanTri, lapHopDong, xemHopDong } from "@/lib/phienNhanVien";
 import { boDau } from "@/lib/dichVuChung";
 import { BUOC_CHO_KHACH, ngayVN, tachTrangThai } from "@/lib/hopDongChung";
 import { BangDongBo } from "./BangDongBo";
@@ -23,6 +23,7 @@ export default async function HopDongPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
   // Hợp đồng dính tiền và công nợ cả tiệm: chỉ quản lý và sale (anh chốt 21/09/2026).
   batBuocQuyen(xemHopDong(nguoi));
+  const duocLap = lapHopDong(nguoi);
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
   const tt = sp.tt ?? "";
@@ -95,9 +96,22 @@ export default async function HopDongPage({ searchParams }: Props) {
   return (
     <div>
       <p className="eyebrow">Hợp đồng – Công việc</p>
-      <h1 className="mt-2 font-display text-3xl font-light">
-        Hợp đồng <span className="text-fg-faint tabular-nums">{loc.length}</span>
-      </h1>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-3xl font-light">
+          Hợp đồng <span className="text-fg-faint tabular-nums">{loc.length}</span>
+        </h1>
+        {/*
+          Nút lập hợp đồng chỉ hiện với người được lập (quản lý + sale, anh chốt
+          21/09/2026). Giấu nút CHỈ để đỡ bấm nhầm — chặn thật nằm ở
+          `batBuocQuyen(lapHopDong(...))` trong chính trang /hop-dong/moi và
+          trong server action (nguyên tắc 3).
+        */}
+        {duocLap && (
+          <Link href="/quan-ly/hop-dong/moi" className="btn-primary">
+            Lập hợp đồng
+          </Link>
+        )}
+      </div>
       <BangDongBo quanTri={laQuanTri(nguoi)} />
 
       <form action="/quan-ly/hop-dong" className="mt-5 flex flex-wrap items-center gap-2">

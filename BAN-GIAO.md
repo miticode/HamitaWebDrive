@@ -305,6 +305,58 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   chốt 17/09, bỏ luôn nút "Xong một phần"), khớp với nhãn xanh trên thẻ. Đo lúc
   làm: 24 / 25 trên 49 album. Kết hợp được với ô tìm, mã, tháng.
 
+### Lập hợp đồng ngay trên web (21/09)
+
+Anh chốt: **từ nay hợp đồng mới lập thẳng trên web**, AppSheet chỉ còn để tra
+dữ liệu cũ. Lịch chép tự động từ AppSheet vẫn tắt — bật lại là bản cũ bên đó đè
+lên hợp đồng vừa lập.
+
+Vào **Quản lý studio → Hợp đồng → nút "Lập hợp đồng"** (quản lý và sale mới
+thấy nút; nhân viên gõ thẳng đường dẫn cũng bị đưa về Tổng quan). Một trang duy
+nhất, lưu một lần là xong cả bộ:
+
+1. **Khách** — gõ tên hoặc số điện thoại để tìm nhà cũ; nhà mới thì điền tên và
+   số điện thoại (mã khách chính là số đó, đúng như bên AppSheet). Số đã có
+   trong bảng thì web dùng lại nhà cũ chứ không tạo hồ sơ trùng.
+2. **Hợp đồng** — loại (Khách lẻ, CƯỚI, HỎI, Baby, NHÀ SU, kỉ yếu, PreWedding,
+   Mâm quả, GIA ĐÌNH), ngày đặt, địa chỉ, ghi chú. Ô trạng thái tự nhảy: chưa
+   điền ngày chụp thì "1. Chưa có ngày chụp", điền rồi thì "2. Đã có ngày
+   chụp"; muốn chọn tay thì bấm "hiện đủ 18 bước".
+3. **Dịch vụ** — gõ mã hoặc tên (tìm được cả khi gõ không dấu) trong đúng bảng
+   1.018 dịch vụ của tiệm, giá tự điền và sửa được; mỗi dòng có ngày chụp
+   riêng. Thứ chưa có trong bảng thì bấm "Dòng gõ tay".
+4. **Tiền tự cộng** — tiền hàng, khuyến mãi, tổng, đã thu, còn lại. Không ô nào
+   phải bấm máy tính.
+5. **Cọc** — số tiền, tiền mặt hay chuyển khoản. Sale lập thì phiếu nằm
+   **"Chờ duyệt"** cho tới khi quản lý duyệt, đúng nếp cũ; quản lý lập thì ghi
+   thẳng là đã thu. Để trống số tiền thì không tạo phiếu nào.
+6. **Lịch chụp** — bấm một nút là lấy hết ngày chụp ở trên vào lịch, chọn loại
+   (Ngày chụp, nhà gái, nhà trai, Đính Hôn, Nhà Su, Hami Baby…). Dòng chữ hiện
+   trên lịch web tự ghép: tên khách – ngày – số điện thoại.
+7. **Đầu việc tự sinh** theo bảng giá hạng mục của từng dịch vụ, bỏ tick dòng
+   nào thì dòng đó không tạo. Ví dụ "Album Hamita Garden" ra sẵn năm việc:
+   PHOTO 250.000, stylist 100.000, Makeup 100.000, Photoshop 100.000, Hair
+   125.000, hạn bằng ngày chụp, trạng thái "Chưa giao việc".
+
+**Mã hợp đồng giữ đúng kiểu cũ**: `STT_26.0900-1_HTTN2812_16-06` — năm, tháng,
+số thứ tự trong tháng, mã nhân viên người lập, giờ phút.
+
+**Hai điều anh cần biết:**
+
+- **Tên đầu việc là tên hạng mục** ("PHOTO", "Makeup", "Hair"…). Bên AppSheet
+  tên việc nhiều khi khác ("CHỤP TIỆC", "Chụp nhà trai") — quy tắc đổi tên đó
+  không đoán ra được từ dữ liệu (chỉ 121/380 việc trùng tên hạng mục), nên web
+  ghi tên hạng mục cho thật thà.
+- **Ai lập hợp đồng thì tài khoản phải là Sale hoặc Quản lý.** Hiện trong 25
+  nhân viên chỉ có 1 sale (HTTN2812) và 2 quản lý (LHTT27, TTT142); **MT1206 —
+  người lập nhiều hợp đồng nhất — đang để vai trò "Nhân viên"** nên chưa lập
+  được. Anh vào **Nhân viên** đổi vai trò cho những người cần lập là xong.
+
+Đo khi làm: lập thử hai hợp đồng trên máy dev bằng tài khoản sale tạm — mã ra
+đúng kiểu, tiền khớp (3.990.000 − cọc 2.000.000 = còn 1.990.000), phiếu thu nằm
+Chờ duyệt, lịch và đầu việc hiện đúng ở trang Lịch chụp và Đầu việc. Xoá sạch
+sau khi thử: còn đúng 2.240 hợp đồng, 1.992 khách, 25 nhân viên như trước.
+
 ### Sáu album đầu lọt trọn một màn hình (21/09)
 
 Anh nói mở `/admin` là ba thẻ hàng dưới bị cắt nửa. Đo trên 1920×1080: khung
@@ -457,6 +509,10 @@ cho kịp: bản chép giờ chạy **mỗi giờ** (07:05–22:05, thêm một 
 khi sao lưu) thay vì mỗi đêm. Mỗi lượt hỏi Drive một câu "file có đổi không",
 không đổi thì thôi — nên chạy dày mà gần như không tốn gì. Quản lý vẫn bấm
 "Đồng bộ ngay" được nếu muốn thấy hợp đồng vừa tạo xuất hiện liền.
+
+> **Đã thay đổi ngày 21/09/2026:** anh chuyển hẳn việc lập hợp đồng về web và
+> lịch chép tự động đã tắt — xem mục *"Lập hợp đồng ngay trên web (21/09)"* ở
+> trên. Đoạn này giữ lại để biết tại sao web từng không có nút lập hợp đồng.
 
 Hai mục mới trên thanh bên:
 

@@ -56,7 +56,8 @@ export type HanhDong =
   | "sua-dich-vu"
   | "dong-bo-appsheet"
   | "dang-xuat-moi-may"
-  | "gan-hop-dong";
+  | "gan-hop-dong"
+  | "lap-hop-dong";
 
 export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "dang-nhap": "Đăng nhập",
@@ -76,4 +77,5 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "dong-bo-appsheet": "Đồng bộ từ AppSheet",
   "dang-xuat-moi-may": "Đăng xuất mọi máy",
   "gan-hop-dong": "Gắn album vào hợp đồng",
+  "lap-hop-dong": "Lập hợp đồng",
 };
