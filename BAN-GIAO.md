@@ -305,6 +305,33 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   chốt 17/09, bỏ luôn nút "Xong một phần"), khớp với nhãn xanh trên thẻ. Đo lúc
   làm: 24 / 25 trên 49 album. Kết hợp được với ô tìm, mã, tháng.
 
+### Neon hết hạn mức, web sập — và đợt giảm tải sau đó (21/09)
+
+Sáng 21/09 cả web trả lỗi 500: Neon báo tài khoản vượt hạn mức gói miễn phí. Anh
+nâng lên **gói Launch** (tính theo mức dùng, chu kỳ 21/09 → 01/10), web sống lại
+ngay, dữ liệu còn nguyên (58 album, 2.111 lượt khách thả tim, 25 nhân viên).
+
+Sau đó rà lại chỗ gọi database nhiều nhất. Neon tính theo **thời gian database
+thức** (mỗi lần bị gọi là thức thêm ≥ 5 phút), nên đã sửa bốn chỗ:
+
+- **Tải ảnh:** trước đây mỗi tấm ảnh khách xem là một lần đọc database để lấy
+  phiếu Google. Nay giữ phiếu trong bộ nhớ 50 phút — đo 20 lượt: 20 lần đọc
+  còn **1 lần**, thời gian 3.050ms còn 1.578ms.
+- **Trang quản lý album:** thẻ "khách vừa chọn xong" hỏi lại 60 giây/lần thay vì
+  20 giây, và **không hỏi khi tab bị ẩn** (trước đây mở tab sau lưng cả ngày là
+  database không bao giờ ngủ).
+- **Khách đang chọn ảnh:** hỏi lại 30 giây/lần thay vì 15, và **ngưng hẳn sau 5
+  phút khách không đụng vào trang**; chạm lại hoặc quay lại tab là hỏi ngay.
+  Đã đo trên máy dev đủ chu kỳ: đang xem → 30 giây/lần; để yên 5 phút → 0 lượt;
+  chạm vào → hỏi lại tức thì.
+- **Đồng bộ AppSheet: TẮT lịch tự động** (anh chốt: chưa dùng CRM). Nút "Đồng bộ
+  ngay" trong trang Hợp đồng và lệnh chạy tay vẫn dùng được. Muốn bật lại thì
+  thêm dòng cron `dong-bo` vào `vercel.json`.
+
+Không tìm thấy dịch vụ theo dõi ngoài nào gọi `/api/suc-khoe` (đếm nhật ký 3
+phút: 0 lượt). **Anh nên xem lại trang Usage của Neon sau vài ngày** để biết mức
+dùng thật đã giảm bao nhiêu — chỗ đó chỉ anh xem được.
+
 ### Trang Ảnh cưới + quản lý trang giới thiệu (17/09)
 
 **Cập nhật cùng ngày — mọi dịch vụ, không riêng ảnh cưới.** Trang quản lý

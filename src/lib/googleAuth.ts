@@ -113,13 +113,41 @@ export async function saveConnection(code: string): Promise<ConnectedAccount> {
     create: { id: ROW_ID, ...data },
     update: data,
   });
+  // Ket noi moi thi phieu cu trong bo nho khong con dung nua.
+  xoaTokenTrongBoNho();
 
   return { email, connectedAt: data.connectedAt };
 }
 
 export async function disconnect(): Promise<void> {
   if (!databaseIsConfigured()) return;
+  xoaTokenTrongBoNho();
   await getPrisma().googleAccount.deleteMany({ where: { id: ROW_ID } });
+}
+
+/**
+ * Access token gan nhat, giu trong bo nho cua CHINH may dang chay ham.
+ *
+ * Vi sao phai giu (them 21/09/2026, sau khi Neon het han muc va ca web sap):
+ * moi tam anh khach xem deu goi /api/img, ma ham do phai co token Drive — tuc
+ * la MOI LUOT TAI ANH truoc day deu doc mot dong trong database. Do tren nhat
+ * ky web that: 91 luot /api/img trong 3 phut, tuc 91 lan danh thuc database,
+ * trong khi Neon tinh tien theo thoi gian database THUC.
+ *
+ * Kem theo, moi luot con hoi Google cap access token moi vi lan nao cung dung
+ * mot client moi tinh — vua cham vua lam phien Google vo co.
+ *
+ * Google cap token song mot tieng; giu 50 phut de con bien an toan. Het han
+ * thi doc lai database dung MOT lan. Bam "Ket noi lai" hay "Ngat ket noi" thi
+ * xoa ngay o may nhan cu bam; may khac cung lam nhieu la 50 phut roi cung doc
+ * lai — va trong khoang do neu phieu da chet thi Drive tra loi, code tu quay
+ * ve service account nhu cu.
+ */
+let tokenCache: { token: string; hetHan: number } | null = null;
+const HAN_TOKEN = 50 * 60_000;
+
+function xoaTokenTrongBoNho() {
+  tokenCache = null;
 }
 
 /**
@@ -128,6 +156,8 @@ export async function disconnect(): Promise<void> {
  */
 export async function getUserAccessToken(): Promise<string | null> {
   if (!oauthIsConfigured() || !databaseIsConfigured()) return null;
+
+  if (tokenCache && tokenCache.hetHan > Date.now()) return tokenCache.token;
 
   const row = await getPrisma().googleAccount.findUnique({ where: { id: ROW_ID } });
   if (!row) return null;
@@ -156,5 +186,6 @@ export async function getUserAccessToken(): Promise<string | null> {
   client.setCredentials({ refresh_token: refreshToken });
 
   const { token } = await client.getAccessToken();
+  if (token) tokenCache = { token, hetHan: Date.now() + HAN_TOKEN };
   return token ?? null;
 }

@@ -4,8 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-/** Bao lâu hỏi lại một lần. Đủ nhanh để thấy gần như ngay, đủ thưa để không phiền máy chủ. */
-const NHIP_HOI = 20_000;
+/**
+ * Bao lâu hỏi lại một lần.
+ *
+ * Nới từ 20 giây lên 60 giây ngày 21/09/2026 sau khi database Neon hết hạn mức
+ * gói miễn phí và cả web sập. Neon tính tiền theo THỜI GIAN DATABASE THỨC, mỗi
+ * lần bị gọi là thức thêm ít nhất 5 phút — nên thứ tốn tiền không phải câu lệnh
+ * nặng hay nhẹ, mà là có thứ gì gọi đều đặn suốt ngày hay không. Đường này đo
+ * được 4 câu lệnh, 518ms mỗi lượt, và studio mở trang quản lý cả buổi.
+ *
+ * 60 giây vẫn đủ: đây chỉ là thẻ nổi báo "khách vừa chọn xong", không phải thứ
+ * studio đứng canh từng giây; khung Thông báo ở cột trái vẫn ghi lại đầy đủ.
+ */
+const NHIP_HOI = 60_000;
 
 type MucXong = { albumId: string; tenMuc: string; xongLuc: string };
 
@@ -104,11 +115,22 @@ export function TheoDoiKhach() {
       }
     };
 
-    void hoi();
-    const id = setInterval(hoi, NHIP_HOI);
+    /*
+      CHỈ hỏi khi tab đang hiện — trước đây hỏi cả khi tab bị ẩn, mà studio hay
+      để trang quản lý mở nguyên ngày ở một tab sau lưng: database không bao giờ
+      được ngủ. Quay lại tab thì hỏi ngay, không bắt đợi hết một nhịp.
+    */
+    const hoiNeuDangXem = () => {
+      if (document.visibilityState === "visible") void hoi();
+    };
+
+    hoiNeuDangXem();
+    const id = setInterval(hoiNeuDangXem, NHIP_HOI);
+    document.addEventListener("visibilitychange", hoiNeuDangXem);
     return () => {
       con = false;
       clearInterval(id);
+      document.removeEventListener("visibilitychange", hoiNeuDangXem);
     };
   }, [router]);
 

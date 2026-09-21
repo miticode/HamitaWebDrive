@@ -218,8 +218,10 @@ Chồng bấm **tim** mà máy chủ **bỏ chọn**, vì máy chồng vẫn gi�
 - **Đọc giá trị máy chủ trả về** rồi lấy đó làm chuẩn. Chỉ kiểm `res.ok` là
   chưa đủ: 200 vẫn có thể mang kết quả ngược với thứ giao diện đang hiện, và
   đó chính là cách lỗi cũ ẩn mình — hai màn hình đều đỏ tim, database trống rỗng.
-- Hỏi lại danh sách mỗi 15 giây khi tab đang mở (`NHIP_DONG_BO`), cộng một lần
-  ngay khi khách quay lại tab.
+- Hỏi lại danh sách mỗi **30 giây** khi tab đang mở VÀ khách còn động vào trang
+  trong 5 phút gần đây (`NHIP_DONG_BO`, `NGHI_SAU`), cộng một lần ngay khi
+  khách quay lại tab hoặc chạm lại sau lúc nghỉ. *Nới từ 15 giây ngày
+  21/09/2026, anh đồng ý* — xem nguyên tắc 53.
 
 `muon` **không bắt buộc** — máy khách đang mở sẵn trang với bản JavaScript cũ
 vẫn gửi thiếu, và vẫn phải chạy đúng như trước. Đừng bắt buộc trường này.
@@ -1501,6 +1503,41 @@ bấm trái hai lần ra 9/10, bấm phải ba lần ra 2/10, đúng từng bư�
 
 Ảnh trong lưới bọc trong `<button>` chứ không gắn `onClick` thẳng lên thẻ ảnh:
 có nút thì bàn phím Tab tới được và Enter mở được.
+
+**53. Neon tính tiền theo THỜI GIAN DATABASE THỨC, nên thứ gọi ĐỀU ĐẶN mới là
+thứ tốn tiền — không phải câu lệnh nặng.**
+Ngày 21/09/2026 tài khoản Neon hết hạn mức gói miễn phí và **cả web sập**: mọi
+trang trả 500, `/api/suc-khoe` trả `database:false`, lỗi gốc là
+`53000 … exceeded the quota`. Anh nâng lên gói Launch nên web sống lại; sau đó
+rà lại các nguồn gọi database. Mỗi lần bị gọi là Neon thức thêm ít nhất 5 phút,
+nên một thứ gọi 20 giây/lần giữ database thức 24/24.
+
+Đã đo và đã sửa:
+
+| Nguồn | Trước | Sau |
+|---|---|---|
+| `/api/img` xin phiếu Drive | **mỗi tấm ảnh một lần đọc database** (đo: 20 lượt → 20 lần đọc, 3.050ms) | giữ token trong bộ nhớ 50 phút (20 lượt → **1 lần**, 1.578ms) |
+| `/api/admin/trang-thai` (thẻ "khách vừa chọn xong") | 20 giây/lần, **kể cả khi tab bị ẩn** | 60 giây/lần, **chỉ khi tab đang hiện** |
+| `/api/selections` (khách đang chọn ảnh) | 15 giây/lần khi tab hiện | 30 giây/lần, **ngưng sau 5 phút khách không đụng vào** |
+| Cron đồng bộ AppSheet | mỗi giờ, 17 lượt/ngày | **tắt** (anh chốt 21/09: chưa dùng CRM) |
+
+Ba điều đừng phá:
+- **Token Drive giữ trong bộ nhớ của từng máy chạy hàm**, không phải database.
+  "Kết nối lại" và "Ngắt kết nối" xoá ngay ở máy nhận cú bấm; máy khác cùng lắm
+  50 phút rồi cũng đọc lại, và nếu phiếu đã chết thì Drive trả lỗi rồi code tự
+  quay về service account như cũ (xem `tokenCache` trong `googleAuth.ts`).
+- **Mọi vòng lặp hỏi lại phải kiểm `document.visibilityState`**, và nếu là
+  trang khách thì kiểm cả "còn động vào trang không". Thêm một vòng lặp mới mà
+  quên hai phép kiểm này là quay lại đúng chỗ làm sập web.
+- **Cron `dong-bo` đang TẮT trong `vercel.json`.** Nút "Đồng bộ ngay" và
+  `npx tsx scripts/dong-bo-appsheet.mts` vẫn chạy được. Bật lại khi studio dùng
+  CRM: thêm lại dòng `{ "path": "/api/cron/dong-bo", "schedule": "5 0-15,19 * * *" }`.
+
+*Chưa đo được:* đúng bao nhiêu giờ Neon mỗi tháng — trang Usage của Neon chỉ anh
+xem được. Không thấy dịch vụ theo dõi ngoài nào gọi `/api/suc-khoe` (đếm nhật
+ký 3 phút: 0 lượt).
+
+---
 
 ---
 

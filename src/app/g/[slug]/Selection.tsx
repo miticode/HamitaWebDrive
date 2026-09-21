@@ -68,12 +68,27 @@ function key(listId: string, fileId: string): string {
 }
 
 /**
- * Bao lau hoi lai danh sach da chon mot lan, khi tab dang mo.
+ * Bao lau hoi lai danh sach da chon mot lan, khi tab dang mo VA khach con dang
+ * xem that.
  *
- * 15 giay: du nhanh de vo chong ngoi canh nhau moi nguoi mot may khong thay
- * kho chiu, du thua de khong lam phien may chu — moi lan hoi chi 1,3 KB.
+ * Noi tu 15 len 30 giay ngay 21/09/2026 (anh dong y), sau khi database Neon het
+ * han muc goi mien phi va ca web sap. Neon tinh tien theo THOI GIAN DATABASE
+ * THUC, moi lan bi goi la thuc them it nhat 5 phut — nen thu ton tien la co cai
+ * gi goi deu dan suot ngay hay khong, khong phai cau lenh nang hay nhe.
+ *
+ * Van du nhanh cho canh vo chong ngoi canh nhau moi nguoi mot may: cu bam cua
+ * chinh minh hien ngay (khong doi nhip nao), va quay lai tab la hoi lien.
  */
-const NHIP_DONG_BO = 15_000;
+const NHIP_DONG_BO = 30_000;
+
+/**
+ * Khach khong dong vao trang lau hon chung nay thi NGUNG hoi.
+ *
+ * Truoc day chi cang tab dang hien la cu hoi mai — khach mo album roi di an com,
+ * de may do ca tieng, database khong bao gio duoc ngu. Cham vao man hinh, cuon,
+ * bam phim hay quay lai tab deu tinh la dang xem, va luc do hoi lai ngay.
+ */
+const NGHI_SAU = 5 * 60_000;
 
 export function SelectionProvider({
   slug,
@@ -150,6 +165,7 @@ export function SelectionProvider({
   */
   useEffect(() => {
     let con = true;
+    let chamCuoi = Date.now();
 
     const tai = async () => {
       try {
@@ -187,23 +203,45 @@ export function SelectionProvider({
     void tai();
 
     /*
-      Chi hoi khi tab dang mo. Khach de album trong tab nen ca buoi thi khong
-      co ly do gi phai hoi may chu — vua ton pin vua ton han muc.
+      Chi hoi khi tab dang mo VA khach vua dong vao trang trong NGHI_SAU gan
+      day. Khach de album trong tab nen ca buoi thi khong co ly do gi phai hoi
+      may chu — vua ton pin vua ton han muc database.
     */
+    const dangXem = () =>
+      document.visibilityState === "visible" && Date.now() - chamCuoi < NGHI_SAU;
+
     const nhip = setInterval(() => {
-      if (document.visibilityState === "visible") void tai();
+      if (dangXem()) void tai();
     }, NHIP_DONG_BO);
 
-    // Quay lai tab la lay ngay, khong bat doi het mot nhip.
+    /*
+      Dong vao trang tro lai: lay ngay mot lan roi moi tinh nhip tiep. Neu chi
+      ghi lai moc ma khong tai, khach nghi mot lat roi cham vao se phai doi them
+      30 giay moi thay tam ca nha vua chon.
+    */
+    const daCham = () => {
+      const nghiLau = Date.now() - chamCuoi >= NGHI_SAU;
+      chamCuoi = Date.now();
+      if (nghiLau && document.visibilityState === "visible") void tai();
+    };
     const khiQuayLai = () => {
-      if (document.visibilityState === "visible") void tai();
+      if (document.visibilityState === "visible") {
+        chamCuoi = Date.now();
+        void tai();
+      }
     };
     document.addEventListener("visibilitychange", khiQuayLai);
+    for (const ten of ["pointerdown", "keydown", "scroll"] as const) {
+      window.addEventListener(ten, daCham, { passive: true });
+    }
 
     return () => {
       con = false;
       clearInterval(nhip);
       document.removeEventListener("visibilitychange", khiQuayLai);
+      for (const ten of ["pointerdown", "keydown", "scroll"] as const) {
+        window.removeEventListener(ten, daCham);
+      }
     };
     /*
       Co "unlocked" trong day phu thuoc vi may chu gio doi ma moi cho doc danh

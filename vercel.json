@@ -2,7 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["sin1"],
   "crons": [
-    { "path": "/api/cron/dong-bo", "schedule": "5 0-15,19 * * *" },
     { "path": "/api/cron/sao-luu", "schedule": "0 20 * * *" }
   ]
 }
