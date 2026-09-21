@@ -933,11 +933,23 @@ chú thích của ảnh bìa; dòng "đã gửi thông báo chưa" → nằm chu
 tên album nữa: đứng cạnh tên thì nhãn đẩy tên xuống dòng hai, thẻ cao thêm 30px
 và sáu thẻ lại không lọt (đo đúng lúc làm, lọc "Đã chọn xong").
 
-**Hàng nút ngoài mặt thẻ chỉ còn ba nút** — "Chép tin nhắn", "Ảnh khách chọn",
-"Gửi thông báo" — là ba việc làm mỗi ngày. "Chép link", "Làm mới", "Xoá" dọn
-vào trong khối **Cài đặt** của chính thẻ đó. Hàng nút vỡ hai dòng là 52px mỗi
-thẻ. Nút "Chép tin nhắn" phải thêm `px-3.5` đè lên `.btn-primary` (vốn để
-1.6rem mỗi bên cho nút lớn giữa trang) thì ba nút mới vừa một dòng ở màn 1920.
+**Hàng nút ngoài mặt thẻ chỉ còn bốn nút, VÀ PHẢI VỪA MỘT DÒNG** — "Chép tin",
+"Ảnh khách chọn", "Làm mới", "Gửi tin · N máy". "Chép link" và "Xoá" dọn vào
+trong khối **Cài đặt** của chính thẻ đó. Hàng nút vỡ hai dòng là 52px mỗi thẻ,
+tức hàng album thứ hai bị cắt trở lại.
+
+Lòng thẻ chỉ rộng **460px ở màn 1920**, nên bốn nút phải đủ ngắn — đo ngày
+21/09/2026 khi anh bảo đưa "Làm mới" trở ra: để nguyên chữ cũ thì bốn nút hết
+516px và vỡ hai dòng ngay. Bốn chỗ đã bóp, cộng lại còn 427px:
+
+- `gap-1.5` thay `gap-2`, và `[&_.btn]:px-2.5` bóp lề hai bên mỗi nút `.btn`;
+- `px-3.5` đè lên `.btn-primary` của nút chép tin (vốn để 1.6rem mỗi bên cho
+  nút lớn giữa trang);
+- **"Chép tin nhắn" → "Chép tin"**, **"Gửi thông báo" → "Gửi tin"** (chú thích
+  khi rê chuột và hộp hỏi lại vẫn nói đủ, không rút chữ nào ở đó).
+
+Thêm nút thứ năm vào hàng này thì phải **đo lại chiều cao hàng nút** — 44px là
+một dòng, 96px là hai — chứ đừng tin mắt nhìn trên màn rộng hơn.
 
 **46. Khay chia sẻ CHỈ dành cho iPhone — máy tính và Android tải thẳng.**
 Anh phát hiện ngày 07/09/2026: bấm nút tải một tấm ảnh trên **máy bàn Windows**

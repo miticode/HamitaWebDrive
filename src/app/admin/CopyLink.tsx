@@ -90,7 +90,13 @@ export function CopyLink({
           */
           className="btn-primary px-3.5"
         >
-          {daChep === "tin" ? "Đã chép ✓" : "Chép tin nhắn"}
+          {/*
+            "Chép tin" chu khong "Chép tin nhắn" (21/09/2026): anh bao dua nut
+            "Làm mới" tro ra hang nay, bon nut de nguyen chu thi het 516px
+            trong long the 460px va vo hai dong. Chu thich khi re chuot van noi
+            day du no chep ca link, ma va loi huong dan.
+          */}
+          {daChep === "tin" ? "Đã chép ✓" : "Chép tin"}
         </button>
       )}
 

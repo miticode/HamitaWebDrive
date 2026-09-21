@@ -320,10 +320,14 @@ Cắt ở đâu:
 - **Nhãn "Đã chọn xong / Xong · tên thư mục" chuyển lên nằm đè góc dưới ảnh
   bìa** (chữ trắng nền đen trong mờ). Đứng cạnh tên album như trước thì nó đẩy
   tên xuống dòng hai, thẻ cao thêm 30px.
-- **Hàng nút ngoài mặt thẻ còn ba nút** — *Chép tin nhắn* · *Ảnh khách chọn* ·
-  *Gửi thông báo*. Ba nút ít dùng hơn — *Chép link*, *Làm mới*, *Xoá* — dọn vào
-  trong nút **Cài đặt** của chính thẻ đó. Anh thấy nút nào hay dùng hơn thì nói,
-  em đổi chỗ lại.
+- **Hàng nút ngoài mặt thẻ còn bốn nút, vừa đúng một dòng** — *Chép tin* ·
+  *Ảnh khách chọn* · *Làm mới* · *Gửi tin · N máy*. Hai nút ít dùng hơn —
+  *Chép link* và *Xoá* — nằm trong nút **Cài đặt** của chính thẻ đó.
+  Anh yêu cầu đưa *Làm mới* trở ra hàng này (21/09); để vừa một dòng thì hai
+  nút phải rút chữ: **"Chép tin nhắn" → "Chép tin"** và **"Gửi thông báo" →
+  "Gửi tin"** — rê chuột vào vẫn đọc được câu đầy đủ, và bấm gửi tin thì hộp
+  hỏi lại vẫn y như cũ. Bốn nút để nguyên chữ cũ thì hết 516px trong lòng thẻ
+  460px, vỡ hai dòng và hàng album thứ hai bị cắt lại.
 - **Ba dòng chữ nhỏ gộp đi, không mất thông tin:** tên các thư mục con nay nằm
   trong chú thích của con số thư mục (rê chuột vào); dòng `/g/…· ngày tạo` nằm
   trong chú thích của ảnh bìa; dòng "đã gửi thông báo chưa" dọn về cuối hàng số

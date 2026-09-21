@@ -50,7 +50,7 @@ export function NutGuiThongBao({
         className="btn cursor-not-allowed opacity-45"
         title="Chưa ai đăng ký. Khách phải cài album ra màn hình chính rồi bấm “Nhận thông báo khi có ảnh mới” thì mới nhận được tin."
       >
-        Gửi thông báo
+        Gửi tin
         <span className="ml-1.5 whitespace-nowrap">· 0 máy</span>
       </span>
     );
@@ -87,7 +87,14 @@ export function NutGuiThongBao({
           số ảnh mới? số lần đã gửi? Một con số đứng một mình cạnh chữ thì đọc
           kiểu nào cũng được. Thêm đúng một chữ là hết đoán.
         */}
-        Gửi thông báo
+        {/*
+          "Gửi tin" chu khong "Gửi thông báo" (21/09/2026): hang nut ngoai mat
+          the album nay co bon nut, de nguyen chu thi vo hai dong va the cao
+          them 52px — sau album dau khong con lot mot man hinh (nguyen tac 45).
+          Chu thich khi re chuot van ghi day du "Nhắn cho N máy khách…", va hop
+          hoi lai truoc khi gui thi khong dong nao doi ca.
+        */}
+        Gửi tin
         <span className="ml-1.5 whitespace-nowrap opacity-60">
           · {soMay} máy
         </span>

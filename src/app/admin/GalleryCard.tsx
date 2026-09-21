@@ -434,15 +434,15 @@ export function GalleryCard({
           />
 
           {/*
-            BA viec it dung hon don vao day (21/09/2026), de hang nut ngoai mat
+            HAI viec it dung hon don vao day (21/09/2026), de hang nut ngoai mat
             the con dung MOT dong — do la 52px moi the, nhan voi sau the la ca
             mot hang album.
 
             Chon theo so lan bam trong ngay, khong theo cam tinh: "Chép link"
             gan nhu luon thua vi "Chép tin nhắn" da co san link ben trong;
-            "Làm mới" chi can khi vua up them anh len Drive; "Xoá" thi ca thang
-            moi mot lan. Ba viec o lai ngoai — chep tin cho khach, xem anh khach
-            chon, nhan tin bao anh moi — la viec lam moi ngay.
+            "Xoá" thi ca thang moi mot lan. ("Làm mới" cung tung nam trong day,
+            nhung anh bao dua tro ra hang ngoai ngay 21/09 — do la nut bam moi
+            lan vua up them anh len Drive.)
           */}
           <div className="flex flex-wrap items-center gap-2 py-3">
             <CopyLink
@@ -451,17 +451,6 @@ export function GalleryCard({
               expiresAt={gallery.expiresAt}
               hien="link"
             />
-
-            <form action={refreshGalleryAction}>
-              <input
-                type="hidden"
-                name="folderId"
-                value={gallery.driveFolderId}
-              />
-              <input type="hidden" name="galleryId" value={gallery.id} />
-              {/* Nút nằm trong component riêng để đọc được trạng thái của form. */}
-              <NutLamMoi />
-            </form>
 
             {/* Chỉ quản lý được xoá album — xoá nhầm là mất cả lựa chọn ảnh của khách. */}
             {quanLy && (
@@ -478,7 +467,20 @@ export function GalleryCard({
         </div>
         )}
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
+        {/*
+          BON nut, VUA DUNG MOT DONG — anh yeu cau 21/09/2026 dua "Làm mới" tro
+          ra day.
+
+          Do tren man 1920: long trong the rong 460px, bon nut de nguyen co cu
+          het 515px nen vo thanh hai dong, ma hai dong la the cao them 52px va
+          hang album thu hai lai bi cat (nguyen tac 45). Hai chu nho lai: khe
+          `gap-1.5` thay `gap-2`, va `[&_.btn]:px-2.5` bop le hai ben moi nut
+          `.btn` tu 0.8rem con 0.625rem. Chu tren nut khong cat chu nao.
+
+          Them nut nua vao day thi phai do lai chieu cao hang nut (44px la mot
+          dong, 96px la hai) truoc khi cho len web.
+        */}
+        <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-3 [&_.btn]:px-2.5">
           <CopyLink
             path={`/g/${gallery.slug}`}
             code={gallery.accessCode}
@@ -490,10 +492,18 @@ export function GalleryCard({
             Ảnh khách chọn
           </Link>
 
+          <form action={refreshGalleryAction}>
+            <input type="hidden" name="folderId" value={gallery.driveFolderId} />
+            <input type="hidden" name="galleryId" value={gallery.id} />
+            {/* Nút nằm trong component riêng để đọc được trạng thái của form. */}
+            <NutLamMoi />
+          </form>
+
           {/*
-            Nút gửi tin là việc chạm tới điện thoại khách nên luôn đứng ngoài
-            mặt thẻ, tách bạch với "Làm mới" (đã dọn vào khối cài đặt): một cái
-            chỉ đụng số liệu trong nhà, một cái khách nghe chuông thật.
+            Nút gửi tin đứng NGAY CẠNH nút "Làm mới" nhưng là hai nút tách bạch.
+            Đặt cạnh nhau vì hai việc thường đi liền: đọc lại Drive xong, thấy
+            ảnh đã lên đủ thì mới nhắn khách. Tách ra vì hậu quả khác hẳn nhau —
+            một cái chỉ đụng số liệu trong nhà, một cái chạm tới điện thoại khách.
           */}
           <NutGuiThongBao galleryId={gallery.id} soMay={soMayChoTin} />
         </div>
