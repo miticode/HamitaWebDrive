@@ -5,16 +5,13 @@ import { useState } from "react";
 import type { BiaMuc, Gallery, GoiMuc, ListCount, MucXong } from "@/lib/store";
 import { MOC_DEM_LUOT_TAI, MOC_GHI_LAN_BAO, MUI_GIO } from "@/lib/constants";
 import { refreshGalleryAction } from "./actions";
-import { AccessControl } from "./AccessControl";
+import { CaiDatDialog } from "./CaiDatDialog";
 import { CopyLink } from "./CopyLink";
 import { CoverPicker } from "./CoverPicker";
-import { LoiNhan } from "./LoiNhan";
 import { TenAlbum } from "./TenAlbum";
-import { GoiAnh } from "./GoiAnh";
 import { MenuThe, MucMenuLink } from "./MenuThe";
 import { NutLamMoi } from "./NutLamMoi";
 import { NutGuiThongBao } from "./NutGuiThongBao";
-import { ThoiHan } from "./ThoiHan";
 import { XoaAlbumDialog } from "./XoaAlbumDialog";
 
 function Stat({
@@ -174,10 +171,7 @@ export function GalleryCard({
   const demDuocLuotTai = new Date(gallery.createdAt) >= MOC_DEM_LUOT_TAI;
   const [moChonBia, setMoChonBia] = useState(false);
   const [moXoa, setMoXoa] = useState(false);
-  /*
-    Khối cài đặt mở từ bảng "…". Năm dòng cài đặt đứng sẵn trên mọi thẻ làm
-    lưới dài và rối; anh muốn lưới album thoáng như Gump.
-  */
+  /* Cửa sổ cài đặt album — mở bằng nút bánh răng ngoài mặt thẻ. */
   const [moCaiDat, setMoCaiDat] = useState(false);
 
   /*
@@ -312,6 +306,37 @@ export function GalleryCard({
             trong ngày: chép tin cho khách, xem ảnh khách chọn, đọc lại Drive,
             nhắn khách — rồi mới tới mấy việc thỉnh thoảng.
           */}
+          {/*
+            Bánh răng đứng NGOÀI mặt thẻ, cạnh nút "…" — anh yêu cầu
+            21/09/2026: "nút cài đặt album đang bất tiện". Trước đó nó là một
+            mục trong bảng "…" và bấm vào thì bốn ô cài đặt xổ ngay trong thẻ:
+            hai cú bấm mới tới, mà tới rồi thì thẻ phình cao gấp đôi, đẩy cả
+            hàng album bên dưới chạy xuống. Nay một cú bấm, mở cửa sổ riêng,
+            lưới album đứng yên.
+          */}
+          <button
+            type="button"
+            onClick={() => setMoCaiDat(true)}
+            title={`Cài đặt album "${title}" — mã chọn ảnh, lời nhắn, hạn giữ ảnh, gói ảnh`}
+            /* 44px trên điện thoại, 32px từ 640px trở lên — cùng luật với `.btn-gon`. */
+            className="grid size-11 shrink-0 place-items-center rounded-full text-fg-faint transition hover:bg-bg-soft hover:text-fg sm:size-8"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="size-[18px]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <circle cx="12" cy="12" r="3.2" />
+              <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z" />
+            </svg>
+            <span className="sr-only">Cài đặt album</span>
+          </button>
+
           <MenuThe ten={title}>
             <CopyLink
               path={`/g/${gallery.slug}`}
@@ -349,15 +374,6 @@ export function GalleryCard({
 
             <button type="button" className="muc-menu" onClick={() => setMoChonBia(true)}>
               Đổi ảnh bìa
-            </button>
-
-            <button
-              type="button"
-              className="muc-menu"
-              aria-expanded={moCaiDat}
-              onClick={() => setMoCaiDat((m) => !m)}
-            >
-              {moCaiDat ? "Đóng cài đặt" : "Cài đặt album"}
             </button>
 
             {/* Chỉ quản lý được xoá album — xoá nhầm là mất cả lựa chọn ảnh của khách. */}
@@ -428,25 +444,23 @@ export function GalleryCard({
           </span>
         </div>
 
-        {moCaiDat && (
-          <div className="mt-1 divide-y divide-line rounded-md border border-line px-3">
-            <AccessControl galleryId={gallery.id} code={gallery.accessCode} />
-            <LoiNhan galleryId={gallery.id} message={gallery.message} />
-            <ThoiHan
-              galleryId={gallery.id}
-              createdAt={gallery.createdAt}
-              expiresAt={gallery.expiresAt}
-            />
-            <GoiAnh
-              galleryId={gallery.id}
-              folderId={gallery.driveFolderId}
-              soAnhTrongGoi={gallery.soAnhTrongGoi}
-              giaAnhThem={gallery.giaAnhThem}
-              goiMuc={goiMuc}
-            />
-          </div>
-        )}
       </div>
+
+      {moCaiDat && (
+        <CaiDatDialog
+          galleryId={gallery.id}
+          ten={title}
+          accessCode={gallery.accessCode}
+          message={gallery.message}
+          createdAt={gallery.createdAt}
+          expiresAt={gallery.expiresAt}
+          driveFolderId={gallery.driveFolderId}
+          soAnhTrongGoi={gallery.soAnhTrongGoi}
+          giaAnhThem={gallery.giaAnhThem}
+          goiMuc={goiMuc}
+          onDong={() => setMoCaiDat(false)}
+        />
+      )}
 
       {moXoa && quanLy && (
         <XoaAlbumDialog

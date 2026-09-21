@@ -391,15 +391,22 @@ Thẻ bây giờ chỉ còn ba phần, đúng như Gump:
   góc trái trên; góc phải trên là tình trạng nhắn khách (**chấm vàng** = chưa
   gửi thông báo, **chấm xanh** = đã báo tin, kèm ngày giờ); đáy ảnh là nhãn
   "Đã chọn xong" của từng thư mục.
-- **Một hàng tên album** + nút **"…"** bên phải.
+- **Một hàng tên album** + hai nút bên phải: **bánh răng** (cài đặt) và **"…"**.
 - **Một hàng số liệu nhỏ**: số ảnh · số thư mục · tim · lượt tải, và dồn về
   bên phải là **Mã chọn ảnh · gói ảnh**.
 
-**Nút "…" gom đủ tám việc**: Chép tin nhắn · Ảnh khách chọn · Làm mới · Gửi
-thông báo · N máy — rồi tới Chép link · Đổi ảnh bìa · Cài đặt album · Xoá
-album. Vì không còn phải nhét vừa một hàng nữa, chữ trên nút **trở lại đầy đủ**
-("Chép tin nhắn", "Gửi thông báo" thay cho "Chép tin", "Gửi tin" hồi sáng).
-Thẻ ở hàng dưới thì bảng tự mở ngược lên cho khỏi thò ra ngoài màn.
+**Nút "…" gom bảy việc**: Chép tin nhắn · Ảnh khách chọn · Làm mới · Gửi thông
+báo · N máy — rồi tới Chép link · Đổi ảnh bìa · Xoá album. Vì không còn phải
+nhét vừa một hàng nữa, chữ trên nút **trở lại đầy đủ** ("Chép tin nhắn", "Gửi
+thông báo" thay cho "Chép tin", "Gửi tin" hồi sáng). Thẻ ở hàng dưới thì bảng
+tự mở ngược lên cho khỏi thò ra ngoài màn.
+
+**Nút bánh răng mở CỬA SỔ cài đặt** (anh yêu cầu cùng ngày, sau khi thấy nút
+cài đặt cũ bất tiện): một cú bấm là hiện cửa sổ giữa màn hình với đủ bốn mục —
+mã chọn ảnh, lời nhắn, hạn giữ ảnh, gói ảnh. Trước đó nó nằm trong bảng "…" và
+bấm vào thì bốn ô xổ ngay trong thẻ, thẻ phình cao gấp đôi và đẩy cả hàng album
+bên dưới chạy xuống. Bấm ra ngoài hoặc phím Esc là đóng; mỗi mục vẫn tự lưu
+ngay khi bấm xong, không có nút lưu chung.
 
 **Các nút nhỏ lại** như anh yêu cầu: trong thẻ và trong bảng "…" chỉ còn 32–36px
 cao thay vì 44px. Riêng trên điện thoại chúng tự trở về 44px — dưới mức đó ngón

@@ -41,7 +41,8 @@ export function MenuThe({ ten, children }: { ten: string; children: ReactNode })
         aria-expanded={mo}
         aria-haspopup="menu"
         title={`Việc cần làm với album "${ten}"`}
-        className="grid size-8 place-items-center rounded-full text-fg-faint transition hover:bg-bg-soft hover:text-fg"
+        /* 44px trên điện thoại, 32px từ 640px trở lên — cùng luật với `.btn-gon`. */
+        className="grid size-11 place-items-center rounded-full text-fg-faint transition hover:bg-bg-soft hover:text-fg sm:size-8"
       >
         <svg viewBox="0 0 24 24" className="size-5" fill="currentColor" aria-hidden>
           <circle cx="5" cy="12" r="1.6" />

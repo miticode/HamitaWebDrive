@@ -916,7 +916,7 @@ hình dạng thẻ bây giờ là lời giải chung cho cả hai:
 │  ảnh bìa to (3:2, có trần)  │  ← nhãn "không cho tải", "đã báo tin",
 │                             │     "đã chọn xong" đè lên ảnh
 ├─────────────────────────────┤
-│ Tên album            [ … ]  │  ← mọi việc nằm trong bảng "…"
+│ Tên album        [⚙] [ … ]  │  ← bánh răng mở cửa sổ cài đặt; "…" là mọi việc
 │ 1046 · 3 · ♥0 · ↓2  Mã · gói│  ← một hàng số liệu duy nhất
 └─────────────────────────────┘
 ```
@@ -954,6 +954,16 @@ Ba thứ đã bỏ khỏi mặt thẻ, **mỗi thứ đều còn đường xem l
 con → chú thích của con số thư mục; dòng `/g/slug · ngày tạo` → chú thích của
 ảnh bìa; nút "sửa" cạnh tên album → mờ đi, chỉ hiện khi rê chuột (dưới 640px
 thì luôn hiện, không thì trên điện thoại không ai đổi tên được nữa).
+
+**Bốn cài đặt album mở thành CỬA SỔ** (`CaiDatDialog.tsx`), gọi bằng nút bánh
+răng đứng ngay cạnh nút "…" — anh yêu cầu 21/09/2026: "nút cài đặt album đang
+bất tiện". Trước đó nó là một mục trong bảng "…" và bấm vào thì bốn ô xổ ngay
+trong thẻ: hai cú bấm mới tới, tới rồi thì thẻ phình cao gấp đôi và đẩy cả hàng
+album bên dưới chạy xuống, mà bốn ô nhập chen trong bề ngang 470px của thẻ nên
+chữ gãy dòng liên tục. **Đừng gom nó trở lại vào bảng "…"** và đừng thêm nút
+"Lưu" chung cho cửa sổ: bốn mục con (`AccessControl`, `LoiNhan`, `ThoiHan`,
+`GoiAnh`) mỗi mục tự lưu phần của nó, một nút lưu chung là hứa điều chúng không
+làm.
 
 **Bảng "…" (`MenuThe.tsx`) — ba điều phải giữ:**
 
