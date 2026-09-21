@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
-import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, laQuanTri, xemHopDong, xemTienVaKhach } from "@/lib/phienNhanVien";
 
 export const dynamic = "force-dynamic";
 
@@ -70,12 +70,15 @@ export default async function TongQuanPage() {
       <section className="mt-10">
         <h2 className="eyebrow">Đang có</h2>
         <ul className="mt-3 divide-y divide-line rounded-md border border-line bg-bg-raised text-sm">
-          <li className="flex items-baseline justify-between gap-4 px-4 py-3">
-            <Link href="/quan-ly/hop-dong" className="font-medium hover:text-accent">
-              Hợp đồng
-            </Link>
-            <span className="text-right text-fg-muted">Tra hợp đồng, công nợ — chép từ AppSheet mỗi đêm</span>
-          </li>
+          {/* Chỉ liệt kê mục người đó vào được — xem quyền ở layout và từng trang. */}
+          {xemHopDong(nguoi) && (
+            <li className="flex items-baseline justify-between gap-4 px-4 py-3">
+              <Link href="/quan-ly/hop-dong" className="font-medium hover:text-accent">
+                Hợp đồng
+              </Link>
+              <span className="text-right text-fg-muted">Tra hợp đồng, công nợ — chép từ AppSheet mỗi đêm</span>
+            </li>
+          )}
           <li className="flex items-baseline justify-between gap-4 px-4 py-3">
             <Link href="/quan-ly/lich" className="font-medium hover:text-accent">
               Lịch chụp
@@ -86,20 +89,26 @@ export default async function TongQuanPage() {
             <Link href="/quan-ly/cong-viec" className="font-medium hover:text-accent">
               Đầu việc
             </Link>
-            <span className="text-right text-fg-muted">Việc chưa xong, việc quá hạn, việc của từng người</span>
+            <span className="text-right text-fg-muted">
+              {quanTri ? "Việc chưa xong, việc quá hạn, việc của từng người" : "Việc của anh chị và việc chưa giao cho ai"}
+            </span>
           </li>
-          <li className="flex items-baseline justify-between gap-4 px-4 py-3">
-            <Link href="/quan-ly/khach-hang" className="font-medium hover:text-accent">
-              Khách hàng
-            </Link>
-            <span className="text-right text-fg-muted">Khách và mọi hợp đồng của họ</span>
-          </li>
-          <li className="flex items-baseline justify-between gap-4 px-4 py-3">
-            <Link href="/quan-ly/phieu-thu" className="font-medium hover:text-accent">
-              Phiếu thu
-            </Link>
-            <span className="text-right text-fg-muted">Thu theo tháng, tiền mặt / chuyển khoản, chờ duyệt</span>
-          </li>
+          {xemTienVaKhach(nguoi) && (
+            <>
+              <li className="flex items-baseline justify-between gap-4 px-4 py-3">
+                <Link href="/quan-ly/khach-hang" className="font-medium hover:text-accent">
+                  Khách hàng
+                </Link>
+                <span className="text-right text-fg-muted">Khách và mọi hợp đồng của họ</span>
+              </li>
+              <li className="flex items-baseline justify-between gap-4 px-4 py-3">
+                <Link href="/quan-ly/phieu-thu" className="font-medium hover:text-accent">
+                  Phiếu thu
+                </Link>
+                <span className="text-right text-fg-muted">Thu theo tháng, tiền mặt / chuyển khoản, chờ duyệt</span>
+              </li>
+            </>
+          )}
           <li className="flex items-baseline justify-between gap-4 px-4 py-3">
             <Link href="/quan-ly/nhan-vien" className="font-medium hover:text-accent">
               Nhân viên

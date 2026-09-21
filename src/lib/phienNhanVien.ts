@@ -160,3 +160,32 @@ export async function xoaMoiPhien(nhanVienId: string): Promise<void> {
   if (!databaseIsConfigured()) return;
   await getPrisma().phienDangNhap.deleteMany({ where: { nhanVienId } });
 }
+
+/*
+  Ai xem duoc gi trong phan quan ly studio (anh chot 21/09/2026, thay cho luat
+  cu "ai dang nhap cung xem het" o nguyen tac 52).
+
+  Ly do doi: hop dong keo theo tien va cong no cua ca tiem, con phieu thu va
+  danh sach khach hang thi vua la tien vua la so dien thoai cua hang tram nha
+  khach — khong phai thu de ca tiem mo ra xem.
+*/
+
+/** Hop dong: quan ly + sale (sale la nguoi tao hop dong ben AppSheet). */
+export function xemHopDong(nguoi: NguoiDung | null): boolean {
+  return nguoi?.vaiTro === "quan-tri" || nguoi?.vaiTro === "sale";
+}
+
+/** Khach hang va phieu thu: CHI quan ly. */
+export function xemTienVaKhach(nguoi: NguoiDung | null): boolean {
+  return laQuanTri(nguoi);
+}
+
+/**
+ * Chan mot trang khong duoc phep xem.
+ *
+ * Dua ve Tong quan chu khong nem loi: nhan vien bam nham mot duong link cu
+ * trong Zalo thi thay man hinh quen thuoc, khong phai trang do.
+ */
+export function batBuocQuyen(duoc: boolean): void {
+  if (!duoc) redirect("/quan-ly");
+}

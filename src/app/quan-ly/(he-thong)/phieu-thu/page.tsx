@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/db";
 import { MUI_GIO, tien } from "@/lib/constants";
-import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, batBuocQuyen, laQuanTri, xemTienVaKhach } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { BangDongBo } from "../hop-dong/BangDongBo";
@@ -33,6 +33,8 @@ function doiThang(t: string, buoc: number): string {
  */
 export default async function PhieuThuPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
+  // Tiền và số điện thoại của hàng trăm nhà khách: chỉ quản lý (anh chốt 21/09/2026).
+  batBuocQuyen(xemTienVaKhach(nguoi));
   const sp = await searchParams;
   const choDuyet = sp.tt === "cho-duyet";
   const thang = /^\d{4}-\d{2}$/.test(sp.thang ?? "") ? sp.thang! : thangNay();

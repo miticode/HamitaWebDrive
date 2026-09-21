@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { MUI_GIO, tien } from "@/lib/constants";
-import { batBuocDangNhap } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, batBuocQuyen, xemHopDong } from "@/lib/phienNhanVien";
 import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
@@ -17,7 +17,8 @@ const NGAY = new Intl.DateTimeFormat("vi-VN", { timeZone: MUI_GIO, day: "2-digit
 
 /** Một hợp đồng: khách, tiền, từng dòng dịch vụ, từng phiếu thu. Chỉ xem — xem BangDongBo. */
 export default async function ChiTietHopDongPage({ params }: Props) {
-  await batBuocDangNhap();
+  // Hợp đồng dính tiền và công nợ cả tiệm: chỉ quản lý và sale (anh chốt 21/09/2026).
+  batBuocQuyen(xemHopDong(await batBuocDangNhap()));
   const { id } = await params;
   const prisma = getPrisma();
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { tien } from "@/lib/constants";
-import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, batBuocQuyen, laQuanTri, xemTienVaKhach } from "@/lib/phienNhanVien";
 import { boDau } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
 import { BangDongBo } from "../hop-dong/BangDongBo";
@@ -18,6 +18,8 @@ const MOI_LUOT = 100;
  */
 export default async function KhachHangPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
+  // Tiền và số điện thoại của hàng trăm nhà khách: chỉ quản lý (anh chốt 21/09/2026).
+  batBuocQuyen(xemTienVaKhach(nguoi));
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
   const loc = sp.loc === "no" || sp.loc === "chua-hd" ? sp.loc : "";

@@ -305,6 +305,27 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   chốt 17/09, bỏ luôn nút "Xong một phần"), khớp với nhãn xanh trên thẻ. Đo lúc
   làm: 24 / 25 trên 49 album. Kết hợp được với ô tìm, mã, tháng.
 
+### Phân quyền phần quản lý studio (21/09)
+
+Anh chốt lại ai xem được gì:
+
+- **Hợp đồng:** quản lý + sale. Nhân viên không vào được, gõ thẳng đường dẫn thì
+  quay về Tổng quan.
+- **Khách hàng và Phiếu thu:** chỉ quản lý (tiền và số điện thoại khách).
+- **Lịch chụp:** cả tiệm xem. Người không được xem hợp đồng thì tên khách hiện
+  dạng chữ thường, không phải liên kết.
+- **Đầu việc:** quản lý thấy hết; người khác chỉ thấy việc ghi tên mình và việc
+  chưa giao cho ai, kèm dòng nhắc ngay đầu trang. Hàng chip lọc theo từng người
+  chỉ quản lý mới có.
+- Menu bên trái tự ẩn mục không vào được.
+
+Đo bằng ba tài khoản tạm trên máy dev (xoá sạch sau khi thử, còn đúng 25 nhân
+viên): nhân viên thấy 138/186 việc — 2 việc của mình, 136 việc chưa giao.
+
+**Lưu ý khi cấp tài khoản:** đầu việc ghép người theo **Mã NV bên AppSheet**.
+Nhân viên nào trong mục Nhân viên chưa có Mã NV thì vào Đầu việc chỉ thấy việc
+chưa giao, không thấy việc của chính mình.
+
 ### Neon hết hạn mức, web sập — và đợt giảm tải sau đó (21/09)
 
 Sáng 21/09 cả web trả lỗi 500: Neon báo tài khoản vượt hạn mức gói miễn phí. Anh

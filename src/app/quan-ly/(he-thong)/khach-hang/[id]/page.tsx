@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { tien } from "@/lib/constants";
-import { batBuocDangNhap } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, batBuocQuyen, xemTienVaKhach } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { ChipTrangThai } from "../../hop-dong/ChipTrangThai";
@@ -13,7 +13,8 @@ type Props = { params: Promise<{ id: string }> };
 
 /** Một khách: thông tin liên hệ và mọi hợp đồng của họ. */
 export default async function ChiTietKhachPage({ params }: Props) {
-  await batBuocDangNhap();
+  // Tiền và số điện thoại của khách: chỉ quản lý (anh chốt 21/09/2026).
+  batBuocQuyen(xemTienVaKhach(await batBuocDangNhap()));
   const { id } = await params;
   const [kh, bangTen] = await Promise.all([
     getPrisma().khachHang.findUnique({

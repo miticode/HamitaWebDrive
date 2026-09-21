@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/db";
 import { tien } from "@/lib/constants";
-import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, batBuocQuyen, laQuanTri, xemHopDong } from "@/lib/phienNhanVien";
 import { boDau } from "@/lib/dichVuChung";
 import { BUOC_CHO_KHACH, ngayVN, tachTrangThai } from "@/lib/hopDongChung";
 import { BangDongBo } from "./BangDongBo";
@@ -21,6 +21,8 @@ const MOI_LUOT = 100;
  */
 export default async function HopDongPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
+  // Hợp đồng dính tiền và công nợ cả tiệm: chỉ quản lý và sale (anh chốt 21/09/2026).
+  batBuocQuyen(xemHopDong(nguoi));
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
   const tt = sp.tt ?? "";

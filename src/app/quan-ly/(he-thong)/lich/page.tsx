@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/db";
 import { MUI_GIO } from "@/lib/constants";
-import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, laQuanTri, xemHopDong } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 
@@ -49,6 +49,12 @@ const THU = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
  */
 export default async function LichPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
+  /*
+    Lịch thì CẢ TIỆM xem được (anh chốt 21/09/2026), nhưng tên khách chỉ là
+    LIÊN KẾT sang hợp đồng với người được xem hợp đồng. Để link cho người khác
+    thì bấm vào bị đá về Tổng quan — trông như web hỏng.
+  */
+  const moHopDong = xemHopDong(nguoi);
   const sp = await searchParams;
   const thang = /^\d{4}-\d{2}$/.test(sp.thang ?? "") ? sp.thang! : thangNay();
   const loai = sp.loai ?? "";
@@ -150,9 +156,15 @@ export default async function LichPage({ searchParams }: Props) {
                   {cua.slice(0, 3).map((l) => (
                     <li key={l.id} className="truncate text-[11px] leading-tight">
                       {l.hopDong ? (
-                        <Link href={`/quan-ly/hop-dong/${l.hopDong.id}`} className="hover:text-accent" title={`${l.loai ?? ""} · ${l.hopDong.tenKhach}`}>
-                          <span className="text-fg-muted">{l.loai}</span> {l.hopDong.tenKhach}
-                        </Link>
+                        moHopDong ? (
+                          <Link href={`/quan-ly/hop-dong/${l.hopDong.id}`} className="hover:text-accent" title={`${l.loai ?? ""} · ${l.hopDong.tenKhach}`}>
+                            <span className="text-fg-muted">{l.loai}</span> {l.hopDong.tenKhach}
+                          </Link>
+                        ) : (
+                          <span title={`${l.loai ?? ""} · ${l.hopDong.tenKhach}`}>
+                            <span className="text-fg-muted">{l.loai}</span> {l.hopDong.tenKhach}
+                          </span>
+                        )
                       ) : (
                         <span className="text-fg-muted">{l.loai}</span>
                       )}
@@ -183,9 +195,13 @@ export default async function LichPage({ searchParams }: Props) {
                 <td className="px-4 py-2.5 whitespace-nowrap">{l.loai ?? "—"}</td>
                 <td className="min-w-40 px-4 py-2.5">
                   {l.hopDong ? (
-                    <Link href={`/quan-ly/hop-dong/${l.hopDong.id}`} className="font-medium hover:text-accent">
-                      {l.hopDong.tenKhach}
-                    </Link>
+                    moHopDong ? (
+                      <Link href={`/quan-ly/hop-dong/${l.hopDong.id}`} className="font-medium hover:text-accent">
+                        {l.hopDong.tenKhach}
+                      </Link>
+                    ) : (
+                      <span className="font-medium">{l.hopDong.tenKhach}</span>
+                    )
                   ) : (
                     <span className="text-fg-faint">—</span>
                   )}

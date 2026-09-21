@@ -1228,8 +1228,31 @@ Mỗi lượt hỏi Drive "file sửa lần cuối lúc nào" trước (`lucSuaF
   cả phiếu chờ duyệt — trang phiếu thu tách phiếu chờ duyệt ra khỏi tổng tháng).
   Ngày không giờ lưu chuỗi `"YYYY-MM-DD"`; thời điểm bên AppSheet là giờ Việt
   Nam đọc ra như UTC nên lùi 7 tiếng.
-- **Ai đăng nhập cũng xem hết, kể cả tiền** (studio chốt 15/09: nhân viên xem
-  như sale, chỉ không sửa).
+- **AI XEM ĐƯỢC GÌ — anh chốt lại 21/09/2026**, thay hẳn luật cũ "ai đăng nhập
+  cũng xem hết":
+
+  | Trang | Ai xem được |
+  |---|---|
+  | Hợp đồng (danh sách + chi tiết) | quản lý + **sale** (sale là người tạo hợp đồng bên AppSheet) |
+  | Khách hàng, Phiếu thu | **chỉ quản lý** — tiền, công nợ và số điện thoại của hàng trăm nhà khách |
+  | Lịch chụp | cả tiệm |
+  | Đầu việc | quản lý thấy hết; người khác chỉ thấy việc **ghi tên mình** cộng việc **chưa giao cho ai** (anh muốn ai rảnh thì nhận) |
+
+  Ba điều phải giữ:
+  - Quyền viết trong `src/lib/phienNhanVien.ts` (`xemHopDong`, `xemTienVaKhach`,
+    `batBuocQuyen`) — **đừng rải điều kiện vai trò khắp các trang**.
+  - **Lọc đầu việc ngay trong câu lệnh database**, không lọc ở giao diện: lọc ở
+    giao diện thì dữ liệu vẫn rời khỏi máy chủ (cùng bài học nguyên tắc 3). Hai
+    con số "Quá hạn" và tổng cũng phải đếm trong đúng phạm vi đó, không thì con
+    số tố cáo phần mình không được xem.
+  - Giấu mục trong menu và ẩn liên kết sang hợp đồng ở trang Lịch **chỉ để đỡ
+    bấm nhầm**; chặn thật nằm ở `batBuocQuyen` trong từng trang. Bị chặn thì
+    đưa về Tổng quan, không ném lỗi.
+
+  Đo trên máy dev bằng ba tài khoản tạm (đã xoá sau khi thử): nhân viên thấy
+  138/186 đầu việc (2 của mình + 136 chưa giao), cột "Người làm" chỉ có "—" và
+  tên họ, ba trang bị chặn đều quay về Tổng quan; sale vào được Hợp đồng nhưng
+  bị chặn Khách hàng và Phiếu thu; quản lý thấy đủ 186 việc và mọi trang.
 - **Nối album ảnh với hợp đồng** (`Gallery.hopDongId`, `src/lib/noiAlbum.ts`,
   16/09): đây là DỮ LIỆU CỦA WEB — AppSheet không biết gì về album, nên bộ
   đồng bộ đêm không đụng cột này. Web **chỉ gợi ý** hợp đồng trùng tên rồi để

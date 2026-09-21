@@ -1,4 +1,4 @@
-import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, laQuanTri, xemHopDong, xemTienVaKhach } from "@/lib/phienNhanVien";
 import { TEN_VAI_TRO } from "@/lib/nhanVienChung";
 import { ThanhBen, type MucMenu } from "./ThanhBen";
 
@@ -20,14 +20,24 @@ export default async function HeThongLayout({ children }: { children: React.Reac
   const nguoi = await batBuocDangNhap();
 
   const quanTri = laQuanTri(nguoi);
+  /*
+    Menu chỉ hiện mục người đó VÀO ĐƯỢC (anh chốt 21/09/2026). Giấu ở menu chỉ
+    để đỡ bấm nhầm; chặn thật nằm trong từng trang bằng batBuocQuyen — giấu nút
+    mà không chặn máy chủ thì ai gõ thẳng đường dẫn vẫn đọc được.
+  */
   const menu: MucMenu[] = [
     { nhom: null, ten: "Tổng quan", href: "/quan-ly" },
-    // Đợt 2 — bản chép từ AppSheet, ai đăng nhập cũng xem (studio chốt 15/09).
-    { nhom: "Hợp đồng – Công việc", ten: "Hợp đồng", href: "/quan-ly/hop-dong" },
+    // Hợp đồng: quản lý + sale. Lịch và đầu việc thì cả tiệm, nhưng đầu việc
+    // chỉ hiện việc của chính người đang xem (xem trang cong-viec).
+    ...(xemHopDong(nguoi) ? [{ nhom: "Hợp đồng – Công việc", ten: "Hợp đồng", href: "/quan-ly/hop-dong" }] : []),
     { nhom: "Hợp đồng – Công việc", ten: "Lịch chụp", href: "/quan-ly/lich" },
     { nhom: "Hợp đồng – Công việc", ten: "Đầu việc", href: "/quan-ly/cong-viec" },
-    { nhom: "Tư vấn – CSKH", ten: "Khách hàng", href: "/quan-ly/khach-hang" },
-    { nhom: "Kế toán", ten: "Phiếu thu", href: "/quan-ly/phieu-thu" },
+    ...(xemTienVaKhach(nguoi)
+      ? [
+          { nhom: "Tư vấn – CSKH", ten: "Khách hàng", href: "/quan-ly/khach-hang" },
+          { nhom: "Kế toán", ten: "Phiếu thu", href: "/quan-ly/phieu-thu" },
+        ]
+      : []),
     { nhom: "Thông tin studio", ten: "Nhân viên", href: "/quan-ly/nhan-vien" },
     { nhom: "Thông tin studio", ten: "Nội quy", href: "/quan-ly/noi-quy" },
     { nhom: "Thông tin studio", ten: "Dịch vụ & trang phục", href: "/quan-ly/dich-vu" },

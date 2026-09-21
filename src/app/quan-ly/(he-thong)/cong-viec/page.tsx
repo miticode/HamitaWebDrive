@@ -32,8 +32,32 @@ function homNay(): string {
  */
 export default async function CongViecPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
+  const quanTri = laQuanTri(nguoi);
   const sp = await searchParams;
-  const loc = sp.nguoi ?? "";
+  const loc = quanTri ? (sp.nguoi ?? "") : "";
+
+  /*
+    Ai thấy việc của ai (anh chốt 21/09/2026).
+
+    Quản lý thấy hết. Người khác chỉ thấy việc GHI TÊN MÌNH, cộng những việc
+    CHƯA GIAO cho ai — anh muốn ai rảnh thì nhận. Không phải chuyện giấu diếm
+    mà là chuyện đúng việc: mở ra thấy 186 đầu việc của cả tiệm thì không ai
+    tìm ra phần của mình.
+
+    Lọc ngay trong câu lệnh database, không lọc ở giao diện: lọc ở giao diện
+    thì dữ liệu vẫn rời khỏi máy chủ, ai mở phần xem mã nguồn trang cũng đọc
+    được (cùng bài học với nguyên tắc 3).
+
+    Người chưa có mã nhân viên bên AppSheet (`maNV` trống) thì chỉ còn thấy
+    việc chưa giao — không ghép được dòng nào với họ.
+  */
+  const chuaGiao: Prisma.CongViecWhereInput[] = [
+    { nguoiPhuTrachMaNV: null },
+    { nguoiPhuTrachMaNV: "" },
+  ];
+  const theoNguoi: Prisma.CongViecWhereInput = quanTri
+    ? {}
+    : { OR: [...(nguoi.maNV ? [{ nguoiPhuTrachMaNV: nguoi.maNV }] : []), ...chuaGiao] };
   const tt = ["qua-han", "da-lam", "tat-ca"].includes(sp.tt ?? "") ? sp.tt! : "chua-xong";
   const so = Math.max(MOI_LUOT, Math.floor(Number(sp.so)) || MOI_LUOT);
   const nay = homNay();
@@ -49,6 +73,7 @@ export default async function CongViecPage({ searchParams }: Props) {
   const where: Prisma.CongViecWhereInput = {
     matBenAppSheet: null,
     ...theoTrangThai,
+    ...theoNguoi,
     ...(loc ? { nguoiPhuTrachMaNV: loc } : {}),
   };
 
@@ -69,13 +94,15 @@ export default async function CongViecPage({ searchParams }: Props) {
       },
       orderBy: [{ thoiHan: { sort: "asc", nulls: "last" } }, { taoLuc: "asc" }],
     }),
-    prisma.congViec.groupBy({
-      by: ["nguoiPhuTrachMaNV"],
-      where: { matBenAppSheet: null, trangThai: { not: "Đã làm" } },
-      _count: { _all: true },
-    }),
+    quanTri
+      ? prisma.congViec.groupBy({
+          by: ["nguoiPhuTrachMaNV"],
+          where: { matBenAppSheet: null, trangThai: { not: "Đã làm" } },
+          _count: { _all: true },
+        })
+      : Promise.resolve([] as { nguoiPhuTrachMaNV: string | null; _count: { _all: number } }[]),
     prisma.congViec.count({
-      where: { matBenAppSheet: null, trangThai: { not: "Đã làm" }, thoiHan: { lt: nay } },
+      where: { matBenAppSheet: null, ...theoNguoi, trangThai: { not: "Đã làm" }, thoiHan: { lt: nay } },
     }),
     tenTheoMaNV(),
   ]);
@@ -97,7 +124,12 @@ export default async function CongViecPage({ searchParams }: Props) {
       <h1 className="mt-2 font-display text-3xl font-light">
         Đầu việc <span className="text-fg-faint tabular-nums">{ds.length}</span>
       </h1>
-      <BangDongBo quanTri={laQuanTri(nguoi)} />
+      <BangDongBo quanTri={quanTri} />
+      {!quanTri && (
+        <p className="mt-3 text-sm text-fg-muted">
+          Đang hiện việc ghi tên anh chị và những việc chưa giao cho ai.
+        </p>
+      )}
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <Link href={link({ tt: "chua-xong" })} className={lopChip(tt === "chua-xong")}>Chưa xong</Link>
@@ -106,10 +138,10 @@ export default async function CongViecPage({ searchParams }: Props) {
         </Link>
         <Link href={link({ tt: "da-lam" })} className={lopChip(tt === "da-lam")}>Đã làm</Link>
         <Link href={link({ tt: "tat-ca" })} className={lopChip(tt === "tat-ca")}>Tất cả</Link>
-        <span className="mx-1 h-4 w-px bg-line" aria-hidden />
-        <Link href={link({ nguoi: "" })} className={lopChip(!loc)}>Mọi người</Link>
-        {/* "Việc của tôi" chỉ hiện với người có mã nhân viên bên AppSheet. */}
-        {nguoi.maNV && (
+        {quanTri && <span className="mx-1 h-4 w-px bg-line" aria-hidden />}
+        {quanTri && <Link href={link({ nguoi: "" })} className={lopChip(!loc)}>Mọi người</Link>}
+        {/* "Việc của tôi" chỉ hiện với quản lý — người khác vốn đã chỉ thấy việc mình. */}
+        {quanTri && nguoi.maNV && (
           <Link href={link({ nguoi: nguoi.maNV })} className={lopChip(loc.toLowerCase() === nguoi.maNV.toLowerCase())}>
             Việc của tôi
           </Link>
