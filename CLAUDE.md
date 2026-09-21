@@ -956,7 +956,9 @@ con → chú thích của con số thư mục; dòng `/g/slug · ngày tạo` �
 thì luôn hiện, không thì trên điện thoại không ai đổi tên được nữa).
 
 **Bốn cài đặt album mở thành CỬA SỔ** (`CaiDatDialog.tsx`), gọi bằng nút bánh
-răng đứng ngay cạnh nút "…" — anh yêu cầu 21/09/2026: "nút cài đặt album đang
+răng **dính sát** nút "…" ở mép phải hàng tên (tên album chiếm phần còn lại
+bằng `min-w-0 flex-1`; để cả ba cùng một hàng `justify-between` thì tên ngắn là
+bánh răng bị bỏ lại giữa thẻ — anh chỉ ra 21/09/2026) — anh yêu cầu 21/09/2026: "nút cài đặt album đang
 bất tiện". Trước đó nó là một mục trong bảng "…" và bấm vào thì bốn ô xổ ngay
 trong thẻ: hai cú bấm mới tới, tới rồi thì thẻ phình cao gấp đôi và đẩy cả hàng
 album bên dưới chạy xuống, mà bốn ô nhập chen trong bề ngang 470px của thẻ nên
@@ -964,6 +966,14 @@ chữ gãy dòng liên tục. **Đừng gom nó trở lại vào bảng "…"** 
 "Lưu" chung cho cửa sổ: bốn mục con (`AccessControl`, `LoiNhan`, `ThoiHan`,
 `GoiAnh`) mỗi mục tự lưu phần của nó, một nút lưu chung là hứa điều chúng không
 làm.
+
+**Cửa sổ có chuyển động cả lúc mở lẫn lúc đóng** (anh yêu cầu cùng ngày): lớp
+`.nen-hien` / `.hop-hien` / `.nen-tat` / `.hop-tat` trong `globals.css` — nền
+chỉ mờ dần, hộp vừa mờ vừa trượt lên một quãng ngắn. **Đóng không được gỡ hộp
+ngay**: component bật cờ `dangTat`, đợi 170ms cho `.hop-tat` (160ms) chạy hết
+rồi mới gọi `onDong` — gỡ ngay thì hộp biến mất cái bụp, đúng cảm giác giật cần
+bỏ. Sửa thời lượng một bên thì sửa cả hai. Máy bật "giảm chuyển động" thì bốn
+lớp này tắt hẳn.
 
 **Bảng "…" (`MenuThe.tsx`) — ba điều phải giữ:**
 

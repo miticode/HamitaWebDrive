@@ -403,7 +403,9 @@ tự mở ngược lên cho khỏi thò ra ngoài màn.
 
 **Nút bánh răng mở CỬA SỔ cài đặt** (anh yêu cầu cùng ngày, sau khi thấy nút
 cài đặt cũ bất tiện): một cú bấm là hiện cửa sổ giữa màn hình với đủ bốn mục —
-mã chọn ảnh, lời nhắn, hạn giữ ảnh, gói ảnh. Trước đó nó nằm trong bảng "…" và
+mã chọn ảnh, lời nhắn, hạn giữ ảnh, gói ảnh. Bánh răng nằm **dính sát** nút "…"
+ở mép phải, và cửa sổ **hiện ra rồi tắt đi đều có chuyển động** — nền mờ dần,
+hộp trượt lên nhẹ; đóng cũng vậy chứ không biến mất đột ngột. Trước đó nó nằm trong bảng "…" và
 bấm vào thì bốn ô xổ ngay trong thẻ, thẻ phình cao gấp đôi và đẩy cả hàng album
 bên dưới chạy xuống. Bấm ra ngoài hoặc phím Esc là đóng; mỗi mục vẫn tự lưu
 ngay khi bấm xong, không có nút lưu chung.

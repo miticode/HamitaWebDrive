@@ -465,8 +465,66 @@ body {
   background: var(--bg-soft);
 }
 
+/*
+  Cửa sổ bật lên: mở và đóng đều có chuyển động, anh yêu cầu 21/09/2026 ("bấm
+  vào bánh răng tới lúc tắt cho mượt mà hơn").
+
+  Hai lớp riêng cho NỀN và cho HỘP: nền chỉ mờ dần, hộp vừa mờ vừa trượt lên
+  một quãng ngắn. Cùng mờ cùng trượt thì mắt đọc thành "cả màn hình nhảy"; nền
+  đứng yên làm mốc thì hộp mới có cảm giác đi tới.
+
+  Đóng phải là animation RIÊNG chứ không chỉ gỡ phần tử: gỡ ngay thì hộp biến
+  mất cái bụp, đúng cảm giác giật mà anh muốn bỏ. Component giữ hộp lại thêm
+  ~170ms cho animation chạy hết rồi mới gỡ (xem CaiDatDialog).
+
+  `cubic-bezier(.2,.8,.25,1)` — nhanh lúc đầu, dừng êm ở cuối, kiểu chuyển động
+  của cửa sổ trên điện thoại. Máy nào bật "giảm chuyển động" thì bỏ hết, ở khối
+  cuối tệp này.
+*/
+@keyframes hien-nen {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes tat-nen {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes hien-hop {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+  }
+}
+@keyframes tat-hop {
+  to {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+}
+
+.nen-hien {
+  animation: hien-nen 0.18s ease-out;
+}
+.hop-hien {
+  animation: hien-hop 0.22s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+.nen-tat {
+  animation: tat-nen 0.16s ease-in forwards;
+}
+.hop-tat {
+  animation: tat-hop 0.16s ease-in forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition-duration: 0.01ms !important;
+  }
+  .nen-hien,
+  .hop-hien,
+  .nen-tat,
+  .hop-tat {
+    animation: none;
   }
 }

@@ -73,8 +73,7 @@ function lucGon(iso: string): string {
     hour12: false,
   }).formatToParts(new Date(iso));
 
-  const lay = (loai: string) =>
-    phan.find((p) => p.type === loai)?.value ?? "";
+  const lay = (loai: string) => phan.find((p) => p.type === loai)?.value ?? "";
 
   return `${lay("day")}/${lay("month")} ${lay("hour")}:${lay("minute")}`;
 }
@@ -252,7 +251,9 @@ export function GalleryCard({
             <span
               aria-hidden
               className={`size-1.5 shrink-0 rounded-full ${
-                trangThaiBaoTin.mau === "xong" ? "bg-emerald-400" : "bg-amber-400"
+                trangThaiBaoTin.mau === "xong"
+                  ? "bg-emerald-400"
+                  : "bg-amber-400"
               }`}
             />
             {trangThaiBaoTin.chu}
@@ -281,9 +282,14 @@ export function GalleryCard({
                 })}`}
                 className="flex max-w-full items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur"
               >
-                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-emerald-400" />
+                <span
+                  aria-hidden
+                  className="size-1.5 shrink-0 rounded-full bg-emerald-400"
+                />
                 <span className="truncate">
-                  {gallery.albumCount > 1 ? `Xong · ${m.tenMuc}` : "Đã chọn xong"}
+                  {gallery.albumCount > 1
+                    ? `Xong · ${m.tenMuc}`
+                    : "Đã chọn xong"}
                 </span>
               </span>
             ))}
@@ -292,21 +298,25 @@ export function GalleryCard({
       </Link>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <div className="flex items-start justify-between gap-1">
-          <TenAlbum
-            galleryId={gallery.id}
-            slug={gallery.slug}
-            ten={title}
-            tenThuMuc={gallery.title}
-            lop="truncate font-display text-lg leading-snug transition group-hover:text-accent"
-          />
+        {/*
+          Tên chiếm hết phần còn lại, hai nút đứng DÍNH NHAU ở mép phải — anh
+          yêu cầu 21/09/2026 ("cho bánh răng nằm sát bên dấu 3 chấm"). Bản đầu
+          để cả ba cùng một hàng `justify-between`, tên ngắn thì bánh răng bị
+          bỏ lại giữa thẻ còn ba chấm dính mép phải, nhìn như hai thứ rời nhau.
+        */}
+        <div className="flex items-start gap-1">
+          <div className="min-w-0 flex-1">
+            <TenAlbum
+              galleryId={gallery.id}
+              slug={gallery.slug}
+              ten={title}
+              tenThuMuc={gallery.title}
+              lop="truncate font-display text-lg leading-snug transition group-hover:text-accent"
+            />
+          </div>
 
-          {/*
-            Mọi việc làm với album nằm trong bảng này. Thứ tự theo số lần bấm
-            trong ngày: chép tin cho khách, xem ảnh khách chọn, đọc lại Drive,
-            nhắn khách — rồi mới tới mấy việc thỉnh thoảng.
-          */}
-          {/*
+          <div className="flex shrink-0 items-center gap-0.5">
+            {/*
             Bánh răng đứng NGOÀI mặt thẻ, cạnh nút "…" — anh yêu cầu
             21/09/2026: "nút cài đặt album đang bất tiện". Trước đó nó là một
             mục trong bảng "…" và bấm vào thì bốn ô cài đặt xổ ngay trong thẻ:
@@ -314,79 +324,94 @@ export function GalleryCard({
             hàng album bên dưới chạy xuống. Nay một cú bấm, mở cửa sổ riêng,
             lưới album đứng yên.
           */}
-          <button
-            type="button"
-            onClick={() => setMoCaiDat(true)}
-            title={`Cài đặt album "${title}" — mã chọn ảnh, lời nhắn, hạn giữ ảnh, gói ảnh`}
-            /* 44px trên điện thoại, 32px từ 640px trở lên — cùng luật với `.btn-gon`. */
-            className="grid size-11 shrink-0 place-items-center rounded-full text-fg-faint transition hover:bg-bg-soft hover:text-fg sm:size-8"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="size-[18px]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
+            <button
+              type="button"
+              onClick={() => setMoCaiDat(true)}
+              title={`Cài đặt album "${title}" — mã chọn ảnh, lời nhắn, hạn giữ ảnh, gói ảnh`}
+              /* 44px trên điện thoại, 32px từ 640px trở lên — cùng luật với `.btn-gon`. */
+              className="grid size-11 shrink-0 place-items-center rounded-full text-fg-faint transition hover:bg-bg-soft hover:text-fg sm:size-8"
             >
-              <circle cx="12" cy="12" r="3.2" />
-              <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z" />
-            </svg>
-            <span className="sr-only">Cài đặt album</span>
-          </button>
+              <svg
+                viewBox="0 0 24 24"
+                className="size-[18px]"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <circle cx="12" cy="12" r="3.2" />
+                <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z" />
+              </svg>
+              <span className="sr-only">Cài đặt album</span>
+            </button>
 
-          <MenuThe ten={title}>
-            <CopyLink
-              path={`/g/${gallery.slug}`}
-              code={gallery.accessCode}
-              expiresAt={gallery.expiresAt}
-              hien="tin"
-              lop="muc-menu"
-            />
+            <MenuThe ten={title}>
+              <CopyLink
+                path={`/g/${gallery.slug}`}
+                code={gallery.accessCode}
+                expiresAt={gallery.expiresAt}
+                hien="tin"
+                lop="muc-menu"
+              />
 
-            <MucMenuLink href={`/admin/${gallery.slug}`}>Ảnh khách chọn</MucMenuLink>
+              <MucMenuLink href={`/admin/${gallery.slug}`}>
+                Ảnh khách chọn
+              </MucMenuLink>
 
-            <form action={refreshGalleryAction}>
-              <input type="hidden" name="folderId" value={gallery.driveFolderId} />
-              <input type="hidden" name="galleryId" value={gallery.id} />
-              {/* Nút nằm trong component riêng để đọc được trạng thái của form. */}
-              <NutLamMoi lop="muc-menu" />
-            </form>
+              <form action={refreshGalleryAction}>
+                <input
+                  type="hidden"
+                  name="folderId"
+                  value={gallery.driveFolderId}
+                />
+                <input type="hidden" name="galleryId" value={gallery.id} />
+                {/* Nút nằm trong component riêng để đọc được trạng thái của form. */}
+                <NutLamMoi lop="muc-menu" />
+              </form>
 
-            {/*
+              {/*
               Nút gửi tin là việc chạm tới điện thoại khách, tách bạch với "Làm
               mới": một cái chỉ đụng số liệu trong nhà, một cái khách nghe
               chuông thật. Bấm vào vẫn có hộp hỏi lại như cũ.
             */}
-            <NutGuiThongBao galleryId={gallery.id} soMay={soMayChoTin} lop="muc-menu" />
+              <NutGuiThongBao
+                galleryId={gallery.id}
+                soMay={soMayChoTin}
+                lop="muc-menu"
+              />
 
-            <span aria-hidden className="my-1 block h-px bg-line" />
+              <span aria-hidden className="my-1 block h-px bg-line" />
 
-            <CopyLink
-              path={`/g/${gallery.slug}`}
-              code={gallery.accessCode}
-              expiresAt={gallery.expiresAt}
-              hien="link"
-              lop="muc-menu"
-            />
+              <CopyLink
+                path={`/g/${gallery.slug}`}
+                code={gallery.accessCode}
+                expiresAt={gallery.expiresAt}
+                hien="link"
+                lop="muc-menu"
+              />
 
-            <button type="button" className="muc-menu" onClick={() => setMoChonBia(true)}>
-              Đổi ảnh bìa
-            </button>
-
-            {/* Chỉ quản lý được xoá album — xoá nhầm là mất cả lựa chọn ảnh của khách. */}
-            {quanLy && (
               <button
                 type="button"
-                className="muc-menu text-red-700 hover:bg-red-50"
-                onClick={() => setMoXoa(true)}
+                className="muc-menu"
+                onClick={() => setMoChonBia(true)}
               >
-                Xoá album
+                Đổi ảnh bìa
               </button>
-            )}
-          </MenuThe>
+
+              {/* Chỉ quản lý được xoá album — xoá nhầm là mất cả lựa chọn ảnh của khách. */}
+              {quanLy && (
+                <button
+                  type="button"
+                  className="muc-menu text-red-700 hover:bg-red-50"
+                  onClick={() => setMoXoa(true)}
+                >
+                  Xoá album
+                </button>
+              )}
+            </MenuThe>
+          </div>
         </div>
 
         {/*
@@ -406,7 +431,12 @@ export function GalleryCard({
             }
           />
           {counts.map((c) => (
-            <Stat key={c.listId} icon={c.icon} value={c.count} label={`${c.name} khách đã chọn`} />
+            <Stat
+              key={c.listId}
+              icon={c.icon}
+              value={c.count}
+              label={`${c.name} khách đã chọn`}
+            />
           ))}
 
           {/*
@@ -434,7 +464,10 @@ export function GalleryCard({
           )}
 
           <span className="ml-auto truncate text-fg-faint">
-            Mã <span className="font-medium text-fg tabular-nums">{gallery.accessCode ?? "—"}</span>
+            Mã{" "}
+            <span className="font-medium text-fg tabular-nums">
+              {gallery.accessCode ?? "—"}
+            </span>
             {" · "}
             {gallery.soAnhTrongGoi === null
               ? "chưa đặt gói"
@@ -443,7 +476,6 @@ export function GalleryCard({
                 : `gói ${gallery.soAnhTrongGoi} ảnh`}
           </span>
         </div>
-
       </div>
 
       {moCaiDat && (

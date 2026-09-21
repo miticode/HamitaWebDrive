@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { GoiMuc } from "@/lib/store";
 import { AccessControl } from "./AccessControl";
 import { LoiNhan } from "./LoiNhan";
@@ -49,9 +49,20 @@ export function CaiDatDialog({
   goiMuc: GoiMuc[];
   onDong: () => void;
 }) {
+  /*
+    Đóng KHÔNG gỡ hộp ngay: bật cờ `dangTat` cho animation chạy hết rồi mới
+    báo cho thẻ album gỡ mình đi (anh yêu cầu 21/09/2026 cho mượt). 170ms khớp
+    với 160ms của `.hop-tat` trong globals.css — sửa một bên thì sửa cả hai.
+  */
+  const [dangTat, setDangTat] = useState(false);
+  const dong = useCallback(() => {
+    setDangTat(true);
+    setTimeout(onDong, 170);
+  }, [onDong]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onDong();
+      if (e.key === "Escape") dong();
     };
     window.addEventListener("keydown", onKey);
     const cu = document.body.style.overflow;
@@ -60,19 +71,19 @@ export function CaiDatDialog({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = cu;
     };
-  }, [onDong]);
+  }, [dong]);
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/45 backdrop-blur-sm sm:items-center sm:p-6"
-      onClick={onDong}
+      className={`fixed inset-0 z-[60] flex items-end justify-center bg-black/45 backdrop-blur-sm sm:items-center sm:p-6 ${dangTat ? "nen-tat" : "nen-hien"}`}
+      onClick={dong}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={`Cài đặt album ${ten}`}
-        className="flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-lg bg-bg shadow-[var(--shadow-lift)] sm:max-h-[85dvh] sm:rounded-lg"
+        className={`flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-lg bg-bg shadow-[var(--shadow-lift)] sm:max-h-[85dvh] sm:rounded-lg ${dangTat ? "hop-tat" : "hop-hien"}`}
       >
         <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
           <div className="min-w-0">
@@ -83,7 +94,7 @@ export function CaiDatDialog({
           </div>
           <button
             type="button"
-            onClick={onDong}
+            onClick={dong}
             aria-label="Đóng"
             className="grid size-9 shrink-0 place-items-center rounded-full text-fg-faint transition hover:bg-bg-soft hover:text-fg"
           >
@@ -112,7 +123,7 @@ export function CaiDatDialog({
           <p className="mb-2 text-left text-[11px] leading-relaxed text-fg-faint">
             Mỗi mục tự lưu ngay khi anh chị bấm xong, không cần lưu lại lần nữa.
           </p>
-          <button type="button" onClick={onDong} className="btn">
+          <button type="button" onClick={dong} className="btn">
             Đóng
           </button>
         </div>
