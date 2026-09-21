@@ -1834,6 +1834,22 @@ file, không xén, ảnh tải thêm chỉ nối hàng mới. Cột báo chỉ d
 hiện HẾT ảnh một lần (trang ảnh `/dich-vu/.../anh/<id>` vẫn dùng — nhưng thứ tự
 đọc ở đó cũng là theo cột).
 
+**Lưới "Ảnh khách chọn" (`/admin/[slug]`) dùng Ô VUÔNG + `object-contain`.**
+Anh báo 21/09/2026: "ảnh ngang vẫn đang hiển thị thành ảnh dọc" — bản cũ để
+`aspect-[3/4] object-cover` nên ảnh tiệc chụp ngang bị xén mất hai bên, đúng
+phần nhiều người ngồi trong bàn, mà đây là trang để đối chiếu trước khi giao in.
+
+Vì sao KHÔNG dựng lưới theo tỉ lệ thật như `PhotoGrid`: tỉ lệ ảnh chỉ có trên
+Drive, mà **trang quản lý không gọi Drive** (nguyên tắc 9) — bảng `Selection`
+chỉ lưu `driveFileId`, tên file, lời dặn, không có `width`/`height`. Đo tỉ lệ ở
+trình duyệt sau khi ảnh tải xong thì mỗi tấm tải xong lại đẩy lưới nhảy một
+nhịp — đúng lỗi vừa sửa ở trang khách. Ô vuông không cắt tấm nào và không nhảy;
+đổi lại ảnh dọc nhỏ hơn bản cũ chừng một phần tư.
+
+Muốn lưới hàng-đều như trang khách thì phải **lưu `width`/`height` vào
+`Selection`** lúc khách chọn (trang khách có sẵn hai số đó) và lấp cho dữ liệu
+cũ bằng một lượt đọc Drive chạy nền — đừng gọi Drive ngay trong trang.
+
 **State cũ trong closure khi vừa set state vừa gọi lại hàm trong cùng lượt
 bấm.** React chưa kịp cập nhật state trước khi hàm chạy lại, đọc phải giá trị
 cũ. Sửa bằng cách truyền thẳng tham số vào hàm thay vì dựa vào state cho quyết

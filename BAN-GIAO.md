@@ -379,6 +379,21 @@ Cắt ở đâu:
 > **Sửa tiếp trong ngày:** anh xem lại thấy *"ảnh bìa bị hẹp quá"* và muốn thẻ
 > album **giống y hệt Gump**, nút thì nhỏ lại — xem mục ngay dưới đây.
 
+### Ảnh ngang không còn bị cắt thành ảnh dọc (21/09)
+
+Anh phát hiện ở trang **Ảnh khách chọn**: ảnh chụp ngang bị nhét vào khung dọc
+nên xén mất hai bên — ảnh tiệc thì mất luôn mấy người ngồi hai đầu bàn, mà đây
+đúng là trang để soi trước khi giao in.
+
+Nay mỗi ô là **hình vuông và ảnh nằm trọn trong ô**: ảnh ngang chiếm hết bề
+ngang, ảnh dọc chiếm hết bề cao, không tấm nào bị cắt. Đổi lại ảnh dọc nhỏ hơn
+trước chừng một phần tư, vì phải chừa chỗ cho ảnh ngang trong cùng một lưới.
+
+Lý do không làm lưới so le đúng tỉ lệ từng tấm như trang khách: web không biết
+tấm nào ngang tấm nào dọc — kích thước ảnh chỉ có trên Drive, mà trang quản lý
+cố ý không hỏi Drive (hỏi thì mở trang mất gần chục giây). Muốn lưới so le thì
+em cần lưu kích thước ảnh lại ngay lúc khách chọn, anh muốn thì em làm sau.
+
 ### Thẻ album dựng lại theo kiểu Gump (21/09)
 
 Ảnh bìa từ **140px lên 285px** (đo ở màn 1920×1080), mà một màn vẫn thấy trọn

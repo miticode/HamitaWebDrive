@@ -50,12 +50,31 @@ export function LuoiAnhChon({ anh }: { anh: AnhChon[] }) {
               className="block w-full cursor-zoom-in"
               title={`Xem to — ${row.fileName}`}
             >
+              {/*
+                Ô VUÔNG và `object-contain`, KHÔNG phải khung dọc cắt ảnh.
+
+                Anh phát hiện 21/09/2026: "ảnh ngang vẫn đang hiển thị thành
+                ảnh dọc". Bản cũ để `aspect-[3/4] object-cover` nên mọi tấm
+                đều bị nhét vào khung dọc — ảnh tiệc chụp ngang bị xén mất hai
+                bên, đúng phần nhiều người ngồi trong bàn. Mà đây là trang để
+                đối chiếu trước khi giao in: nhìn thiếu người là chọn nhầm tấm.
+
+                Vì sao không dựng lưới theo đúng tỉ lệ từng tấm như trang khách
+                (`PhotoGrid.tsx`): tỉ lệ ảnh chỉ có trên Drive, mà trang quản lý
+                KHÔNG gọi Drive (nguyên tắc 9) — bảng `Selection` chỉ lưu id,
+                tên file và lời dặn. Đo tỉ lệ ở trình duyệt sau khi ảnh tải
+                xong thì mỗi tấm tải xong lại đẩy cả lưới nhảy một nhịp, đúng
+                cái lỗi "lướt tới ảnh mới thì mất chỗ" đã sửa ở trang khách.
+
+                Ô vuông là thế cân bằng: ảnh ngang chiếm hết bề ngang, ảnh dọc
+                chiếm hết bề cao, không tấm nào bị cắt và lưới không nhảy.
+              */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`/api/img/${row.driveFileId}?w=640`}
                 alt={row.fileName}
                 loading="lazy"
-                className="aspect-[3/4] w-full object-cover transition duration-300 hover:opacity-85"
+                className="aspect-square w-full bg-bg-soft object-contain transition duration-300 hover:opacity-85"
               />
             </button>
 
