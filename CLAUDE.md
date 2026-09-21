@@ -96,6 +96,22 @@ nó — trang quản lý có vài chỗ viết màu thẳng bằng `bg-amber-100
 `text-red-700`… và trên nền tối chúng thành mảng chói hoặc chữ không đọc nổi.
 Selector có thêm thuộc tính nên chỉ đè đúng trong trang quản lý ở chế độ tối.
 
+*Ngoại lệ thứ hai:* khối **con trỏ bàn tay** nằm trong `@layer base` (không
+phải `components`) — xem ngay dưới đây.
+
+**BẤM ĐƯỢC THÌ CON TRỎ PHẢI THÀNH BÀN TAY.** Anh yêu cầu 21/09/2026. Mặc định
+trình duyệt cho `<button>` là mũi tên thường — chỉ `<a href>` mới sẵn bàn tay —
+mà web này hầu hết là nút, nên trông như chữ chết. Khối trong `@layer base` ở
+`globals.css` phủ: `button`, `summary`, `select`, `label[for]`, nhãn bọc ô tích
+(`label:has(> input[type=checkbox])`), `[role="button"]`, và các `input` kiểu
+bấm. Nút đang khoá (`:disabled`, `aria-disabled`) hiện **dấu cấm**, không phải
+bàn tay: bàn tay trên nút bấm không ăn thua là hứa hão.
+
+Phải là `@layer base` để lớp tiện ích `cursor-*` còn đè lên được — web đang có
+ba chỗ cố ý khác đi: tấm phủ đóng bảng "…" (`cursor-default`), nút "Gửi thông
+báo · 0 máy" (`cursor-not-allowed`), ảnh bấm để phóng to (`cursor-zoom-in`).
+Viết trần ngoài layer là xoá sổ cả ba.
+
 **12. Giao diện cố định tông sáng**, không đổi theo cài đặt máy khách. Album gửi
 khách là bộ mặt studio nên phải giống nhau trên mọi máy. Riêng khung xem ảnh to
 vẫn nền đen.

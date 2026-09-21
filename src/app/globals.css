@@ -98,6 +98,45 @@ body {
 }
 
 /*
+  BẤM ĐƯỢC THÌ CON TRỎ PHẢI THÀNH BÀN TAY — anh yêu cầu 21/09/2026: "chỗ nào
+  bấm vô được thì đưa chuột vào phải hiện biểu tượng click".
+
+  Vì sao phải tự viết: mặc định của trình duyệt cho thẻ `<button>` là mũi tên
+  thường, chỉ `<a href>` mới sẵn bàn tay. Cả web này hầu hết là nút — chép tin
+  nhắn, gửi thông báo, thả tim, lọc — nên mặc định đó làm mọi thứ trông như
+  chữ chết. Tailwind v4 giữ nguyên mặc định trình duyệt, không tự thêm giúp.
+
+  Bọc trong `@layer base` chứ không viết trần: lớp tiện ích `cursor-*` của
+  Tailwind phải đè lên được. Trong web đang có ba chỗ cố ý khác đi — tấm phủ
+  đóng bảng "…" (`cursor-default`), nút mờ khi chưa ai đăng ký nhận tin
+  (`cursor-not-allowed`), và ảnh bấm để phóng to (`cursor-zoom-in`) — viết trần
+  là xoá sổ cả ba.
+
+  Nút đang khoá thì hiện dấu cấm, không phải bàn tay: bàn tay trên một nút bấm
+  không ăn thua là hứa hão.
+*/
+@layer base {
+  button:not(:disabled),
+  summary,
+  select,
+  label[for],
+  /* Nhãn BỌC ô tích (không có `for`) cũng bấm được — hàng đầu việc tự sinh ở
+     trang lập hợp đồng là kiểu đó. */
+  label:has(> input:where([type="checkbox"], [type="radio"])),
+  [role="button"]:not([aria-disabled="true"]),
+  input:where([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="submit"], [type="button"], [type="reset"]):not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/*
   Bọc trong @layer components để các lớp tiện ích của Tailwind (pl-10, mt-4…)
   vẫn đè lên được. Viết ngoài mọi layer thì CSS thường luôn thắng lớp tiện ích
   — ví dụ `padding` của .input sẽ nuốt mất `pl-10`, khiến biểu tượng kính lúp

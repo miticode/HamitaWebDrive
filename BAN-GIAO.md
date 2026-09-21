@@ -379,6 +379,17 @@ Cắt ở đâu:
 > **Sửa tiếp trong ngày:** anh xem lại thấy *"ảnh bìa bị hẹp quá"* và muốn thẻ
 > album **giống y hệt Gump**, nút thì nhỏ lại — xem mục ngay dưới đây.
 
+### Rê chuột vào chỗ bấm được là hiện bàn tay (21/09)
+
+Anh yêu cầu: chỗ nào bấm vô được thì đưa chuột vào phải hiện biểu tượng click.
+Nay cả web — trang khách lẫn trang quản lý — mọi nút, ô chọn, ô tích, mục menu
+và dòng mở rộng đều đổi con trỏ thành **bàn tay**. Trước đó chỉ mấy đường dẫn
+mới có, còn nút bấm thì để mũi tên thường, nhìn như chữ chết.
+
+Ba chỗ cố ý khác đi cho đúng nghĩa: nút **đang khoá** (ví dụ "Gửi thông báo ·
+0 máy" khi chưa ai đăng ký) hiện **dấu cấm**; **ảnh bấm để phóng to** hiện
+**kính lúp**; và khoảng trống quanh bảng "…" giữ mũi tên thường.
+
 ### Ảnh ngang không còn bị cắt thành ảnh dọc (21/09)
 
 Anh phát hiện ở trang **Ảnh khách chọn**: ảnh chụp ngang bị nhét vào khung dọc
