@@ -1359,9 +1359,38 @@ Dữ liệu cũ vẫn chép được khi cần: quản lý bấm "Đồng bộ n
 (`src/lib/dongBoAppSheet.ts`). Mỗi lượt hỏi Drive "file sửa lần cuối lúc nào"
 trước (`lucSuaFileAppSheet`), không đổi thì dừng luôn.
 
-- **Sửa hợp đồng cũ trên web thì chưa có** — mới chỉ lập mới. Trước khi mở
-  chức năng sửa, nhớ: dòng chép từ AppSheet vẫn mang `bamAppSheet`, nên nếu ai
-  bật lại lịch `dong-bo` thì mọi sửa đổi trên web sẽ bị đè.
+- **SỬA, XOÁ và vận hành hợp đồng — làm được từ 23/09/2026** (`src/lib/suaHopDong.ts`,
+  `actionsHopDong.ts`, `actionsViec.ts`). Nhớ: dòng chép từ AppSheet vẫn mang
+  `bamAppSheet`, nên nếu ai bật lại lịch `dong-bo` thì mọi sửa đổi trên web bị
+  đè — thêm một lý do nữa để lịch đó ở nguyên trạng thái tắt.
+
+  **Bốn điều của đợt này đừng phá:**
+
+  - **Tiền LUÔN cộng lại từ dữ liệu thật** (`tinhLaiTien`): mọi thao tác sửa
+    dòng, thêm hay xoá phiếu thu đều kết thúc bằng một lượt cộng lại thành
+    tiền, tổng, đã thu, còn lại từ bảng chi tiết và bảng phiếu thu. Đừng bao
+    giờ cộng dồn vào số cũ — chỉ cần một lần hỏng giữa chừng là sổ sai mãi mà
+    không ai biết. "Đã thu" vẫn cộng cả phiếu **chờ duyệt**, đúng cách AppSheet
+    tính suốt mấy năm.
+  - **Mã dòng chi tiết (`_1`, `_2`…) của dòng cũ giữ nguyên khi sửa**, dòng mới
+    lấy số tiếp theo số lớn nhất đang có — không đánh số lại từ đầu, vì mã đó
+    đã in trên đơn giao in và có thể đã gửi cho khách.
+  - **Bỏ một dòng dịch vụ chỉ xoá đầu việc CHƯA AI LÀM** của dòng đó; việc đã
+    giao hoặc đã xong thì chỉ cắt dây (`chiTietId = null`) — người ta đã bỏ
+    công thật.
+  - **Xoá hợp đồng phải gõ lại đúng mã**, và xoá tay cả phiếu thu, lịch, đầu
+    việc: ba bảng đó để `onDelete: SetNull` nên không tự đi theo, để lại là
+    tiền lơ lửng không thuộc hợp đồng nào (đo lúc làm: sau khi xoá, 0 dòng mồ côi).
+
+  **Quyền:** sửa hợp đồng, thêm phiếu thu, sửa lịch = quản lý + sale
+  (`lapHopDong`). Duyệt phiếu, xoá phiếu, xoá hợp đồng = **chỉ quản lý**. Đầu
+  việc: quản lý giao cho bất kỳ ai; người khác **tự nhận việc chưa giao** và
+  đổi trạng thái việc mang tên mình, không đụng được việc người khác.
+
+  *Bẫy đã vấp:* tệp `"use server"` **chỉ được xuất hàm async**. Xuất một mảng
+  hằng từ đó (`TRANG_THAI_VIEC`) thì Next biến nó thành tham chiếu sang máy
+  chủ, phía trình duyệt gọi `.includes` trên nó là nổ *"… is not a function"* —
+  trang trắng ngay. Hằng dùng chung để ở `hopDongChung.ts`.
 - Chép theo dấu vân tay (`bamAppSheet`): dòng không đổi thì không ghi. Dòng
   biến mất bên AppSheet chỉ đánh dấu `matBenAppSheet`, không xoá; và chỉ đụng
   dòng CÓ `bamAppSheet` — dòng tạo trên web sau này không bao giờ bị đánh dấu.

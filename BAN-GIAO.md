@@ -305,6 +305,45 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   chốt 17/09, bỏ luôn nút "Xong một phần"), khớp với nhãn xanh trên thẻ. Đo lúc
   làm: 24 / 25 trên 49 album. Kết hợp được với ô tìm, mã, tháng.
 
+### Sửa hợp đồng, duyệt phiếu thu, giao đầu việc (23/09)
+
+Đợt trước mở chức năng lập hợp đồng trên web nhưng để lại hai lỗ: **lập xong
+không sửa được**, và **phiếu thu của sale treo ở "Chờ duyệt" mãi**. Nay bịt cả
+hai, cộng thêm phần vận hành lịch và đầu việc.
+
+**Ở trang một hợp đồng giờ có:**
+
+- **Nút "Sửa hợp đồng"** (quản lý + sale) — sửa tên khách, loại, ngày đặt, địa
+  chỉ, ghi chú, trạng thái (đủ 18 bước), và các dòng dịch vụ: đổi giá, đổi số
+  lượng, đổi ngày chụp, thêm dòng, bỏ dòng. Lưu xong web **tự cộng lại** tiền
+  hàng, tổng, đã thu, còn lại. Bỏ một dòng thì đầu việc **chưa ai làm** của
+  dòng đó bỏ theo; việc đã giao hay đã xong thì giữ, vì người ta đã bỏ công.
+- **Nút "Thêm phiếu thu"** — thu lần hai, lần ba, thu đủ. Sale lập thì phiếu
+  nằm "Chờ duyệt"; quản lý lập thì ghi thẳng là đã thu.
+- **Khối "Lịch chụp"** — thêm buổi, đổi ngày, đổi loại (nhà gái, nhà trai, Hami
+  Baby…), đổi tình trạng, bỏ buổi. Sửa cả cụm rồi bấm "Lưu lịch" một lần.
+- **Nút "Xoá hợp đồng"** (chỉ quản lý) — phải **gõ lại đúng mã hợp đồng** mới
+  bấm được. Xoá kèm dòng dịch vụ, phiếu thu, lịch và đầu việc của hợp đồng đó.
+
+**Ở trang Phiếu thu:** quản lý có nút **Duyệt** và **Xoá** ngay trên từng dòng.
+Duyệt là xác nhận tiền đã vào két — nó không làm đổi con số "đã thu" vì con số
+đó vốn tính cả phiếu chờ duyệt, đúng như AppSheet.
+
+**Ở trang Đầu việc:** mỗi dòng có hai ô chọn — **giao cho ai** và **trạng thái**
+(Chưa giao việc · Đang làm · Đã làm), chọn xong là lưu ngay. Giao việc cho một
+người thì trạng thái tự nhảy sang "Đang làm"; chuyển sang "Đã làm" thì web ghi
+ngày hoàn thành, mở lại việc thì xoá ngày đó đi. Quản lý giao cho bất kỳ ai;
+người khác chỉ **tự nhận việc chưa giao** và đổi trạng thái việc của mình.
+
+Đo trên máy dev bằng ba tài khoản tạm (quản lý · sale · nhân viên): lập một hợp
+đồng thử rồi chạy đủ vòng — sửa giá 3.990.000 → 4.500.000, thêm dòng phụ thu
+300.000, khuyến mãi 500.000 thì tổng ra đúng 4.300.000; thêm phiếu thu
+1.500.000 → đã thu 2.500.000; duyệt một phiếu, xoá một phiếu → đã thu về
+1.000.000; thêm một buổi lịch; giao việc cho người rồi chuyển "Đã làm" (web
+ghi ngày 23/09); nhân viên thường bị chặn khỏi trang sửa và chỉ thấy việc chưa
+giao. Cuối cùng xoá hợp đồng bằng cách gõ lại mã — **không sót một dòng mồ côi
+nào**. Đã dọn sạch: còn đúng 2.240 hợp đồng, 1.992 khách, 25 nhân viên.
+
 ### Lập hợp đồng ngay trên web (21/09)
 
 Anh chốt: **từ nay hợp đồng mới lập thẳng trên web**, AppSheet chỉ còn để tra

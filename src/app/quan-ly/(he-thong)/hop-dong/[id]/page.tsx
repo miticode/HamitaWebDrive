@@ -2,12 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { MUI_GIO, tien } from "@/lib/constants";
-import { batBuocDangNhap, batBuocQuyen, xemHopDong } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, batBuocQuyen, laQuanTri, lapHopDong, xemHopDong } from "@/lib/phienNhanVien";
 import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { albumCuaHopDong } from "@/lib/noiAlbum";
 import { ChipTrangThai } from "../ChipTrangThai";
+import { NutPhieuThu, NutXoaHopDong, ThemPhieuThu } from "./NutHopDong";
+import { KhoiLich } from "./KhoiLich";
 
 export const dynamic = "force-dynamic";
 
@@ -15,10 +17,18 @@ type Props = { params: Promise<{ id: string }> };
 
 const NGAY = new Intl.DateTimeFormat("vi-VN", { timeZone: MUI_GIO, day: "2-digit", month: "2-digit", year: "numeric" });
 
+/** Hôm nay theo giờ studio, dạng "YYYY-MM-DD" — ngày mặc định của phiếu thu mới. */
+function homNay(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: MUI_GIO, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+}
+
 /** Một hợp đồng: khách, tiền, từng dòng dịch vụ, từng phiếu thu. Chỉ xem — xem BangDongBo. */
 export default async function ChiTietHopDongPage({ params }: Props) {
   // Hợp đồng dính tiền và công nợ cả tiệm: chỉ quản lý và sale (anh chốt 21/09/2026).
-  batBuocQuyen(xemHopDong(await batBuocDangNhap()));
+  const nguoi = await batBuocDangNhap();
+  batBuocQuyen(xemHopDong(nguoi));
+  const duocSua = lapHopDong(nguoi);
+  const quanTri = laQuanTri(nguoi);
   const { id } = await params;
   const prisma = getPrisma();
 
@@ -35,6 +45,10 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           where: { matBenAppSheet: null },
           orderBy: [{ ngayThu: { sort: "asc", nulls: "last" } }, { taoLuc: "asc" }],
         },
+        lich: {
+          where: { matBenAppSheet: null },
+          orderBy: [{ ngay: { sort: "asc", nulls: "last" } }, { taoLuc: "asc" }],
+        },
       },
     }),
     tenTheoMaNV(),
@@ -43,10 +57,10 @@ export default async function ChiTietHopDongPage({ params }: Props) {
   if (!hd) notFound();
 
   /*
-    Khách đã bấm "đã chọn xong" mà hợp đồng bên AppSheet vẫn đứng ở bước chờ
-    khách (4 nhánh chụp, 13 nhánh tiệc) — nhắc một câu để người phụ trách
-    chuyển bước bên đó. Web không tự chuyển: AppSheet vẫn là bản gốc trong giai
-    đoạn song song, sửa ở đây thì đêm sau bị ghi đè.
+    Khách đã bấm "đã chọn xong" mà hợp đồng vẫn đứng ở bước chờ khách (4 nhánh
+    chụp, 13 nhánh tiệc) — nhắc một câu để người phụ trách chuyển bước. Web
+    KHÔNG tự chuyển: đổi bước là đổi tiến độ cả một nhà khách, phải do người
+    nhìn rồi quyết. Từ 23/09/2026 chuyển ngay trên web được (nút Sửa hợp đồng).
   */
   const daChonXong = album.find((a) => a.xongLuc);
   const nhacChuyenBuoc = daChonXong && (hd.buoc === 4 || hd.buoc === 13);
@@ -76,7 +90,20 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           </p>
           <p className="mt-1 text-xs break-all text-fg-faint">{hd.maHD}</p>
         </div>
-        <ChipTrangThai trangThai={hd.trangThai} />
+        <div className="flex flex-wrap items-center gap-2">
+          <ChipTrangThai trangThai={hd.trangThai} />
+          {/*
+            Sửa: quản lý + sale. Xoá: chỉ quản lý, và còn phải gõ lại mã hợp
+            đồng trong hộp xác nhận. Giấu nút chỉ để đỡ bấm nhầm — chặn thật
+            nằm trong server action (nguyên tắc 3).
+          */}
+          {duocSua && (
+            <Link href={`/quan-ly/hop-dong/${hd.id}/sua`} className="btn">
+              Sửa hợp đồng
+            </Link>
+          )}
+          {quanTri && <NutXoaHopDong id={hd.id} maHD={hd.maHD} tenKhach={hd.tenKhach} />}
+        </div>
       </div>
 
       {hd.matBenAppSheet && (
@@ -152,8 +179,15 @@ export default async function ChiTietHopDongPage({ params }: Props) {
         <h2 className="eyebrow">Album ảnh ({album.length})</h2>
         {nhacChuyenBuoc && (
           <p className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
-            Khách đã báo chọn xong ảnh ngày {NGAY.format(daChonXong!.xongLuc!)} mà hợp đồng bên AppSheet còn ở
-            bước {hd.buoc}. Nhớ chuyển bước bên đó.
+            Khách đã báo chọn xong ảnh ngày {NGAY.format(daChonXong!.xongLuc!)} mà hợp đồng còn ở bước{" "}
+            {hd.buoc}.{" "}
+            {duocSua ? (
+              <Link href={`/quan-ly/hop-dong/${hd.id}/sua`} className="underline underline-offset-2">
+                Chuyển bước
+              </Link>
+            ) : (
+              "Nhờ quản lý hoặc sale chuyển bước giúp."
+            )}
           </p>
         )}
         {album.length === 0 ? (
@@ -240,7 +274,25 @@ export default async function ChiTietHopDongPage({ params }: Props) {
       </section>
 
       <section className="mt-8">
-        <h2 className="eyebrow">Phiếu thu ({hd.phieuThu.length})</h2>
+        <h2 className="eyebrow">Lịch chụp ({hd.lich.length})</h2>
+        <KhoiLich
+          hopDongId={hd.id}
+          duocSua={duocSua}
+          banDau={hd.lich.map((l) => ({
+            id: l.id,
+            ngay: l.ngay ?? "",
+            loai: l.loai ?? "Ngày chụp",
+            ghiChu: l.ghiChu ?? "",
+            trangThai: l.trangThai ?? "Chưa làm",
+          }))}
+        />
+      </section>
+
+      <section className="mt-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="eyebrow">Phiếu thu ({hd.phieuThu.length})</h2>
+          {duocSua && <ThemPhieuThu hopDongId={hd.id} homNay={homNay()} laQuanLy={quanTri} />}
+        </div>
         <div className="mt-3 overflow-x-auto rounded-md border border-line bg-bg-raised">
           <table className="w-full text-sm">
             <thead>
@@ -251,6 +303,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
                 <th className="px-4 py-2.5 text-right font-medium">Số tiền</th>
                 <th className="px-4 py-2.5 font-medium">Trạng thái</th>
                 <th className="px-4 py-2.5 font-medium">Người thu · duyệt</th>
+                {quanTri && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -273,6 +326,11 @@ export default async function ChiTietHopDongPage({ params }: Props) {
                     {tenNV(bangTen, p.nguoiTaoMaNV) ?? "—"}
                     {p.nguoiDuyetMaNV && <span className="block text-xs text-fg-faint">duyệt: {tenNV(bangTen, p.nguoiDuyetMaNV)}</span>}
                   </td>
+                  {quanTri && (
+                    <td className="px-4 py-2.5">
+                      <NutPhieuThu id={p.id} choDuyet={p.trangThai === "Chờ duyệt"} />
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

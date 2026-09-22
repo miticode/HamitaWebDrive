@@ -57,7 +57,15 @@ export type HanhDong =
   | "dong-bo-appsheet"
   | "dang-xuat-moi-may"
   | "gan-hop-dong"
-  | "lap-hop-dong";
+  | "lap-hop-dong"
+  | "sua-hop-dong"
+  | "xoa-hop-dong"
+  | "them-phieu-thu"
+  | "duyet-phieu-thu"
+  | "xoa-phieu-thu"
+  | "giao-dau-viec"
+  | "doi-trang-thai-viec"
+  | "sua-lich-chup";
 
 export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "dang-nhap": "Đăng nhập",
@@ -78,4 +86,12 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "dang-xuat-moi-may": "Đăng xuất mọi máy",
   "gan-hop-dong": "Gắn album vào hợp đồng",
   "lap-hop-dong": "Lập hợp đồng",
+  "sua-hop-dong": "Sửa hợp đồng",
+  "xoa-hop-dong": "Xoá hợp đồng",
+  "them-phieu-thu": "Thêm phiếu thu",
+  "duyet-phieu-thu": "Duyệt phiếu thu",
+  "xoa-phieu-thu": "Xoá phiếu thu",
+  "giao-dau-viec": "Giao đầu việc",
+  "doi-trang-thai-viec": "Đổi trạng thái đầu việc",
+  "sua-lich-chup": "Sửa lịch chụp",
 };

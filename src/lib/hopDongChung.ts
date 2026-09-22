@@ -120,6 +120,11 @@ export function trangThaiThu(hinhThuc: string, laQuanLy: boolean): string {
 }
 
 export type DongDichVuMoi = {
+  /**
+   * Id dòng đã có trong database. Chỉ dùng khi SỬA hợp đồng: có id là dòng cũ
+   * (giữ nguyên mã dòng), không có là dòng vừa thêm.
+   */
+  id?: string;
   /** Mục trong bảng Dịch vụ. null = gõ tay một dòng không có trong bảng. */
   dichVuId: string | null;
   maDV: string;
@@ -259,6 +264,8 @@ export function kiemHopDongMoi(du: DuLieuHopDongMoi): { loi: string } | HopDongS
     const ngayChup = gon(d.ngayChup);
     if (ngayChup && !NGAY_RE.test(ngayChup)) return { loi: `Ngày chụp dòng ${i + 1} chưa đúng.` };
     dong.push({
+      // Dòng cũ thì mang theo id để bên sửa biết là cập nhật chứ không thêm mới.
+      ...(d.id ? { id: d.id } : {}),
       dichVuId: d.dichVuId || null,
       maDV: gon(d.maDV),
       tenDV,
@@ -348,3 +355,106 @@ export function kiemHopDongMoi(du: DuLieuHopDongMoi): { loi: string } | HopDongS
     viec,
   };
 }
+
+/* ── Sửa hợp đồng đã lập (anh chốt 23/09/2026) ─────────────────────────── */
+
+export type DuLieuSuaHopDong = {
+  tenKhach: string;
+  loaiDV: string;
+  ngayDat: string;
+  diaChi: string;
+  ghiChu: string;
+  khuyenMai: number;
+  trangThai: string;
+  dong: DongDichVuMoi[];
+};
+
+export type SuaHopDongSach = {
+  tenKhach: string;
+  loaiDV: string;
+  ngayDat: string;
+  diaChi: string | null;
+  ghiChu: string | null;
+  trangThai: string;
+  buoc: number | null;
+  khuyenMai: number;
+  thanhTien: number;
+  tongTien: number;
+  danhSachDV: string;
+  dong: (DongDichVuMoi & { thanhTien: number })[];
+};
+
+/**
+ * Kiểm phần SỬA của một hợp đồng đã có.
+ *
+ * Khác `kiemHopDongMoi` ở chỗ không đụng tới khách, phiếu thu, lịch và đầu
+ * việc — bốn thứ đó có chỗ sửa riêng, gộp hết vào một form là mỗi lần đổi tên
+ * khách lại phải nhìn cả trang. Tiền vẫn tính Ở ĐÂY chứ không nhận từ form:
+ * thành tiền = cộng các dòng, tổng = thành tiền − khuyến mãi. Còn "đã thu" và
+ * "còn lại" do phiếu thu quyết định nên máy chủ cộng lại sau khi ghi
+ * (xem `tinhLaiTien` trong suaHopDong.ts).
+ */
+export function kiemSuaHopDong(du: DuLieuSuaHopDong): { loi: string } | SuaHopDongSach {
+  const kq = kiemHopDongMoi({
+    ...du,
+    // Ba trường dưới chỉ để mượn lại phép kiểm; phần sửa không dùng tới chúng.
+    khachHangId: "giu-nguyen",
+    khachMoi: null,
+    thu: [],
+    lich: [],
+    viec: [],
+  });
+  if ("loi" in kq) return kq;
+
+  return {
+    tenKhach: kq.tenKhach,
+    loaiDV: kq.loaiDV,
+    ngayDat: kq.ngayDat,
+    diaChi: kq.diaChi,
+    ghiChu: kq.ghiChu,
+    trangThai: kq.trangThai,
+    buoc: kq.buoc,
+    khuyenMai: kq.khuyenMai,
+    thanhTien: kq.thanhTien,
+    tongTien: kq.tongTien,
+    danhSachDV: kq.danhSachDV,
+    dong: kq.dong,
+  };
+}
+
+/** Dữ liệu một phiếu thu gõ ở trang hợp đồng. */
+export type DuLieuPhieuThu = {
+  soTien: number;
+  hinhThuc: string;
+  noiDung: string;
+  ngayThu: string;
+  ghiChu: string;
+};
+
+export function kiemPhieuThu(du: DuLieuPhieuThu): { loi: string } | DongThuMoi {
+  const soTien = Math.round(Number(du.soTien));
+  if (!Number.isFinite(soTien) || soTien <= 0 || soTien > 999_999_999) {
+    return { loi: "Số tiền chưa đúng." };
+  }
+  const hinhThuc = String(du.hinhThuc ?? "").trim();
+  if (!(HINH_THUC_THU as readonly string[]).includes(hinhThuc)) return { loi: "Hình thức thu chưa đúng." };
+  const ngayThu = String(du.ngayThu ?? "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(ngayThu)) return { loi: "Ngày thu chưa đúng." };
+  return {
+    soTien,
+    hinhThuc,
+    noiDung: String(du.noiDung ?? "").trim() || "Thu thêm",
+    ngayThu,
+    ghiChu: String(du.ghiChu ?? "").trim(),
+  };
+}
+
+/**
+ * Ba trạng thái của một đầu việc, đúng chữ bên AppSheet.
+ *
+ * Để ở đây chứ KHÔNG để trong tệp `"use server"`: tệp server action chỉ được
+ * xuất ra hàm async — xuất một mảng hằng thì Next biến nó thành tham chiếu
+ * sang máy chủ, và phía trình duyệt gọi `.includes` trên đó sẽ nổ
+ * "TRANG_THAI_VIEC.includes is not a function" (vấp thật 23/09/2026).
+ */
+export const TRANG_THAI_VIEC = ["Chưa giao việc", "Đang làm", "Đã làm"] as const;

@@ -6,6 +6,7 @@ import { batBuocDangNhap, batBuocQuyen, laQuanTri, xemTienVaKhach } from "@/lib/
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { BangDongBo } from "../hop-dong/BangDongBo";
+import { NutPhieuThu } from "../hop-dong/[id]/NutHopDong";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function PhieuThuPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
   // Tiền và số điện thoại của hàng trăm nhà khách: chỉ quản lý (anh chốt 21/09/2026).
   batBuocQuyen(xemTienVaKhach(nguoi));
+  const quanTri = laQuanTri(nguoi);
   const sp = await searchParams;
   const choDuyet = sp.tt === "cho-duyet";
   const thang = /^\d{4}-\d{2}$/.test(sp.thang ?? "") ? sp.thang! : thangNay();
@@ -125,6 +127,8 @@ export default async function PhieuThuPage({ searchParams }: Props) {
               <th className="px-4 py-2.5 text-right font-medium">Số tiền</th>
               <th className="px-4 py-2.5 font-medium">Trạng thái</th>
               <th className="px-4 py-2.5 font-medium">Người thu · duyệt</th>
+              {/* Chỉ quản lý mới thấy cột việc — và cũng chỉ họ gọi được hai action đó. */}
+              {quanTri && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
@@ -156,6 +160,11 @@ export default async function PhieuThuPage({ searchParams }: Props) {
                   {tenNV(bangTen, p.nguoiTaoMaNV) ?? "—"}
                   {p.nguoiDuyetMaNV && <span className="block text-xs text-fg-faint">duyệt: {tenNV(bangTen, p.nguoiDuyetMaNV)}</span>}
                 </td>
+                {quanTri && (
+                  <td className="px-4 py-2.5">
+                    <NutPhieuThu id={p.id} choDuyet={p.trangThai === "Chờ duyệt"} />
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

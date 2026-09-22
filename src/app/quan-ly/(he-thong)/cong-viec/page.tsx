@@ -6,6 +6,7 @@ import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { BangDongBo } from "../hop-dong/BangDongBo";
+import { NutViec } from "./NutViec";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +79,7 @@ export default async function CongViecPage({ searchParams }: Props) {
   };
 
   const prisma = getPrisma();
-  const [ds, demNguoi, soQuaHan, bangTen] = await Promise.all([
+  const [ds, demNguoi, soQuaHan, bangTen, dsNhanVien] = await Promise.all([
     prisma.congViec.findMany({
       where,
       select: {
@@ -105,7 +106,18 @@ export default async function CongViecPage({ searchParams }: Props) {
       where: { matBenAppSheet: null, ...theoNguoi, trangThai: { not: "Đã làm" }, thoiHan: { lt: nay } },
     }),
     tenTheoMaNV(),
+    /*
+      Danh sách người để giao việc: chỉ người CÒN LÀM và có mã nhân viên —
+      đầu việc ghép người bằng mã bên AppSheet, người chưa có mã thì ghép
+      không ra (đã ghi trong nguyên tắc 52).
+    */
+    prisma.nhanVien.findMany({
+      where: { dangLam: true, maNV: { not: null } },
+      orderBy: { ten: "asc" },
+      select: { maNV: true, ten: true },
+    }),
   ]);
+  const nhanVien = dsNhanVien.map((n) => ({ maNV: n.maNV!, ten: n.ten }));
   const hien = ds.slice(0, so);
 
   const link = (thay: Record<string, string>) => {
@@ -164,8 +176,7 @@ export default async function CongViecPage({ searchParams }: Props) {
               <th className="px-4 py-2.5 font-medium">Thời hạn</th>
               <th className="px-4 py-2.5 font-medium">Việc</th>
               <th className="px-4 py-2.5 font-medium">Khách</th>
-              <th className="px-4 py-2.5 font-medium">Người làm</th>
-              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
+              <th className="px-4 py-2.5 font-medium">Người làm · trạng thái</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
@@ -190,12 +201,18 @@ export default async function CongViecPage({ searchParams }: Props) {
                       <span className="text-fg-faint">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap">{tenNV(bangTen, v.nguoiPhuTrachMaNV) ?? "—"}</td>
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
-                    {v.trangThai ?? "—"}
+                  <td className="px-4 py-2.5">
+                    <NutViec
+                      id={v.id}
+                      nguoiPhuTrachMaNV={v.nguoiPhuTrachMaNV}
+                      trangThai={v.trangThai}
+                      nhanVien={nhanVien}
+                      quanTri={quanTri}
+                      maToi={nguoi.maNV}
+                    />
                     {v.trangThai === "Đã làm" && v.ngayHoanThanh && (
-                      <span className="block text-xs text-fg-faint">
-                        {ngayVN(v.ngayHoanThanh)}
+                      <span className="mt-1 block text-xs text-fg-faint">
+                        xong {ngayVN(v.ngayHoanThanh)}
                         {v.tienDo ? ` · ${v.tienDo}` : ""}
                       </span>
                     )}
