@@ -493,8 +493,19 @@ thức** (mỗi lần bị gọi là thức thêm ≥ 5 phút), nên đã sửa 
   thêm dòng cron `dong-bo` vào `vercel.json`.
 
 Không tìm thấy dịch vụ theo dõi ngoài nào gọi `/api/suc-khoe` (đếm nhật ký 3
-phút: 0 lượt). **Anh nên xem lại trang Usage của Neon sau vài ngày** để biết mức
-dùng thật đã giảm bao nhiêu — chỗ đó chỉ anh xem được.
+phút: 0 lượt).
+
+**Số thật ngày đầu chạy gói Launch (anh gửi ảnh Billing 22/09):** 6,06 CU-giờ =
+**$0,62**, lưu trữ 45,9 MB, truyền mạng 0,4 GB trong 500 GB kèm gói. Tính ra
+khoảng **$0,10 mỗi CU-giờ**, giữ nhịp đó thì chừng **$19 một tháng**. Biểu đồ
+cho thấy **ban đêm database ngủ thật** (khoảng 22h tới 7h sáng), còn ban ngày
+thức gần như liên tục.
+
+**Vì sao ban ngày thức liên tục — và đã sửa (22/09):** trang quản lý album mở
+cả buổi thì cứ 60 giây lại hỏi web một lần để cập nhật "khách vừa chọn xong",
+kể cả lúc anh đi ăn cơm hay đang làm Photoshop. Nay nó **ngưng sau 5 phút không
+ai đụng vào trang** — chạm chuột, gõ phím hay cuộn trang là chạy lại ngay, y
+như trang khách đã làm hôm 21/09. Anh không thấy khác gì ngoài hoá đơn.
 
 ### Trang Ảnh cưới + quản lý trang giới thiệu (17/09)
 

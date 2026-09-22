@@ -1681,7 +1681,7 @@ nên một thứ gọi 20 giây/lần giữ database thức 24/24.
 | Nguồn | Trước | Sau |
 |---|---|---|
 | `/api/img` xin phiếu Drive | **mỗi tấm ảnh một lần đọc database** (đo: 20 lượt → 20 lần đọc, 3.050ms) | giữ token trong bộ nhớ 50 phút (20 lượt → **1 lần**, 1.578ms) |
-| `/api/admin/trang-thai` (thẻ "khách vừa chọn xong") | 20 giây/lần, **kể cả khi tab bị ẩn** | 60 giây/lần, **chỉ khi tab đang hiện** |
+| `/api/admin/trang-thai` (thẻ "khách vừa chọn xong") | 20 giây/lần, **kể cả khi tab bị ẩn** | 60 giây/lần, **chỉ khi tab đang hiện** VÀ (từ 22/09) **ngưng sau 5 phút không ai đụng vào trang** |
 | `/api/selections` (khách đang chọn ảnh) | 15 giây/lần khi tab hiện | 30 giây/lần, **ngưng sau 5 phút khách không đụng vào** |
 | Cron đồng bộ AppSheet | mỗi giờ, 17 lượt/ngày | **tắt** (anh chốt 21/09: chưa dùng CRM) |
 
@@ -1690,16 +1690,28 @@ Ba điều đừng phá:
   "Kết nối lại" và "Ngắt kết nối" xoá ngay ở máy nhận cú bấm; máy khác cùng lắm
   50 phút rồi cũng đọc lại, và nếu phiếu đã chết thì Drive trả lỗi rồi code tự
   quay về service account như cũ (xem `tokenCache` trong `googleAuth.ts`).
-- **Mọi vòng lặp hỏi lại phải kiểm `document.visibilityState`**, và nếu là
-  trang khách thì kiểm cả "còn động vào trang không". Thêm một vòng lặp mới mà
-  quên hai phép kiểm này là quay lại đúng chỗ làm sập web.
+- **Mọi vòng lặp hỏi lại phải kiểm `document.visibilityState` VÀ "còn ai đụng
+  vào trang không"** — cả trang khách lẫn trang quản lý (từ 22/09/2026, trước
+  đó trang quản lý chỉ kiểm vế đầu). Nếp chung: mốc `chamCuoi` cập nhật theo
+  `pointerdown`/`keydown`/`scroll`, nghỉ quá `NGHI_SAU` thì ngưng hỏi, chạm lại
+  thì hỏi NGAY một lần rồi mới tính nhịp tiếp — không thì người vừa quay lại
+  bàn phải đợi hết một nhịp mới thấy tin mới. Thêm một vòng lặp mới mà quên hai
+  phép kiểm này là quay lại đúng chỗ làm sập web.
 - **Cron `dong-bo` đang TẮT trong `vercel.json`.** Nút "Đồng bộ ngay" và
   `npx tsx scripts/dong-bo-appsheet.mts` vẫn chạy được. Bật lại khi studio dùng
   CRM: thêm lại dòng `{ "path": "/api/cron/dong-bo", "schedule": "5 0-15,19 * * *" }`.
 
-*Chưa đo được:* đúng bao nhiêu giờ Neon mỗi tháng — trang Usage của Neon chỉ anh
-xem được. Không thấy dịch vụ theo dõi ngoài nào gọi `/api/suc-khoe` (đếm nhật
-ký 3 phút: 0 lượt).
+**Số thật sau một ngày chạy gói Launch** (anh gửi ảnh bảng Billing 22/09/2026):
+**6,06 CU-giờ = $0,62** cho ngày đầu, lưu trữ 45,9 MB, truyền mạng 0,4 GB trong
+500 GB kèm gói. Giá compute ≈ **$0,10/CU-giờ**; cứ nhịp đó thì khoảng **$19 một
+tháng**. Biểu đồ cho thấy **ban đêm database ngủ thật** (vệt "endpoint inactive"
+từ ~22h tới ~7h), còn ban ngày thức gần như liên tục ở mức sàn 0,25 CU.
+
+Thủ phạm ban ngày là **tab `/admin` mở cả buổi**: tab còn hiện thì vòng hỏi 60
+giây vẫn chạy, kể cả lúc không ai ngồi trước máy. Nên 22/09 `TheoDoiKhach` thêm
+vế thứ hai giống trang khách — **ngưng sau 5 phút không ai đụng vào trang**,
+chạm lại là hỏi ngay. Không thấy dịch vụ theo dõi ngoài nào gọi `/api/suc-khoe`
+(đếm nhật ký 3 phút: 0 lượt).
 
 ---
 

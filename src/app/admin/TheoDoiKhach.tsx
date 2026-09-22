@@ -18,6 +18,20 @@ import Link from "next/link";
  */
 const NHIP_HOI = 60_000;
 
+/**
+ * Không đụng chuột, bàn phím hay cuộn trang lâu chừng này thì NGƯNG hỏi.
+ *
+ * Anh chốt 22/09/2026 sau khi xem bảng tiền Neon ngày đầu chạy gói Launch: sáu
+ * CU-giờ một ngày, ban đêm database ngủ ngon nhưng ban ngày thức gần như liên
+ * tục. Thủ phạm chính là trang này — studio mở nó cả buổi, tab vẫn hiện nên
+ * lượt hỏi 60 giây một lần cứ đều đặn đánh thức database, kể cả lúc không ai
+ * ngồi trước máy.
+ *
+ * Đúng cách trang khách đã làm với `Selection.tsx` (cùng ngày 21/09): chạm vào
+ * là chạy tiếp ngay, nên studio không nhận ra khác biệt nào ngoài hoá đơn.
+ */
+const NGHI_SAU = 5 * 60_000;
+
 type MucXong = { albumId: string; tenMuc: string; xongLuc: string };
 
 type Album = {
@@ -61,6 +75,8 @@ export function TheoDoiKhach() {
 
   useEffect(() => {
     let con = true;
+    /* Lần cuối có người thật đụng vào trang — xem NGHI_SAU. */
+    let chamCuoi = Date.now();
 
     const hoi = async () => {
       try {
@@ -116,21 +132,49 @@ export function TheoDoiKhach() {
     };
 
     /*
-      CHỈ hỏi khi tab đang hiện — trước đây hỏi cả khi tab bị ẩn, mà studio hay
-      để trang quản lý mở nguyên ngày ở một tab sau lưng: database không bao giờ
-      được ngủ. Quay lại tab thì hỏi ngay, không bắt đợi hết một nhịp.
+      Hỏi khi tab đang hiện VÀ vừa có người đụng vào trang trong NGHI_SAU gần
+      đây. Trước đây hỏi cả khi tab bị ẩn, mà studio hay để trang quản lý mở
+      nguyên ngày ở một tab sau lưng: database không bao giờ được ngủ. Từ
+      22/09/2026 thêm vế thứ hai — tab hiện mà cả năm phút không ai chạm vào
+      thì cũng ngưng.
     */
-    const hoiNeuDangXem = () => {
-      if (document.visibilityState === "visible") void hoi();
+    const dangNgoiTruocMay = () =>
+      document.visibilityState === "visible" && Date.now() - chamCuoi < NGHI_SAU;
+
+    hoi();
+    const id = setInterval(() => {
+      if (dangNgoiTruocMay()) void hoi();
+    }, NHIP_HOI);
+
+    /*
+      Đụng vào sau một lúc nghỉ: hỏi NGAY một lần rồi mới tính nhịp tiếp. Chỉ
+      ghi lại mốc mà không hỏi thì studio vừa quay lại bàn sẽ phải đợi thêm một
+      phút mới thấy nhà khách vừa báo xong.
+    */
+    const daCham = () => {
+      const nghiLau = Date.now() - chamCuoi >= NGHI_SAU;
+      chamCuoi = Date.now();
+      if (nghiLau && document.visibilityState === "visible") void hoi();
+    };
+    const khiQuayLai = () => {
+      if (document.visibilityState === "visible") {
+        chamCuoi = Date.now();
+        void hoi();
+      }
     };
 
-    hoiNeuDangXem();
-    const id = setInterval(hoiNeuDangXem, NHIP_HOI);
-    document.addEventListener("visibilitychange", hoiNeuDangXem);
+    document.addEventListener("visibilitychange", khiQuayLai);
+    for (const ten of ["pointerdown", "keydown", "scroll"] as const) {
+      window.addEventListener(ten, daCham, { passive: true });
+    }
+
     return () => {
       con = false;
       clearInterval(id);
-      document.removeEventListener("visibilitychange", hoiNeuDangXem);
+      document.removeEventListener("visibilitychange", khiQuayLai);
+      for (const ten of ["pointerdown", "keydown", "scroll"] as const) {
+        window.removeEventListener(ten, daCham);
+      }
     };
   }, [router]);
 
