@@ -333,6 +333,18 @@ từng thư mục**: chỉ đếm tấm chọn thêm trong chính thư mục kh�
 còn **7** — đúng những nhà khách thật sự chọn thêm sau khi chốt. Ví dụ nhà
 "GD - Thanh Ngân" từ 12 tấm xuống còn 1, nhà Nhã Linh hết báo hẳn.
 
+### Lập hợp đồng bằng cửa sổ, không nhảy trang (23/09)
+
+Anh yêu cầu: bấm **Lập hợp đồng** thì hiện cửa sổ ngay trên trang danh sách,
+không nhảy sang trang khác. Nay đúng vậy — cửa sổ trượt lên mượt, bên trong là
+đủ bộ như cũ: chọn khách cũ hoặc điền khách mới, loại hợp đồng, ngày đặt, các
+dòng dịch vụ, giảm giá, tổng tiền tự tính, ghi chú, trạng thái, tiền cọc, lịch
+chụp và đầu việc.
+
+Lưu xong thì cửa sổ tự đóng và mở thẳng hợp đồng vừa lập. Bấm ra ngoài, bấm ✕
+hay phím Esc đều đóng. Đường cũ  vẫn dùng được nếu anh
+quen gõ thẳng địa chỉ.
+
 ### Sửa hợp đồng, duyệt phiếu thu, giao đầu việc (23/09)
 
 Đợt trước mở chức năng lập hợp đồng trên web nhưng để lại hai lỗ: **lập xong

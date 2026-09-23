@@ -1380,6 +1380,20 @@ trước (`lucSuaFileAppSheet`), không đổi thì dừng luôn.
   `bamAppSheet`, nên nếu ai bật lại lịch `dong-bo` thì mọi sửa đổi trên web bị
   đè — thêm một lý do nữa để lịch đó ở nguyên trạng thái tắt.
 
+  **Lập hợp đồng mở bằng CỬA SỔ ngay trên trang danh sách**
+  (`NutLapHopDong.tsx`, anh yêu cầu 23/09/2026), nhưng trang riêng
+  `/quan-ly/hop-dong/moi` **vẫn giữ**: đó là đường vào khi ai dán thẳng địa chỉ,
+  và là chỗ chạy được khi trình duyệt chặn JavaScript. Cửa sổ dùng LẠI đúng
+  `FormHopDongMoi` chứ không chép thành bản thứ hai — hai bản form sẽ lệch nhau
+  ngay lần sửa đầu tiên; form nhận hai prop `onThoi` và `onXong` để biết mình
+  đang nằm trong cửa sổ hay đứng riêng một trang.
+
+  Bảng dịch vụ tải **khi bấm nút** (`duLieuFormHopDongAction`), không tải sẵn
+  lúc mở trang danh sách: 1.018 dịch vụ + 313 dòng bảng giá là hai câu hỏi
+  database mà phần lớn lượt mở trang không dùng tới (nguyên tắc 53). Cửa sổ
+  hiện RA NGAY kèm dòng "Đang mở bảng dịch vụ…" rồi form thế chỗ — chờ đủ dữ
+  liệu mới mở thì bấm xong phải đợi một nhịp không biết chuyện gì đang xảy ra.
+
   **Bốn điều của đợt này đừng phá:**
 
   - **Tiền LUÔN cộng lại từ dữ liệu thật** (`tinhLaiTien`): mọi thao tác sửa

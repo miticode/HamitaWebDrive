@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getPrisma } from "@/lib/db";
-import { boDau } from "@/lib/constants";
+import { boDau, MUI_GIO } from "@/lib/constants";
 import { layNguoiDung, lapHopDong } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { lapHopDongMoi, maNguoiLap, type NguoiLap } from "@/lib/taoHopDong";
@@ -310,4 +310,62 @@ export async function luuLichAction(
   revalidatePath(`/quan-ly/hop-dong/${hopDongId}`);
   revalidatePath("/quan-ly/lich");
   return { ok: true };
+}
+
+export type DuLieuFormHopDong = {
+  dichVu: {
+    id: string;
+    maDV: string;
+    ten: string;
+    loai: string;
+    nhom: string | null;
+    donGia: number;
+    donVi: string | null;
+  }[];
+  giaHangMuc: { dichVuId: string; hangMuc: string | null; donGia: number }[];
+  homNay: string;
+  laQuanLy: boolean;
+  tenNguoiLap: string;
+};
+
+/**
+ * Bảng dịch vụ và bảng giá hạng mục cho cửa sổ lập hợp đồng (anh yêu cầu
+ * 23/09/2026: bấm "Lập hợp đồng" thì mở cửa sổ ngay tại trang, không nhảy sang
+ * trang khác).
+ *
+ * Tải khi BẤM NÚT chứ không tải sẵn lúc mở trang danh sách: 1.018 dịch vụ và
+ * 313 dòng bảng giá là hai câu hỏi database mà phần lớn lượt mở trang không
+ * dùng tới (nguyên tắc 53). Bù lại, tải xong thì cả cửa sổ lọc ngay trong máy,
+ * gõ tìm dịch vụ không tốn thêm lượt nào.
+ */
+export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLieuFormHopDong> {
+  const nguoi = await nguoiDuocLap();
+  if (!nguoi) return { loi: "Tài khoản này chưa được lập hợp đồng, hoặc phiên đăng nhập đã hết." };
+
+  const prisma = getPrisma();
+  const [dichVu, giaHangMuc] = await Promise.all([
+    prisma.dichVu.findMany({
+      where: { dangDung: true },
+      orderBy: [{ loai: "asc" }, { ten: "asc" }],
+      select: { id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true },
+    }),
+    prisma.giaHangMuc.findMany({
+      orderBy: { taoLuc: "asc" },
+      select: { dichVuId: true, hangMuc: true, donGia: true },
+    }),
+  ]);
+
+  return {
+    dichVu,
+    giaHangMuc,
+    // Hôm nay theo giờ studio, không theo giờ máy khách (nguyên tắc 35).
+    homNay: new Intl.DateTimeFormat("en-CA", {
+      timeZone: MUI_GIO,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date()),
+    laQuanLy: nguoi.laQuanLy,
+    tenNguoiLap: nguoi.ten,
+  };
 }

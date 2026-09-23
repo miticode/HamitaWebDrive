@@ -6,6 +6,7 @@ import { batBuocDangNhap, batBuocQuyen, laQuanTri, lapHopDong, xemHopDong } from
 import { boDau } from "@/lib/dichVuChung";
 import { BUOC_CHO_KHACH, ngayVN, tachTrangThai } from "@/lib/hopDongChung";
 import { BangDongBo } from "./BangDongBo";
+import { NutLapHopDong } from "./NutLapHopDong";
 import { ChipTrangThai } from "./ChipTrangThai";
 
 export const dynamic = "force-dynamic";
@@ -106,11 +107,7 @@ export default async function HopDongPage({ searchParams }: Props) {
           `batBuocQuyen(lapHopDong(...))` trong chính trang /hop-dong/moi và
           trong server action (nguyên tắc 3).
         */}
-        {duocLap && (
-          <Link href="/quan-ly/hop-dong/moi" className="btn-primary">
-            Lập hợp đồng
-          </Link>
-        )}
+        {duocLap && <NutLapHopDong />}
       </div>
       <BangDongBo quanTri={laQuanTri(nguoi)} />
 

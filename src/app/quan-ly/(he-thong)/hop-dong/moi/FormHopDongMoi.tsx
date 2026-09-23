@@ -35,6 +35,8 @@ export function FormHopDongMoi({
   homNay,
   laQuanLy,
   tenNguoiLap,
+  onThoi,
+  onXong,
 }: {
   dichVu: DichVuGon[];
   giaHangMuc: GiaGon[];
@@ -42,6 +44,16 @@ export function FormHopDongMoi({
   /** Quản lý lập phiếu thu thì ghi thẳng "đã thu"; sale thì phiếu nằm chờ duyệt. */
   laQuanLy: boolean;
   tenNguoiLap: string;
+  /**
+   * Bấm "Thôi" thì làm gì. Để trống = quay về danh sách hợp đồng (trang riêng);
+   * trong cửa sổ bật lên thì truyền hàm đóng cửa sổ vào đây.
+   */
+  onThoi?: () => void;
+  /**
+   * Lưu xong thì làm gì. Để trống = đi thẳng sang trang hợp đồng vừa lập;
+   * trong cửa sổ bật lên thì đóng cửa sổ trước rồi mới đi.
+   */
+  onXong?: (id: string) => void;
 }) {
   const router = useRouter();
   const [dangLuu, start] = useTransition();
@@ -179,12 +191,13 @@ export function FormHopDongMoi({
         setLoi(kq.loi);
         return;
       }
-      router.push(`/quan-ly/hop-dong/${kq.id}`);
+      if (onXong) onXong(kq.id);
+      else router.push(`/quan-ly/hop-dong/${kq.id}`);
     });
 
   return (
     <form
-      className="mt-6 grid gap-6"
+      className="mt-5 grid gap-5"
       onSubmit={(e) => {
         e.preventDefault();
         luu();
@@ -620,7 +633,12 @@ export function FormHopDongMoi({
         <button type="submit" className="btn-primary" disabled={dangLuu}>
           {dangLuu ? "Đang lưu…" : "Lập hợp đồng"}
         </button>
-        <button type="button" className="btn" onClick={() => router.push("/quan-ly/hop-dong")} disabled={dangLuu}>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => (onThoi ? onThoi() : router.push("/quan-ly/hop-dong"))}
+          disabled={dangLuu}
+        >
           Thôi
         </button>
         <span className="text-xs text-fg-faint">Người lập: {tenNguoiLap}</span>
