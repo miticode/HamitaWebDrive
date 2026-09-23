@@ -1981,6 +1981,14 @@ bấm.** React chưa kịp cập nhật state trước khi hàm chạy lại, đ
 cũ. Sửa bằng cách truyền thẳng tham số vào hàm thay vì dựa vào state cho quyết
 định cần đúng ngay lập tức (gặp ở nút "Vẫn tải" của cảnh báo tải file lớn).
 
+**Cache 5 phút của `loadTree` làm hai lần đọc lệch nhau.** Hộp "Đổi ảnh bìa"
+liệt kê ảnh từ một lượt đọc, máy chủ kiểm ảnh đó ở một lượt đọc khác — người
+dùng thấy ảnh ngay trước mắt mà bị báo "Ảnh này không nằm trong thư mục" (gặp
+23/09 ở cảnh Hamita Garden vừa chia lại trên Drive). **Hàm kiểm ở máy chủ không
+được tin cache:** không thấy thì đọc lại bằng `loadTreeMoi` một lần nữa rồi mới
+kết luận. Áp dụng cho `doiBiaThuMucGioiThieu` và `themThuMucGioiThieu`; câu lỗi
+cũng phải chỉ đường ("bấm Đọc lại từ Drive") chứ đừng chỉ nói sai.
+
 ---
 
 ## Ranh giới khi thao tác

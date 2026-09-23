@@ -1,5 +1,5 @@
 import { getPrisma } from "./db";
-import { loadTree } from "./gallery";
+import { loadTree, loadTreeMoi } from "./gallery";
 import { timMuc } from "./nhomGioiThieu";
 import { tenKhongMa } from "./maAlbum";
 
@@ -78,8 +78,17 @@ export async function themThuMucGioiThieu(
   });
   if (!g) return { loi: "Không tìm thấy album." };
 
-  const tree = await loadTree(g.driveFolderId);
-  const thuMuc = tree.albums.find((a) => a.id === albumId);
+  /*
+    Không thấy thư mục trong bản chụp đang có thì đọc lại Drive một lần — studio
+    hay vừa tạo thư mục trên Drive xong là vào web thêm ngay, lúc đó cache 5
+    phút còn giữ bản chưa có thư mục ấy.
+  */
+  let tree = await loadTree(g.driveFolderId);
+  let thuMuc = tree.albums.find((a) => a.id === albumId);
+  if (!thuMuc) {
+    tree = await loadTreeMoi(g.driveFolderId);
+    thuMuc = tree.albums.find((a) => a.id === albumId);
+  }
   if (!thuMuc) return { loi: "Không tìm thấy thư mục này trên Drive nữa." };
   if (thuMuc.photos.length === 0) return { loi: "Thư mục này chưa có ảnh nào." };
 
@@ -105,9 +114,30 @@ export async function doiBiaThuMucGioiThieu(id: string, fileId: string): Promise
     include: { gallery: { select: { driveFolderId: true } } },
   });
   if (!d) return { loi: "Thư mục này đã bị gỡ khỏi trang." };
-  const tree = await loadTree(d.gallery.driveFolderId);
-  const thuMuc = tree.albums.find((a) => a.id === d.albumId);
-  if (!thuMuc?.photos.some((p) => p.id === fileId)) return { loi: "Ảnh này không nằm trong thư mục." };
+
+  const coAnh = async (docLai: boolean) => {
+    const tree = docLai
+      ? await loadTreeMoi(d.gallery.driveFolderId)
+      : await loadTree(d.gallery.driveFolderId);
+    return !!tree.albums.find((a) => a.id === d.albumId)?.photos.some((p) => p.id === fileId);
+  };
+
+  /*
+    Không thấy thì ĐỌC LẠI Drive một lần rồi mới kết luận — anh vấp thật
+    23/09/2026: vừa kéo ảnh vào thư mục "lâu đài" trên Drive xong, ô đổi bìa
+    còn hiện ảnh của bản chụp cũ (cache 5 phút), bấm chọn thì máy chủ đọc bản
+    mới và báo "Ảnh này không nằm trong thư mục" — nghe như web hỏng, thật ra
+    chỉ là hai lượt đọc lệch nhau vài phút.
+
+    Chỉ đọc lại khi KHÔNG THẤY, không đọc cho mọi lượt bấm: một lần gọi Drive
+    đắt hơn nhiều so với đọc cache (cùng lý do đã ghi ở `loadTreeMoi`).
+  */
+  if (!(await coAnh(false)) && !(await coAnh(true))) {
+    return {
+      loi: "Ảnh này không còn trong thư mục — có thể vừa có thay đổi trên Drive. Đóng ô này, bấm “Đọc lại từ Drive” trên thẻ rồi mở lại.",
+    };
+  }
+
   await prisma.anhGioiThieu.update({ where: { id }, data: { anhBia: fileId } });
   return {};
 }
@@ -163,7 +193,12 @@ export async function docAnhThuMuc(nhom: string, id: string) {
     width: p.width,
     height: p.height,
   }));
-  return { muc: d.muc, ten: tenKhongMa(d.gallery.clientName ?? d.gallery.title), anh };
+  return {
+    muc: d.muc,
+    // Tên cảnh studio đặt đứng trước, y như ở lưới ngoài (cùng yêu cầu 23/09).
+    ten: d.tenHien?.trim() || tenKhongMa(d.gallery.clientName ?? d.gallery.title),
+    anh,
+  };
 }
 
 /**
@@ -259,7 +294,12 @@ export async function docLaiThuMucGioiThieu(id: string): Promise<{ loi?: string;
   });
   if (!d) return { loi: "Thư mục này đã bị gỡ khỏi trang." };
 
-  const tree = await loadTree(d.gallery.driveFolderId);
+  /*
+    Nút này SINH RA để đọc lại, nên bỏ qua cache — dùng `loadTree` thì studio
+    vừa up ảnh xong bấm vào vẫn ra con số cũ suốt năm phút, đúng thứ nút này
+    định chữa.
+  */
+  const tree = await loadTreeMoi(d.gallery.driveFolderId);
   const thuMuc = tree.albums.find((a) => a.id === d.albumId);
   if (!thuMuc) return { loi: "Không tìm thấy thư mục này trên Drive nữa." };
   if (thuMuc.photos.length === 0) return { loi: "Thư mục này giờ không còn ảnh nào." };

@@ -364,6 +364,16 @@ báo lại.
 Ba thứ này dùng được cho mọi nhóm (Ảnh cưới, Album & hình cổng…), nhưng anh
 chưa cần đụng tới — không điền gì thì mọi nhóm khác hiện y như cũ.
 
+**Thứ tự đúng khi anh sửa ảnh trên Drive:** kéo/thêm/xoá ảnh trong thư mục xong
+→ bấm **"Đọc lại từ Drive"** trên thẻ cảnh đó → rồi mới bấm "Đổi bìa". Web nhớ
+danh sách ảnh trong 5 phút cho nhẹ máy, nên vừa đổi trên Drive mà đổi bìa ngay
+thì có lúc bìa cũ đã biến mất, web báo "Ảnh này không còn trong thư mục".
+
+Hôm 23/09 anh gặp đúng cảnh đó ở "lâu đài": bìa lưu trong web trỏ vào một ảnh
+đã bị dời đi. Nay bấm "Đọc lại từ Drive" là web tự chữa — số ảnh cập nhật và
+bìa hỏng được thay bằng ảnh đầu tiên còn lại. Câu báo lỗi cũng đã viết lại cho
+rõ phải làm gì thay vì chỉ nói "không nằm trong thư mục".
+
 ### Lập hợp đồng bằng cửa sổ, không nhảy trang (23/09)
 
 Anh yêu cầu: bấm **Lập hợp đồng** thì hiện cửa sổ ngay trên trang danh sách,
