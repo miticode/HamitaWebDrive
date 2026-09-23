@@ -1551,9 +1551,19 @@ tên thư mục Drive của chính album mang mã ấy).
 **Bấm mã trên ô trống phải chèn kèm dấu nối** (`"ĐH - "`, không phải `"ĐH"`).
 Thứ tự nhân viên hay làm nhất là bấm mã trước rồi gõ tên; trả về mã trơn thì họ
 gõ tiếp ra `"ĐHTrúc Mai & Minh Tiến"` dính liền — đã thử trên trình duyệt và ra
-đúng chuỗi đó. Dấu nối lửng khi chưa gõ gì thì `createGalleryAction` dọn trước
-khi ghi database, chứ không dọn ở giao diện: đó là chỗ duy nhất mọi đường vào
-database đều đi qua, nên gõ tay ra chuỗi như vậy cũng được dọn.
+đúng chuỗi đó.
+
+**CHỈ CÓ MÃ mà chưa gõ tên thì `createGalleryAction` tự lấy tên thư mục Drive
+ghép vào** (`chiCoMa` + `ghepMaVoiTenThuMuc`) — anh yêu cầu 23/09/2026: bấm
+"HC" rồi bấm Tạo link luôn thì album ra tên trống trơn, chỉ còn mỗi chữ "HC".
+Nay ra `"HC - Anh Thư & Rich Kim"` (đo thật khi làm, có tạo album rồi xoá).
+Tên thư mục **mang sẵn mã thì bỏ mã của nó đi rồi mới ghép**, không thì ra
+`"HC - HC Ngọc Thơ"`.
+
+Dọn ở `createGalleryAction` chứ không dọn ở giao diện: đó là chỗ duy nhất mọi
+đường vào database đều đi qua, nên gõ tay ra chuỗi như vậy cũng được dọn. Ô để
+**trống hẳn** thì vẫn ghi `null` như cũ — lúc đó cả hai trang tự quay về dùng
+tên thư mục, không cần chép lại làm gì.
 
 `maDangCo()` **so với bộ mã đã biết**, không nhận bừa cụm chữ đầu tiên. Tên
 `"Khmer- Y Bình"` có dạng giống hệt mã cộng dấu nối mà `Khmer` không phải mã —

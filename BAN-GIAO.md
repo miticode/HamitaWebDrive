@@ -305,6 +305,19 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   chốt 17/09, bỏ luôn nút "Xong một phần"), khớp với nhãn xanh trên thẻ. Đo lúc
   làm: 24 / 25 trên 49 album. Kết hợp được với ô tìm, mã, tháng.
 
+### Bấm mã xong không cần gõ tên nữa (23/09)
+
+Trong hộp **Tạo link mới**: anh bấm mã (ví dụ **HC**) rồi bấm Tạo link luôn mà
+không gõ tên — trước đây album ra tên trống trơn, chỉ còn mỗi chữ "HC".
+
+Nay web **tự lấy tên thư mục trên Drive** ghép vào: bấm HC + thư mục
+"Anh Thư & Rich Kim" → album tên **"HC - Anh Thư & Rich Kim"**. Bấm hai mã cũng
+được: HIS + HER → "HIS - HER - Tấn Hưng & Kim Thơ".
+
+Thư mục trên Drive mà **đã có sẵn mã trong tên** thì web bỏ mã cũ đi rồi mới
+ghép, không ra kiểu "HC - HC Ngọc Thơ". Còn ô tên để trống hẳn thì vẫn như cũ:
+album lấy nguyên tên thư mục.
+
 ### Sửa lỗi báo nhầm "khách chọn thêm sau khi báo xong" (23/09)
 
 Anh phát hiện: nhà **Nhã Linh & Văn Chiêu** bị báo "khách chọn thêm sau khi báo

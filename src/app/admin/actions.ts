@@ -10,6 +10,7 @@ import { quyenAlbum, quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
 import { xoaPhienHienTai } from "@/lib/phienNhanVien";
 import { disconnect } from "@/lib/googleAuth";
 import { MA_MAC_DINH, sinhMa } from "@/lib/access";
+import { chiCoMa, ghepMaVoiTenThuMuc } from "@/lib/maAlbum";
 import { GIA_ANH_THEM_MAC_DINH } from "@/lib/constants";
 import {
   createGallery,
@@ -73,14 +74,24 @@ export async function createGalleryAction(
   }
 
   /*
-    Don dau noi con lung lo o cuoi: nut goi y ma chen san "ĐH - " de nhan vien
-    go tiep ten, nhung neu ho bam Tao link ngay luc do thi ten khach thanh
-    "ĐH -". Don o day chu khong phai o giao dien, vi day la cho DUY NHAT moi
-    duong vao database deu di qua — go tay ra chuoi nhu vay cung duoc don.
+    Ten khach, voi hai truong hop dac biet phai don o DAY chu khong phai o giao
+    dien — day la cho DUY NHAT moi duong vao database deu di qua, go tay ra
+    chuoi nhu vay cung duoc don.
+
+    1. Dau noi lung lo o cuoi ("ĐH -"): nut goi y ma chen san dau noi de nhan
+       vien go tiep ten.
+    2. CHI CO MA, chua go ten nao — anh bao 23/09/2026: bam "HC" roi bam Tao
+       link luon thi album ra ten trong tron, chi con moi chu "HC". Gio web tu
+       lay ten thu muc tren Drive ghep vao: "HC - Ngọc Thơ & Minh Anh". Thu muc
+       mang san ma thi bo ma cua no di, khong thi ma lap hai lan.
+
+    O de trong han thi van de `null` nhu cu — luc do ca trang quan ly lan trang
+    khach cung quay ve dung ten thu muc, khong can chep lai lam gi.
   */
-  const clientName = String(formData.get("clientName") ?? "")
-    .replace(/[\s\-–—]+$/, "")
-    .trim();
+  const goc = String(formData.get("clientName") ?? "").trim();
+  const clientName = chiCoMa(goc)
+    ? ghepMaVoiTenThuMuc(goc, folderName)
+    : goc.replace(/[\s\-–—]+$/, "").trim();
 
   const gallery = await createGallery({
     title: folderName,

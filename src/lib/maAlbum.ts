@@ -118,3 +118,44 @@ export function tenKhongMa(ten: string): string {
   }
   return con || ten.trim();
 }
+
+/**
+ * Tên này CHỈ gồm mã, chưa có tên khách nào — "HC - ", "HIS - HER -".
+ *
+ * Đây là trạng thái ô "Tên khách" ngay sau khi nhân viên bấm một hai nút mã mà
+ * chưa gõ gì thêm.
+ */
+export function chiCoMa(ten: string): boolean {
+  const goc = ten.trim();
+  if (!goc) return false;
+
+  let con = goc;
+  let thayMa = false;
+  while (maDangCo(con)) {
+    thayMa = true;
+    const tiep = boMa(con);
+    if (tiep === con) break;
+    con = tiep;
+  }
+  return thayMa && con === "";
+}
+
+/**
+ * Ghép mấy mã đã bấm với tên thư mục trên Drive — "HC" + "Ngọc Thơ & Minh Anh"
+ * thành "HC - Ngọc Thơ & Minh Anh".
+ *
+ * Anh yêu cầu 23/09/2026: bấm mã xong mà không gõ tên rồi bấm Tạo link thì
+ * album ra tên trống trơn (chỉ còn mỗi mã). Nay web tự lấy tên thư mục điền
+ * vào chỗ còn thiếu.
+ *
+ * Tên thư mục MANG SẴN MÃ thì bỏ mã của nó đi rồi mới ghép, không thì ra
+ * "HC - HC Ngọc Thơ" — mã lặp hai lần. Mã giữ là mã nhân viên vừa bấm, vì đó
+ * là thứ họ vừa chọn có chủ ý.
+ */
+export function ghepMaVoiTenThuMuc(maDaBam: string, tenThuMuc: string): string {
+  const ma = maDaBam.replace(/[\s\-–—]+$/, "").trim();
+  const ten = tenKhongMa(tenThuMuc).trim() || tenThuMuc.trim();
+  if (!ma) return ten;
+  if (!ten) return ma;
+  return `${ma}${NOI_MA}${ten}`;
+}
