@@ -56,7 +56,12 @@ export async function docThongBao(): Promise<ThongBao[]> {
     prisma.gallery.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.selectionList.findMany(),
     prisma.selection.findMany({
-      select: { listId: true, driveFileId: true, createdAt: true },
+      /*
+        `albumName` là TÊN THƯ MỤC chứa tấm ảnh — cần nó để biết tấm vừa chọn
+        nằm trong thư mục khách đã báo xong hay thư mục khách đang còn chọn
+        (xem mục 3 bên dưới).
+      */
+      select: { listId: true, driveFileId: true, createdAt: true, albumName: true },
     }),
     prisma.mucXong.findMany(),
     /*
@@ -184,14 +189,27 @@ export async function docThongBao(): Promise<ThongBao[]> {
         Dung chung dieu kien voi muc 2 nen gop mot khoi: khong co moc bao xong
         thi khong the co "chon them sau khi bao xong".
 
-        So voi moc bao xong SOM NHAT cua album: khach bao xong thu muc dau roi
-        chon tiep o thu muc thu hai la chuyen binh thuong, nhung studio van can
-        biet de doi chieu lai truoc khi in.
+        SO THEO TUNG THU MUC, khong so voi moc som nhat cua ca album.
+
+        Ban dau doan nay lay moc bao xong SOM NHAT roi dem moi tam chon sau do,
+        ke ca tam o thu muc khac. Anh bat loi 23/09/2026 tren nha "Nhã Linh &
+        Văn Chiêu": khach xong "File gốc nhà gái" luc 10:36 roi sang "File gốc
+        nhà trai" chon tiep 58 tam — chuyen hoan toan binh thuong, nhung web la
+        lang bao "khách chọn thêm sau khi báo xong" nhu the co gi do sai. Do
+        lai bang script: cach cu dem 58, cach dung dem 0.
       */
-      const somNhat = Math.min(...xongCuaNo.map((m) => m.xongLuc.getTime()));
-      const themSau = cuaNo.filter(
-        (s) => s.createdAt.getTime() > somNhat,
-      ).length;
+      const mocXongCuaMuc = new Map<string, number>();
+      for (const m of xongCuaNo) {
+        // Bao xong nhieu lan cho cung mot thu muc thi lay lan GAN NHAT.
+        const cu = mocXongCuaMuc.get(m.tenMuc);
+        const nay = m.xongLuc.getTime();
+        if (cu === undefined || nay > cu) mocXongCuaMuc.set(m.tenMuc, nay);
+      }
+      const themSau = cuaNo.filter((s) => {
+        const moc = mocXongCuaMuc.get(s.albumName);
+        // Thu muc chua bao xong thi khach chon bao nhieu cung la dang lam do.
+        return moc !== undefined && s.createdAt.getTime() > moc;
+      }).length;
       if (themSau > 0) {
         ra.push({
           /*
@@ -205,7 +223,7 @@ export async function docThongBao(): Promise<ThongBao[]> {
           id: `them-${g.id}-${themSau}`,
           mucDo: "gap",
           tieuDe: "Khách chọn thêm sau khi báo xong",
-          chiTiet: `${themSau} tấm được chọn sau lúc khách bấm báo xong. Mở lại đơn giao in đối chiếu trước khi in.`,
+          chiTiet: `${themSau} tấm được chọn thêm trong thư mục khách đã báo xong. Mở lại đơn giao in đối chiếu trước khi in.`,
           slug: g.slug,
           tenAlbum: ten,
         });

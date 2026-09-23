@@ -1619,10 +1619,19 @@ Bốn loại đang canh:
 - **Chưa đặt gói ảnh.** Tách hai mức, đừng gộp: đã có khách thả tim là **gấp**
   (đơn giao in không tính được tiền, tới ngày giao mới lộ ra); chưa ai thả tim
   thì chỉ là lời nhắc. Đo trên dữ liệu thật: 2 album gấp, 2 album nhắc.
-- **Khách chọn thêm sau khi đã báo xong.** So với mốc báo xong **sớm nhất** của
-  album. Đây là kiểu lỗi im lặng nhất: studio thấy "đã báo xong" thì đem đi in,
-  khách còn thêm mấy tấm sau đó, tới ngày giao mới biết thiếu mà không ai lần
-  ra vì sao. Thật: Tú Trinh thêm 10 tấm sau khi báo.
+- **Khách chọn thêm sau khi đã báo xong.** Đây là kiểu lỗi im lặng nhất: studio
+  thấy "đã báo xong" thì đem đi in, khách còn thêm mấy tấm sau đó, tới ngày
+  giao mới biết thiếu mà không ai lần ra vì sao. Thật: Tú Trinh thêm 10 tấm sau
+  khi báo.
+
+  **So theo TỪNG THƯ MỤC** — mốc báo xong của chính thư mục chứa tấm ảnh, ghép
+  bằng `Selection.albumName` ↔ `MucXong.tenMuc`. Bản đầu so với mốc **sớm nhất
+  của cả album** và anh bắt lỗi 23/09/2026: nhà "Nhã Linh & Văn Chiêu" xong
+  "File gốc nhà gái" lúc 10:36 rồi khách sang "File gốc nhà trai" chọn tiếp 58
+  tấm — chuyện hoàn toàn bình thường mà web báo như có gì sai. Đo lại trên toàn
+  bộ dữ liệu: cách cũ báo **18 album**, cách đúng còn **7** — 11 nhà kia chỉ là
+  khách đang chọn ở thư mục khác. Thư mục chưa báo xong thì khách chọn bao
+  nhiêu cũng không phải chuyện để báo.
 - **Album mất mã bảo vệ.** `daMoKhoa()` trả `true` khi album không có mã, nghĩa
   là ai cầm link cũng chọn được. Giao diện chặn mã dưới 4 ký tự nên không xảy
   ra từ đó, nhưng nếu xảy ra bằng đường khác thì phải thấy ngay.

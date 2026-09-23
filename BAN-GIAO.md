@@ -305,6 +305,21 @@ cột phải "Tạo link mới" chiếm 340px suốt ngày nên mỗi thẻ albu
   chốt 17/09, bỏ luôn nút "Xong một phần"), khớp với nhãn xanh trên thẻ. Đo lúc
   làm: 24 / 25 trên 49 album. Kết hợp được với ô tìm, mã, tháng.
 
+### Sửa lỗi báo nhầm "khách chọn thêm sau khi báo xong" (23/09)
+
+Anh phát hiện: nhà **Nhã Linh & Văn Chiêu** bị báo "khách chọn thêm sau khi báo
+xong — 53 tấm", trong khi thật ra khách xong thư mục **File gốc nhà gái** rồi
+sang **File gốc nhà trai** chọn tiếp. Đó là chuyện bình thường, không phải
+chuyện cần cảnh báo.
+
+Nguyên nhân: web lấy mốc báo xong **sớm nhất của cả album** rồi đếm mọi tấm
+chọn sau mốc đó, kể cả tấm ở thư mục khác chưa hề báo xong. Nay web so **theo
+từng thư mục**: chỉ đếm tấm chọn thêm trong chính thư mục khách đã báo xong.
+
+Đo trên toàn bộ dữ liệu thật: trước khi sửa **18 album** bị báo, sau khi sửa
+còn **7** — đúng những nhà khách thật sự chọn thêm sau khi chốt. Ví dụ nhà
+"GD - Thanh Ngân" từ 12 tấm xuống còn 1, nhà Nhã Linh hết báo hẳn.
+
 ### Sửa hợp đồng, duyệt phiếu thu, giao đầu việc (23/09)
 
 Đợt trước mở chức năng lập hợp đồng trên web nhưng để lại hai lỗ: **lập xong
