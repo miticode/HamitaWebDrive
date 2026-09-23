@@ -15,6 +15,11 @@ export type ThuMucGioiThieu = {
   driveFolderId: string;
   albumId: string;
   tenMuc: string;
+  /** Tên studio đặt để hiện cho khách. null = dùng `tenMuc` đọc từ Drive. */
+  tenHien: string | null;
+  /** Một dòng giới thiệu cảnh, hiện dưới tên trong lưới. */
+  moTa: string | null;
+  thuTu: number;
   anhBia: string | null;
   soAnh: number;
 };
@@ -22,7 +27,8 @@ export type ThuMucGioiThieu = {
 /** Mọi thư mục đã chọn (trang quản lý). */
 export async function docThuMucGioiThieu(): Promise<ThuMucGioiThieu[]> {
   const dong = await getPrisma().anhGioiThieu.findMany({
-    orderBy: { taoLuc: "asc" },
+    // Thứ tự studio tự sắp trước, cùng số thì theo lúc thêm như cũ.
+    orderBy: [{ thuTu: "asc" }, { taoLuc: "asc" }],
     include: { gallery: { select: { title: true, clientName: true, slug: true, driveFolderId: true } } },
   });
   return dong.map((d) => ({
@@ -35,6 +41,9 @@ export async function docThuMucGioiThieu(): Promise<ThuMucGioiThieu[]> {
     driveFolderId: d.gallery.driveFolderId,
     albumId: d.albumId,
     tenMuc: d.tenMuc,
+    tenHien: d.tenHien,
+    moTa: d.moTa,
+    thuTu: d.thuTu,
     anhBia: d.anhBia,
     soAnh: d.soAnh,
   }));
@@ -116,12 +125,22 @@ export type AnhCongKhai = { id: string; width: number | null; height: number | n
 export async function docThuMucCongKhai(nhom: string, muc: string) {
   const dong = await getPrisma().anhGioiThieu.findMany({
     where: { nhom, muc },
-    orderBy: { taoLuc: "asc" },
+    // Thứ tự studio tự sắp (anh yêu cầu 23/09/2026), cùng số thì theo lúc thêm.
+    orderBy: [{ thuTu: "asc" }, { taoLuc: "asc" }],
     include: { gallery: { select: { title: true, clientName: true } } },
   });
   return dong.map((d) => ({
     id: d.id,
-    ten: tenKhongMa(d.gallery.clientName ?? d.gallery.title),
+    /*
+      Tên hiện cho khách, theo thứ tự ưu tiên:
+      1. Tên studio tự đặt ở trang quản lý — thứ duy nhất được gõ CHO KHÁCH ĐỌC.
+      2. Không đặt thì lấy tên album (bỏ mã nội bộ đi), như trước giờ.
+
+      Tên THƯ MỤC trên Drive cố ý không dùng tới: nó là tên nội bộ, hay ra kiểu
+      "All View HamitaGarden" hay "canh 1".
+    */
+    ten: d.tenHien?.trim() || tenKhongMa(d.gallery.clientName ?? d.gallery.title),
+    moTa: d.moTa?.trim() || null,
     anhBia: d.anhBia,
     soAnh: d.soAnh,
   }));
@@ -169,4 +188,90 @@ export async function docAnhNhom(nhom: string) {
     }),
   );
   return phan.flat();
+}
+
+/**
+ * Đặt tên hiện và mô tả cho một thư mục đã đưa lên trang — anh yêu cầu
+ * 23/09/2026 cho Hamita Garden, nơi mỗi thư mục là một cảnh chụp.
+ *
+ * Để trống thì lưu `null` chứ không lưu chuỗi rỗng: chỗ đọc chỉ cần hỏi "có
+ * hay không", khỏi phải nhớ thêm một dạng rỗng thứ hai.
+ */
+export async function datTenThuMucGioiThieu(
+  id: string,
+  tenHien: string,
+  moTa: string,
+): Promise<{ loi?: string }> {
+  const ten = tenHien.trim();
+  const mo = moTa.trim();
+  if (ten.length > 80) return { loi: "Tên cảnh dài quá, tối đa 80 ký tự." };
+  if (mo.length > 200) return { loi: "Mô tả dài quá, tối đa 200 ký tự." };
+
+  const co = await getPrisma().anhGioiThieu.updateMany({
+    where: { id },
+    data: { tenHien: ten || null, moTa: mo || null },
+  });
+  return co.count === 0 ? { loi: "Thư mục này đã bị gỡ khỏi trang." } : {};
+}
+
+/**
+ * Đổi chỗ một thư mục với thư mục đứng liền kề trong cùng mục.
+ *
+ * Đổi CHỖ hai dòng chứ không phải cộng trừ một số: cộng trừ thì hai dòng dễ
+ * mang cùng một số rồi thứ tự nhảy lung tung mỗi lần tải lại. Đổi chỗ thì sau
+ * mỗi lần bấm, danh sách luôn là một dãy số rõ ràng.
+ */
+export async function doiThuTuThuMuc(id: string, len: boolean): Promise<{ loi?: string }> {
+  const prisma = getPrisma();
+  const d = await prisma.anhGioiThieu.findUnique({ where: { id } });
+  if (!d) return { loi: "Thư mục này đã bị gỡ khỏi trang." };
+
+  const ds = await prisma.anhGioiThieu.findMany({
+    where: { nhom: d.nhom, muc: d.muc },
+    orderBy: [{ thuTu: "asc" }, { taoLuc: "asc" }],
+    select: { id: true },
+  });
+  const i = ds.findIndex((x) => x.id === id);
+  const j = len ? i - 1 : i + 1;
+  if (i < 0 || j < 0 || j >= ds.length) return {};
+
+  // Đánh số lại cả cụm theo thứ tự mới — rẻ (vài dòng) mà luôn sạch.
+  const moi = [...ds];
+  [moi[i], moi[j]] = [moi[j], moi[i]];
+  await prisma.$transaction(
+    moi.map((x, k) => prisma.anhGioiThieu.update({ where: { id: x.id }, data: { thuTu: k } })),
+  );
+  return {};
+}
+
+/**
+ * Đọc lại thư mục trên Drive: cập nhật số ảnh và tên thư mục.
+ *
+ * Studio up thêm ảnh vào thư mục thì con số trên trang vẫn là con số chụp lúc
+ * thêm — anh cần một nút để không phải gỡ ra thêm lại. Ảnh bìa GIỮ NGUYÊN nếu
+ * tấm đó còn trong thư mục: đó là tấm studio đã chọn tay.
+ */
+export async function docLaiThuMucGioiThieu(id: string): Promise<{ loi?: string; soAnh?: number }> {
+  const prisma = getPrisma();
+  const d = await prisma.anhGioiThieu.findUnique({
+    where: { id },
+    include: { gallery: { select: { driveFolderId: true } } },
+  });
+  if (!d) return { loi: "Thư mục này đã bị gỡ khỏi trang." };
+
+  const tree = await loadTree(d.gallery.driveFolderId);
+  const thuMuc = tree.albums.find((a) => a.id === d.albumId);
+  if (!thuMuc) return { loi: "Không tìm thấy thư mục này trên Drive nữa." };
+  if (thuMuc.photos.length === 0) return { loi: "Thư mục này giờ không còn ảnh nào." };
+
+  const biaConDo = d.anhBia && thuMuc.photos.some((p) => p.id === d.anhBia);
+  await prisma.anhGioiThieu.update({
+    where: { id },
+    data: {
+      tenMuc: thuMuc.name,
+      soAnh: thuMuc.photos.length,
+      anhBia: biaConDo ? d.anhBia : thuMuc.photos[0].id,
+    },
+  });
+  return { soAnh: thuMuc.photos.length };
 }

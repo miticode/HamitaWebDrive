@@ -2,7 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { quyenAlbum } from "@/lib/quyenAlbum";
-import { doiBiaThuMucGioiThieu, themThuMucGioiThieu, xoaThuMucGioiThieu } from "@/lib/anhGioiThieu";
+import {
+  datTenThuMucGioiThieu,
+  docLaiThuMucGioiThieu,
+  doiBiaThuMucGioiThieu,
+  doiThuTuThuMuc,
+  themThuMucGioiThieu,
+  xoaThuMucGioiThieu,
+} from "@/lib/anhGioiThieu";
 import { loadTree } from "@/lib/gallery";
 import { getPrisma } from "@/lib/db";
 
@@ -76,4 +83,52 @@ function lamMoi() {
   revalidatePath("/admin/gioi-thieu");
   revalidatePath("/");
   revalidatePath("/dich-vu", "layout");
+}
+
+/* ── Đặt tên cảnh, sắp thứ tự, đọc lại Drive (anh yêu cầu 23/09/2026) ──── */
+
+/**
+ * Ba việc để studio tự lo phần giới thiệu về sau mà không cần gọi tới em:
+ * đặt tên và mô tả cho từng cảnh, kéo thứ tự, và đọc lại Drive khi vừa up
+ * thêm ảnh.
+ *
+ * Cùng mức quyền với mấy việc còn lại của trang này (`quyenAlbum`): sửa được,
+ * sai thì sửa lại, không nằm trong nhóm việc nguy hiểm.
+ */
+export async function datTenCanhAction(
+  id: string,
+  tenHien: string,
+  moTa: string,
+): Promise<{ loi?: string }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  const kq = await datTenThuMucGioiThieu(id, tenHien, moTa);
+  if (kq.loi) return kq;
+  revalidatePath("/admin/gioi-thieu");
+  revalidatePath("/dich-vu", "layout");
+  revalidatePath("/");
+  return {};
+}
+
+export async function doiThuTuCanhAction(id: string, len: boolean): Promise<{ loi?: string }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  const kq = await doiThuTuThuMuc(id, len);
+  if (kq.loi) return kq;
+  revalidatePath("/admin/gioi-thieu");
+  revalidatePath("/dich-vu", "layout");
+  revalidatePath("/");
+  return {};
+}
+
+export async function docLaiCanhAction(id: string): Promise<{ loi?: string; soAnh?: number }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  try {
+    const kq = await docLaiThuMucGioiThieu(id);
+    if (kq.loi) return kq;
+    revalidatePath("/admin/gioi-thieu");
+    revalidatePath("/dich-vu", "layout");
+    revalidatePath("/");
+    return kq;
+  } catch {
+    return { loi: "Không đọc được Drive lúc này, anh chị thử lại sau ít phút." };
+  }
 }

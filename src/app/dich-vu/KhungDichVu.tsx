@@ -121,7 +121,7 @@ export function LuoiThuMuc({
   thuMuc,
 }: {
   nhom: string;
-  thuMuc: { id: string; ten: string; anhBia: string | null; soAnh: number }[];
+  thuMuc: { id: string; ten: string; moTa?: string | null; anhBia: string | null; soAnh: number }[];
 }) {
   return (
     <section>
@@ -147,7 +147,15 @@ export function LuoiThuMuc({
                   <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 text-white sm:p-6">
                     <span className="min-w-0">
                       <span className="block font-display text-xl leading-tight sm:text-[1.7rem]">{t.ten}</span>
-                      <span className="mt-1 block text-xs opacity-85 sm:text-sm">{t.soAnh} ảnh</span>
+                      {/*
+                        Mô tả một dòng studio tự đặt ở trang quản lý (anh yêu
+                        cầu 23/09/2026 cho Hamita Garden). Cắt một dòng: đây là
+                        chữ đè lên ảnh, dài ra là nuốt mất tấm hình bên dưới.
+                      */}
+                      {t.moTa && (
+                        <span className="mt-1 block truncate text-xs opacity-90 sm:text-sm">{t.moTa}</span>
+                      )}
+                      <span className="mt-1 block text-xs opacity-75 sm:text-sm">{t.soAnh} ảnh</span>
                     </span>
                     <span
                       aria-hidden

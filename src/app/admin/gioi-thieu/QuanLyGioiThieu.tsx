@@ -6,7 +6,10 @@ import { boDau } from "@/lib/constants";
 import { NHOM_GIOI_THIEU, coMa, type MucGioiThieu, type NhomGioiThieu } from "@/lib/nhomGioiThieu";
 import type { ThuMucGioiThieu } from "@/lib/anhGioiThieu";
 import {
+  datTenCanhAction,
+  docLaiCanhAction,
   docThuMucAlbumAction,
+  doiThuTuCanhAction,
   themAnhGioiThieuAction,
   xoaAnhGioiThieuAction,
   type ThuMucChon,
@@ -89,9 +92,14 @@ export function QuanLyGioiThieu({ albums, daChon }: { albums: AlbumGon[]; daChon
                   Chưa có thư mục nào — mục này đang ẩn trên trang giới thiệu.
                 </p>
               ) : (
-                <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-                  {ds.map((d) => (
-                    <TheDaChon key={d.id} d={d} />
+                <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {ds.map((d, i) => (
+                    <TheDaChon
+                      key={d.id}
+                      d={d}
+                      dauDanh={i === 0}
+                      cuoiDanh={i === ds.length - 1}
+                    />
                   ))}
                 </ul>
               )}
@@ -113,10 +121,43 @@ export function QuanLyGioiThieu({ albums, daChon }: { albums: AlbumGon[]; daChon
   );
 }
 
-function TheDaChon({ d }: { d: ThuMucGioiThieu }) {
+/**
+ * Một cảnh đã đưa lên trang: ảnh bìa, tên hiện cho khách, một dòng mô tả, và
+ * mấy nút để studio tự lo về sau — anh yêu cầu 23/09/2026 cho Hamita Garden,
+ * nơi mỗi thư mục trên Drive là một cảnh chụp.
+ *
+ * Tên và mô tả lưu khi RỜI Ô (blur), không có nút "Lưu": lưới này có cả chục
+ * thẻ, mỗi thẻ một nút lưu thì không ai bấm đúng thẻ. Gõ xong bấm ra ngoài là
+ * xong, và dòng "Đã lưu ✓" nói cho biết nó đã xong thật.
+ */
+function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: boolean; cuoiDanh: boolean }) {
   const router = useRouter();
   const [dangXoa, start] = useTransition();
+  const [dangLuu, luuBatDau] = useTransition();
   const [moBia, setMoBia] = useState(false);
+  const [ten, setTen] = useState(d.tenHien ?? "");
+  const [moTa, setMoTa] = useState(d.moTa ?? "");
+  const [bao, setBao] = useState<string | null>(null);
+
+  /* Chỉ gọi máy chủ khi thật sự có gì đổi — rời ô mà không sửa gì thì thôi. */
+  const luuNeuDoi = () => {
+    if (ten === (d.tenHien ?? "") && moTa === (d.moTa ?? "")) return;
+    luuBatDau(async () => {
+      const kq = await datTenCanhAction(d.id, ten, moTa);
+      setBao(kq.loi ?? "Đã lưu ✓");
+      setTimeout(() => setBao(null), 2200);
+      if (!kq.loi) router.refresh();
+    });
+  };
+
+  const chay = (viec: () => Promise<{ loi?: string }>) =>
+    luuBatDau(async () => {
+      const kq = await viec();
+      setBao(kq.loi ?? null);
+      if (kq.loi) setTimeout(() => setBao(null), 2600);
+      else router.refresh();
+    });
+
   return (
     <li className={`overflow-hidden rounded-lg border border-line bg-bg-raised ${dangXoa ? "opacity-50" : ""}`}>
       <div className="skeleton relative aspect-[4/5] bg-bg-soft">
@@ -132,7 +173,30 @@ function TheDaChon({ d }: { d: ThuMucGioiThieu }) {
         >
           Đổi bìa
         </button>
+
+        {/* Kéo thứ tự: cảnh đẹp nhất lên đầu lưới bên trang khách. */}
+        <div className="absolute top-2 left-2 flex gap-1">
+          <button
+            type="button"
+            disabled={dauDanh || dangLuu}
+            onClick={() => chay(() => doiThuTuCanhAction(d.id, true))}
+            title="Đưa lên trước"
+            className="grid size-8 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm transition hover:bg-black/70 disabled:opacity-35"
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            disabled={cuoiDanh || dangLuu}
+            onClick={() => chay(() => doiThuTuCanhAction(d.id, false))}
+            title="Đẩy xuống sau"
+            className="grid size-8 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm transition hover:bg-black/70 disabled:opacity-35"
+          >
+            ↓
+          </button>
+        </div>
       </div>
+
       {moBia && (
         <DoiBiaThuMuc
           id={d.id}
@@ -143,24 +207,62 @@ function TheDaChon({ d }: { d: ThuMucGioiThieu }) {
           dong={() => setMoBia(false)}
         />
       )}
+
       <div className="p-3">
-        <p className="truncate text-sm font-medium" title={d.tenAlbum}>{d.tenAlbum}</p>
-        <p className="truncate text-xs text-fg-muted" title={d.tenMuc}>
-          {d.tenMuc} · {d.soAnh} ảnh
+        <label className="block">
+          <span className="eyebrow block">Tên cảnh</span>
+          <input
+            value={ten}
+            onChange={(e) => setTen(e.target.value)}
+            onBlur={luuNeuDoi}
+            placeholder={d.tenAlbum}
+            className="input mt-1 text-sm"
+          />
+        </label>
+        <label className="mt-2 block">
+          <span className="eyebrow block">Mô tả ngắn</span>
+          <input
+            value={moTa}
+            onChange={(e) => setMoTa(e.target.value)}
+            onBlur={luuNeuDoi}
+            placeholder="ví dụ: bối cảnh châu Âu, đẹp nhất buổi chiều"
+            className="input mt-1 text-sm"
+          />
+        </label>
+
+        <p className="mt-2 truncate text-xs text-fg-faint" title={`${d.tenAlbum} · ${d.tenMuc}`}>
+          Thư mục Drive: {d.tenMuc} · {d.soAnh} ảnh
         </p>
-        <button
-          type="button"
-          disabled={dangXoa}
-          onClick={() =>
-            start(async () => {
-              await xoaAnhGioiThieuAction(d.id);
-              router.refresh();
-            })
-          }
-          className="mt-2 text-xs text-fg-faint underline underline-offset-2 hover:text-red-700"
-        >
-          {dangXoa ? "Đang gỡ…" : "Gỡ khỏi trang"}
-        </button>
+        {bao && <p className="mt-1 text-xs text-accent">{bao}</p>}
+
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          {/*
+            Số ảnh là con số chụp lúc thêm thư mục vào trang. Up thêm ảnh lên
+            Drive thì con số cũ vẫn nằm đó — nút này đọc lại cho đúng, khỏi
+            phải gỡ ra thêm lại (và gỡ ra thêm lại thì mất luôn tên, mô tả).
+          */}
+          <button
+            type="button"
+            disabled={dangLuu}
+            onClick={() => chay(() => docLaiCanhAction(d.id))}
+            className="text-xs text-fg-faint underline underline-offset-2 hover:text-accent"
+          >
+            {dangLuu ? "Đang đọc…" : "Đọc lại từ Drive"}
+          </button>
+          <button
+            type="button"
+            disabled={dangXoa}
+            onClick={() =>
+              start(async () => {
+                await xoaAnhGioiThieuAction(d.id);
+                router.refresh();
+              })
+            }
+            className="text-xs text-fg-faint underline underline-offset-2 hover:text-red-700"
+          >
+            {dangXoa ? "Đang gỡ…" : "Gỡ khỏi trang"}
+          </button>
+        </div>
       </div>
     </li>
   );
@@ -188,6 +290,8 @@ function OChon({
   const [loi, setLoi] = useState<string | null>(null);
   const [dangLam, start] = useTransition();
   const [vuaThem, setVuaThem] = useState<Set<string>>(new Set());
+  /** Những thư mục đang tick để đưa lên một lượt. */
+  const [dangTick, setDangTick] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const phim = (e: KeyboardEvent) => {
@@ -227,19 +331,33 @@ function OChon({
     (vuaThem.has(`${albumMo.id}/${albumId}`) ||
       daChon.some((d) => d.galleryId === albumMo.id && d.albumId === albumId));
 
-  const them = (t: ThuMucChon) => {
-    if (!albumMo) return;
+  /*
+    Thêm NHIỀU thư mục một lượt — anh yêu cầu 23/09/2026: chia Hamita Garden
+    thành mười cảnh mà bấm từng cái là mười lần bấm, mười lần đợi Drive.
+
+    Chạy TUẦN TỰ chứ không bắn song song: mỗi lượt là một lần đọc Drive, bắn
+    cùng lúc mười lượt thì dễ dính hạn mức của Drive, lúc đó thêm được nửa
+    chừng mà không biết nửa nào. Gặp lỗi thì dừng ngay và giữ lại những cái đã
+    thêm được.
+  */
+  const themNhieu = (ds: ThuMucChon[]) => {
+    if (!albumMo || ds.length === 0) return;
     setLoi(null);
     start(async () => {
-      const kq = await themAnhGioiThieuAction(nhom.key, muc.key, albumMo.id, t.id);
-      if (kq.loi) {
-        setLoi(kq.loi);
-        return;
+      for (const t of ds) {
+        const kq = await themAnhGioiThieuAction(nhom.key, muc.key, albumMo.id, t.id);
+        if (kq.loi) {
+          setLoi(kq.loi);
+          break;
+        }
+        setVuaThem((s) => new Set(s).add(`${albumMo.id}/${t.id}`));
       }
-      setVuaThem((s) => new Set(s).add(`${albumMo.id}/${t.id}`));
+      setDangTick(new Set());
       router.refresh();
     });
   };
+
+  const them = (t: ThuMucChon) => themNhieu([t]);
 
   return (
     <div
@@ -309,10 +427,27 @@ function OChon({
                   const co = daCo(t.id);
                   return (
                     <li key={t.id} className="flex items-center justify-between gap-4 py-3">
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium">{t.ten}</span>
-                        <span className="text-xs text-fg-muted">{t.soAnh} ảnh</span>
-                      </span>
+                      <label className="flex min-w-0 flex-1 items-center gap-3">
+                        {/* Tick để gom nhiều thư mục rồi đưa lên một lượt. */}
+                        <input
+                          type="checkbox"
+                          className="size-4 shrink-0"
+                          disabled={co || dangLam}
+                          checked={dangTick.has(t.id)}
+                          onChange={(e) =>
+                            setDangTick((s) => {
+                              const m = new Set(s);
+                              if (e.target.checked) m.add(t.id);
+                              else m.delete(t.id);
+                              return m;
+                            })
+                          }
+                        />
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-medium">{t.ten}</span>
+                          <span className="text-xs text-fg-muted">{t.soAnh} ảnh</span>
+                        </span>
+                      </label>
                       {co ? (
                         <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">
                           ✓ Đã đưa lên
@@ -325,6 +460,33 @@ function OChon({
                     </li>
                   );
                 })}
+                {/*
+                  Thanh này chỉ hiện khi đã tick ít nhất một thư mục — không
+                  tick thì nó là một nút chết chiếm chỗ.
+                */}
+                {dangTick.size > 0 && (
+                  <li className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-line bg-bg-raised py-3">
+                    <span className="text-sm text-fg-muted">Đã chọn {dangTick.size} thư mục</span>
+                    <span className="flex gap-2">
+                      <button
+                        type="button"
+                        className="btn"
+                        disabled={dangLam}
+                        onClick={() => setDangTick(new Set())}
+                      >
+                        Bỏ chọn
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-primary px-4"
+                        disabled={dangLam}
+                        onClick={() => themNhieu(thuMuc.filter((t) => dangTick.has(t.id)))}
+                      >
+                        {dangLam ? "Đang đưa lên…" : `Đưa lên ${dangTick.size} thư mục`}
+                      </button>
+                    </span>
+                  </li>
+                )}
               </ul>
             )
           ) : ds.length === 0 ? (

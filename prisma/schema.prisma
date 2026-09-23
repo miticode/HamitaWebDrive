@@ -726,7 +726,18 @@ model AnhGioiThieu {
   galleryId String
   /// Ma thu muc con. Chuoi rong = anh nam ngay thu muc goc.
   albumId   String
+  /// Ten thu muc DOC TU DRIVE luc them. Giu nguyen de con doi chieu khi doc lai.
   tenMuc    String
+  /// Ten studio dat de hien cho khach — null thi dung `tenMuc`.
+  ///
+  /// Anh yeu cau 23/09/2026 cho Hamita Garden: moi thu muc tren Drive la mot
+  /// canh chup, ma ten thu muc hay la "All View HamitaGarden", "canh 1"… Khach
+  /// khong nen doc thay may ten do.
+  tenHien   String?
+  /// Mot dong gioi thieu canh, hien duoi ten trong luoi (cung yeu cau 23/09).
+  moTa      String?
+  /// So nho dung truoc. Cung so thi xep theo `taoLuc` nhu cu.
+  thuTu     Int      @default(0)
   anhBia    String?
   soAnh     Int      @default(0)
   taoLuc    DateTime @default(now())

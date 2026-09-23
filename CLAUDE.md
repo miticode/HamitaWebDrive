@@ -374,6 +374,26 @@ nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
   database thật — Prisma chặn lệnh đó khi trợ lý chạy, đừng lách. KHÔNG dẫn sang
   `/g/[slug]` của nhà khách (nguyên tắc 17). Nhãn và mô tả thẻ "Tiệm ảnh nhà Su"
   cố ý để trống chờ anh viết — đừng tự điền.
+
+  **MỖI THƯ MỤC LÀ MỘT CẢNH, studio tự đặt tên và sắp xếp** (anh yêu cầu
+  23/09/2026 cho Hamita Garden): ba cột `tenHien`, `moTa`, `thuTu` trong
+  `AnhGioiThieu`, sửa ngay trên thẻ ở `/admin/gioi-thieu`. Ba điều đáng nhớ:
+
+  - **Tên khách đọc KHÔNG phải tên thư mục Drive.** Thứ tự ưu tiên trong
+    `docThuMucCongKhai`: `tenHien` studio gõ → tên album đã bỏ mã. Tên thư mục
+    Drive cố ý không bao giờ hiện cho khách vì nó là tên nội bộ, hay ra kiểu
+    "All View HamitaGarden" hay "canh 1".
+  - **Nút "Đọc lại từ Drive"** (`docLaiThuMucGioiThieu`) cập nhật số ảnh khi
+    studio up thêm — trước đó phải gỡ ra thêm lại, mà gỡ ra là **mất luôn tên
+    và mô tả đã gõ**. Ảnh bìa giữ nguyên nếu tấm đó còn trong thư mục: đó là
+    tấm studio đã chọn tay.
+  - **Đổi thứ tự bằng cách ĐỔI CHỖ hai dòng rồi đánh số lại cả cụm**, không
+    cộng trừ một số: cộng trừ thì hai dòng dễ mang cùng một số và thứ tự nhảy
+    lung tung mỗi lần tải lại.
+
+  Ô chọn thư mục cho **tick nhiều rồi đưa lên một lượt**, chạy **tuần tự** —
+  mỗi lượt là một lần đọc Drive, bắn song song mười lượt thì dễ dính hạn mức
+  Drive và thêm được nửa chừng mà không biết nửa nào.
 - **Lưới dịch vụ đứng NGAY SAU đầu trang**, trước "Về Hamita" (studio chốt
   17/09/2026: khách vào là thấy dịch vụ để dễ bán thêm). Menu cũng để "Dịch vụ"
   lên đầu. Đầu trang bớt lề dưới, lưới dịch vụ bớt lề trên để thẻ ló vào màn

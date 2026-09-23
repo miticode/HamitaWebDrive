@@ -333,6 +333,37 @@ từng thư mục**: chỉ đếm tấm chọn thêm trong chính thư mục kh�
 còn **7** — đúng những nhà khách thật sự chọn thêm sau khi chốt. Ví dụ nhà
 "GD - Thanh Ngân" từ 12 tấm xuống còn 1, nhà Nhã Linh hết báo hẳn.
 
+### Hamita Garden chia theo cảnh, anh tự quản (23/09)
+
+Anh muốn vào Hamita Garden là thấy từng cảnh, bấm một cảnh thì ra ảnh của cảnh
+đó. Cấu trúc này web đã chạy sẵn — vào `/dich-vu/hamita-garden` là lưới các thư
+mục, bấm vào là xem ảnh bên trong. Lý do giờ chỉ thấy một ô: trên Drive, album
+Hamita Garden đang có **đúng một thư mục con** ("All View HamitaGarden") chứa
+cả 60 ảnh.
+
+**Việc anh làm trên Drive:** chia 60 ảnh đó thành các thư mục theo cảnh —
+`Lâu đài`, `Vườn Ý`, `Nhà thờ`, `Hồ bơi`… Mỗi thư mục là một cảnh. Sau này có
+cảnh mới thì tạo thư mục mới rồi up ảnh vào, không cần đụng tới web.
+
+**Bốn thứ em vừa thêm ở trang quản lý giới thiệu** để anh tự lo phần còn lại:
+
+1. **Tên cảnh** — ô gõ ngay trên thẻ. Khách đọc tên này, không đọc tên thư mục
+   Drive. Để trống thì lấy tên album như cũ.
+2. **Mô tả ngắn** — một dòng dưới tên, ví dụ *"Bối cảnh châu Âu, đẹp nhất buổi
+   chiều"*. Hiện đè lên ảnh trong lưới, cắt một dòng cho khỏi che hình.
+3. **Sắp thứ tự** — hai mũi tên ↑ ↓ ở góc ảnh, đưa cảnh đẹp nhất lên đầu.
+4. **Đọc lại từ Drive** — up thêm ảnh vào thư mục thì bấm một cái, số ảnh cập
+   nhật ngay. Trước đây phải gỡ ra thêm lại, mà gỡ ra là mất luôn tên và mô tả.
+
+Cộng thêm: ô chọn thư mục giờ **tick được nhiều cái rồi đưa lên một lượt**, chia
+mười cảnh không còn phải bấm mười lần.
+
+Gõ tên hay mô tả xong chỉ cần bấm ra ngoài ô là web tự lưu, có dòng "Đã lưu ✓"
+báo lại.
+
+Ba thứ này dùng được cho mọi nhóm (Ảnh cưới, Album & hình cổng…), nhưng anh
+chưa cần đụng tới — không điền gì thì mọi nhóm khác hiện y như cũ.
+
 ### Lập hợp đồng bằng cửa sổ, không nhảy trang (23/09)
 
 Anh yêu cầu: bấm **Lập hợp đồng** thì hiện cửa sổ ngay trên trang danh sách,
