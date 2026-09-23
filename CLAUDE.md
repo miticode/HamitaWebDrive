@@ -112,6 +112,22 @@ ba chỗ cố ý khác đi: tấm phủ đóng bảng "…" (`cursor-default`), 
 báo · 0 máy" (`cursor-not-allowed`), ảnh bấm để phóng to (`cursor-zoom-in`).
 Viết trần ngoài layer là xoá sổ cả ba.
 
+**GU CỦA HAMITA THẮNG SKILL THIẾT KẾ.** Anh cho cài skill `frontend-design`
+của Anthropic ngày 23/09/2026 (`~/.claude/skills/frontend-design`). Skill đó
+liệt kê mấy thứ là "dấu hiệu trang do máy sinh ra" và khuyên tránh — trong đó
+có **đúng hai thứ web này dùng khắp nơi**:
+
+- **Nhãn chữ hoa giãn cách trên mỗi tiêu đề** (`.eyebrow`) — đang dùng ở **57
+  tệp**, là lựa chọn thống nhất của cả web từ đầu.
+- **Chuỗi thông tin nối bằng dấu chấm giữa** ("Mã 123456 · gói 100 ảnh",
+  "/g/slug · ngày tạo").
+
+Hai thứ đó **ở nguyên**. Đừng đọc skill rồi đi "sửa cho khỏi giống AI": chúng
+không phải mặc định ai đó bê vào, mà là hệ thống nhãn đã dùng nhất quán hàng
+trăm chỗ và studio đã quen mắt. Skill dùng để tham khảo khi dựng giao diện MỚI,
+còn những gì đã chốt trong tệp này và những gì anh đã duyệt thì skill không có
+quyền lật lại.
+
 **12. Giao diện cố định tông sáng**, không đổi theo cài đặt máy khách. Album gửi
 khách là bộ mặt studio nên phải giống nhau trên mọi máy. Riêng khung xem ảnh to
 vẫn nền đen.
