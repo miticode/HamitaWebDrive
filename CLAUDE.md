@@ -1811,6 +1811,13 @@ vế thứ hai giống trang khách — **ngưng sau 5 phút không ai đụng v
 chạm lại là hỏi ngay. Không thấy dịch vụ theo dõi ngoài nào gọi `/api/suc-khoe`
 (đếm nhật ký 3 phút: 0 lượt).
 
+**Đo lại 24/09/2026 (17h20):** 15,11 CU-giờ = **$1,58** cộng dồn từ 21/09 →
+**~4,1 CU-giờ/ngày**, giảm ~⅓ so với ngày đầu. Giá thật $0,105/CU-giờ, dự
+phóng **$11–13/tháng**. **Thước đo nhanh:** database chạy ở sàn 0,25 CU nên
+thức trọn ngày = đúng **6 CU-giờ/ngày**; lấy số CU-giờ/ngày ÷ 0,25 ra số giờ
+thức rồi đối chiếu giờ làm việc của studio — lệch nhiều là có thứ gọi lén.
+Đừng đề xuất hạ trần autoscale: chưa bao giờ vượt 0,25 CU nên không đổi gì.
+
 ---
 
 ---

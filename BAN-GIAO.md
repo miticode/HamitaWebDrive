@@ -627,6 +627,29 @@ kể cả lúc anh đi ăn cơm hay đang làm Photoshop. Nay nó **ngưng sau 5
 ai đụng vào trang** — chạm chuột, gõ phím hay cuộn trang là chạy lại ngay, y
 như trang khách đã làm hôm 21/09. Anh không thấy khác gì ngoài hoá đơn.
 
+**Đo lại sau ba ngày (anh gửi ảnh Billing 24/09, 17h20):** 15,11 CU-giờ =
+**$1,58** cộng dồn từ 21/09, tức **~4,1 CU-giờ mỗi ngày** — giảm chừng một
+phần ba so với 6,06 của ngày đầu. Lưu trữ 46,05 MB (+ lịch sử 1,96 MB), truyền
+mạng 0,71 GB. Giá thật: $1,58 ÷ 15,11 = **$0,105 mỗi CU-giờ**.
+
+**Cách đọc con số này cho nhanh:** database chạy ở mức nhỏ nhất 0,25 CU, nên
+**thức trọn 24 giờ là đúng 6 CU-giờ/ngày**. Ngày đầu 6,06 nghĩa là nó không
+ngủ phút nào; nay 4,1 nghĩa là **mỗi ngày ngủ được chừng 8 tiếng**. Lần sau
+muốn biết web có bị gọi lén không, cứ lấy số CU-giờ/ngày chia 0,25 ra số giờ
+thức rồi đối chiếu với giờ studio làm việc.
+
+Giữ nhịp này thì một tháng đủ 30 ngày vào khoảng **$11–13** (≈ 290–340 nghìn),
+thấp hơn mức $19 ước hôm 22/09. Lưu trữ và truyền mạng gần như không tốn gì.
+
+**Email "chạm $10" là cảnh báo, không phải hoá đơn.** Kỳ 21/09–01/10 chỉ 10
+ngày nên tổng độ $4–5, chưa chạm. Từ kỳ đủ tháng trở đi, khoảng **ngày 25 hằng
+tháng** sẽ có thư báo — không có gì hỏng. Thấy phiền thì vào Billing → Spending
+notifications → Edit, nâng ngưỡng lên $20.
+
+**Không nên siết thêm nữa.** Hạ trần autoscale vô ích vì nó chưa bao giờ vượt
+0,25 CU. Trần lý thuyết là $6/tháng (nếu ngủ nửa ngày), mà 8 tiếng thức còn
+lại đúng là lúc studio và khách đang dùng thật — cắt nữa chỉ làm web chậm.
+
 ### Trang Ảnh cưới + quản lý trang giới thiệu (17/09)
 
 **Cập nhật cùng ngày — mọi dịch vụ, không riêng ảnh cưới.** Trang quản lý
