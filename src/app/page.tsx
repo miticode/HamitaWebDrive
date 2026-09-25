@@ -5,7 +5,6 @@ import { Logo } from "@/components/Logo";
 import { FadeIn } from "@/components/FadeIn";
 import { StudioIcon } from "@/components/StudioIcon";
 import {
-  ALBUM_HC,
   ANH_BIA,
   CO_SO,
   DAU_TRANG,
@@ -94,7 +93,6 @@ export default async function Home() {
   const biaNhom = (khu: string) => biaCuaKhu(khu)[0];
 
   const anhTieuBieu = biaCuaKhu("cuoi");
-  const anhAlbumHC = biaCuaKhu("albumhc");
   const anhBaby = biaCuaKhu("baby");
 
   /*
@@ -113,7 +111,6 @@ export default async function Home() {
   /* Ảnh đặt lên từng thẻ của lưới "Hamita chụp gì?". */
   const anhThe: Record<string, string | undefined> = {
     cuoi: biaNhom("cuoi"),
-    albumhc: biaNhom("albumhc"),
     phimtruong: biaNhom("phimtruong") ?? anhPhimTruong[0],
     baby: biaNhom("baby"),
     // Váy & trang điểm chưa có thư mục riêng thì mượn ảnh cưới — tấm nào cũng là váy và trang điểm.
@@ -130,7 +127,6 @@ export default async function Home() {
   */
   const khuDangHien: Record<string, boolean> = {
     cuoi: anhTieuBieu.length > 0,
-    albumhc: anhAlbumHC.length > 0,
     phimtruong: anhPhimTruong.length > 0,
     baby: true,
     vay: true,
@@ -155,7 +151,6 @@ export default async function Home() {
         coAnhNen={false}
         anMuc={[
           ...(thuMucCuaKhu("cuoi").length > 0 ? [] : ["/dich-vu/anh-cuoi"]),
-          ...(khuDangHien.albumhc ? [] : ["#album-hc"]),
           ...(khuDangHien.phimtruong ? [] : ["#phim-truong"]),
         ]}
       />
@@ -551,18 +546,6 @@ export default async function Home() {
               />
             </FadeIn>
             <LuoiAnh ds={anhTieuBieu} khung="aspect-[3/4]" />
-          </div>
-        </section>
-      )}
-
-      {/* ── Album & hình cổng — khung 4:5 vì trang album rộng bản hơn ảnh chân dung. */}
-      {anhAlbumHC.length > 0 && (
-        <section id="album-hc" className="scroll-mt-16 border-t border-line bg-bg-soft">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28">
-            <FadeIn>
-              <DauMuc nhan={ALBUM_HC.nhan} tieuDe={ALBUM_HC.tieuDe} moTa={ALBUM_HC.moTa} />
-            </FadeIn>
-            <LuoiAnh ds={anhAlbumHC} khung="aspect-[4/5]" />
           </div>
         </section>
       )}

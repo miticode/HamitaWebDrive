@@ -204,7 +204,7 @@ export const CO_SO = {
  * Luoi "Hamita chup gi?" — moi the la mot mang dich vu, bam vao nhay toi khu
  * anh cua mang do.
  *
- * Moi chu o day lay tu nhung gi trang da noi o cho khac (HANH_TRINH, ALBUM_HC,
+ * Moi chu o day lay tu nhung gi trang da noi o cho khac (HANH_TRINH,
  * PHIM_TRUONG, HAMI_BABY) — khong them loi hua moi nao.
  *
  * "khu" chi cho trang biet lay anh bia cua khu nao dat len the; "vay" khong co
@@ -215,7 +215,6 @@ export const DICH_VU = {
   tieuDe: "Hamita chụp gì?",
   muc: [
     { khu: "cuoi", icon: "rings", nhan: "Trọn gói ngày cưới", ten: "Ảnh cưới", moTa: "Từ lễ hỏi tới lúc tan tiệc", href: "#anh" },
-    { khu: "albumhc", icon: "album", nhan: "Sản phẩm in", ten: "Album & hình cổng", moTa: "Thứ anh chị cầm về sau ngày cưới", href: "#album-hc" },
     { khu: "phimtruong", icon: "camera", nhan: "Phim trường độc quyền", ten: "Hamita Garden", moTa: "Bối cảnh châu Âu ngay tại Long An", href: "#phim-truong" },
     { khu: "baby", icon: "sparkle", nhan: "Hami Baby Studio", ten: "Bé & gia đình", moTa: "Thôi nôi, bầu, sơ sinh", href: "#baby" },
     { khu: "vay", icon: "dress", nhan: "Có sẵn tại studio", ten: "Váy cưới & trang điểm", moTa: "Mặc thử ngay tại chỗ, tới lúc ưng thì thôi", href: "#hanh-trinh" },
@@ -240,29 +239,11 @@ export const DICH_VU = {
  * nua (xem page.tsx) — in ra thanh doc hai lan cung mot cai ten.
  */
 export const PHAN_DICH_VU = [
-  { ten: "Hamita Wedding", khu: ["cuoi", "albumhc", "phimtruong"] },
+  { ten: "Hamita Wedding", khu: ["cuoi", "phimtruong"] },
   { ten: "Hami Baby Studio", khu: ["baby"] },
   { ten: "Tiệm ảnh nhà Su", khu: ["nhasu"] },
   { ten: "Váy cưới & trang điểm", khu: ["vay"] },
 ] as const satisfies readonly { ten: string; khu: readonly string[] }[];
-
-/**
- * Khu Album va hinh cong — SAN PHAM IN khach cam ve tay.
- *
- * Tach rieng khoi khu anh cuoi vi khach nhin hai thu do voi hai muc dich khac
- * nhau: xem anh cuoi la xem PHONG CACH CHUP, con xem album va hinh cong la
- * xem thu minh se nhan duoc. Gop chung mot luoi thi ca hai deu bi loang.
- *
- * "HC" trong ten album cua studio la hinh cong — doc duoc tu chinh ten thu muc
- * Drive ("File gốc hình cổng" trong album mang ma HC).
- */
-export const ALBUM_HC = {
-  nhan: "Sản phẩm in",
-  tieuDe: "Album và hình cổng",
-  moTa:
-    "Ngoài file ảnh, anh chị còn cầm về những thứ có thể chạm vào: từng trang " +
-    "album do Hamita tự dàn, và tấm hình cổng đặt trước nhà ngày cưới.",
-} as const;
 
 /**
  * Phim truong rieng cua studio.

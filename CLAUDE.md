@@ -374,9 +374,12 @@ nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
   dẫn sang trang mục**: mục trống bên đó trả 404. Quy tắc này tự áp dụng cho
   phần khác khi nhóm của nó có từ hai mục trở lên.
 
-- **Trang từng dịch vụ `/dich-vu/<nhóm>/<mục>`** (17/09/2026). Sáu nhóm khớp sáu
-  thẻ "Hamita chụp gì?" — Ảnh cưới, Album & hình cổng, Hamita Garden, Bé & gia
-  đình, Váy cưới & trang điểm, Tiệm ảnh nhà Su — **nhóm cố định trong mã nguồn**
+- **Trang từng dịch vụ `/dich-vu/<nhóm>/<mục>`** (17/09/2026). Năm nhóm khớp năm
+  thẻ "Hamita chụp gì?" — Ảnh cưới, Hamita Garden, Bé & gia đình, Váy cưới &
+  trang điểm, Tiệm ảnh nhà Su. **"Album & hình cổng" đã gỡ hẳn 25/09/2026 theo
+  yêu cầu của anh**: mất cả thẻ trong lưới, khu ảnh riêng giữa trang chủ, mục
+  ALBUM trên menu và hằng `ALBUM_HC`; mã `AB`/`HC` vẫn giữ để đặt tên album nội
+  bộ. Đừng dựng lại nếu không được yêu cầu — **nhóm cố định trong mã nguồn**
   (`NHOM_GIOI_THIEU`, `src/lib/nhomGioiThieu.ts`), còn **mục nhỏ và mã gợi ý nằm
   trong database** từ 25/09/2026 (bảng `MucDichVu`, đọc/ghi qua
   `src/lib/mucDichVu.ts`) vì anh yêu cầu tự tạo mục trên web. Key mục là đường

@@ -388,8 +388,8 @@ rõ phải làm gì thay vì chỉ nói "không nằm trong thư mục".
 
 Anh muốn trang chủ tách rõ bốn cái tên thay vì sáu thẻ nằm lẫn một lưới:
 
-1. **Hamita Wedding** — Ảnh cưới · Album & hình cổng · Hamita Garden (giữ lưới
-   ba thẻ dọc như cũ)
+1. **Hamita Wedding** — Ảnh cưới · Hamita Garden *(lúc đầu có thêm Album &
+   hình cổng, anh cho gỡ hẳn 25/09)*
 2. **Hami Baby Studio** — Bé & gia đình
 3. **Tiệm ảnh nhà Su**
 4. **Váy cưới & trang điểm**

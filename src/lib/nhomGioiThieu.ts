@@ -29,7 +29,6 @@ export type NhomGioiThieu = { key: string; khu: string; ten: string; muc: MucGio
 /** Sáu nhóm, khớp sáu thẻ lưới "Hamita chụp gì?". Không đổi ở trang quản lý. */
 export const NHOM_GIOI_THIEU = [
   { key: "anh-cuoi", khu: "cuoi", ten: "Ảnh cưới" },
-  { key: "album-hinh-cong", khu: "albumhc", ten: "Album & hình cổng" },
   { key: "hamita-garden", khu: "phimtruong", ten: "Hamita Garden" },
   { key: "be-gia-dinh", khu: "baby", ten: "Bé & gia đình" },
   { key: "vay-cuoi", khu: "vay", ten: "Váy cưới & trang điểm" },
@@ -48,8 +47,6 @@ export const MUC_MAC_DINH: readonly { nhom: string; key: string; ten: string; ma
   { nhom: "anh-cuoi", key: "nha-gai", ten: "Ngày cưới – Nhà gái", ma: ["HER"] },
   { nhom: "anh-cuoi", key: "nha-trai", ten: "Ngày cưới – Nhà trai", ma: ["HIS"] },
   { nhom: "anh-cuoi", key: "phong-su", ten: "Phóng sự cưới", ma: [] },
-  { nhom: "album-hinh-cong", key: "album", ten: "Album", ma: ["AB"] },
-  { nhom: "album-hinh-cong", key: "hinh-cong", ten: "Hình cổng", ma: ["HC"] },
   { nhom: "hamita-garden", key: "hamita-garden", ten: "Hamita Garden", ma: [] },
   { nhom: "be-gia-dinh", key: "thoi-noi", ten: "Thôi nôi", ma: ["Baby"] },
   { nhom: "be-gia-dinh", key: "bau", ten: "Bầu", ma: ["Baby"] },
