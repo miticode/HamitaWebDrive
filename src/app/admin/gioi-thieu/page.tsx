@@ -19,8 +19,15 @@ export const dynamic = "force-dynamic";
  * (nguyên tắc 9) — tên thư mục và tấm bìa đã lưu sẵn lúc chọn; chỉ khi bấm vào
  * một album trong ô chọn mới đọc Drive để liệt kê thư mục.
  */
-export default async function GioiThieuPage() {
+export default async function GioiThieuPage({ searchParams }: PageProps<"/admin/gioi-thieu">) {
   if (!(await quyenAlbum())) redirect("/quan-ly/dang-nhap?tiep=%2Fadmin%2Fgioi-thieu");
+  /*
+    Nhóm đang xem nằm trong ĐỊA CHỈ TRANG (?nhom=be-gia-dinh) chứ không chỉ
+    trong bộ nhớ tạm — anh báo 25/09/2026: đang ở tab Bé & gia đình mà bấm đọc
+    lại là nhảy về tab đầu. Để trong địa chỉ thì F5, bấm đọc lại, hay mở lại
+    link đều quay về đúng tab.
+  */
+  const nhomBanDau = (await searchParams).nhom;
   const tongToi = (await cookies()).get("admin-tong")?.value === "toi";
 
   if (!databaseIsConfigured()) {
@@ -65,6 +72,7 @@ export default async function GioiThieuPage() {
         }))}
         daChon={daChon}
         nhomDs={nhomDs}
+        nhomBanDau={typeof nhomBanDau === "string" ? nhomBanDau : undefined}
       />
     </main>
   );

@@ -33,13 +33,30 @@ export function QuanLyGioiThieu({
   albums,
   daChon,
   nhomDs,
+  nhomBanDau,
 }: {
   albums: AlbumGon[];
   daChon: ThuMucGioiThieu[];
   nhomDs: NhomGioiThieu[];
+  nhomBanDau?: string;
 }) {
-  const [nhomKey, setNhomKey] = useState<string>(nhomDs[0].key);
+  const [nhomKey, setNhomKey] = useState<string>(
+    nhomBanDau && nhomDs.some((n) => n.key === nhomBanDau) ? nhomBanDau : nhomDs[0].key,
+  );
   const nhom = nhomDs.find((n) => n.key === nhomKey) ?? nhomDs[0];
+
+  /*
+    Ghi nhóm đang xem vào địa chỉ trang bằng `history.replaceState`, KHÔNG dùng
+    router.replace: router.replace bắt máy chủ dựng lại trang mỗi lần bấm tab,
+    vừa chậm vừa tốn một lượt hỏi database. Cái mình cần chỉ là để lại dấu
+    trong địa chỉ, phòng khi trang tải lại (anh báo 25/09/2026: đang ở tab Bé &
+    gia đình, bấm đọc lại Drive là nhảy về tab đầu).
+  */
+  const doiNhom = (key: string) => {
+    setNhomKey(key);
+    const dc = key === nhomDs[0].key ? window.location.pathname : `?nhom=${encodeURIComponent(key)}`;
+    window.history.replaceState(null, "", dc);
+  };
   const [dangMo, setDangMo] = useState<Muc | null>(null);
 
   return (
@@ -57,7 +74,7 @@ export function QuanLyGioiThieu({
               key={n.key}
               type="button"
               aria-pressed={dang}
-              onClick={() => setNhomKey(n.key)}
+              onClick={() => doiNhom(n.key)}
               className={`min-h-10 rounded-full border px-4 text-sm transition ${
                 dang
                   ? "border-transparent bg-fg text-bg"

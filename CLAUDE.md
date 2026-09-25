@@ -397,6 +397,12 @@ nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
   `/g/[slug]` của nhà khách (nguyên tắc 17). Nhãn và mô tả thẻ "Tiệm ảnh nhà Su"
   cố ý để trống chờ anh viết — đừng tự điền.
 
+  **Nhóm đang xem nằm trong địa chỉ trang** (`?nhom=be-gia-dinh`, 25/09/2026):
+  anh đang ở tab Bé & gia đình mà bấm đọc lại Drive thì bị nhảy về tab đầu.
+  Ghi bằng `history.replaceState` chứ ĐỪNG dùng `router.replace` — cái đó bắt
+  máy chủ dựng lại trang mỗi lần bấm tab, tốn thêm một lượt hỏi database mà
+  chẳng được gì (nguyên tắc 53).
+
   **STUDIO TỰ TẠO MỤC** (anh yêu cầu 25/09/2026): trong mỗi tab nhóm có thẻ
   "Tạo mục mới", và mỗi mục có hàng *Sửa tên, mã · ↑ Lên trước · ↓ Xuống sau ·
   Xoá mục*. Bốn điều phải giữ khi đụng vào phần này:
