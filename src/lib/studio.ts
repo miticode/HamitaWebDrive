@@ -230,6 +230,23 @@ export const DICH_VU = {
 } as const;
 
 /**
+ * Bon thuong hieu cua studio, dung de chia luoi "Hamita chup gi?" (anh yeu cau
+ * 25/09/2026). Truoc do sau the nam chung mot luoi, khach khong thay duoc
+ * Hamita Wedding, Hami Baby Studio va Tiem anh nha Su la ba cai ten khac nhau.
+ *
+ * `khu` khop `DICH_VU.muc[].khu`. Thu tu o day la thu tu hien tren trang.
+ *
+ * Phan nao chi co MOT the va the do trung ten phan thi trang KHONG in ten phan
+ * nua (xem page.tsx) — in ra thanh doc hai lan cung mot cai ten.
+ */
+export const PHAN_DICH_VU = [
+  { ten: "Hamita Wedding", khu: ["cuoi", "albumhc", "phimtruong"] },
+  { ten: "Hami Baby Studio", khu: ["baby"] },
+  { ten: "Tiệm ảnh nhà Su", khu: ["nhasu"] },
+  { ten: "Váy cưới & trang điểm", khu: ["vay"] },
+] as const satisfies readonly { ten: string; khu: readonly string[] }[];
+
+/**
  * Khu Album va hinh cong — SAN PHAM IN khach cam ve tay.
  *
  * Tach rieng khoi khu anh cuoi vi khach nhin hai thu do voi hai muc dich khac

@@ -13,6 +13,7 @@ import {
   HAMI_BABY,
   HANH_TRINH,
   LOI_KE,
+  PHAN_DICH_VU,
   PHIM_TRUONG,
   STUDIO,
   VE_HAMITA,
@@ -215,63 +216,147 @@ export default async function Home() {
           <FadeIn>
             <DauMuc nhan={DICH_VU.nhan} tieuDe={DICH_VU.tieuDe} />
           </FadeIn>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-            {DICH_VU.muc.map((m, i) => {
-              const anh = anhThe[m.khu];
-              return (
-                <FadeIn key={m.ten} cham={i * 70}>
-                  {/*
-                    Chữ nằm trên ảnh, dưới một lớp tối dần từ đáy — kiểu thẻ của
-                    mohome: nhìn ảnh là biết mảng gì, không phải đọc nhãn dưới.
-                    Cả thẻ là một liên kết, bấm đâu cũng tới đúng khu đó.
-                  */}
-                  <a
-                    href={hrefThe(m)}
-                    className={`group relative block aspect-[4/5] overflow-hidden rounded-[1.75rem] ${m.khu === "baby" ? "khu-baby" : ""} ${anh ? "bg-bg-soft" : "border border-line bg-gradient-to-br from-accent-soft to-bg-soft"}`}
-                  >
-                    {anh ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={`/api/img/${anh}?w=960`}
-                        alt=""
-                        loading="lazy"
-                        className="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-105"
-                      />
-                    ) : (
-                      /*
-                        Chưa có ảnh album cho mảng này: biểu tượng lớn trên nền
-                        màu nhấn nhạt, chữ màu đậm. Ô trống xám trông như ảnh
-                        tải hỏng; ô có chủ ý thì không.
-                      */
-                      <span className="absolute top-6 left-6 grid size-16 place-items-center rounded-full border border-line-strong bg-bg-raised text-accent">
-                        <StudioIcon ten={m.icon} className="size-7" />
-                      </span>
-                    )}
-                    {anh && <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />}
-                    <span className={`absolute inset-x-0 bottom-0 p-6 ${anh ? "text-white" : "text-fg"}`}>
-                      {m.nhan && <span className="block text-[11px] font-medium tracking-[0.2em] uppercase opacity-85">{m.nhan}</span>}
-                      <span className="mt-1.5 block font-display text-[1.9rem] leading-tight">{m.ten}</span>
-                      <span className="mt-1 flex items-center justify-between gap-3 text-sm opacity-90">
-                        {m.moTa}
-                        <span
-                          aria-hidden
-                          className={`grid size-8 shrink-0 place-items-center rounded-full transition ${anh ? "bg-white/20 backdrop-blur-sm group-hover:bg-white/35" : "border border-line-strong group-hover:border-accent group-hover:text-accent"}`}
+          {/*
+            BỐN PHẦN theo thương hiệu (anh yêu cầu 25/09/2026): Hamita Wedding
+            gom ba mảng cưới, còn Hami Baby Studio, Tiệm ảnh nhà Su và Váy cưới
+            & trang điểm mỗi cái một dải ngang riêng. Trước đó sáu thẻ nằm
+            chung một lưới, khách không thấy được đây là mấy cái tên khác nhau.
+
+            Phần nhiều thẻ giữ lưới thẻ dọc như cũ; phần một thẻ thành dải
+            ngang ảnh trái chữ phải — một thẻ dọc đứng lẻ giữa hàng trông như
+            lưới bị thiếu ảnh.
+          */}
+          {PHAN_DICH_VU.map((phan, iPhan) => {
+            const the = DICH_VU.muc.filter((m) => (phan.khu as readonly string[]).includes(m.khu));
+            if (the.length === 0) return null;
+            // Tên phần trùng tên thẻ duy nhất thì thôi, khỏi đọc hai lần.
+            const inTenPhan = !the.some((m) => m.ten === phan.ten);
+
+            return (
+              <div key={phan.ten} className={iPhan === 0 ? "mt-10" : "mt-16"}>
+                {inTenPhan && (
+                  <FadeIn>
+                    <div className="flex items-center gap-4">
+                      <h3 className="font-display text-xl whitespace-nowrap sm:text-2xl">{phan.ten}</h3>
+                      <span aria-hidden className="h-px flex-1 bg-line" />
+                    </div>
+                  </FadeIn>
+                )}
+
+                <div
+                  className={`${inTenPhan ? "mt-5" : ""} grid gap-4 sm:gap-5 ${
+                    the.length > 1 ? "sm:grid-cols-2 lg:grid-cols-3" : ""
+                  }`}
+                >
+                  {the.map((m, i) => {
+                    const anh = anhThe[m.khu];
+                    const nhan = m.nhan && m.nhan !== phan.ten ? m.nhan : "";
+                    const nenKhu = m.khu === "baby" ? "khu-baby" : "";
+
+                    /* Dải ngang: ảnh một bên, chữ trên nền sáng bên kia. */
+                    if (the.length === 1) {
+                      return (
+                        <FadeIn key={m.ten} cham={i * 70}>
+                          <a
+                            href={hrefThe(m)}
+                            className={`group grid overflow-hidden rounded-[1.75rem] border border-line bg-bg-raised transition hover:border-line-strong lg:grid-cols-[1.2fr_1fr] ${nenKhu}`}
+                          >
+                            <span className="relative block aspect-[16/10] overflow-hidden sm:aspect-[2/1] lg:aspect-auto lg:min-h-[19rem]">
+                              {anh ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={`/api/img/${anh}?w=1280`}
+                                  alt=""
+                                  loading="lazy"
+                                  className="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-105"
+                                />
+                              ) : (
+                                <span className="absolute inset-0 grid place-items-center bg-gradient-to-br from-accent-soft to-bg-soft text-accent">
+                                  <StudioIcon ten={m.icon} className="size-10" />
+                                </span>
+                              )}
+                            </span>
+                            <span className="flex flex-col justify-center p-7 sm:p-9">
+                              {nhan && (
+                                <span className="block text-[11px] font-medium tracking-[0.2em] text-fg-muted uppercase">{nhan}</span>
+                              )}
+                              <span className="mt-2 block font-display text-[2rem] leading-tight">{m.ten}</span>
+                              {m.moTa && <span className="mt-3 block text-sm leading-relaxed text-fg-muted">{m.moTa}</span>}
+                              <span className="mt-5 flex items-center gap-2 text-sm text-accent">
+                                Xem thử
+                                <span
+                                  aria-hidden
+                                  className="grid size-8 place-items-center rounded-full border border-line-strong transition group-hover:border-accent"
+                                >
+                                  →
+                                </span>
+                              </span>
+                            </span>
+                          </a>
+                        </FadeIn>
+                      );
+                    }
+
+                    return (
+                      <FadeIn key={m.ten} cham={i * 70}>
+                        {/*
+                          Chữ nằm trên ảnh, dưới một lớp tối dần từ đáy — kiểu thẻ của
+                          mohome: nhìn ảnh là biết mảng gì, không phải đọc nhãn dưới.
+                          Cả thẻ là một liên kết, bấm đâu cũng tới đúng khu đó.
+                        */}
+                        <a
+                          href={hrefThe(m)}
+                          className={`group relative block aspect-[4/5] overflow-hidden rounded-[1.75rem] ${nenKhu} ${anh ? "bg-bg-soft" : "border border-line bg-gradient-to-br from-accent-soft to-bg-soft"}`}
                         >
-                          →
-                        </span>
-                      </span>
-                    </span>
-                  </a>
-                </FadeIn>
-              );
-            })}
+                          {anh ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={`/api/img/${anh}?w=960`}
+                              alt=""
+                              loading="lazy"
+                              className="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-105"
+                            />
+                          ) : (
+                            /*
+                              Chưa có ảnh album cho mảng này: biểu tượng lớn trên nền
+                              màu nhấn nhạt, chữ màu đậm. Ô trống xám trông như ảnh
+                              tải hỏng; ô có chủ ý thì không.
+                            */
+                            <span className="absolute top-6 left-6 grid size-16 place-items-center rounded-full border border-line-strong bg-bg-raised text-accent">
+                              <StudioIcon ten={m.icon} className="size-7" />
+                            </span>
+                          )}
+                          {anh && <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />}
+                          <span className={`absolute inset-x-0 bottom-0 p-6 ${anh ? "text-white" : "text-fg"}`}>
+                            {nhan && <span className="block text-[11px] font-medium tracking-[0.2em] uppercase opacity-85">{nhan}</span>}
+                            <span className="mt-1.5 block font-display text-[1.9rem] leading-tight">{m.ten}</span>
+                            <span className="mt-1 flex items-center justify-between gap-3 text-sm opacity-90">
+                              {m.moTa}
+                              <span
+                                aria-hidden
+                                className={`grid size-8 shrink-0 place-items-center rounded-full transition ${anh ? "bg-white/20 backdrop-blur-sm group-hover:bg-white/35" : "border border-line-strong group-hover:border-accent group-hover:text-accent"}`}
+                              >
+                                →
+                              </span>
+                            </span>
+                          </span>
+                        </a>
+                      </FadeIn>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+
+          <div className="mt-16">
 
             {/*
-              Mời tư vấn: một DẢI NGANG hết hàng dưới lưới. Trước 17/09/2026 nó là
-              thẻ thứ sáu lấp đủ hai hàng ba thẻ; thêm thẻ "Tiệm ảnh nhà Su" thì đủ
-              sáu thẻ dịch vụ, để nó làm thẻ thứ bảy sẽ đứng lẻ loi một mình.
+              Mời tư vấn: một DẢI NGANG khép lại cả khu dịch vụ. Trước 17/09/2026
+              nó là thẻ thứ sáu lấp đủ hai hàng ba thẻ; từ 25/09 lưới chia thành
+              bốn phần thương hiệu nên nó đứng riêng dưới cùng.
             */}
-            <FadeIn cham={DICH_VU.muc.length * 70} className="sm:col-span-2 lg:col-span-3">
+            <FadeIn>
               <div className="flex flex-col gap-5 rounded-[1.75rem] bg-fg p-7 text-bg sm:p-9 lg:flex-row lg:items-center lg:justify-between">
                 <div className="max-w-xl">
                 <StudioIcon ten="rings" className="size-9 opacity-70" />

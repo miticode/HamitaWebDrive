@@ -358,6 +358,15 @@ thẻ ảnh lớn chữ đè lên ảnh (`DICH_VU` trong `studio.ts`), bốn khu
 mục canh trái, hành trình năm chương thành dải thẻ, dải kêu gọi bo tròn, và ba
 nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
 
+- **Lưới "Hamita chụp gì?" chia BỐN PHẦN theo thương hiệu** (`PHAN_DICH_VU`
+  trong `studio.ts`, anh yêu cầu 25/09/2026): Hamita Wedding (ảnh cưới, album &
+  hình cổng, Hamita Garden) giữ lưới ba thẻ dọc; Hami Baby Studio, Tiệm ảnh nhà
+  Su và Váy cưới & trang điểm mỗi cái một **dải ngang** ảnh trái chữ phải —
+  một thẻ dọc đứng lẻ giữa hàng trông như lưới thiếu ảnh. Hai quy tắc nhỏ:
+  **tên phần trùng tên thẻ duy nhất thì không in tên phần** (đọc hai lần cùng
+  một cái tên), và **nhãn thẻ trùng tên phần thì bỏ nhãn** (thẻ "Bé & gia đình"
+  vốn mang nhãn "Hami Baby Studio").
+
 - **Trang từng dịch vụ `/dich-vu/<nhóm>/<mục>`** (17/09/2026). Sáu nhóm khớp sáu
   thẻ "Hamita chụp gì?" — Ảnh cưới, Album & hình cổng, Hamita Garden, Bé & gia
   đình, Váy cưới & trang điểm, Tiệm ảnh nhà Su — **nhóm cố định trong mã nguồn**

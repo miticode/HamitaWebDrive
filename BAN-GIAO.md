@@ -384,6 +384,28 @@ Hôm 23/09 anh gặp đúng cảnh đó ở "lâu đài": bìa lưu trong web tr
 bìa hỏng được thay bằng ảnh đầu tiên còn lại. Câu báo lỗi cũng đã viết lại cho
 rõ phải làm gì thay vì chỉ nói "không nằm trong thư mục".
 
+### Lưới "Hamita chụp gì?" chia bốn thương hiệu (25/09)
+
+Anh muốn trang chủ tách rõ bốn cái tên thay vì sáu thẻ nằm lẫn một lưới:
+
+1. **Hamita Wedding** — Ảnh cưới · Album & hình cổng · Hamita Garden (giữ lưới
+   ba thẻ dọc như cũ)
+2. **Hami Baby Studio** — Bé & gia đình
+3. **Tiệm ảnh nhà Su**
+4. **Váy cưới & trang điểm**
+
+Ba phần dưới mỗi phần một **dải ngang** hết chiều ngang trang: ảnh bên trái,
+tên và mô tả bên phải trên nền sáng. Trên điện thoại thì ảnh nằm trên, chữ nằm
+dưới. Để một thẻ dọc đứng lẻ giữa hàng trông như lưới bị thiếu ảnh nên em làm
+dải ngang.
+
+Hai phần "Tiệm ảnh nhà Su" và "Váy cưới & trang điểm" không có dòng tiêu đề
+riêng phía trên — vì tên phần trùng luôn tên trên dải, in ra thành đọc hai lần
+một cái tên. Nếu anh muốn thấy đủ bốn dòng tiêu đề thì nói em, sửa một dòng.
+
+Muốn đổi cách gom nhóm (thêm mảng mới, chuyển mảng sang thương hiệu khác) thì
+sửa `PHAN_DICH_VU` trong `src/lib/studio.ts` — em làm cho.
+
 ### Tự tạo mục trong trang giới thiệu (25/09)
 
 Trước hôm nay, muốn thêm một mục như "Dạm ngõ" hay "Đính hôn" là phải sửa mã
