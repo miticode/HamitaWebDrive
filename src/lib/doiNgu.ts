@@ -1,4 +1,5 @@
 import { getPrisma } from "./db";
+import { boDau } from "./constants";
 import { TEN_VAI_TRO, laVaiTro } from "./nhanVienChung";
 
 /**
@@ -13,6 +14,19 @@ import { TEN_VAI_TRO, laVaiTro } from "./nhanVienChung";
  * - **Người đã nghỉ tự rơi khỏi trang** dù cờ còn bật — `dangLam` false là
  *   khách không thấy nữa, khỏi phải nhớ tắt tay.
  */
+
+/**
+ * Thứ tự các phòng ban trên trang (anh chốt 25/09/2026). So không dấu, không
+ * phân biệt hoa thường vì trong bảng nhân viên chữ mỗi nơi một kiểu ("BAN
+ * LÃNH ĐẠO", "Tư Vấn"). Phòng nào không có trong đây thì xếp sau cùng, chứ
+ * không rơi mất khỏi trang.
+ */
+const THU_TU_PHONG = ["ban lanh dao", "media", "makeup", "tu van", "phong vay"];
+
+function hangPhong(phongBan: string): number {
+  const i = THU_TU_PHONG.indexOf(boDau(phongBan).trim());
+  return i < 0 ? THU_TU_PHONG.length : i;
+}
 
 /** Cỡ tối đa của ảnh đại diện sau khi trình duyệt nén (byte). */
 export const ANH_TOI_DA = 400 * 1024;
@@ -53,6 +67,13 @@ export async function docDoiNgu(): Promise<ThanhVien[]> {
       anh: { select: { capNhatLuc: true } },
     },
   });
+  /*
+    Xếp theo PHÒNG BAN trước, trong mỗi phòng mới theo thứ tự quản lý đã sắp
+    (orderBy ở trên đã lo phần đó). Nhờ vậy hai mũi tên ↑ ↓ chỉ xê dịch người
+    trong cùng một phòng — đúng thứ studio cần, và cũng là thứ nhìn ra được.
+  */
+  ds.sort((a, b) => hangPhong(a.phongBan ?? "") - hangPhong(b.phongBan ?? ""));
+
   return ds.map((n) => ({
     id: n.id,
     ten: n.ten,
@@ -150,12 +171,18 @@ export async function doiThuTuDoiNgu(nhanVienId: string, len: boolean): Promise<
   const ds = await prisma.nhanVien.findMany({
     where: { hienTrenTrang: true, dangLam: true },
     orderBy: [{ thuTuHien: "asc" }, { ngayVaoLam: "asc" }, { taoLuc: "asc" }],
-    select: { id: true },
+    select: { id: true, phongBan: true },
   });
   const i = ds.findIndex((x) => x.id === nhanVienId);
   if (i < 0) return { loi: "Người này chưa hiện trên trang giới thiệu." };
   const j = len ? i - 1 : i + 1;
   if (j < 0 || j >= ds.length) return {};
+  /*
+    Chỉ đổi chỗ trong CÙNG PHÒNG BAN: thứ tự phòng là cố định (Ban lãnh đạo →
+    Media → Makeup → Tư vấn → Phòng váy), đẩy một người sang phòng khác thì
+    ngoài trang không thấy gì đổi mà studio lại tưởng nút hỏng.
+  */
+  if (boDau(ds[i].phongBan ?? "") !== boDau(ds[j].phongBan ?? "")) return {};
   [ds[i], ds[j]] = [ds[j], ds[i]];
   await prisma.$transaction(ds.map((x, k) => prisma.nhanVien.update({ where: { id: x.id }, data: { thuTuHien: k } })));
   return {};

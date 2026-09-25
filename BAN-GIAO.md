@@ -438,8 +438,15 @@ giữa khung.
 tự viết cho mình, tối đa 120 chữ cái. Hiện dưới chức vụ ở khu Đội ngũ; để
 trống thì thôi, không hiện gì.
 
-**Sắp thứ tự:** trong mục Nhân viên, người nào đang bật sẽ có thêm hai mũi tên
-↑ ↓ cạnh công tắc — thứ tự đó chính là thứ tự ngoài trang.
+**Sắp thứ tự:** ngoài trang xếp theo PHÒNG BAN trước, đúng thứ tự anh chốt
+25/09: **Ban lãnh đạo → Media → Makeup → Tư vấn → Phòng váy** (phòng nào
+không nằm trong danh sách này thì xuống cuối, ví dụ Marketing). Trong mỗi
+phòng thì theo thứ tự anh sắp bằng hai mũi tên ↑ ↓ ở mục Nhân viên — mũi tên
+chỉ xê dịch người trong cùng một phòng, đẩy sang phòng khác thì ngoài trang
+chẳng đổi gì nên web không làm.
+
+Muốn đổi thứ tự các phòng thì nói em (nằm ở `THU_TU_PHONG` trong
+`src/lib/doiNgu.ts`).
 
 **Bốn điều đã khoá sẵn:**
 
