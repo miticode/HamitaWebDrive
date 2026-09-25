@@ -642,10 +642,13 @@ export default async function Home() {
                 <FadeIn key={n.id} cham={i * 60}>
                   <li className="text-center">
                     <div className="mx-auto size-28 overflow-hidden rounded-full border border-line bg-bg-soft sm:size-32">
-                      {n.coAnh ? (
+                      {n.anhLuc ? (
+                        /* ?v= là lúc ảnh được cập nhật: đổi ảnh thì địa chỉ
+                           đổi theo nên trình duyệt tải tấm mới ngay, không
+                           còn dính tấm cũ trong bộ nhớ đệm 5 phút. */
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={`/api/anh-nv/${n.id}`}
+                          src={`/api/anh-nv/${n.id}?v=${n.anhLuc}`}
                           alt={n.ten}
                           loading="lazy"
                           className="size-full object-cover"
@@ -660,6 +663,9 @@ export default async function Home() {
                     </div>
                     <p className="mt-4 font-display text-lg leading-tight">{n.ten}</p>
                     <p className="mt-1 text-xs tracking-wide text-fg-muted">{n.vaiTro}</p>
+                    {n.gioiThieu && (
+                      <p className="mx-auto mt-2 max-w-[22ch] text-xs leading-relaxed text-fg-faint">{n.gioiThieu}</p>
+                    )}
                   </li>
                 </FadeIn>
               ))}

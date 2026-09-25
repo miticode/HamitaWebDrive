@@ -429,6 +429,18 @@ ngoài trang đổi theo.
    người đó. Chỉ quản lý thấy công tắc này.
 3. Xong. Khu "Đội ngũ" hiện ở trang chủ, ngay trên dải "Câu chuyện tiếp theo".
 
+**Tự căn khung ảnh (thêm 25/09, cùng ngày):** chọn ảnh xong web mở khung tròn
+— kéo ảnh để chọn phần muốn giữ, gạt thanh trượt để phóng to, ưng rồi mới bấm
+*Lưu ảnh này*. Trước đó web cắt cứng phần giữa, mà người trong ảnh ít khi đứng
+giữa khung.
+
+**Một dòng giới thiệu:** ô ngay dưới ảnh trong "Tài khoản của tôi", mỗi người
+tự viết cho mình, tối đa 120 chữ cái. Hiện dưới chức vụ ở khu Đội ngũ; để
+trống thì thôi, không hiện gì.
+
+**Sắp thứ tự:** trong mục Nhân viên, người nào đang bật sẽ có thêm hai mũi tên
+↑ ↓ cạnh công tắc — thứ tự đó chính là thứ tự ngoài trang.
+
 **Bốn điều đã khoá sẵn:**
 
 - **Mặc định không ai lên trang.** Bảng nhân viên có số điện thoại, ngày vào

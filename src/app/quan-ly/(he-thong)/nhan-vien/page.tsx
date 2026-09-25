@@ -51,6 +51,20 @@ export default async function NhanVienPage({ searchParams }: Props) {
         (n.soDienThoai ?? "").includes(tim)),
   );
 
+  /*
+    Thứ tự người trong khu "Đội ngũ" — tính một lần ở đây để mỗi hàng biết
+    mình có đang đứng đầu hay cuối, khỏi khoá nhầm mũi tên.
+  */
+  const dsHien = tatCa
+    .filter((n) => n.hienTrenTrang && n.dangLam)
+    .sort(
+      (a, b) =>
+        a.thuTuHien - b.thuTuHien ||
+        (a.ngayVaoLam?.getTime() ?? 0) - (b.ngayVaoLam?.getTime() ?? 0) ||
+        a.taoLuc.getTime() - b.taoLuc.getTime(),
+    )
+    .map((n) => n.id);
+
   const dsPhong = [...new Set(tatCa.filter((n) => n.dangLam).map((n) => n.phongBan).filter(Boolean))] as string[];
   dsPhong.sort((a, b) => a.localeCompare(b, "vi"));
 
@@ -167,7 +181,15 @@ export default async function NhanVienPage({ searchParams }: Props) {
                     vaoGanNhat={n.dangNhapLuc ? NGAY_GIO.format(n.dangNhapLuc) : null}
                     dsPhong={dsPhong}
                     laChinhMinh={nguoi.id === n.id}
-                    truocNutSua={<NutHienTrang id={n.id} hien={n.hienTrenTrang} coAnh={!!n.anh} />}
+                    truocNutSua={
+                      <NutHienTrang
+                        id={n.id}
+                        hien={n.hienTrenTrang}
+                        coAnh={!!n.anh}
+                        dauDanh={dsHien[0] === n.id}
+                        cuoiDanh={dsHien[dsHien.length - 1] === n.id}
+                      />
+                    }
                   />
                 )}
               </tr>

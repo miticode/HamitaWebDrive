@@ -367,6 +367,9 @@ model NhanVien {
   hienTrenTrang Boolean @default(false)
   /// So nho dung truoc trong khu do. Cung so thi xep theo ngay vao lam.
   thuTuHien     Int     @default(0)
+  /// Mot dong nguoi do tu gioi thieu, hien duoi chuc vu o khu "Doi ngu".
+  /// Nhan vien tu viet o "Tai khoan cua toi" (anh yeu cau 25/09/2026).
+  gioiThieu     String?
 
   taoLuc      DateTime  @default(now())
   capNhatLuc  DateTime  @updatedAt

@@ -22,7 +22,17 @@ export type ThanhVien = {
   ten: string;
   /** Chữ hiện dưới tên: chức vụ studio đặt, không có thì lấy tên vai trò. */
   vaiTro: string;
-  coAnh: boolean;
+  /** Một dòng người đó tự viết. Rỗng thì thôi, không bịa câu thay họ. */
+  gioiThieu: string | null;
+  /**
+   * Lúc ảnh được cập nhật, tính bằng mili giây. null = chưa có ảnh.
+   *
+   * Trang giới thiệu đính số này vào địa chỉ ảnh: route ảnh cho phép nhớ 5
+   * phút, nên đổi ảnh xong mà địa chỉ y như cũ thì khách (và cả studio) còn
+   * thấy ảnh cũ — anh báo đúng lỗi này 25/09/2026. Đổi ảnh là số đổi, địa chỉ
+   * đổi theo, trình duyệt tải tấm mới ngay.
+   */
+  anhLuc: number | null;
 };
 
 /** Những người đang hiện ở khu Đội ngũ, đúng thứ tự quản lý đã sắp. */
@@ -35,14 +45,16 @@ export async function docDoiNgu(): Promise<ThanhVien[]> {
       ten: true,
       chucVu: true,
       vaiTro: true,
-      anh: { select: { nhanVienId: true } },
+      gioiThieu: true,
+      anh: { select: { capNhatLuc: true } },
     },
   });
   return ds.map((n) => ({
     id: n.id,
     ten: n.ten,
     vaiTro: n.chucVu?.trim() || TEN_VAI_TRO[laVaiTro(n.vaiTro) ? n.vaiTro : "nhan-vien"],
-    coAnh: !!n.anh,
+    gioiThieu: n.gioiThieu?.trim() || null,
+    anhLuc: n.anh ? n.anh.capNhatLuc.getTime() : null,
   }));
 }
 
@@ -109,5 +121,38 @@ export async function doiHienTrenTrang(nhanVienId: string, hien: boolean): Promi
   if (!nv) return { loi: "Không tìm thấy nhân viên." };
   if (hien && !nv.dangLam) return { loi: "Người này đã nghỉ làm, không đưa lên trang được." };
   await prisma.nhanVien.update({ where: { id: nhanVienId }, data: { hienTrenTrang: hien } });
+  return {};
+}
+
+/** Một dòng tự giới thiệu. Người nào tự sửa của người đó. */
+export async function luuGioiThieu(nhanVienId: string, chu: string): Promise<{ loi?: string }> {
+  const gon = chu.trim().replace(/\s+/g, " ");
+  if (gon.length > 120) return { loi: "Dòng giới thiệu dài quá (tối đa 120 chữ cái)." };
+  const co = await getPrisma().nhanVien.findUnique({ where: { id: nhanVienId }, select: { id: true } });
+  if (!co) return { loi: "Không tìm thấy nhân viên." };
+  await getPrisma().nhanVien.update({ where: { id: nhanVienId }, data: { gioiThieu: gon || null } });
+  return {};
+}
+
+/**
+ * Đổi chỗ với người liền kề trong khu Đội ngũ rồi đánh số lại cả cụm.
+ *
+ * Đánh số lại chứ không cộng trừ một số: cộng trừ thì hai người dễ mang cùng
+ * một số và thứ tự nhảy lung tung mỗi lần tải lại (bài học từ thứ tự thư mục
+ * ở trang giới thiệu).
+ */
+export async function doiThuTuDoiNgu(nhanVienId: string, len: boolean): Promise<{ loi?: string }> {
+  const prisma = getPrisma();
+  const ds = await prisma.nhanVien.findMany({
+    where: { hienTrenTrang: true, dangLam: true },
+    orderBy: [{ thuTuHien: "asc" }, { ngayVaoLam: "asc" }, { taoLuc: "asc" }],
+    select: { id: true },
+  });
+  const i = ds.findIndex((x) => x.id === nhanVienId);
+  if (i < 0) return { loi: "Người này chưa hiện trên trang giới thiệu." };
+  const j = len ? i - 1 : i + 1;
+  if (j < 0 || j >= ds.length) return {};
+  [ds[i], ds[j]] = [ds[j], ds[i]];
+  await prisma.$transaction(ds.map((x, k) => prisma.nhanVien.update({ where: { id: x.id }, data: { thuTuHien: k } })));
   return {};
 }

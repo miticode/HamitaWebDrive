@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { databaseIsConfigured, getPrisma } from "@/lib/db";
-import { doiHienTrenTrang } from "@/lib/doiNgu";
+import { doiHienTrenTrang, doiThuTuDoiNgu } from "@/lib/doiNgu";
 import { dangXuatMoiMay, signIn, signOut } from "@/lib/auth";
 import {
   clearFailures,
@@ -408,6 +408,17 @@ export async function doiHienTrenTrangAction(id: string, hien: boolean): Promise
   if (!laQuanTri(nguoi)) return { loi: "Chỉ quản lý mới đổi được mục này." };
 
   const kq = await doiHienTrenTrang(id, hien);
+  if (kq.loi) return kq;
+  revalidatePath("/quan-ly/nhan-vien");
+  revalidatePath("/");
+  return {};
+}
+
+/** Sắp thứ tự người trong khu "Đội ngũ" (chỉ quản lý). */
+export async function doiThuTuDoiNguAction(id: string, len: boolean): Promise<{ loi?: string }> {
+  const nguoi = await layNguoiDung();
+  if (!laQuanTri(nguoi)) return { loi: "Chỉ quản lý mới đổi được mục này." };
+  const kq = await doiThuTuDoiNgu(id, len);
   if (kq.loi) return kq;
   revalidatePath("/quan-ly/nhan-vien");
   revalidatePath("/");

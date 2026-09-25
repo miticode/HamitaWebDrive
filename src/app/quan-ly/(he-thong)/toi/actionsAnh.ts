@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { batBuocDangNhap } from "@/lib/phienNhanVien";
-import { luuAnhDaiDien, xoaAnhDaiDien } from "@/lib/doiNgu";
+import { luuAnhDaiDien, luuGioiThieu, xoaAnhDaiDien } from "@/lib/doiNgu";
 
 /**
  * Ảnh đại diện: ai cũng chỉ sửa được của CHÍNH MÌNH.
@@ -33,4 +33,14 @@ function lamMoi() {
   revalidatePath("/quan-ly/toi");
   revalidatePath("/quan-ly/nhan-vien");
   revalidatePath("/");
+}
+
+/** Một dòng tự giới thiệu — cũng chỉ sửa được của chính mình. */
+export async function luuGioiThieuAction(chu: string): Promise<{ loi?: string }> {
+  const nguoi = await batBuocDangNhap();
+  if (!nguoi.id) return { loi: "Tài khoản này không có hồ sơ nhân viên." };
+  const kq = await luuGioiThieu(nguoi.id, chu);
+  if (kq.loi) return kq;
+  lamMoi();
+  return {};
 }
