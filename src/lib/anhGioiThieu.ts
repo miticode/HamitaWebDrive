@@ -319,3 +319,55 @@ export async function docLaiThuMucGioiThieu(id: string): Promise<{ loi?: string;
   });
   return { soAnh: thuMuc.photos.length };
 }
+
+/**
+ * Đọc lại Drive cho CẢ MỘT MỤC — anh yêu cầu 25/09/2026: chia cảnh trên Drive
+ * xong muốn biết ngay thư mục mới đã sang tới web chưa, chứ không phải bấm
+ * từng thẻ (mà thư mục mới thì chưa có thẻ nào để mà bấm).
+ *
+ * Mỗi album đọc Drive ĐÚNG MỘT LẦN dù mục có mười thẻ cùng album — một lượt
+ * đọc Drive đắt hơn nhiều so với đọc cache, và đây là nút người ta bấm liên
+ * tục lúc đang up ảnh.
+ *
+ * Trả về: `capNhat` là số thẻ có gì đó đổi (tên thư mục, số ảnh, bìa đã mất),
+ * `soMoi` là số thư mục có ảnh trên Drive mà CHƯA đưa lên trang — con số anh
+ * cần để biết bấm "Thêm vào trang giới thiệu" hay thôi.
+ */
+export async function docLaiCaMuc(
+  nhom: string,
+  muc: string,
+): Promise<{ loi?: string; capNhat?: number; soMoi?: number }> {
+  const prisma = getPrisma();
+  const dong = await prisma.anhGioiThieu.findMany({
+    where: { nhom, muc },
+    include: { gallery: { select: { id: true, driveFolderId: true } } },
+  });
+  if (dong.length === 0) return { capNhat: 0, soMoi: 0 };
+
+  const album = new Map(dong.map((d) => [d.gallery.id, d.gallery.driveFolderId]));
+  let capNhat = 0;
+  let soMoi = 0;
+
+  for (const [galleryId, driveFolderId] of album) {
+    const tree = await loadTreeMoi(driveFolderId);
+    const cua = dong.filter((d) => d.galleryId === galleryId);
+    const daCo = new Set(cua.map((d) => d.albumId));
+    soMoi += tree.albums.filter((a) => a.photos.length > 0 && !daCo.has(a.id)).length;
+
+    for (const d of cua) {
+      const thuMuc = tree.albums.find((a) => a.id === d.albumId);
+      // Thư mục biến mất khỏi Drive thì để yên: studio tự quyết gỡ hay không,
+      // xoá giùm là mất luôn tên và mô tả đã gõ.
+      if (!thuMuc || thuMuc.photos.length === 0) continue;
+      const biaConDo = d.anhBia && thuMuc.photos.some((p) => p.id === d.anhBia);
+      const anhBia = biaConDo ? d.anhBia : thuMuc.photos[0].id;
+      if (d.tenMuc === thuMuc.name && d.soAnh === thuMuc.photos.length && d.anhBia === anhBia) continue;
+      await prisma.anhGioiThieu.update({
+        where: { id: d.id },
+        data: { tenMuc: thuMuc.name, soAnh: thuMuc.photos.length, anhBia },
+      });
+      capNhat++;
+    }
+  }
+  return { capNhat, soMoi };
+}

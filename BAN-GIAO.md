@@ -357,6 +357,14 @@ cảnh mới thì tạo thư mục mới rồi up ảnh vào, không cần đụ
 4. **Đọc lại từ Drive** — up thêm ảnh vào thư mục thì bấm một cái, số ảnh cập
    nhật ngay. Trước đây phải gỡ ra thêm lại, mà gỡ ra là mất luôn tên và mô tả.
 
+*(Thêm 25/09)* **Nút "↻ Đọc lại Drive" ở đầu hàng nút của mục** — dùng khi anh
+vừa **tạo thư mục mới** trên Drive: bấm một cái là web đọc thẳng Drive (không
+đợi năm phút), cập nhật số ảnh mọi thẻ và **báo có bao nhiêu thư mục chưa đưa
+lên trang**. Ví dụ lúc em đo: *"Drive có 1 thư mục chưa đưa lên trang"* — đó
+là thư mục "Ảnh lẻ" 60 ảnh. Thấy báo vậy thì bấm "Thêm vào trang giới thiệu"
+để đưa nó lên. Trong ô chọn thư mục cũng có nút y hệt, phòng khi thư mục mới
+chưa kịp hiện trong danh sách.
+
 Cộng thêm: ô chọn thư mục giờ **tick được nhiều cái rồi đưa lên một lượt**, chia
 mười cảnh không còn phải bấm mười lần.
 

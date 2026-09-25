@@ -8,6 +8,7 @@ import type { ThuMucGioiThieu } from "@/lib/anhGioiThieu";
 import {
   datTenCanhAction,
   docLaiCanhAction,
+  docLaiMucAction,
   docThuMucAlbumAction,
   doiThuTuCanhAction,
   doiThuTuMucAction,
@@ -155,6 +156,8 @@ function DauMuc({
   const [ma, setMa] = useState(m.ma.join(", "));
   const [hoiXoa, setHoiXoa] = useState(false);
   const [bao, setBao] = useState<string | null>(null);
+  /** Tin vui (không phải lỗi): kết quả lượt đọc lại Drive. */
+  const [tin, setTin] = useState<string | null>(null);
 
   const chay = (viec: () => Promise<{ loi?: string }>, xong?: () => void) =>
     batDau(async () => {
@@ -234,6 +237,40 @@ function DauMuc({
       </p>
 
       <div className="mt-2 flex flex-wrap items-center gap-3">
+        {/*
+          Nút này để biết THƯ MỤC MỚI đã sang tới web chưa (anh yêu cầu
+          25/09/2026). Khác nút "Đọc lại từ Drive" trên từng thẻ: thư mục vừa
+          tạo trên Drive thì chưa có thẻ nào để mà bấm, nên phải có nút ở mục.
+        */}
+        <button
+          type="button"
+          disabled={dangChay}
+          onClick={() =>
+            batDau(async () => {
+              const kq = await docLaiMucAction(nhom.key, m.key);
+              if (kq.loi) {
+                setBao(kq.loi);
+                setTimeout(() => setBao(null), 5000);
+                return;
+              }
+              setBao(null);
+              setTin(
+                kq.soMoi
+                  ? `Drive có ${kq.soMoi} thư mục chưa đưa lên trang — bấm “Thêm vào trang giới thiệu”.`
+                  : kq.capNhat
+                    ? `Đã cập nhật ${kq.capNhat} thẻ theo Drive.`
+                    : soThuMuc === 0
+                      ? "Mục này chưa có thư mục nào để đọc lại."
+                      : "Drive chưa có gì mới.",
+              );
+              setTimeout(() => setTin(null), 6000);
+              router.refresh();
+            })
+          }
+          className="text-xs text-fg-faint underline underline-offset-2 hover:text-accent disabled:opacity-35"
+        >
+          {dangChay ? "Đang đọc Drive…" : "↻ Đọc lại Drive"}
+        </button>
         <button
           type="button"
           onClick={() => setSua(true)}
@@ -276,6 +313,7 @@ function DauMuc({
         </button>
       </div>
       {bao && <p className="mt-2 max-w-md text-xs text-red-700">{bao}</p>}
+      {tin && <p className="mt-2 max-w-md text-xs text-accent">{tin}</p>}
     </div>
   );
 }
@@ -587,12 +625,12 @@ function OChon({
     );
   }, [albums, chiTheoMa, hopTen, locTen, muc.ma, tuKhoa]);
 
-  const moAlbum = (a: AlbumGon) => {
+  const moAlbum = (a: AlbumGon, docLai = false) => {
     setAlbumMo(a);
     setThuMuc(null);
     setLoi(null);
     start(async () => {
-      const kq = await docThuMucAlbumAction(a.id);
+      const kq = await docThuMucAlbumAction(a.id, docLai);
       if (kq.loi) setLoi(kq.loi);
       else setThuMuc(kq.thuMuc ?? []);
     });
@@ -672,7 +710,20 @@ function OChon({
               </button>
               <h2 className="mt-2 pr-10 font-display text-2xl">{albumMo.ten}</h2>
               <p className="mt-1 text-sm text-fg-muted">
-                Chọn thư mục đưa lên mục <strong className="font-medium text-fg">{muc.ten}</strong>.
+                Chọn thư mục đưa lên mục <strong className="font-medium text-fg">{muc.ten}</strong>.{" "}
+                {/*
+                  Danh sách này đọc từ cache 5 phút cho nhẹ Drive; vừa tạo thư
+                  mục xong mà chưa thấy thì bấm đây để đọc thẳng từ Drive (anh
+                  yêu cầu 25/09/2026).
+                */}
+                <button
+                  type="button"
+                  disabled={dangLam}
+                  onClick={() => moAlbum(albumMo, true)}
+                  className="underline underline-offset-2 transition hover:text-accent disabled:opacity-40"
+                >
+                  {dangLam ? "Đang đọc Drive…" : "↻ Đọc lại Drive"}
+                </button>
               </p>
             </>
           ) : (

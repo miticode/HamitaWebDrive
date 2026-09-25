@@ -403,6 +403,12 @@ nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
     còn lấy tên album thì mọi cảnh đều ra "Hamita Garden" giống hệt nhau. Ô
     "Tên cảnh" ở trang quản lý để trống = chạy theo Drive, chữ mờ trong ô
     chính là tên khách sẽ đọc.
+  - **Nút "↻ Đọc lại Drive" ở MỤC** (`docLaiCaMuc`, anh yêu cầu 25/09/2026) lo
+    thứ nút trên từng thẻ không lo được: **thư mục vừa tạo trên Drive thì chưa
+    có thẻ nào để bấm**. Nó đọc mỗi album **đúng một lần** dù mục có mười thẻ
+    cùng album, cập nhật tên/số ảnh/bìa hỏng, và trả `soMoi` = số thư mục có
+    ảnh chưa đưa lên trang. Ô chọn thư mục có nút cùng tên (`docThuMucAlbumAction`
+    cờ `docLai`) vì danh sách đó cũng đọc qua cache.
   - **Nút "Đọc lại từ Drive"** (`docLaiThuMucGioiThieu`) cập nhật số ảnh khi
     studio up thêm — trước đó phải gỡ ra thêm lại, mà gỡ ra là **mất luôn tên
     và mô tả đã gõ**. Ảnh bìa giữ nguyên nếu tấm đó còn trong thư mục: đó là

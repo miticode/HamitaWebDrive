@@ -4,13 +4,14 @@ import { revalidatePath } from "next/cache";
 import { quyenAlbum } from "@/lib/quyenAlbum";
 import {
   datTenThuMucGioiThieu,
+  docLaiCaMuc,
   docLaiThuMucGioiThieu,
   doiBiaThuMucGioiThieu,
   doiThuTuThuMuc,
   themThuMucGioiThieu,
   xoaThuMucGioiThieu,
 } from "@/lib/anhGioiThieu";
-import { loadTree } from "@/lib/gallery";
+import { loadTree, loadTreeMoi } from "@/lib/gallery";
 import { getPrisma } from "@/lib/db";
 import { doiThuTuMuc, suaMuc, themMuc, xoaMuc } from "@/lib/mucDichVu";
 
@@ -22,9 +23,16 @@ import { doiThuTuMuc, suaMuc, themMuc, xoaMuc } from "@/lib/mucDichVu";
 
 export type ThuMucChon = { id: string; ten: string; soAnh: number };
 
-/** Danh sách thư mục con của một album, để chọn thư mục đưa lên. Đọc Drive. */
+/**
+ * Danh sách thư mục con của một album, để chọn thư mục đưa lên. Đọc Drive.
+ *
+ * `docLai` bỏ qua cache 5 phút — nút "Đọc lại Drive" trong ô chọn (anh yêu cầu
+ * 25/09/2026): vừa tạo thư mục trên Drive mà ô chọn còn đọc cache thì không
+ * thấy, tưởng web hỏng.
+ */
 export async function docThuMucAlbumAction(
   galleryId: string,
+  docLai = false,
 ): Promise<{ loi?: string; thuMuc?: ThuMucChon[] }> {
   if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
   const g = await getPrisma().gallery.findUnique({
@@ -33,7 +41,7 @@ export async function docThuMucAlbumAction(
   });
   if (!g) return { loi: "Không tìm thấy album." };
   try {
-    const tree = await loadTree(g.driveFolderId);
+    const tree = await (docLai ? loadTreeMoi : loadTree)(g.driveFolderId);
     return {
       thuMuc: tree.albums
         .filter((a) => a.photos.length > 0)
@@ -174,4 +182,23 @@ export async function xoaMucAction(id: string): Promise<{ loi?: string }> {
   if (kq.loi) return kq;
   lamMoi();
   return {};
+}
+
+/**
+ * Đọc lại Drive cho cả một mục (anh yêu cầu 25/09/2026) — biết ngay thư mục
+ * vừa tạo trên Drive đã sang tới web chưa mà không phải bấm từng thẻ.
+ */
+export async function docLaiMucAction(
+  nhom: string,
+  muc: string,
+): Promise<{ loi?: string; capNhat?: number; soMoi?: number }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  try {
+    const kq = await docLaiCaMuc(nhom, muc);
+    if (kq.loi) return kq;
+    lamMoi();
+    return kq;
+  } catch {
+    return { loi: "Không đọc được Drive lúc này, anh chị thử lại sau ít phút." };
+  }
 }
