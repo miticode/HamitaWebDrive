@@ -709,12 +709,11 @@ export default async function Home() {
       <footer className="border-t border-line pt-14 pb-24 text-center sm:pb-14">
         <Logo size="sm" className="mx-auto opacity-60" />
         <p className="eyebrow mt-4">{STUDIO.ten}</p>
-        <p className="mt-6 text-xs text-fg-faint">
-          Khách đã nhận link xem ảnh thì mở thẳng link studio gửi.{" "}
-          <Link href="/admin" className="underline underline-offset-2 hover:text-accent">
-            Quản lý
-          </Link>
-        </p>
+        {/*
+          Bỏ dòng "Khách đã nhận link xem ảnh thì mở thẳng link studio gửi ·
+          Quản lý" (anh yêu cầu 25/09/2026). Lối vào trang quản lý nay chỉ còn
+          gõ thẳng /admin — đừng tự dựng lại link đó ở chân trang.
+        */}
       </footer>
     </main>
   );
