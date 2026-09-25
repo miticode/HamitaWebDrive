@@ -10,7 +10,6 @@ import {
   DAU_TRANG,
   DICH_VU,
   HAMI_BABY,
-  HANH_TRINH,
   LOI_KE,
   PHAN_DICH_VU,
   PHIM_TRUONG,
@@ -136,7 +135,8 @@ export default async function Home() {
     const nhom = nhomCuaKhu(m.khu);
     // Nhóm đã có thư mục chọn ở /admin/gioi-thieu thì sang trang riêng của nó.
     if (nhom && thuMucCuaKhu(m.khu).length > 0) return `/dich-vu/${nhom.key}`;
-    return khuDangHien[m.khu] ? m.href : m.khu === "phimtruong" ? "#lien-he" : "#hanh-trinh";
+    // Khu hành trình đã gỡ 25/09/2026 nên mảng chưa có ảnh dẫn thẳng về liên hệ.
+    return khuDangHien[m.khu] ? m.href : "#lien-he";
   };
 
   /* "Sang trọng từ tâm — tận tình như nhà": nửa sau in nghiêng màu nhấn. */
@@ -603,39 +603,6 @@ export default async function Home() {
             />
           </FadeIn>
           {anhBaby.length > 0 && <LuoiAnh ds={anhBaby} khung="aspect-[3/4]" />}
-        </div>
-      </section>
-
-      {/* ── Hành trình năm bước ───────────────────────────────────────── */}
-      {/*
-        Vẫn là năm chương THEO ĐÚNG THỨ TỰ (nguyên tắc 25), chỉ đổi từ dòng kể
-        dọc sang dải thẻ. Đường kẻ mảnh chạy sau dải thẻ (máy tính) và số thứ tự
-        trên mỗi thẻ giữ lại đúng ý "đây là một mạch liền", không phải năm món rời.
-      */}
-      <section id="hanh-trinh" className="scroll-mt-16 border-t border-line">
-        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-6 sm:py-28">
-          <FadeIn>
-            <DauMuc nhan={HANH_TRINH.nhan} tieuDe={HANH_TRINH.tieuDe} giua />
-          </FadeIn>
-          <ol className="relative mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <span aria-hidden className="absolute top-[3.25rem] right-8 left-8 hidden h-px bg-line-strong lg:block" />
-            {HANH_TRINH.chuong.map((c, i) => (
-              <li key={c.so} className={i === HANH_TRINH.chuong.length - 1 ? "sm:col-span-2 lg:col-span-1" : ""}>
-                <FadeIn cham={i * 90} className="h-full">
-                  <div className={`${THE} relative h-full p-6`}>
-                    <div className="flex items-center justify-between">
-                      <span className="grid size-12 place-items-center rounded-full border border-line-strong bg-bg text-accent">
-                        <StudioIcon ten={c.icon} className="size-5" />
-                      </span>
-                      <span className="font-display text-3xl font-light text-accent/60">{c.so}</span>
-                    </div>
-                    <h3 className="mt-5 font-display text-[1.45rem] leading-snug font-normal">{c.ten}</h3>
-                    <p className="mt-3 text-[13.5px] leading-[1.8] text-fg-muted">{c.ke}</p>
-                  </div>
-                </FadeIn>
-              </li>
-            ))}
-          </ol>
         </div>
       </section>
 

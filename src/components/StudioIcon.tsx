@@ -1,6 +1,9 @@
-import type { HANH_TRINH } from "@/lib/studio";
-
-type Ten = (typeof HANH_TRINH)["chuong"][number]["icon"];
+/*
+ * Tên biểu tượng khai ngay tại đây. Trước 25/09/2026 nó lấy theo type của
+ * HANH_TRINH trong studio.ts, mà khu hành trình đã gỡ khỏi trang — giữ liên
+ * kết đó thì phải giữ luôn một hằng không ai hiện nữa.
+ */
+type Ten = "rings" | "camera" | "album" | "sparkle" | "dress";
 
 /**
  * Bộ icon nét mảnh cho từng dịch vụ — cùng phong cách với các icon khác trong

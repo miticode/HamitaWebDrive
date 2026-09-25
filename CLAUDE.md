@@ -339,15 +339,13 @@ biết chuyện thành lập studio**, nên viết ra là bịa. Còn hành trì
 thì mọi câu đều kiểm chứng được từ dịch vụ có thật — và cách kể đó còn đặt
 khách vào giữa câu chuyện thay vì bắt họ đọc về người khác.
 
-Năm dịch vụ xếp lại thành năm chương theo **đúng thứ tự chúng diễn ra**: ngồi
-nghe → chọn váy → trang điểm → buổi chụp → album cầm về (`HANH_TRINH` trong
-`studio.ts`). Đánh số 01–05 ở đây **có nghĩa thật** — chương 02 xảy ra sau
-chương 01 — nên sợi chỉ dọc nối các chương cũng nói đúng một điều: đây là mạch
-liền, không phải năm món rời. Chương cuối **không** có sợi chỉ, nếu không sẽ
-thừa một đoạn chạy vào khoảng trống.
+**Khu "Hành trình" năm chương đã GỠ 25/09/2026** theo yêu cầu của anh — cùng
+đợt rà chỗ dư trên trang (hằng `HANH_TRINH` xoá luôn, `StudioIcon` nay tự khai
+tên biểu tượng). Nguyên tắc kể chuyện ở trên vẫn giữ cho phần chữ còn lại; đừng
+dựng lại khu đó nếu không được yêu cầu.
 
-Mọi chữ khách đọc nằm trong `src/lib/studio.ts` (`HANH_TRINH`, `VE_HAMITA`,
-`LOI_KE`, `ALBUM_HC`, `PHIM_TRUONG`, `HAMI_BABY`), **không viết thẳng vào JSX** —
+Mọi chữ khách đọc nằm trong `src/lib/studio.ts` (`VE_HAMITA`, `LOI_KE`,
+`PHIM_TRUONG`, `HAMI_BABY`), **không viết thẳng vào JSX** —
 sửa giọng văn thì không phải mở file giao diện.
 
 **Bố cục trang giới thiệu học từ mohome.vn (16/09/2026, theo yêu cầu).** Chỉ học
@@ -355,7 +353,7 @@ CÁCH BÀY, giữ nguyên màu, phông và bốn khu của Hamita: đầu trang 
 trang album chạy nằm trong khung bo góc bên phải — `AnhBiaChay trongKhung`),
 "Về Hamita" kèm thẻ số liệu, thẻ **hai cơ sở**, lưới **"Hamita chụp gì?"** bằng
 thẻ ảnh lớn chữ đè lên ảnh (`DICH_VU` trong `studio.ts`), bốn khu ảnh với đầu
-mục canh trái, hành trình năm chương thành dải thẻ, dải kêu gọi bo tròn, và ba
+mục canh trái, dải kêu gọi bo tròn, và ba
 nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
 
 - **Lưới "Hamita chụp gì?" chia BỐN PHẦN theo thương hiệu** (`PHAN_DICH_VU`
