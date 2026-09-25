@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
-import { batBuocDangNhap, laQuanTri, xemHopDong, xemTienVaKhach } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, laQuanTri, xemHopDong, xemNhanVien, xemTienVaKhach } from "@/lib/phienNhanVien";
 
 export const dynamic = "force-dynamic";
 
@@ -109,14 +109,17 @@ export default async function TongQuanPage() {
               </li>
             </>
           )}
-          <li className="flex items-baseline justify-between gap-4 px-4 py-3">
-            <Link href="/quan-ly/nhan-vien" className="font-medium hover:text-accent">
-              Nhân viên
-            </Link>
-            <span className="text-right text-fg-muted">
-              Danh bạ cả tiệm{quanTri ? ", cấp mật khẩu, phân quyền" : ""}
-            </span>
-          </li>
+          {/* Danh sách nhân viên: quản lý + sale (anh chốt 25/09/2026). */}
+          {xemNhanVien(nguoi) && (
+            <li className="flex items-baseline justify-between gap-4 px-4 py-3">
+              <Link href="/quan-ly/nhan-vien" className="font-medium hover:text-accent">
+                Nhân viên
+              </Link>
+              <span className="text-right text-fg-muted">
+                Danh bạ cả tiệm{quanTri ? ", cấp mật khẩu, phân quyền" : ""}
+              </span>
+            </li>
+          )}
           <li className="flex items-baseline justify-between gap-4 px-4 py-3">
             <Link href="/quan-ly/noi-quy" className="font-medium hover:text-accent">
               Nội quy

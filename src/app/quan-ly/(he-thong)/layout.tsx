@@ -1,4 +1,4 @@
-import { batBuocDangNhap, laQuanTri, xemHopDong, xemTienVaKhach } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, laQuanTri, xemHopDong, xemNhanVien, xemTienVaKhach } from "@/lib/phienNhanVien";
 import { TEN_VAI_TRO } from "@/lib/nhanVienChung";
 import { ThanhBen, type MucMenu } from "./ThanhBen";
 
@@ -38,7 +38,8 @@ export default async function HeThongLayout({ children }: { children: React.Reac
           { nhom: "Kế toán", ten: "Phiếu thu", href: "/quan-ly/phieu-thu" },
         ]
       : []),
-    { nhom: "Thông tin studio", ten: "Nhân viên", href: "/quan-ly/nhan-vien" },
+    // Danh sách nhân viên: quản lý + sale (anh chốt 25/09/2026).
+    ...(xemNhanVien(nguoi) ? [{ nhom: "Thông tin studio", ten: "Nhân viên", href: "/quan-ly/nhan-vien" }] : []),
     { nhom: "Thông tin studio", ten: "Nội quy", href: "/quan-ly/noi-quy" },
     { nhom: "Thông tin studio", ten: "Dịch vụ & trang phục", href: "/quan-ly/dich-vu" },
     // Có số tài khoản ngân hàng — chỉ quản lý (AppSheet cũ cũng chỉ Admin xem).

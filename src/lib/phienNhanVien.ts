@@ -211,6 +211,17 @@ export function lapHopDong(nguoi: NguoiDung | null): boolean {
 }
 
 /**
+ * Danh sach nhan vien: quan ly + sale (anh chot 25/09/2026).
+ *
+ * Nhan vien thuong khong con xem duoc nua: bang do co so dien thoai, ngay vao
+ * lam, phong ban cua ca tiem — thong tin ca nhan cua dong nghiep chu khong
+ * phai thu ai cung can mo ra xem. Ai can goi cho nhau thi hoi quan ly.
+ */
+export function xemNhanVien(nguoi: NguoiDung | null): boolean {
+  return xemHopDong(nguoi);
+}
+
+/**
  * Chan mot trang khong duoc phep xem.
  *
  * Dua ve Tong quan chu khong nem loi: nhan vien bam nham mot duong link cu

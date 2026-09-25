@@ -1882,6 +1882,14 @@ thức rồi đối chiếu giờ làm việc của studio — lệch nhiều l�
 
 ---
 
+**55. Danh sách nhân viên: quản lý + sale, KHÔNG cho nhân viên thường**
+(anh chốt 25/09/2026). Bảng đó có số điện thoại, ngày vào làm, phòng ban của
+cả tiệm — thông tin cá nhân của đồng nghiệp chứ không phải thứ ai cũng cần mở
+ra xem. Hàm `xemNhanVien` trong `phienNhanVien.ts`; trang gọi `batBuocQuyen`
+chứ không chỉ giấu mục trên thanh bên (nguyên tắc 3) — gõ thẳng đường dẫn cũng
+bị đưa về Tổng quan. Ba chỗ phải sửa cùng lúc khi đổi luật này: trang, thanh
+bên (layout), và mục trong danh sách ở trang Tổng quan.
+
 **54. Khu "Đội ngũ" lấy người từ bảng NhanVien, KHÔNG có danh sách thứ hai**
 (anh yêu cầu 25/09/2026). Cờ `hienTrenTrang` + `thuTuHien` trên NhanVien, ảnh
 nằm ở bảng riêng `AnhNhanVien` (cột Bytes). Bốn ràng buộc phải giữ:

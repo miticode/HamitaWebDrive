@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { MUI_GIO } from "@/lib/constants";
-import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, batBuocQuyen, laQuanTri, xemNhanVien } from "@/lib/phienNhanVien";
 import { HangNhanVien, ThemNhanVien } from "./HangNhanVien";
 import { NutHienTrang } from "./NutHienTrang";
 import { NutDangXuatMoiMay } from "./NutDangXuatMoiMay";
@@ -31,6 +31,9 @@ function boDauThuong(s: string): string {
  */
 export default async function NhanVienPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
+  // Chặn ở MÁY CHỦ, không chỉ giấu mục trên thanh bên (nguyên tắc 3): gõ
+  // thẳng /quan-ly/nhan-vien cũng bị đưa về Tổng quan.
+  batBuocQuyen(xemNhanVien(nguoi));
   const quanTri = laQuanTri(nguoi);
   const { q = "", phong = "", tt = "dang-lam" } = await searchParams;
 
