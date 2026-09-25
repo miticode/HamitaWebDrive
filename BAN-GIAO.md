@@ -451,8 +451,15 @@ trống thì thôi, không hiện gì.
 - **Chưa có ảnh vẫn lên trang được**: hiện chữ cái đầu tên trên nền màu, không
   phải ô xám trông như ảnh hỏng.
 
-Chữ dưới tên lấy từ ô **Chức vụ** của nhân viên; bỏ trống thì lấy vai trò
-(Quản lý / Sale / Nhân viên). Muốn khách đọc chữ khác thì sửa ô Chức vụ.
+Chữ dưới tên lấy từ ô **Phòng ban** của nhân viên *(anh chốt 25/09 — khách cần
+biết người này làm mảng nào, chức vụ là chuyện nội bộ)*; bỏ trống thì lấy vai
+trò (Quản lý / Sale / Nhân viên). Muốn khách đọc chữ khác thì sửa ô Phòng ban
+trong mục Nhân viên.
+
+Phòng ban đang có trong danh sách: Media (7 người) · Phòng Váy (3) · BAN LÃNH
+ĐẠO (2) · Marketing (1) · Tư Vấn (1) · Makeup (1). Lưu ý "BAN LÃNH ĐẠO" đang
+viết hoa toàn bộ — khách sẽ đọc đúng như vậy, anh muốn đổi thì sửa ở mục Nhân
+viên.
 
 Cả khu tự ẩn khi chưa bật ai — không để cái tiêu đề trơ trọi giữa trang.
 

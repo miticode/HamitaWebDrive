@@ -662,7 +662,7 @@ export default async function Home() {
                       )}
                     </div>
                     <p className="mt-4 font-display text-lg leading-tight">{n.ten}</p>
-                    <p className="mt-1 text-xs tracking-wide text-fg-muted">{n.vaiTro}</p>
+                    <p className="mt-1 text-xs tracking-wide text-fg-muted">{n.phongBan}</p>
                     {n.gioiThieu && (
                       <p className="mx-auto mt-2 max-w-[22ch] text-xs leading-relaxed text-fg-faint">{n.gioiThieu}</p>
                     )}

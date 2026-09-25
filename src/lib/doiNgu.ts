@@ -20,8 +20,12 @@ export const ANH_TOI_DA = 400 * 1024;
 export type ThanhVien = {
   id: string;
   ten: string;
-  /** Chữ hiện dưới tên: chức vụ studio đặt, không có thì lấy tên vai trò. */
-  vaiTro: string;
+  /**
+   * Chữ hiện dưới tên: PHÒNG BAN (anh chốt 25/09/2026 — khách cần biết người
+   * này làm mảng nào, chứ chức vụ là chuyện nội bộ). Chưa điền phòng ban thì
+   * lấy tên vai trò để dòng này không trống trơn.
+   */
+  phongBan: string;
   /** Một dòng người đó tự viết. Rỗng thì thôi, không bịa câu thay họ. */
   gioiThieu: string | null;
   /**
@@ -43,7 +47,7 @@ export async function docDoiNgu(): Promise<ThanhVien[]> {
     select: {
       id: true,
       ten: true,
-      chucVu: true,
+      phongBan: true,
       vaiTro: true,
       gioiThieu: true,
       anh: { select: { capNhatLuc: true } },
@@ -52,7 +56,7 @@ export async function docDoiNgu(): Promise<ThanhVien[]> {
   return ds.map((n) => ({
     id: n.id,
     ten: n.ten,
-    vaiTro: n.chucVu?.trim() || TEN_VAI_TRO[laVaiTro(n.vaiTro) ? n.vaiTro : "nhan-vien"],
+    phongBan: n.phongBan?.trim() || TEN_VAI_TRO[laVaiTro(n.vaiTro) ? n.vaiTro : "nhan-vien"],
     gioiThieu: n.gioiThieu?.trim() || null,
     anhLuc: n.anh ? n.anh.capNhatLuc.getTime() : null,
   }));
