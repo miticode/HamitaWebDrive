@@ -414,6 +414,29 @@ một cái tên. Nếu anh muốn thấy đủ bốn dòng tiêu đề thì nói
 Muốn đổi cách gom nhóm (thêm mảng mới, chuyển mảng sang thương hiệu khác) thì
 sửa `PHAN_DICH_VU` trong `src/lib/studio.ts` — em làm cho.
 
+### Trang quản lý giới thiệu bày lại cho gọn (25/09)
+
+Anh bảo xem kỹ lại giao diện. Đo trước khi sửa: mỗi mục cao 645px (gần hết
+màn hình), mỗi thẻ cảnh 478px, cả trang 2657px — cuộn ba màn hình rưỡi mới
+xem hết bốn thư mục. Nay còn **mục 510px, thẻ 389px, trang 2188px**; riêng
+mục chưa có thư mục từ 183px xuống **150px**.
+
+Đổi bốn chỗ:
+
+1. **Hàng năm đường dẫn chữ nhỏ giống hệt nhau đã bỏ.** Giờ mỗi mục có hai
+   nút thật — *Đọc lại Drive* và *+ Thêm thư mục* — còn sửa tên, đổi thứ tự,
+   xoá mục nằm trong bảng **⋯**. Nút xoá trong đó màu đỏ, không còn trông y
+   như nút đổi thứ tự nữa.
+2. **Số thư mục thành viên tròn** cạnh tên mục: đậm là có ảnh, viền nhạt là
+   còn trống — liếc một cái biết mục nào chưa làm.
+3. **Thẻ cảnh gọn lại**: bỏ hai nhãn "TÊN CẢNH" / "MÔ TẢ NGẮN" (chữ mờ trong
+   ô đã nói rõ), ô mô tả chỉ mở khi bấm *+ Thêm mô tả*, còn Đổi bìa / Đọc lại
+   / Gỡ khỏi trang gom vào bảng **⋯** ngay trên ảnh.
+4. **Mục trống chỉ còn một dòng**, và giấu luôn nút *Đọc lại Drive* — mục
+   chưa có thư mục thì bấm vào chẳng ra gì.
+
+Dòng nhắc "ẢNH CƯỚI" trên từng mục cũng bỏ: đang đứng ở tab đó rồi.
+
 ### Tự tạo mục trong trang giới thiệu (25/09)
 
 Trước hôm nay, muốn thêm một mục như "Dạm ngõ" hay "Đính hôn" là phải sửa mã

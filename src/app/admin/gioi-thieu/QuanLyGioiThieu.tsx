@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { boDau } from "@/lib/constants";
 import { coMa, type MucGioiThieu, type NhomGioiThieu } from "@/lib/nhomGioiThieu";
@@ -91,27 +91,24 @@ export function QuanLyGioiThieu({
         {nhom.muc.map((m, iMuc) => {
           const ds = daChon.filter((d) => d.nhom === nhom.key && d.muc === m.key);
           return (
-            <section key={m.key} className="card p-5 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <DauMuc
-                  nhom={nhom}
-                  m={m}
-                  soThuMuc={ds.length}
-                  dauDanh={iMuc === 0}
-                  cuoiDanh={iMuc === nhom.muc.length - 1}
-                />
-                <button type="button" onClick={() => setDangMo(m)} className="btn-primary min-h-11 gap-2 px-5">
-                  <span aria-hidden className="text-lg leading-none">+</span>
-                  Thêm vào trang giới thiệu
-                </button>
-              </div>
+            <section key={m.key} className="card p-4 sm:p-5">
+              <DauMuc
+                nhom={nhom}
+                m={m}
+                soThuMuc={ds.length}
+                dauDanh={iMuc === 0}
+                cuoiDanh={iMuc === nhom.muc.length - 1}
+                onThem={() => setDangMo(m)}
+              />
 
               {ds.length === 0 ? (
-                <p className="mt-4 text-sm text-fg-muted">
+                /* Mục trống chỉ còn một dòng mảnh — trước đây nó chiếm nguyên
+                   một khối to bằng mục có ảnh, cuộn mãi mới hết. */
+                <p className="mt-3 border-t border-line pt-3 text-sm text-fg-muted">
                   Chưa có thư mục nào — mục này đang ẩn trên trang giới thiệu.
                 </p>
               ) : (
-                <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {ds.map((d, i) => (
                     <TheDaChon
                       key={d.id}
@@ -143,8 +140,50 @@ export function QuanLyGioiThieu({
 }
 
 /**
- * Tiêu đề một mục, kèm mấy việc studio tự làm từ 25/09/2026: đổi tên, đổi mã
- * gợi ý, sắp thứ tự, xoá mục.
+ * Bảng "⋯" dùng chung cho đầu mục và cho từng thẻ cảnh.
+ *
+ * Gom những việc ÍT LÀM và việc NGUY HIỂM vào đây (anh yêu cầu xem lại giao
+ * diện 25/09/2026). Trước đó năm việc — đọc lại Drive, sửa tên, lên trước,
+ * xuống sau, xoá mục — nằm thành một hàng chữ gạch chân xám giống hệt nhau,
+ * nút xoá trông y như nút đổi thứ tự.
+ */
+function MenuGon({ nhan, children }: { nhan: string; children: ReactNode }) {
+  const [mo, setMo] = useState(false);
+  return (
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        aria-label={nhan}
+        aria-expanded={mo}
+        onClick={() => setMo((v) => !v)}
+        className="grid size-9 place-items-center rounded-full border border-line-strong bg-bg-raised text-fg-muted transition hover:border-accent hover:text-fg"
+      >
+        <span aria-hidden className="-mt-1 text-lg leading-none">⋯</span>
+      </button>
+      {mo && (
+        <>
+          {/* Tấm phủ trong suốt: bấm ra ngoài là đóng, khỏi cần nghe sự kiện toàn trang. */}
+          <button type="button" tabIndex={-1} aria-hidden onClick={() => setMo(false)} className="fixed inset-0 z-40 cursor-default" />
+          <div
+            onClick={() => setMo(false)}
+            /* Hẹp lại trên điện thoại: bảng 224px mà cột thẻ chỉ 160px thì nó
+               thò hẳn ra ngoài mép trái màn hình, chữ bị cắt mất. */
+            className="absolute right-0 z-50 mt-1 w-40 overflow-hidden rounded-lg border border-line bg-bg-raised p-1 shadow-lg sm:w-56"
+          >
+            {children}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Đầu một mục: tên, số thư mục, mã gợi ý, và các việc studio làm với mục đó.
+ *
+ * Bày theo tần suất dùng (xem lại giao diện 25/09/2026): "Thêm thư mục" là
+ * việc chính nên là nút đậm; "Đọc lại Drive" hay bấm lúc vừa up ảnh nên để
+ * ngoài; còn sửa tên, đổi thứ tự, xoá mục thì nằm trong bảng "⋯".
  *
  * ĐỊA CHỈ TRANG KHÔNG ĐỔI THEO TÊN. Key sinh ra lúc tạo và giữ nguyên mãi —
  * đổi tên "Dạm ngõ" thành "Lễ dạm ngõ" thì link đã gửi khách vẫn sống, và các
@@ -159,12 +198,14 @@ function DauMuc({
   soThuMuc,
   dauDanh,
   cuoiDanh,
+  onThem,
 }: {
   nhom: NhomGioiThieu;
   m: Muc;
   soThuMuc: number;
   dauDanh: boolean;
   cuoiDanh: boolean;
+  onThem: () => void;
 }) {
   const router = useRouter();
   const [dangChay, batDau] = useTransition();
@@ -192,8 +233,7 @@ function DauMuc({
   if (sua) {
     return (
       <div className="w-full max-w-md">
-        <p className="eyebrow">{nhom.ten}</p>
-        <label className="mt-2 block">
+        <label className="block">
           <span className="eyebrow block">Tên mục</span>
           <input value={ten} onChange={(e) => setTen(e.target.value)} className="input mt-1" autoFocus />
         </label>
@@ -235,102 +275,113 @@ function DauMuc({
   }
 
   return (
-    <div>
-      <p className="eyebrow">{nhom.ten}</p>
-      <h2 className="mt-1 font-display text-2xl">
-        {m.ten}
-        <span className="ml-2 text-base text-fg-muted">{soThuMuc} thư mục</span>
-      </h2>
-      <p className="mt-1 text-xs text-fg-faint">
+    <div className="w-full">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <h2 className="font-display text-2xl leading-none">{m.ten}</h2>
+        {/* Con số nằm trong viên tròn: nhìn lướt là biết mục nào còn trống. */}
+        <span
+          className={`grid min-h-6 min-w-6 place-items-center rounded-full px-2 text-xs font-medium ${
+            soThuMuc > 0 ? "bg-fg text-bg" : "border border-line-strong text-fg-faint"
+          }`}
+        >
+          {soThuMuc}
+        </span>
+
+        <div className="ms-auto flex items-center gap-2">
+          {/*
+            Mục chưa có thư mục nào thì giấu nút đọc lại: nó chỉ đọc Drive của
+            những album ĐÃ chọn, mục trống bấm vào chẳng ra gì — bày một cái
+            nút không làm gì chỉ tổ làm người dùng nghi web hỏng.
+          */}
+          {soThuMuc > 0 && (
+          <button
+            type="button"
+            disabled={dangChay}
+            onClick={() =>
+              batDau(async () => {
+                const kq = await docLaiMucAction(nhom.key, m.key);
+                if (kq.loi) {
+                  setBao(kq.loi);
+                  setTimeout(() => setBao(null), 5000);
+                  return;
+                }
+                setBao(null);
+                setTin(
+                  kq.soMoi
+                    ? `Drive có ${kq.soMoi} thư mục chưa đưa lên trang — bấm “Thêm thư mục”.`
+                    : kq.capNhat
+                      ? `Đã cập nhật ${kq.capNhat} thẻ theo Drive.`
+                      : "Drive chưa có gì mới.",
+                );
+                setTimeout(() => setTin(null), 6000);
+                router.refresh();
+              })
+            }
+            className="btn min-h-9 gap-1.5 px-3 text-sm"
+          >
+            <span aria-hidden>↻</span>
+            {dangChay ? "Đang đọc…" : "Đọc lại Drive"}
+          </button>
+          )}
+          <button type="button" onClick={onThem} className="btn-primary min-h-9 gap-1.5 px-4 text-sm">
+            <span aria-hidden className="text-base leading-none">+</span>
+            Thêm thư mục
+          </button>
+
+          <MenuGon nhan={`Việc khác với mục ${m.ten}`}>
+            <button type="button" onClick={() => setSua(true)} className="muc-menu hover:bg-bg-soft">
+              Sửa tên, mã gợi ý
+            </button>
+            <button
+              type="button"
+              disabled={dauDanh || dangChay}
+              onClick={() => chay(() => doiThuTuMucAction(m.id, true))}
+              className="muc-menu hover:bg-bg-soft disabled:opacity-35"
+            >
+              Đưa lên trước
+            </button>
+            <button
+              type="button"
+              disabled={cuoiDanh || dangChay}
+              onClick={() => chay(() => doiThuTuMucAction(m.id, false))}
+              className="muc-menu hover:bg-bg-soft disabled:opacity-35"
+            >
+              Đẩy xuống sau
+            </button>
+            <button
+              type="button"
+              disabled={dangChay}
+              onClick={(e) => {
+                // Lần bấm đầu chỉ đổi chữ; bảng đóng lại thì coi như thôi.
+                if (!hoiXoa) {
+                  e.stopPropagation();
+                  setHoiXoa(true);
+                  setTimeout(() => setHoiXoa(false), 4000);
+                  return;
+                }
+                chay(() => xoaMucAction(m.id), () => setHoiXoa(false));
+              }}
+              className={`muc-menu ${hoiXoa ? "font-medium text-red-700" : "text-red-700/80"} hover:bg-red-50`}
+            >
+              {hoiXoa ? "Bấm lần nữa để xoá" : "Xoá mục này"}
+            </button>
+          </MenuGon>
+        </div>
+      </div>
+
+      <p className="mt-1.5 text-xs text-fg-faint">
         {m.ma.length ? `Gợi ý album có mã ${m.ma.join(", ")}` : "Chưa có mã riêng — chọn trong mọi album"}
         {soThuMuc > 0 && (
           <>
             {" · "}
             <a href={duongMuc(nhom, m)} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-accent">
-              xem trang
+              xem trang khách thấy
             </a>
           </>
         )}
       </p>
-
-      <div className="mt-2 flex flex-wrap items-center gap-3">
-        {/*
-          Nút này để biết THƯ MỤC MỚI đã sang tới web chưa (anh yêu cầu
-          25/09/2026). Khác nút "Đọc lại từ Drive" trên từng thẻ: thư mục vừa
-          tạo trên Drive thì chưa có thẻ nào để mà bấm, nên phải có nút ở mục.
-        */}
-        <button
-          type="button"
-          disabled={dangChay}
-          onClick={() =>
-            batDau(async () => {
-              const kq = await docLaiMucAction(nhom.key, m.key);
-              if (kq.loi) {
-                setBao(kq.loi);
-                setTimeout(() => setBao(null), 5000);
-                return;
-              }
-              setBao(null);
-              setTin(
-                kq.soMoi
-                  ? `Drive có ${kq.soMoi} thư mục chưa đưa lên trang — bấm “Thêm vào trang giới thiệu”.`
-                  : kq.capNhat
-                    ? `Đã cập nhật ${kq.capNhat} thẻ theo Drive.`
-                    : soThuMuc === 0
-                      ? "Mục này chưa có thư mục nào để đọc lại."
-                      : "Drive chưa có gì mới.",
-              );
-              setTimeout(() => setTin(null), 6000);
-              router.refresh();
-            })
-          }
-          className="text-xs text-fg-faint underline underline-offset-2 hover:text-accent disabled:opacity-35"
-        >
-          {dangChay ? "Đang đọc Drive…" : "↻ Đọc lại Drive"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setSua(true)}
-          className="text-xs text-fg-faint underline underline-offset-2 hover:text-accent"
-        >
-          Sửa tên, mã
-        </button>
-        <button
-          type="button"
-          disabled={dauDanh || dangChay}
-          onClick={() => chay(() => doiThuTuMucAction(m.id, true))}
-          className="text-xs text-fg-faint underline underline-offset-2 hover:text-accent disabled:opacity-35 disabled:no-underline"
-        >
-          ↑ Lên trước
-        </button>
-        <button
-          type="button"
-          disabled={cuoiDanh || dangChay}
-          onClick={() => chay(() => doiThuTuMucAction(m.id, false))}
-          className="text-xs text-fg-faint underline underline-offset-2 hover:text-accent disabled:opacity-35 disabled:no-underline"
-        >
-          ↓ Xuống sau
-        </button>
-        <button
-          type="button"
-          disabled={dangChay}
-          onClick={() => {
-            if (!hoiXoa) {
-              setHoiXoa(true);
-              setTimeout(() => setHoiXoa(false), 4000);
-              return;
-            }
-            chay(() => xoaMucAction(m.id), () => setHoiXoa(false));
-          }}
-          className={`text-xs underline underline-offset-2 ${
-            hoiXoa ? "font-medium text-red-700" : "text-fg-faint hover:text-red-700"
-          }`}
-        >
-          {hoiXoa ? "Bấm lần nữa để xoá mục" : "Xoá mục"}
-        </button>
-      </div>
-      {bao && <p className="mt-2 max-w-md text-xs text-red-700">{bao}</p>}
-      {tin && <p className="mt-2 max-w-md text-xs text-accent">{tin}</p>}
+      {bao && <p className="mt-2 text-xs text-red-700">{bao}</p>}
+      {tin && <p className="mt-2 text-xs text-accent">{tin}</p>}
     </div>
   );
 }
@@ -428,12 +479,17 @@ function TaoMucMoi({ nhom }: { nhom: NhomGioiThieu }) {
 
 /**
  * Một cảnh đã đưa lên trang: ảnh bìa, tên hiện cho khách, một dòng mô tả, và
- * mấy nút để studio tự lo về sau — anh yêu cầu 23/09/2026 cho Hamita Garden,
+ * mấy việc để studio tự lo về sau — anh yêu cầu 23/09/2026 cho Hamita Garden,
  * nơi mỗi thư mục trên Drive là một cảnh chụp.
  *
  * Tên và mô tả lưu khi RỜI Ô (blur), không có nút "Lưu": lưới này có cả chục
  * thẻ, mỗi thẻ một nút lưu thì không ai bấm đúng thẻ. Gõ xong bấm ra ngoài là
  * xong, và dòng "Đã lưu ✓" nói cho biết nó đã xong thật.
+ *
+ * GỌN LẠI 25/09/2026 (anh bảo xem lại giao diện): thẻ cũ cao 478px vì mang hai
+ * ô nhập có nhãn riêng, một dòng thông tin và hai đường dẫn chữ nhỏ — bốn thẻ
+ * là hết ba màn hình. Nay nhãn ô bỏ đi (chữ mờ trong ô đã nói rõ), ô mô tả chỉ
+ * mở khi cần, còn "Đổi bìa / Đọc lại / Gỡ" gom vào bảng "⋯" ngay trên ảnh.
  */
 function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: boolean; cuoiDanh: boolean }) {
   const router = useRouter();
@@ -442,6 +498,7 @@ function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: bool
   const [moBia, setMoBia] = useState(false);
   const [ten, setTen] = useState(d.tenHien ?? "");
   const [moTa, setMoTa] = useState(d.moTa ?? "");
+  const [moOMoTa, setMoOMoTa] = useState(!!d.moTa);
   const [bao, setBao] = useState<string | null>(null);
 
   /* Chỉ gọi máy chủ khi thật sự có gì đổi — rời ô mà không sửa gì thì thôi. */
@@ -470,16 +527,8 @@ function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: bool
           // eslint-disable-next-line @next/next/no-img-element
           <img src={`/api/img/${d.anhBia}?w=640`} alt="" loading="lazy" className="size-full object-cover" />
         )}
-        {/* Cùng kiểu nút "Đổi bìa" đè góc ảnh như thẻ album ở trang quản lý album. */}
-        <button
-          type="button"
-          onClick={() => setMoBia(true)}
-          className="absolute top-2 right-2 rounded-full bg-black/55 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition hover:bg-black/70"
-        >
-          Đổi bìa
-        </button>
 
-        {/* Kéo thứ tự: cảnh đẹp nhất lên đầu lưới bên trang khách. */}
+        {/* Sắp thứ tự: cảnh đẹp nhất lên đầu lưới bên trang khách. */}
         <div className="absolute top-2 left-2 flex gap-1">
           <button
             type="button"
@@ -500,6 +549,41 @@ function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: bool
             ↓
           </button>
         </div>
+
+        {/* Ba việc ít làm gom vào một bảng, khỏi chiếm hai dòng chữ dưới thẻ. */}
+        <div className="absolute top-2 right-2">
+          <MenuGon nhan={`Việc khác với ${d.tenHien || d.tenMuc}`}>
+            <button type="button" onClick={() => setMoBia(true)} className="muc-menu hover:bg-bg-soft">
+              Đổi ảnh bìa
+            </button>
+            {/*
+              Số ảnh là con số chụp lúc thêm thư mục vào trang. Up thêm ảnh lên
+              Drive thì con số cũ vẫn nằm đó — nút này đọc lại cho đúng, khỏi
+              phải gỡ ra thêm lại (và gỡ ra thêm lại thì mất luôn tên, mô tả).
+            */}
+            <button
+              type="button"
+              disabled={dangLuu}
+              onClick={() => chay(() => docLaiCanhAction(d.id))}
+              className="muc-menu hover:bg-bg-soft disabled:opacity-35"
+            >
+              {dangLuu ? "Đang đọc…" : "Đọc lại từ Drive"}
+            </button>
+            <button
+              type="button"
+              disabled={dangXoa}
+              onClick={() =>
+                start(async () => {
+                  await xoaAnhGioiThieuAction(d.id);
+                  router.refresh();
+                })
+              }
+              className="muc-menu text-red-700/80 hover:bg-red-50"
+            >
+              {dangXoa ? "Đang gỡ…" : "Gỡ khỏi trang"}
+            </button>
+          </MenuGon>
+        </div>
       </div>
 
       {moBia && (
@@ -513,69 +597,44 @@ function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: bool
         />
       )}
 
-      <div className="p-3">
-        <label className="block">
-          <span className="eyebrow block">Tên cảnh</span>
-          {/*
-            Để trống là LẤY TÊN THƯ MỤC TRÊN DRIVE (anh yêu cầu 25/09/2026) —
-            chữ mờ trong ô chính là cái tên khách sẽ đọc, nên nhìn ô là biết
-            ngay, và đổi tên thư mục trên Drive thì tên cảnh tự chạy theo.
-          */}
-          <input
-            value={ten}
-            onChange={(e) => setTen(e.target.value)}
-            onBlur={luuNeuDoi}
-            placeholder={d.tenMuc || d.tenAlbum}
-            className="input mt-1 text-sm"
-          />
-          {!ten.trim() && (
-            <span className="mt-1 block text-xs text-fg-faint">Đang lấy tên thư mục trên Drive</span>
-          )}
-        </label>
-        <label className="mt-2 block">
-          <span className="eyebrow block">Mô tả ngắn</span>
+      <div className="p-2.5">
+        {/*
+          Ô tên không còn nhãn "TÊN CẢNH" phía trên: chữ mờ trong ô đã là tên
+          thư mục Drive — tức đúng cái tên khách sẽ đọc nếu để trống.
+        */}
+        <input
+          value={ten}
+          onChange={(e) => setTen(e.target.value)}
+          onBlur={luuNeuDoi}
+          placeholder={d.tenMuc || d.tenAlbum}
+          aria-label="Tên cảnh khách đọc"
+          className="input text-sm"
+        />
+
+        {moOMoTa ? (
           <input
             value={moTa}
             onChange={(e) => setMoTa(e.target.value)}
             onBlur={luuNeuDoi}
-            placeholder="ví dụ: bối cảnh châu Âu, đẹp nhất buổi chiều"
-            className="input mt-1 text-sm"
+            placeholder="mô tả ngắn, ví dụ: đẹp nhất buổi chiều"
+            aria-label="Mô tả ngắn"
+            className="input mt-1.5 text-sm"
+            autoFocus={!d.moTa}
           />
-        </label>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setMoOMoTa(true)}
+            className="mt-1.5 text-xs text-fg-faint underline underline-offset-2 hover:text-accent"
+          >
+            + Thêm mô tả
+          </button>
+        )}
 
         <p className="mt-2 truncate text-xs text-fg-faint" title={`${d.tenAlbum} · ${d.tenMuc}`}>
-          Thư mục Drive: {d.tenMuc} · {d.soAnh} ảnh
+          {d.soAnh} ảnh · {d.tenMuc || d.tenAlbum}
         </p>
         {bao && <p className="mt-1 text-xs text-accent">{bao}</p>}
-
-        <div className="mt-2 flex flex-wrap items-center gap-3">
-          {/*
-            Số ảnh là con số chụp lúc thêm thư mục vào trang. Up thêm ảnh lên
-            Drive thì con số cũ vẫn nằm đó — nút này đọc lại cho đúng, khỏi
-            phải gỡ ra thêm lại (và gỡ ra thêm lại thì mất luôn tên, mô tả).
-          */}
-          <button
-            type="button"
-            disabled={dangLuu}
-            onClick={() => chay(() => docLaiCanhAction(d.id))}
-            className="text-xs text-fg-faint underline underline-offset-2 hover:text-accent"
-          >
-            {dangLuu ? "Đang đọc…" : "Đọc lại từ Drive"}
-          </button>
-          <button
-            type="button"
-            disabled={dangXoa}
-            onClick={() =>
-              start(async () => {
-                await xoaAnhGioiThieuAction(d.id);
-                router.refresh();
-              })
-            }
-            className="text-xs text-fg-faint underline underline-offset-2 hover:text-red-700"
-          >
-            {dangXoa ? "Đang gỡ…" : "Gỡ khỏi trang"}
-          </button>
-        </div>
       </div>
     </li>
   );
