@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { FadeIn } from "@/components/FadeIn";
 import { STUDIO } from "@/lib/studio";
 import { STUDIO_NAME } from "@/lib/constants";
-import { timMuc, timNhom } from "@/lib/nhomGioiThieu";
+import { docMuc, docNhom } from "@/lib/mucDichVu";
 import { docAnhThuMuc, mucDangCo, type AnhCongKhai } from "@/lib/anhGioiThieu";
 import { KhungDichVu, chuNhom } from "../../../KhungDichVu";
 
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ nhom: string; id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const nhom = timNhom((await params).nhom);
+  const nhom = await docNhom((await params).nhom);
   if (!nhom) return {};
   return { title: `${chuNhom(nhom).tieuDe} — ${STUDIO_NAME}`, robots: { index: false } };
 }
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /** Ảnh bên trong MỘT thư mục đã chọn — toàn bộ, tải dần khi cuộn. */
 export default async function AnhThuMucPage({ params }: Props) {
   const p = await params;
-  const nhom = timNhom(p.nhom);
+  const nhom = await docNhom(p.nhom);
   if (!nhom) notFound();
 
   let du: { muc: string; ten: string; anh: AnhCongKhai[] } | null = null;
@@ -34,7 +34,7 @@ export default async function AnhThuMucPage({ params }: Props) {
   if (!du && !driveLoi) notFound();
 
   const co = await mucDangCo(nhom.key);
-  const muc = du ? timMuc(nhom.key, du.muc) : undefined;
+  const muc = du ? await docMuc(nhom.key, du.muc) : undefined;
   // Nút quay lại: nhóm nhiều mục về đúng mục, nhóm một mục về trang nhóm.
   const quayLai =
     nhom.muc.length > 1 && muc

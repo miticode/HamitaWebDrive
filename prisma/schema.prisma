@@ -717,6 +717,29 @@ model CongViec {
 /// Chon tai trang quan ly "Trang gioi thieu" (/admin/gioi-thieu), anh yeu cau
 /// 17/09/2026. Tra theo MA thu muc (nguyen tac 32), giu kem ten va tam dau tien
 /// luc chon de trang quan ly hien duoc ma khong goi Drive (nguyen tac 9).
+/// Muc nho cua mot nhom dich vu tren trang gioi thieu (Dam ngo, Dinh hon...).
+///
+/// Truoc 25/09/2026 danh sach nay viet cung trong src/lib/nhomGioiThieu.ts, nen
+/// them mot muc phai sua ma nguon. Anh yeu cau tu tao duoc tren web nen chuyen
+/// vao day. Lan dau chay ma bang trong thi tu nap danh sach cu (MUC_MAC_DINH).
+model MucDichVu {
+  id     String   @id @default(cuid())
+  /// Key nhom (src/lib/nhomGioiThieu.ts) — nhom van co dinh, chi muc la mem.
+  nhom   String
+  /// Doan duong dan gui khach: /dich-vu/anh-cuoi/dam-ngo. KHONG doi sau khi tao
+  /// (link da gui khach se hong) va KHONG trung giua cac nhom, vi khoa khong
+  /// trung cua AnhGioiThieu chi theo (muc, galleryId, albumId).
+  key    String   @unique
+  ten    String
+  /// Ma dau ten album dung de GOI Y album khi them. Rong = hien moi album.
+  ma     String[] @default([])
+  /// So nho dung truoc. Cung so thi xep theo `taoLuc`.
+  thuTu  Int      @default(0)
+  taoLuc DateTime @default(now())
+
+  @@index([nhom, thuTu])
+}
+
 model AnhGioiThieu {
   id        String   @id @default(cuid())
   /// Nhom dich vu (src/lib/nhomGioiThieu.ts). Dong tao truoc 17/09 toi deu la anh cuoi.

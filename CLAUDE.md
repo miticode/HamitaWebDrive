@@ -360,9 +360,12 @@ nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
 
 - **Trang từng dịch vụ `/dich-vu/<nhóm>/<mục>`** (17/09/2026). Sáu nhóm khớp sáu
   thẻ "Hamita chụp gì?" — Ảnh cưới, Album & hình cổng, Hamita Garden, Bé & gia
-  đình, Váy cưới & trang điểm, Tiệm ảnh nhà Su — mục nhỏ và mã gợi ý ở
-  `NHOM_GIOI_THIEU` (`src/lib/nhomGioiThieu.ts`; key là đường dẫn gửi khách,
-  đừng đổi). Studio chọn THƯ MỤC CON ở `/admin/gioi-thieu` (tab theo nhóm →
+  đình, Váy cưới & trang điểm, Tiệm ảnh nhà Su — **nhóm cố định trong mã nguồn**
+  (`NHOM_GIOI_THIEU`, `src/lib/nhomGioiThieu.ts`), còn **mục nhỏ và mã gợi ý nằm
+  trong database** từ 25/09/2026 (bảng `MucDichVu`, đọc/ghi qua
+  `src/lib/mucDichVu.ts`) vì anh yêu cầu tự tạo mục trên web. Key mục là đường
+  dẫn gửi khách — sinh từ tên lúc tạo rồi **giữ nguyên mãi**, kể cả khi đổi tên
+  mục. Studio chọn THƯ MỤC CON ở `/admin/gioi-thieu` (tab theo nhóm →
   "Thêm vào trang giới thiệu" → album gợi ý theo mã → chọn thư mục; "Đổi bìa"
   trên từng thẻ). Bảng `AnhGioiThieu` (cột `nhom`, `muc`), tra theo MÃ thư mục,
   lưu kèm tên và tấm bìa để trang quản lý và trang danh sách không gọi Drive;
@@ -374,6 +377,19 @@ nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
   database thật — Prisma chặn lệnh đó khi trợ lý chạy, đừng lách. KHÔNG dẫn sang
   `/g/[slug]` của nhà khách (nguyên tắc 17). Nhãn và mô tả thẻ "Tiệm ảnh nhà Su"
   cố ý để trống chờ anh viết — đừng tự điền.
+
+  **STUDIO TỰ TẠO MỤC** (anh yêu cầu 25/09/2026): trong mỗi tab nhóm có thẻ
+  "Tạo mục mới", và mỗi mục có hàng *Sửa tên, mã · ↑ Lên trước · ↓ Xuống sau ·
+  Xoá mục*. Bốn điều phải giữ khi đụng vào phần này:
+  - **`MUC_MAC_DINH` chỉ là bản nạp lần đầu.** Bảng trống thì `napLanDau()`
+    chép nguyên nó vào database rồi thôi — sửa mảng đó sau này không đổi gì
+    trên web thật, muốn đổi phải sửa trong database.
+  - **Key mục vẫn không được trùng giữa các nhóm** (khoá không trùng của
+    `AnhGioiThieu` chỉ theo `muc`) — `themMuc` tự thêm `-2`, `-3` khi đụng.
+  - **Đổi tên KHÔNG đổi key**: link đã gửi khách phải sống, và các thư mục đã
+    chọn nối với mục qua key.
+  - **Xoá mục bị chặn khi còn thư mục bên trong** — báo số thư mục phải gỡ
+    trước, đừng xoá lặng lẽ thành dòng mồ côi.
 
   **MỖI THƯ MỤC LÀ MỘT CẢNH, studio tự đặt tên và sắp xếp** (anh yêu cầu
   23/09/2026 cho Hamita Garden): ba cột `tenHien`, `moTa`, `thuTu` trong

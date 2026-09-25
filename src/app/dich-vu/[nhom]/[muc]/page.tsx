@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { STUDIO_NAME } from "@/lib/constants";
-import { timMuc, timNhom } from "@/lib/nhomGioiThieu";
+import { docMuc, docNhom } from "@/lib/mucDichVu";
 import { docThuMucCongKhai, mucDangCo } from "@/lib/anhGioiThieu";
 import { KhungDichVu, LuoiThuMuc, chuNhom } from "../../KhungDichVu";
 
@@ -11,8 +11,8 @@ type Props = { params: Promise<{ nhom: string; muc: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = await params;
-  const nhom = timNhom(p.nhom);
-  const muc = timMuc(p.nhom, p.muc);
+  const nhom = await docNhom(p.nhom);
+  const muc = await docMuc(p.nhom, p.muc);
   if (!nhom || !muc) return {};
   const chu = chuNhom(nhom);
   return {
@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /** Một mục của nhóm (/dich-vu/anh-cuoi/nha-gai): các thẻ thư mục, bấm vào mới xem ảnh. */
 export default async function MucPage({ params }: Props) {
   const p = await params;
-  const nhom = timNhom(p.nhom);
-  const muc = timMuc(p.nhom, p.muc);
+  const nhom = await docNhom(p.nhom);
+  const muc = await docMuc(p.nhom, p.muc);
   if (!nhom || !muc) notFound();
   // Nhóm một mục không có đường mục riêng — gom về một địa chỉ.
   if (nhom.muc.length === 1) redirect(`/dich-vu/${nhom.key}`);

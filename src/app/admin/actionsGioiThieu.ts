@@ -12,6 +12,7 @@ import {
 } from "@/lib/anhGioiThieu";
 import { loadTree } from "@/lib/gallery";
 import { getPrisma } from "@/lib/db";
+import { doiThuTuMuc, suaMuc, themMuc, xoaMuc } from "@/lib/mucDichVu";
 
 /*
   Quyền: ai vào được trang quản lý album cũng làm được (quyenAlbum), cùng mức
@@ -131,4 +132,46 @@ export async function docLaiCanhAction(id: string): Promise<{ loi?: string; soAn
   } catch {
     return { loi: "Không đọc được Drive lúc này, anh chị thử lại sau ít phút." };
   }
+}
+
+/* ── Tự tạo mục mới trong một nhóm (anh yêu cầu 25/09/2026) ────────────── */
+
+/**
+ * Trước đây thêm một mục như "Dạm ngõ" phải sửa mã nguồn rồi đưa bản mới lên
+ * mạng. Nay studio tự làm trên trang quản lý — danh sách mục nằm trong bảng
+ * `MucDichVu` (src/lib/mucDichVu.ts).
+ *
+ * Cùng mức quyền với phần còn lại của trang (`quyenAlbum`). Việc nguy hiểm duy
+ * nhất là xoá, mà xoá đã bị chặn khi mục còn thư mục bên trong.
+ */
+export async function themMucAction(nhom: string, ten: string, ma: string): Promise<{ loi?: string }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  const kq = await themMuc(nhom, ten, ma);
+  if (kq.loi) return { loi: kq.loi };
+  lamMoi();
+  return {};
+}
+
+export async function suaMucAction(id: string, ten: string, ma: string): Promise<{ loi?: string }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  const kq = await suaMuc(id, ten, ma);
+  if (kq.loi) return kq;
+  lamMoi();
+  return {};
+}
+
+export async function doiThuTuMucAction(id: string, len: boolean): Promise<{ loi?: string }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  const kq = await doiThuTuMuc(id, len);
+  if (kq.loi) return kq;
+  lamMoi();
+  return {};
+}
+
+export async function xoaMucAction(id: string): Promise<{ loi?: string }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  const kq = await xoaMuc(id);
+  if (kq.loi) return kq;
+  lamMoi();
+  return {};
 }

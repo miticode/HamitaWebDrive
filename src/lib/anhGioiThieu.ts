@@ -1,6 +1,6 @@
 import { getPrisma } from "./db";
 import { loadTree, loadTreeMoi } from "./gallery";
-import { timMuc } from "./nhomGioiThieu";
+import { mucHopLe } from "./mucDichVu";
 import { tenKhongMa } from "./maAlbum";
 
 /** Một thư mục đã đưa lên trang giới thiệu, đủ để trang quản lý hiện mà không gọi Drive. */
@@ -70,7 +70,7 @@ export async function themThuMucGioiThieu(
   galleryId: string,
   albumId: string,
 ): Promise<{ loi?: string }> {
-  if (!timMuc(nhom, muc)) return { loi: "Mục không hợp lệ." };
+  if (!(await mucHopLe(nhom, muc))) return { loi: "Mục không hợp lệ." };
   const prisma = getPrisma();
   const g = await prisma.gallery.findUnique({
     where: { id: galleryId },

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { STUDIO_NAME } from "@/lib/constants";
-import { timNhom } from "@/lib/nhomGioiThieu";
+import { docNhom } from "@/lib/mucDichVu";
 import { docThuMucCongKhai, mucDangCo } from "@/lib/anhGioiThieu";
 import { KhungDichVu, LuoiThuMuc, chuNhom } from "../KhungDichVu";
 
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ nhom: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const nhom = timNhom((await params).nhom);
+  const nhom = await docNhom((await params).nhom);
   if (!nhom) return {};
   const chu = chuNhom(nhom);
   return {
@@ -31,17 +31,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * làm khách tưởng studio chưa chụp gì.
  */
 export default async function NhomPage({ params }: Props) {
-  const nhom = timNhom((await params).nhom);
+  const nhom = await docNhom((await params).nhom);
   if (!nhom) notFound();
   const co = await mucDangCo(nhom.key);
 
   if (nhom.muc.length > 1) {
-    const dau = nhom.muc.find((m) => co.has(m.key));
+    const dau = nhom.muc.find((m: { key: string }) => co.has(m.key));
     if (!dau) notFound();
     redirect(`/dich-vu/${nhom.key}/${dau.key}`);
   }
 
+  // Nhóm bị xoá hết mục ở trang quản lý thì coi như chưa có gì để khoe.
   const muc = nhom.muc[0];
+  if (!muc) notFound();
   const thuMuc = await docThuMucCongKhai(nhom.key, muc.key);
   if (thuMuc.length === 0) notFound();
 

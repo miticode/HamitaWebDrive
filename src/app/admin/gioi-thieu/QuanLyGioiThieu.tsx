@@ -3,15 +3,19 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { boDau } from "@/lib/constants";
-import { NHOM_GIOI_THIEU, coMa, type MucGioiThieu, type NhomGioiThieu } from "@/lib/nhomGioiThieu";
+import { coMa, type MucGioiThieu, type NhomGioiThieu } from "@/lib/nhomGioiThieu";
 import type { ThuMucGioiThieu } from "@/lib/anhGioiThieu";
 import {
   datTenCanhAction,
   docLaiCanhAction,
   docThuMucAlbumAction,
   doiThuTuCanhAction,
+  doiThuTuMucAction,
+  suaMucAction,
   themAnhGioiThieuAction,
+  themMucAction,
   xoaAnhGioiThieuAction,
+  xoaMucAction,
   type ThuMucChon,
 } from "../actionsGioiThieu";
 import { DoiBiaThuMuc } from "./DoiBiaThuMuc";
@@ -24,9 +28,17 @@ function duongMuc(nhom: NhomGioiThieu, muc: Muc) {
   return nhom.muc.length > 1 ? `/dich-vu/${nhom.key}/${muc.key}` : `/dich-vu/${nhom.key}`;
 }
 
-export function QuanLyGioiThieu({ albums, daChon }: { albums: AlbumGon[]; daChon: ThuMucGioiThieu[] }) {
-  const [nhomKey, setNhomKey] = useState<string>(NHOM_GIOI_THIEU[0].key);
-  const nhom = NHOM_GIOI_THIEU.find((n) => n.key === nhomKey) ?? NHOM_GIOI_THIEU[0];
+export function QuanLyGioiThieu({
+  albums,
+  daChon,
+  nhomDs,
+}: {
+  albums: AlbumGon[];
+  daChon: ThuMucGioiThieu[];
+  nhomDs: NhomGioiThieu[];
+}) {
+  const [nhomKey, setNhomKey] = useState<string>(nhomDs[0].key);
+  const nhom = nhomDs.find((n) => n.key === nhomKey) ?? nhomDs[0];
   const [dangMo, setDangMo] = useState<Muc | null>(null);
 
   return (
@@ -36,7 +48,7 @@ export function QuanLyGioiThieu({ albums, daChon }: { albums: AlbumGon[]; daChon
         chủ. Số bên cạnh là số thư mục đã chọn — nhìn là biết nhóm nào còn trống.
       */}
       <nav aria-label="Nhóm dịch vụ" className="mt-6 flex flex-wrap gap-2">
-        {NHOM_GIOI_THIEU.map((n) => {
+        {nhomDs.map((n) => {
           const dang = n.key === nhom.key;
           const so = daChon.filter((d) => d.nhom === n.key).length;
           return (
@@ -58,29 +70,18 @@ export function QuanLyGioiThieu({ albums, daChon }: { albums: AlbumGon[]; daChon
       </nav>
 
       <div className="mt-6 grid gap-6">
-        {(nhom.muc as readonly Muc[]).map((m) => {
+        {nhom.muc.map((m, iMuc) => {
           const ds = daChon.filter((d) => d.nhom === nhom.key && d.muc === m.key);
           return (
             <section key={m.key} className="card p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="eyebrow">{nhom.ten}</p>
-                  <h2 className="mt-1 font-display text-2xl">
-                    {m.ten}
-                    <span className="ml-2 text-base text-fg-muted">{ds.length} thư mục</span>
-                  </h2>
-                  <p className="mt-1 text-xs text-fg-faint">
-                    {m.ma.length ? `Gợi ý album có mã ${m.ma.join(", ")}` : "Chưa có mã riêng — chọn trong mọi album"}
-                    {ds.length > 0 && (
-                      <>
-                        {" · "}
-                        <a href={duongMuc(nhom, m)} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-accent">
-                          xem trang
-                        </a>
-                      </>
-                    )}
-                  </p>
-                </div>
+                <DauMuc
+                  nhom={nhom}
+                  m={m}
+                  soThuMuc={ds.length}
+                  dauDanh={iMuc === 0}
+                  cuoiDanh={iMuc === nhom.muc.length - 1}
+                />
                 <button type="button" onClick={() => setDangMo(m)} className="btn-primary min-h-11 gap-2 px-5">
                   <span aria-hidden className="text-lg leading-none">+</span>
                   Thêm vào trang giới thiệu
@@ -106,6 +107,8 @@ export function QuanLyGioiThieu({ albums, daChon }: { albums: AlbumGon[]; daChon
             </section>
           );
         })}
+
+        <TaoMucMoi nhom={nhom} />
       </div>
 
       {dangMo && (
@@ -118,6 +121,253 @@ export function QuanLyGioiThieu({ albums, daChon }: { albums: AlbumGon[]; daChon
         />
       )}
     </>
+  );
+}
+
+/**
+ * Tiêu đề một mục, kèm mấy việc studio tự làm từ 25/09/2026: đổi tên, đổi mã
+ * gợi ý, sắp thứ tự, xoá mục.
+ *
+ * ĐỊA CHỈ TRANG KHÔNG ĐỔI THEO TÊN. Key sinh ra lúc tạo và giữ nguyên mãi —
+ * đổi tên "Dạm ngõ" thành "Lễ dạm ngõ" thì link đã gửi khách vẫn sống, và các
+ * thư mục đã chọn vẫn nằm đúng chỗ.
+ *
+ * Xoá đi hai nhịp (bấm lần nữa để chắc) thay vì hộp thoại hỏi lại: mục rỗng
+ * xoá nhầm cũng chỉ mất một cái tên, còn mục còn thư mục thì máy chủ đã chặn.
+ */
+function DauMuc({
+  nhom,
+  m,
+  soThuMuc,
+  dauDanh,
+  cuoiDanh,
+}: {
+  nhom: NhomGioiThieu;
+  m: Muc;
+  soThuMuc: number;
+  dauDanh: boolean;
+  cuoiDanh: boolean;
+}) {
+  const router = useRouter();
+  const [dangChay, batDau] = useTransition();
+  const [sua, setSua] = useState(false);
+  const [ten, setTen] = useState(m.ten);
+  const [ma, setMa] = useState(m.ma.join(", "));
+  const [hoiXoa, setHoiXoa] = useState(false);
+  const [bao, setBao] = useState<string | null>(null);
+
+  const chay = (viec: () => Promise<{ loi?: string }>, xong?: () => void) =>
+    batDau(async () => {
+      const kq = await viec();
+      if (kq.loi) {
+        setBao(kq.loi);
+        setTimeout(() => setBao(null), 5000);
+        return;
+      }
+      setBao(null);
+      xong?.();
+      router.refresh();
+    });
+
+  if (sua) {
+    return (
+      <div className="w-full max-w-md">
+        <p className="eyebrow">{nhom.ten}</p>
+        <label className="mt-2 block">
+          <span className="eyebrow block">Tên mục</span>
+          <input value={ten} onChange={(e) => setTen(e.target.value)} className="input mt-1" autoFocus />
+        </label>
+        <label className="mt-2 block">
+          <span className="eyebrow block">Mã album gợi ý</span>
+          <input
+            value={ma}
+            onChange={(e) => setMa(e.target.value)}
+            placeholder="ví dụ: DN, ĐH — để trống thì hiện mọi album"
+            className="input mt-1"
+          />
+        </label>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={dangChay}
+            onClick={() => chay(() => suaMucAction(m.id, ten, ma), () => setSua(false))}
+            className="btn-primary min-h-10 px-4"
+          >
+            {dangChay ? "Đang lưu…" : "Lưu"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setTen(m.ten);
+              setMa(m.ma.join(", "));
+              setSua(false);
+              setBao(null);
+            }}
+            className="btn min-h-10 px-4"
+          >
+            Thôi
+          </button>
+          <span className="text-xs text-fg-faint">Địa chỉ trang giữ nguyên: /{m.key}</span>
+        </div>
+        {bao && <p className="mt-2 text-xs text-red-700">{bao}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="eyebrow">{nhom.ten}</p>
+      <h2 className="mt-1 font-display text-2xl">
+        {m.ten}
+        <span className="ml-2 text-base text-fg-muted">{soThuMuc} thư mục</span>
+      </h2>
+      <p className="mt-1 text-xs text-fg-faint">
+        {m.ma.length ? `Gợi ý album có mã ${m.ma.join(", ")}` : "Chưa có mã riêng — chọn trong mọi album"}
+        {soThuMuc > 0 && (
+          <>
+            {" · "}
+            <a href={duongMuc(nhom, m)} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-accent">
+              xem trang
+            </a>
+          </>
+        )}
+      </p>
+
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setSua(true)}
+          className="text-xs text-fg-faint underline underline-offset-2 hover:text-accent"
+        >
+          Sửa tên, mã
+        </button>
+        <button
+          type="button"
+          disabled={dauDanh || dangChay}
+          onClick={() => chay(() => doiThuTuMucAction(m.id, true))}
+          className="text-xs text-fg-faint underline underline-offset-2 hover:text-accent disabled:opacity-35 disabled:no-underline"
+        >
+          ↑ Lên trước
+        </button>
+        <button
+          type="button"
+          disabled={cuoiDanh || dangChay}
+          onClick={() => chay(() => doiThuTuMucAction(m.id, false))}
+          className="text-xs text-fg-faint underline underline-offset-2 hover:text-accent disabled:opacity-35 disabled:no-underline"
+        >
+          ↓ Xuống sau
+        </button>
+        <button
+          type="button"
+          disabled={dangChay}
+          onClick={() => {
+            if (!hoiXoa) {
+              setHoiXoa(true);
+              setTimeout(() => setHoiXoa(false), 4000);
+              return;
+            }
+            chay(() => xoaMucAction(m.id), () => setHoiXoa(false));
+          }}
+          className={`text-xs underline underline-offset-2 ${
+            hoiXoa ? "font-medium text-red-700" : "text-fg-faint hover:text-red-700"
+          }`}
+        >
+          {hoiXoa ? "Bấm lần nữa để xoá mục" : "Xoá mục"}
+        </button>
+      </div>
+      {bao && <p className="mt-2 max-w-md text-xs text-red-700">{bao}</p>}
+    </div>
+  );
+}
+
+/**
+ * Tạo mục mới trong nhóm đang xem — anh yêu cầu 25/09/2026 (trước đó thêm
+ * "Dạm ngõ" hay "Đính hôn" phải sửa mã nguồn rồi đưa bản mới lên mạng).
+ *
+ * Địa chỉ trang tự sinh từ tên, không bắt studio nghĩ thêm; trùng thì máy chủ
+ * tự thêm số vào đuôi.
+ */
+function TaoMucMoi({ nhom }: { nhom: NhomGioiThieu }) {
+  const router = useRouter();
+  const [mo, setMo] = useState(false);
+  const [ten, setTen] = useState("");
+  const [ma, setMa] = useState("");
+  const [bao, setBao] = useState<string | null>(null);
+  const [dangChay, batDau] = useTransition();
+
+  const tao = () =>
+    batDau(async () => {
+      const kq = await themMucAction(nhom.key, ten, ma);
+      if (kq.loi) {
+        setBao(kq.loi);
+        return;
+      }
+      setTen("");
+      setMa("");
+      setBao(null);
+      setMo(false);
+      router.refresh();
+    });
+
+  if (!mo) {
+    return (
+      <button
+        type="button"
+        onClick={() => setMo(true)}
+        className="rounded-lg border border-dashed border-line-strong bg-bg-raised/50 px-5 py-6 text-sm text-fg-muted transition hover:border-accent hover:text-fg"
+      >
+        <span aria-hidden className="mr-2 text-lg leading-none">+</span>
+        Tạo mục mới trong “{nhom.ten}”
+      </button>
+    );
+  }
+
+  return (
+    <section className="card border-dashed p-5 sm:p-6">
+      <p className="eyebrow">{nhom.ten}</p>
+      <h2 className="mt-1 font-display text-2xl">Mục mới</h2>
+      <div className="mt-4 grid max-w-md gap-3">
+        <label className="block">
+          <span className="eyebrow block">Tên mục</span>
+          <input
+            value={ten}
+            onChange={(e) => setTen(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && ten.trim() && tao()}
+            placeholder="ví dụ: Lễ vu quy"
+            className="input mt-1"
+            autoFocus
+          />
+        </label>
+        <label className="block">
+          <span className="eyebrow block">Mã album gợi ý</span>
+          <input
+            value={ma}
+            onChange={(e) => setMa(e.target.value)}
+            placeholder="ví dụ: VQ — để trống thì ô chọn hiện mọi album"
+            className="input mt-1"
+          />
+          <span className="mt-1 block text-xs text-fg-faint">
+            Mã là mấy chữ đầu tên album trên Drive, dùng để lọc sẵn album cho anh chị đỡ phải tìm.
+          </span>
+        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" disabled={dangChay || !ten.trim()} onClick={tao} className="btn-primary min-h-11 px-5">
+            {dangChay ? "Đang tạo…" : "Tạo mục"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMo(false);
+              setBao(null);
+            }}
+            className="btn min-h-11 px-4"
+          >
+            Thôi
+          </button>
+        </div>
+        {bao && <p className="text-xs text-red-700">{bao}</p>}
+      </div>
+    </section>
   );
 }
 

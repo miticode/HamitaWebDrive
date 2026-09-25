@@ -374,6 +374,37 @@ Hôm 23/09 anh gặp đúng cảnh đó ở "lâu đài": bìa lưu trong web tr
 bìa hỏng được thay bằng ảnh đầu tiên còn lại. Câu báo lỗi cũng đã viết lại cho
 rõ phải làm gì thay vì chỉ nói "không nằm trong thư mục".
 
+### Tự tạo mục trong trang giới thiệu (25/09)
+
+Trước hôm nay, muốn thêm một mục như "Dạm ngõ" hay "Đính hôn" là phải sửa mã
+nguồn rồi đưa bản mới lên mạng — tức phải nhờ tới em. Nay anh tự làm ở
+[/admin/gioi-thieu](https://www.hamitastudio.com/admin/gioi-thieu).
+
+**Tạo mục:** chọn tab nhóm (Ảnh cưới, Bé & gia đình…), kéo xuống cuối bấm
+**"Tạo mục mới trong …"**. Điền hai ô:
+
+- **Tên mục** — chữ khách đọc, ví dụ *Lễ vu quy*.
+- **Mã album gợi ý** — mấy chữ đầu tên album trên Drive, ví dụ *VQ*. Để trống
+  thì lúc bấm "Thêm vào trang giới thiệu" ô chọn hiện mọi album; điền vào thì
+  nó lọc sẵn cho đỡ phải tìm. Nhiều mã thì cách nhau bằng dấu phẩy.
+
+**Sửa về sau:** mỗi mục có hàng chữ nhỏ *Sửa tên, mã · ↑ Lên trước · ↓ Xuống
+sau · Xoá mục*. Thứ tự này đúng là thứ tự hàng nút khách thấy trên trang.
+
+Ba điều đáng biết:
+
+1. **Đổi tên không làm hỏng link đã gửi khách.** Địa chỉ trang sinh ra lúc tạo
+   (`/dich-vu/anh-cuoi/le-vu-quy`) và giữ nguyên mãi, dù sau này anh đổi tên
+   thành "Lễ vu quy nhà gái".
+2. **Xoá mục còn thư mục thì web không cho**, nó báo còn bao nhiêu thư mục phải
+   gỡ trước — tránh xoá nhầm mất công anh đã chọn ảnh.
+3. **Mục chưa có thư mục nào thì khách không thấy**, y như cũ. Tạo mục xong nhớ
+   bấm "Thêm vào trang giới thiệu" thì nó mới lên trang.
+
+Nhóm thì vẫn sáu cái cố định (đúng sáu thẻ lưới "Hamita chụp gì?" ở trang chủ)
+vì mỗi thẻ có ảnh và chữ riêng trên trang chủ. Muốn thêm nhóm thứ bảy thì nói
+em.
+
 ### Lập hợp đồng bằng cửa sổ, không nhảy trang (23/09)
 
 Anh yêu cầu: bấm **Lập hợp đồng** thì hiện cửa sổ ngay trên trang danh sách,

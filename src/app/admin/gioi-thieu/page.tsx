@@ -5,6 +5,7 @@ import { quyenAlbum } from "@/lib/quyenAlbum";
 import { databaseIsConfigured } from "@/lib/db";
 import { listGalleries } from "@/lib/store";
 import { docThuMucGioiThieu } from "@/lib/anhGioiThieu";
+import { docNhomCoMuc } from "@/lib/mucDichVu";
 import { NutDoiTong } from "../NutDoiTong";
 import { QuanLyGioiThieu } from "./QuanLyGioiThieu";
 
@@ -30,7 +31,7 @@ export default async function GioiThieuPage() {
     );
   }
 
-  const [galleries, daChon] = await Promise.all([listGalleries(), docThuMucGioiThieu()]);
+  const [galleries, daChon, nhomDs] = await Promise.all([listGalleries(), docThuMucGioiThieu(), docNhomCoMuc()]);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6 sm:py-12">
@@ -63,6 +64,7 @@ export default async function GioiThieuPage() {
           ngayTao: g.createdAt,
         }))}
         daChon={daChon}
+        nhomDs={nhomDs}
       />
     </main>
   );
