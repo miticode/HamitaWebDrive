@@ -30,6 +30,9 @@ export const MA_ALBUM: readonly MaAlbum[] = [
   { ma: "HIS", nghia: "nhà trai" },
   { ma: "HER", nghia: "nhà gái" },
   { ma: "Baby", nghia: "chụp bé" },
+  /* Anh thêm 25/09/2026, cùng nhóm Hami Baby Studio với `Baby` và `GD`. */
+  { ma: "NP", nghia: "sơ sinh" },
+  { ma: "Bầu", nghia: "chụp bầu" },
   { ma: "GD", nghia: "gia đình" },
   { ma: "NS", nghia: "nhà Su" },
   { ma: "DN", nghia: "dạm ngõ" },
