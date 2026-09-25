@@ -461,13 +461,21 @@ function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: bool
       <div className="p-3">
         <label className="block">
           <span className="eyebrow block">Tên cảnh</span>
+          {/*
+            Để trống là LẤY TÊN THƯ MỤC TRÊN DRIVE (anh yêu cầu 25/09/2026) —
+            chữ mờ trong ô chính là cái tên khách sẽ đọc, nên nhìn ô là biết
+            ngay, và đổi tên thư mục trên Drive thì tên cảnh tự chạy theo.
+          */}
           <input
             value={ten}
             onChange={(e) => setTen(e.target.value)}
             onBlur={luuNeuDoi}
-            placeholder={d.tenAlbum}
+            placeholder={d.tenMuc || d.tenAlbum}
             className="input mt-1 text-sm"
           />
+          {!ten.trim() && (
+            <span className="mt-1 block text-xs text-fg-faint">Đang lấy tên thư mục trên Drive</span>
+          )}
         </label>
         <label className="mt-2 block">
           <span className="eyebrow block">Mô tả ngắn</span>

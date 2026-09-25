@@ -347,8 +347,10 @@ cảnh mới thì tạo thư mục mới rồi up ảnh vào, không cần đụ
 
 **Bốn thứ em vừa thêm ở trang quản lý giới thiệu** để anh tự lo phần còn lại:
 
-1. **Tên cảnh** — ô gõ ngay trên thẻ. Khách đọc tên này, không đọc tên thư mục
-   Drive. Để trống thì lấy tên album như cũ.
+1. **Tên cảnh** — ô gõ ngay trên thẻ. *(Sửa 25/09: để trống thì **tự lấy tên
+   thư mục trên Drive**, chữ mờ trong ô chính là cái tên khách sẽ đọc. Đổi tên
+   thư mục trên Drive rồi bấm "Đọc lại từ Drive" là tên cảnh chạy theo. Chỉ gõ
+   vào ô khi muốn khách đọc tên khác tên thư mục.)*
 2. **Mô tả ngắn** — một dòng dưới tên, ví dụ *"Bối cảnh châu Âu, đẹp nhất buổi
    chiều"*. Hiện đè lên ảnh trong lưới, cắt một dòng cho khỏi che hình.
 3. **Sắp thứ tự** — hai mũi tên ↑ ↓ ở góc ảnh, đưa cảnh đẹp nhất lên đầu.

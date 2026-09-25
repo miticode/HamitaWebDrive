@@ -395,10 +395,14 @@ nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
   23/09/2026 cho Hamita Garden): ba cột `tenHien`, `moTa`, `thuTu` trong
   `AnhGioiThieu`, sửa ngay trên thẻ ở `/admin/gioi-thieu`. Ba điều đáng nhớ:
 
-  - **Tên khách đọc KHÔNG phải tên thư mục Drive.** Thứ tự ưu tiên trong
-    `docThuMucCongKhai`: `tenHien` studio gõ → tên album đã bỏ mã. Tên thư mục
-    Drive cố ý không bao giờ hiện cho khách vì nó là tên nội bộ, hay ra kiểu
-    "All View HamitaGarden" hay "canh 1".
+  - **Tên khách đọc: `tenHien` studio gõ → TÊN THƯ MỤC DRIVE → tên album đã bỏ
+    mã** (`docThuMucCongKhai` và `docAnhThuMuc`, cùng một thứ tự). Bậc giữa là
+    anh yêu cầu 25/09/2026; hôm 23/09 chỗ này bỏ qua tên thư mục vì sợ tên nội
+    bộ kiểu "All View HamitaGarden", nhưng từ khi Hamita Garden chia theo cảnh
+    thì **tên thư mục chính là tên cảnh** ("Lâu Đài", "Tiệc Rượu Đài Phun"),
+    còn lấy tên album thì mọi cảnh đều ra "Hamita Garden" giống hệt nhau. Ô
+    "Tên cảnh" ở trang quản lý để trống = chạy theo Drive, chữ mờ trong ô
+    chính là tên khách sẽ đọc.
   - **Nút "Đọc lại từ Drive"** (`docLaiThuMucGioiThieu`) cập nhật số ảnh khi
     studio up thêm — trước đó phải gỡ ra thêm lại, mà gỡ ra là **mất luôn tên
     và mô tả đã gõ**. Ảnh bìa giữ nguyên nếu tấm đó còn trong thư mục: đó là

@@ -164,12 +164,15 @@ export async function docThuMucCongKhai(nhom: string, muc: string) {
     /*
       Tên hiện cho khách, theo thứ tự ưu tiên:
       1. Tên studio tự đặt ở trang quản lý — thứ duy nhất được gõ CHO KHÁCH ĐỌC.
-      2. Không đặt thì lấy tên album (bỏ mã nội bộ đi), như trước giờ.
-
-      Tên THƯ MỤC trên Drive cố ý không dùng tới: nó là tên nội bộ, hay ra kiểu
-      "All View HamitaGarden" hay "canh 1".
+      2. TÊN THƯ MỤC TRÊN DRIVE (anh yêu cầu 25/09/2026). Hôm 23/09 chỗ này lấy
+         tên album vì thư mục hay mang tên nội bộ kiểu "All View HamitaGarden";
+         nhưng từ khi anh chia Hamita Garden theo cảnh thì tên thư mục CHÍNH LÀ
+         tên cảnh ("Lâu Đài", "Tiệc Rượu Đài Phun"), mà lấy tên album thì mười
+         cảnh đều ra "Hamita Garden" giống hệt nhau. Để trống ô tên cảnh là tên
+         tự chạy theo Drive: đổi tên thư mục rồi bấm "Đọc lại từ Drive" là xong.
+      3. Ảnh nằm ngay thư mục gốc (tenMuc rỗng) thì mới lấy tên album.
     */
-    ten: d.tenHien?.trim() || tenKhongMa(d.gallery.clientName ?? d.gallery.title),
+    ten: d.tenHien?.trim() || d.tenMuc.trim() || tenKhongMa(d.gallery.clientName ?? d.gallery.title),
     moTa: d.moTa?.trim() || null,
     anhBia: d.anhBia,
     soAnh: d.soAnh,
@@ -195,8 +198,9 @@ export async function docAnhThuMuc(nhom: string, id: string) {
   }));
   return {
     muc: d.muc,
-    // Tên cảnh studio đặt đứng trước, y như ở lưới ngoài (cùng yêu cầu 23/09).
-    ten: d.tenHien?.trim() || tenKhongMa(d.gallery.clientName ?? d.gallery.title),
+    // Cùng thứ tự ưu tiên với lưới ngoài: tên studio đặt → tên thư mục Drive →
+    // tên album (xem chú thích ở `docThuMucCongKhai`).
+    ten: d.tenHien?.trim() || d.tenMuc.trim() || tenKhongMa(d.gallery.clientName ?? d.gallery.title),
     anh,
   };
 }
