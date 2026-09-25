@@ -181,6 +181,20 @@ export default async function Home() {
             <p className="mt-6 max-w-lg text-[15px] leading-[1.85] text-fg-muted">{LOI_KE.moDau}</p>
             <p className="mt-6 text-[11px] font-medium tracking-[0.2em] text-accent uppercase">{DAU_TRANG.dongPhu}</p>
 
+            {/*
+              Bốn cái tên studio đang dùng (anh yêu cầu 25/09/2026). Để dạng
+              thẻ viền chứ KHÔNG phải một dòng chữ hoa nữa: ngay trên đã có một
+              dòng chữ hoa màu nhấn rồi, thêm dòng thứ hai cùng kiểu thì hai
+              dòng tranh nhau, mắt không biết đọc cái nào trước.
+            */}
+            <ul className="mt-4 flex flex-wrap gap-2">
+              {DAU_TRANG.thuongHieu.map((t) => (
+                <li key={t} className="rounded-full border border-line-strong px-3 py-1 text-xs text-fg-muted">
+                  {t}
+                </li>
+              ))}
+            </ul>
+
             <div className="mt-8 flex flex-wrap gap-3">
               <a href={STUDIO.zalo} target="_blank" rel="noreferrer" className={NUT_CHINH}>
                 <IconChat /> Nhắn Zalo

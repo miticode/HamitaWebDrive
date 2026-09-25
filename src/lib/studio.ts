@@ -118,6 +118,12 @@ export const LOI_KE = {
  */
 export const DAU_TRANG = {
   dongPhu: "Hai cơ sở · Phim trường riêng · Trọn gói ngày cưới",
+  /*
+    Bon cai ten studio dang dung, anh yeu cau ghi ngay dau trang 25/09/2026 —
+    khach den tu Facebook cua mot nhanh can biet ba nhanh kia cung la Hamita.
+    Thu tu theo dung loi anh dan.
+  */
+  thuongHieu: ["Hamita Wedding", "Hami Baby Studio", "Tiệm ảnh nhà Su", "Hamita Garden"],
 } as const;
 
 /**
