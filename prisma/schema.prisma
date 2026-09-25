@@ -360,10 +360,37 @@ model NhanVien {
   /// false = da nghi viec: khong dang nhap duoc nua, moi phien bi xoa.
   dangLam     Boolean   @default(true)
   dangNhapLuc DateTime?
+
+  /// Hien nguoi nay o khu "Doi ngu" tren trang gioi thieu cong khai (anh yeu
+  /// cau 25/09/2026). Mac dinh TAT: danh sach nhan vien la du lieu noi bo,
+  /// dua ai len trang la quyet dinh cua quan ly.
+  hienTrenTrang Boolean @default(false)
+  /// So nho dung truoc trong khu do. Cung so thi xep theo ngay vao lam.
+  thuTuHien     Int     @default(0)
+
   taoLuc      DateTime  @default(now())
   capNhatLuc  DateTime  @updatedAt
 
   phien PhienDangNhap[]
+  anh   AnhNhanVien?
+}
+
+/// Anh dai dien nhan vien tu tai len o trang "Tai khoan cua toi".
+///
+/// BANG RIENG chu khong phai mot cot trong NhanVien: moi truy van nhan vien
+/// (danh sach, dang nhap, cham cong) se keo theo vai chuc KB anh moi dong neu
+/// de chung — ma gan het cac cho do khong can anh.
+///
+/// Anh da nen san o trinh duyet truoc khi gui len (320x320, JPEG) nen chi con
+/// vai chuc KB. Khong dung Google Drive: quyen hien tai chi doc, bat them
+/// quyen ghi la phai xin lai ca tai khoan Google cua studio.
+model AnhNhanVien {
+  nhanVienId String   @id
+  /// Du lieu anh. Kieu luon la image/jpeg (canvas o trinh duyet xuat ra vay).
+  duLieu     Bytes
+  capNhatLuc DateTime @updatedAt
+
+  nhanVien NhanVien @relation(fields: [nhanVienId], references: [id], onDelete: Cascade)
 }
 
 /// Mot lan dang nhap dang con hieu luc cua mot nhan vien.

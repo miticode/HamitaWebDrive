@@ -8,6 +8,7 @@ import {
   ANH_BIA,
   CO_SO,
   DAU_TRANG,
+  DOI_NGU,
   DICH_VU,
   HAMI_BABY,
   LOI_KE,
@@ -18,6 +19,7 @@ import {
 } from "@/lib/studio";
 import { docAnhNhom, docThuMucGioiThieu } from "@/lib/anhGioiThieu";
 import { docNhomCoMuc } from "@/lib/mucDichVu";
+import { docDoiNgu } from "@/lib/doiNgu";
 import { NHOM_GIOI_THIEU } from "@/lib/nhomGioiThieu";
 import { NavGioiThieu } from "./NavGioiThieu";
 import { AnhBiaChay } from "./AnhBiaChay";
@@ -71,7 +73,7 @@ export default async function Home() {
     mục (chỉ đọc database). Riêng khu phim trường đọc ảnh thật trong thư mục
     (lời gọi Drive duy nhất của trang, cache 5 phút chung với trang khách).
   */
-  const [thuMucGioiThieu, nhomCoMuc] = await Promise.all([docThuMucGioiThieu(), docNhomCoMuc()]);
+  const [thuMucGioiThieu, nhomCoMuc, doiNgu] = await Promise.all([docThuMucGioiThieu(), docNhomCoMuc(), docDoiNgu()]);
   const nhomCuaKhu = (khu: string) => NHOM_GIOI_THIEU.find((n) => n.khu === khu);
 
   /*
@@ -619,6 +621,52 @@ export default async function Home() {
           {anhBaby.length > 0 && <LuoiAnh ds={anhBaby} khung="aspect-[3/4]" />}
         </div>
       </section>
+
+      {/*
+        ── Đội ngũ ────────────────────────────────────────────────────────
+        Anh yêu cầu 25/09/2026. Danh sách lấy thẳng từ mục Nhân viên của CRM,
+        chỉ hiện người quản lý đã bật cờ "trang giới thiệu" và còn đang làm —
+        không gõ lại một danh sách thứ hai để rồi hai bên lệch nhau.
+
+        Cả khu TỰ ẨN khi chưa ai được bật: một khu trống với cái tiêu đề trơ
+        trọi còn tệ hơn là không có.
+      */}
+      {doiNgu.length > 0 && (
+        <section id="doi-ngu" className="scroll-mt-16 border-t border-line">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28">
+            <FadeIn>
+              <DauMuc nhan="Đội ngũ" tieuDe={DOI_NGU.tieuDe} moTa={DOI_NGU.moTa} giua />
+            </FadeIn>
+            <ul className="mt-12 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+              {doiNgu.map((n, i) => (
+                <FadeIn key={n.id} cham={i * 60}>
+                  <li className="text-center">
+                    <div className="mx-auto size-28 overflow-hidden rounded-full border border-line bg-bg-soft sm:size-32">
+                      {n.coAnh ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={`/api/anh-nv/${n.id}`}
+                          alt={n.ten}
+                          loading="lazy"
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        /* Chưa tự thêm ảnh: chữ cái đầu tên trên nền màu nhấn
+                           nhạt — ô xám trống trông như ảnh hỏng. */
+                        <span className="grid size-full place-items-center bg-accent-soft font-display text-3xl text-accent">
+                          {n.ten.trim().slice(0, 1).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-4 font-display text-lg leading-tight">{n.ten}</p>
+                    <p className="mt-1 text-xs tracking-wide text-fg-muted">{n.vaiTro}</p>
+                  </li>
+                </FadeIn>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {/* ── Dải kêu gọi bo tròn ───────────────────────────────────────── */}
       <section className="px-5 pb-20 sm:px-6 sm:pb-28">

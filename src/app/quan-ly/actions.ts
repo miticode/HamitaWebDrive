@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { databaseIsConfigured, getPrisma } from "@/lib/db";
+import { doiHienTrenTrang } from "@/lib/doiNgu";
 import { dangXuatMoiMay, signIn, signOut } from "@/lib/auth";
 import {
   clearFailures,
@@ -394,5 +395,21 @@ export async function suaNhanVienAction(
     chiTiet: { ten: cu.ten, doi },
   });
   revalidatePath("/quan-ly/nhan-vien");
+  return {};
+}
+
+/**
+ * Bật/tắt hiện một người ở khu "Đội ngũ" trên trang giới thiệu (anh yêu cầu
+ * 25/09/2026). CHỈ QUẢN LÝ: đưa tên và mặt một người ra trang công khai là
+ * quyết định của studio, không phải của chính người đó.
+ */
+export async function doiHienTrenTrangAction(id: string, hien: boolean): Promise<{ loi?: string }> {
+  const nguoi = await layNguoiDung();
+  if (!laQuanTri(nguoi)) return { loi: "Chỉ quản lý mới đổi được mục này." };
+
+  const kq = await doiHienTrenTrang(id, hien);
+  if (kq.loi) return kq;
+  revalidatePath("/quan-ly/nhan-vien");
+  revalidatePath("/");
   return {};
 }

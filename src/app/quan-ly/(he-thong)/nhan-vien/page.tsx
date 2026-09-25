@@ -3,6 +3,7 @@ import { getPrisma } from "@/lib/db";
 import { MUI_GIO } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { HangNhanVien, ThemNhanVien } from "./HangNhanVien";
+import { NutHienTrang } from "./NutHienTrang";
 import { NutDangXuatMoiMay } from "./NutDangXuatMoiMay";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +36,9 @@ export default async function NhanVienPage({ searchParams }: Props) {
 
   const tatCa = await getPrisma().nhanVien.findMany({
     orderBy: [{ dangLam: "desc" }, { phongBan: "asc" }, { ten: "asc" }],
+    // Chỉ lấy khoá của bảng ảnh, KHÔNG lấy dữ liệu ảnh: danh sách này có thể
+    // vài chục người, kéo theo từng đó ảnh chỉ để biết "có hay chưa" thì phí.
+    include: { anh: { select: { nhanVienId: true } } },
   });
 
   const tim = boDauThuong(q.trim());
@@ -113,6 +117,9 @@ export default async function NhanVienPage({ searchParams }: Props) {
                   <th className="px-4 py-2.5 font-medium">Tên đăng nhập</th>
                   <th className="px-4 py-2.5 font-medium">Tài khoản</th>
                   <th className="px-4 py-2.5 font-medium">Vào gần nhất</th>
+                  <th className="px-4 py-2.5 font-medium whitespace-nowrap" title="Hiện người này ở khu Đội ngũ trên trang giới thiệu">
+                    Trang giới thiệu
+                  </th>
                   <th className="px-4 py-2.5" />
                 </>
               )}
@@ -160,6 +167,7 @@ export default async function NhanVienPage({ searchParams }: Props) {
                     vaoGanNhat={n.dangNhapLuc ? NGAY_GIO.format(n.dangNhapLuc) : null}
                     dsPhong={dsPhong}
                     laChinhMinh={nguoi.id === n.id}
+                    truocNutSua={<NutHienTrang id={n.id} hien={n.hienTrenTrang} coAnh={!!n.anh} />}
                   />
                 )}
               </tr>

@@ -414,6 +414,36 @@ một cái tên. Nếu anh muốn thấy đủ bốn dòng tiêu đề thì nói
 Muốn đổi cách gom nhóm (thêm mảng mới, chuyển mảng sang thương hiệu khác) thì
 sửa `PHAN_DICH_VU` trong `src/lib/studio.ts` — em làm cho.
 
+### Khu "Đội ngũ" trên trang giới thiệu (25/09)
+
+Anh muốn giới thiệu từng người trong studio. Danh sách **lấy thẳng từ mục Nhân
+viên** của phần quản lý, không gõ lại lần nữa — sửa tên hay chức vụ ở đó là
+ngoài trang đổi theo.
+
+**Ba bước để một người lên trang:**
+
+1. Người đó vào **Quản lý → Tài khoản của tôi**, bấm *Chọn ảnh* để tự tải ảnh
+   đại diện. Ảnh được web tự cắt vuông và thu nhỏ ngay trên máy họ trước khi
+   gửi, nên ảnh máy ảnh 8 MB cũng chỉ còn vài chục KB.
+2. **Quản lý** vào mục **Nhân viên**, cột *Trang giới thiệu*, gạt công tắc cho
+   người đó. Chỉ quản lý thấy công tắc này.
+3. Xong. Khu "Đội ngũ" hiện ở trang chủ, ngay trên dải "Câu chuyện tiếp theo".
+
+**Bốn điều đã khoá sẵn:**
+
+- **Mặc định không ai lên trang.** Bảng nhân viên có số điện thoại, ngày vào
+  làm — đưa ai ra công khai là quyết định của quản lý, bật từng người.
+- **Ảnh của người chưa được bật thì người ngoài không xem được** (web trả lỗi
+  403), chỉ người đã đăng nhập mới thấy.
+- **Ai nghỉ làm thì tự rơi khỏi trang** dù công tắc còn bật, khỏi phải nhớ tắt.
+- **Chưa có ảnh vẫn lên trang được**: hiện chữ cái đầu tên trên nền màu, không
+  phải ô xám trông như ảnh hỏng.
+
+Chữ dưới tên lấy từ ô **Chức vụ** của nhân viên; bỏ trống thì lấy vai trò
+(Quản lý / Sale / Nhân viên). Muốn khách đọc chữ khác thì sửa ô Chức vụ.
+
+Cả khu tự ẩn khi chưa bật ai — không để cái tiêu đề trơ trọi giữa trang.
+
 ### Trang quản lý giới thiệu bày lại cho gọn (25/09)
 
 Anh bảo xem kỹ lại giao diện. Đo trước khi sửa: mỗi mục cao 645px (gần hết

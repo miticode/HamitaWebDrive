@@ -2,6 +2,7 @@ import { getPrisma } from "@/lib/db";
 import { batBuocDangNhap } from "@/lib/phienNhanVien";
 import { TEN_VAI_TRO, laVaiTro } from "@/lib/nhanVienChung";
 import { FormDoiMatKhau } from "../../FormDoiMatKhau";
+import { AnhDaiDien } from "./AnhDaiDien";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,10 @@ export default async function ToiPage() {
     );
   }
 
-  const nv = await getPrisma().nhanVien.findUnique({ where: { id: nguoi.id } });
+  const nv = await getPrisma().nhanVien.findUnique({
+    where: { id: nguoi.id },
+    include: { anh: { select: { nhanVienId: true } } },
+  });
   if (!nv) return null;
 
   const dong: [string, string | null][] = [
@@ -41,6 +45,14 @@ export default async function ToiPage() {
     <div className="max-w-xl">
       <p className="eyebrow">Tài khoản của tôi</p>
       <h1 className="mt-2 font-display text-3xl font-light">{nv.ten}</h1>
+
+      {/* Ảnh đại diện cho khu "Đội ngũ" ngoài trang giới thiệu (25/09/2026). */}
+      <div className="mt-6 rounded-md border border-line bg-bg-raised p-5">
+        <h2 className="eyebrow">Ảnh đại diện</h2>
+        <div className="mt-3">
+          <AnhDaiDien nhanVienId={nv.id} coAnhSan={!!nv.anh} />
+        </div>
+      </div>
 
       <dl className="mt-6 divide-y divide-line rounded-md border border-line bg-bg-raised text-sm">
         {dong.map(([k, v]) => (

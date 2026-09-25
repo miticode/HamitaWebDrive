@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   capMatKhauAction,
@@ -24,11 +24,14 @@ export function HangNhanVien({
   vaoGanNhat,
   dsPhong,
   laChinhMinh,
+  truocNutSua,
 }: {
   nv: NhanVienHang;
   vaoGanNhat: string | null;
   dsPhong: string[];
   laChinhMinh: boolean;
+  /** Công tắc "hiện trên trang giới thiệu" — trang cha dựng, hàng chỉ đặt chỗ. */
+  truocNutSua?: ReactNode;
 }) {
   const router = useRouter();
   const [dangCap, startCap] = useTransition();
@@ -73,6 +76,7 @@ export function HangNhanVien({
         <span className={`rounded-full border px-2 py-0.5 text-[11px] ${trangThai.lop}`}>{trangThai.chu}</span>
       </td>
       <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{vaoGanNhat ?? "—"}</td>
+      <td className="px-4 py-2.5 whitespace-nowrap">{truocNutSua}</td>
       <td className="px-4 py-2.5 text-right whitespace-nowrap">
         <div className="flex justify-end gap-3 text-xs">
           {nv.dangLam && (

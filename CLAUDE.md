@@ -1882,6 +1882,26 @@ thức rồi đối chiếu giờ làm việc của studio — lệch nhiều l�
 
 ---
 
+**54. Khu "Đội ngũ" lấy người từ bảng NhanVien, KHÔNG có danh sách thứ hai**
+(anh yêu cầu 25/09/2026). Cờ `hienTrenTrang` + `thuTuHien` trên NhanVien, ảnh
+nằm ở bảng riêng `AnhNhanVien` (cột Bytes). Bốn ràng buộc phải giữ:
+
+- **Mặc định TẮT.** Bảng nhân viên là dữ liệu nội bộ; bật từng người, và chỉ
+  quản lý bật được (`doiHienTrenTrangAction` kiểm `laQuanTri`).
+- **Ảnh của người chưa bật cờ chỉ trả cho người đã đăng nhập** (route
+  `/api/anh-nv/[id]` trả 403 cho khách lạ). Ảnh nhân viên là thứ của họ.
+- **Nhân viên chỉ sửa được ảnh của CHÍNH MÌNH**: action lấy id từ phiên đăng
+  nhập, không nhận id từ máy khách.
+- **`dangLam` false là rơi khỏi trang** dù cờ còn bật.
+
+Ảnh nén ở TRÌNH DUYỆT (canvas, cắt vuông giữa, 320px, JPEG ~0.82) rồi mới gửi
+base64 lên; máy chủ tự kiểm cỡ (≤400 KB) và hai byte đầu phải là JPEG. Không
+dùng Drive vì quyền hiện tại chỉ đọc — bật quyền ghi là phải xin lại cả tài
+khoản Google của studio.
+
+Bảng ảnh TÁCH RIÊNG khỏi NhanVien: mọi truy vấn nhân viên (đăng nhập, danh
+sách, chấm công) sẽ kéo theo vài chục KB mỗi dòng nếu để chung.
+
 ## Bẫy kỹ thuật đã gặp
 
 **Prisma 7 khác hẳn bản cũ.** Không còn engine nhị phân, bắt buộc dùng driver

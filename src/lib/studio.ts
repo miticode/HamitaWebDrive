@@ -132,6 +132,18 @@ export const DAU_TRANG = {
  * Dia chi, so dien thoai lay tu STUDIO va HAMI_BABY, khong chep lai o day: hai
  * noi giu cung mot so dien thoai la co ngay lech nhau (nguyen tac 51).
  */
+/**
+ * Khu "Doi ngu" tren trang gioi thieu (anh yeu cau 25/09/2026).
+ *
+ * CHI CO CHU KHUNG o day — ten va vai tro tung nguoi lay tu bang NhanVien,
+ * khong chep lai. Chu o day khong khen ai, khong noi so nam kinh nghiem: nhung
+ * thu do chua ai kiem chung (nguyen tac 25).
+ */
+export const DOI_NGU = {
+  tieuDe: "Những người sẽ đi cùng anh chị",
+  moTa: "Ngày cưới của anh chị do chính mấy người này chụp, trang điểm và dàn album.",
+} as const;
+
 export const CO_SO = {
   nhan: "Hai cơ sở",
   tieuDe: "Hai cơ sở trên đường Đỗ Tường Tự",
