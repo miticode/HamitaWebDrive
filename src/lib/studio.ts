@@ -140,8 +140,10 @@ export const DAU_TRANG = {
  * thu do chua ai kiem chung (nguyen tac 25).
  */
 export const DOI_NGU = {
-  tieuDe: "Những người sẽ đi cùng anh chị",
-  moTa: "Ngày cưới của anh chị do chính mấy người này chụp, trang điểm và dàn album.",
+  tieuDe: "Người nhà Hamita",
+  moTa:
+    "Người cầm máy, người trang điểm, người ngồi dàn từng trang album — " +
+    "ngày cưới của anh chị có cả nhà đi cùng.",
 } as const;
 
 export const CO_SO = {
