@@ -25,7 +25,7 @@ export function FormDangNhap({ tiep }: { tiep?: string }) {
         <input
           id="tenDangNhap"
           name="tenDangNhap"
-          autoComplete="username"
+          autoComplete="off"
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
@@ -36,11 +36,22 @@ export function FormDangNhap({ tiep }: { tiep?: string }) {
       </label>
       <label className="mt-3 block text-left">
         <span className="text-xs text-fg-muted">Mật khẩu</span>
+        {/*
+          KHÔNG để "current-password" (anh yêu cầu 25/09/2026): mấy máy trong
+          studio dùng chung một tài khoản Google, mật khẩu lưu ở máy này là
+          mọi máy khác tự điền được luôn — nhân viên mở trang quản lý ra là
+          vào thẳng bằng tài khoản của anh.
+
+          "new-password" là cách duy nhất web nói được với trình duyệt rằng
+          đừng tự điền ô này. Còn chuyện trình duyệt có HỎI LƯU hay không thì
+          web không cấm được — Chrome cố tình bỏ qua mọi yêu cầu kiểu đó. Phần
+          ấy phải tắt trong cài đặt Chrome của từng máy.
+        */}
         <input
           id="matKhau"
           name="matKhau"
           type="password"
-          autoComplete="current-password"
+          autoComplete="new-password"
           className="input mt-1"
         />
       </label>
