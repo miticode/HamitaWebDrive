@@ -240,9 +240,6 @@ export default async function Home() {
           {PHAN_DICH_VU.map((phan, iPhan) => {
             const the = DICH_VU.muc.filter((m) => (phan.khu as readonly string[]).includes(m.khu));
             if (the.length === 0) return null;
-            // Tên phần trùng tên thẻ duy nhất thì thôi, khỏi đọc hai lần.
-            const inTenPhan = !the.some((m) => m.ten === phan.ten);
-
             /*
               Phần một mảng mà mảng đó chia nhiều mục (Hami Baby Studio: Bầu,
               Sơ sinh, Baby - Thôi nôi, Gia đình) thì bày thẳng các mục — anh
@@ -253,6 +250,14 @@ export default async function Home() {
             const nhomDon = the.length === 1 ? nhomCuaKhu(the[0].khu) : undefined;
             const mucCon = the.length === 1 ? mucCuaKhu(the[0].khu) : [];
             const bayMucCon = !!nhomDon && mucCon.length > 1;
+
+            /*
+              Tên phần trùng tên thẻ duy nhất thì thôi, khỏi đọc hai lần — trừ
+              khi đang bày mục con, vì lúc đó thẻ mang tên ấy không còn hiện
+              nữa và phần sẽ mất luôn tên (ba ô "Sinh nhật / Tết / Beauty"
+              đứng trơ, khách không biết của tiệm nào).
+            */
+            const inTenPhan = bayMucCon || !the.some((m) => m.ten === phan.ten);
 
             return (
               <div key={phan.ten} className={iPhan === 0 ? "mt-10" : "mt-16"}>
