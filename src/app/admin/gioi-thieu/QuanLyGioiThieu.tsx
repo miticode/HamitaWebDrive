@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { boDau } from "@/lib/constants";
 import { coMa, type MucGioiThieu, type NhomGioiThieu } from "@/lib/nhomGioiThieu";
@@ -556,14 +556,28 @@ function OChon({
     };
   }, [dong]);
 
+  /*
+    Mục chưa có mã thì LẤY TÊN MỤC LÀM GỢI Ý (anh yêu cầu 25/09/2026): mở
+    "Hamita Garden" ra mà phải gõ "ham" để tìm đúng album cùng tên là thừa một
+    nhịp. Khớp theo chuỗi con chứ không theo từ như mã, vì tên mục có nhiều
+    chữ: "Hamita Garden" nằm trong "Hamita Garden - All View".
+  */
+  const hopTen = useMemo(() => {
+    if (muc.ma.length > 0) return [];
+    const q = boDau(muc.ten.trim());
+    return q ? albums.filter((a) => boDau(a.ten).includes(q)) : [];
+  }, [albums, muc.ma, muc.ten]);
+  const [locTen, setLocTen] = useState(true);
+
   const ds = useMemo(() => {
     const q = boDau(tuKhoa.trim());
     return albums.filter(
       (a) =>
         (!chiTheoMa || muc.ma.length === 0 || muc.ma.some((ma) => coMa(a.ten, ma))) &&
+        (!locTen || hopTen.length === 0 || hopTen.some((h) => h.id === a.id)) &&
         (!q || q.split(/\s+/).every((p) => boDau(a.ten).includes(p))),
     );
-  }, [albums, chiTheoMa, muc.ma, tuKhoa]);
+  }, [albums, chiTheoMa, hopTen, locTen, muc.ma, tuKhoa]);
 
   const moAlbum = (a: AlbumGon) => {
     setAlbumMo(a);
@@ -575,6 +589,19 @@ function OChon({
       else setThuMuc(kq.thuMuc ?? []);
     });
   };
+
+  /*
+    Đúng MỘT album mang tên mục thì mở thẳng nó ra, hộp hiện luôn danh sách
+    thư mục con — khỏi bắt bấm thêm một nhịp chỉ để chọn cái duy nhất. Bấm
+    "← Chọn album khác" vẫn quay ra được, và `daTuMo` giữ cho nó không tự mở
+    lại đè lên lựa chọn đó.
+  */
+  const daTuMo = useRef(false);
+  useEffect(() => {
+    if (daTuMo.current || hopTen.length !== 1) return;
+    daTuMo.current = true;
+    moAlbum(hopTen[0]);
+  }, [hopTen]);
 
   const daCo = (albumId: string) =>
     !!albumMo &&
@@ -657,6 +684,12 @@ function OChon({
                   <label className="flex items-center gap-2 text-sm text-fg-muted">
                     <input type="checkbox" checked={chiTheoMa} onChange={(e) => setChiTheoMa(e.target.checked)} />
                     Chỉ album mã {muc.ma.join(", ")}
+                  </label>
+                )}
+                {hopTen.length > 0 && (
+                  <label className="flex items-center gap-2 text-sm text-fg-muted">
+                    <input type="checkbox" checked={locTen} onChange={(e) => setLocTen(e.target.checked)} />
+                    Chỉ album tên “{muc.ten}”
                   </label>
                 )}
               </div>
