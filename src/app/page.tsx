@@ -259,9 +259,16 @@ export default async function Home() {
                         <FadeIn key={m.ten} cham={i * 70}>
                           <a
                             href={hrefThe(m)}
-                            className={`group grid overflow-hidden rounded-[1.75rem] border border-line bg-bg-raised transition hover:border-line-strong lg:grid-cols-[1.2fr_1fr] ${nenKhu}`}
+                            className={`group grid overflow-hidden rounded-[1.75rem] border border-line bg-bg-raised transition hover:border-line-strong sm:grid-cols-[minmax(0,17rem)_1fr] lg:grid-cols-[minmax(0,20rem)_1fr] ${nenKhu}`}
                           >
-                            <span className="relative block aspect-[16/10] overflow-hidden sm:aspect-[2/1] lg:aspect-auto lg:min-h-[19rem]">
+                            {/*
+                              Khung ảnh DỌC 4:5, y như thẻ ở phần trên. Lúc đầu
+                              em làm khung ngang 16:10 cho ra dáng dải, nhưng
+                              ảnh studio là ảnh dọc 960×1440 nên khung đó nuốt
+                              mất 61% tấm hình — anh nhìn ra ngay 25/09/2026.
+                              Khung 4:5 giữ được 84%, bằng đúng thẻ dọc cũ.
+                            */}
+                            <span className="relative block aspect-[4/5] overflow-hidden">
                               {anh ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
