@@ -394,6 +394,14 @@ Anh muốn trang chủ tách rõ bốn cái tên thay vì sáu thẻ nằm lẫn
 3. **Tiệm ảnh nhà Su**
 4. **Váy cưới & trang điểm**
 
+*(Sửa 25/09, cùng ngày)* **Hami Baby Studio bày thẳng các mục con** — Bầu, Sơ
+sinh, Baby - Thôi nôi, Gia đình — thành lưới bốn ô thay vì một dải "Bé & gia
+đình". Mục nào anh đã chọn thư mục ở trang quản lý thì ô đó có ảnh bìa và bấm
+vào ra đúng mục; mục chưa có ảnh vẫn hiện tên trên nền hồng nhạt và bấm vào
+dẫn về khu ảnh bé, **không dẫn vào trang trống**. Muốn ô nào có ảnh thì vào
+`/admin/gioi-thieu`, tab *Bé & gia đình*, bấm "Thêm vào trang giới thiệu" cho
+mục đó.
+
 Ba phần dưới mỗi phần một **dải ngang** hết chiều ngang trang: ảnh bên trái,
 tên và mô tả bên phải trên nền sáng. Trên điện thoại thì ảnh nằm trên, chữ nằm
 dưới. Để một thẻ dọc đứng lẻ giữa hàng trông như lưới bị thiếu ảnh nên em làm

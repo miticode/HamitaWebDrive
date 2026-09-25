@@ -19,6 +19,7 @@ import {
   VE_HAMITA,
 } from "@/lib/studio";
 import { docAnhNhom, docThuMucGioiThieu } from "@/lib/anhGioiThieu";
+import { docNhomCoMuc } from "@/lib/mucDichVu";
 import { NHOM_GIOI_THIEU } from "@/lib/nhomGioiThieu";
 import { NavGioiThieu } from "./NavGioiThieu";
 import { AnhBiaChay } from "./AnhBiaChay";
@@ -72,8 +73,18 @@ export default async function Home() {
     mục (chỉ đọc database). Riêng khu phim trường đọc ảnh thật trong thư mục
     (lời gọi Drive duy nhất của trang, cache 5 phút chung với trang khách).
   */
-  const thuMucGioiThieu = await docThuMucGioiThieu();
+  const [thuMucGioiThieu, nhomCoMuc] = await Promise.all([docThuMucGioiThieu(), docNhomCoMuc()]);
   const nhomCuaKhu = (khu: string) => NHOM_GIOI_THIEU.find((n) => n.khu === khu);
+
+  /*
+    Mục nhỏ của một nhóm (Bầu, Sơ sinh, Gia đình…) — anh yêu cầu 25/09/2026 cho
+    Hami Baby Studio: phần nào của thương hiệu chỉ có một mảng dịch vụ mà mảng
+    đó lại chia nhiều mục thì bày thẳng các mục ra trang chủ, khách thấy ngay
+    studio chụp những gì thay vì phải bấm vào mới biết.
+  */
+  const mucCuaKhu = (khu: string) => nhomCoMuc.find((n) => n.khu === khu)?.muc ?? [];
+  const biaCuaMuc = (nhomKey: string, mucKey: string) =>
+    thuMucGioiThieu.find((t) => t.nhom === nhomKey && t.muc === mucKey)?.anhBia ?? undefined;
   const thuMucCuaKhu = (khu: string) => thuMucGioiThieu.filter((t) => t.nhom === nhomCuaKhu(khu)?.key);
   const biaCuaKhu = (khu: string) =>
     thuMucCuaKhu(khu)
@@ -232,6 +243,17 @@ export default async function Home() {
             // Tên phần trùng tên thẻ duy nhất thì thôi, khỏi đọc hai lần.
             const inTenPhan = !the.some((m) => m.ten === phan.ten);
 
+            /*
+              Phần một mảng mà mảng đó chia nhiều mục (Hami Baby Studio: Bầu,
+              Sơ sinh, Baby - Thôi nôi, Gia đình) thì bày thẳng các mục — anh
+              yêu cầu 25/09/2026. Mục chưa chọn thư mục nào vẫn hiện, nhưng dẫn
+              về khu ảnh trong trang chứ KHÔNG dẫn sang trang mục: mục trống
+              bên đó trả 404 (nguyên tắc 24).
+            */
+            const nhomDon = the.length === 1 ? nhomCuaKhu(the[0].khu) : undefined;
+            const mucCon = the.length === 1 ? mucCuaKhu(the[0].khu) : [];
+            const bayMucCon = !!nhomDon && mucCon.length > 1;
+
             return (
               <div key={phan.ten} className={iPhan === 0 ? "mt-10" : "mt-16"}>
                 {inTenPhan && (
@@ -243,11 +265,52 @@ export default async function Home() {
                   </FadeIn>
                 )}
 
-                <div
-                  className={`${inTenPhan ? "mt-5" : ""} grid gap-4 sm:gap-5 ${
-                    the.length > 1 ? "sm:grid-cols-2 lg:grid-cols-3" : ""
-                  }`}
-                >
+                {bayMucCon ? (
+                  <div className={`${inTenPhan ? "mt-5" : ""} grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4`}>
+                    {mucCon.map((mc, i) => {
+                      const anh = biaCuaMuc(nhomDon.key, mc.key);
+                      const nenKhu = the[0].khu === "baby" ? "khu-baby" : "";
+                      const href = anh ? `/dich-vu/${nhomDon.key}/${mc.key}` : hrefThe(the[0]);
+                      return (
+                        <FadeIn key={mc.key} cham={i * 70}>
+                          <a
+                            href={href}
+                            className={`group relative block aspect-[4/5] overflow-hidden rounded-[1.75rem] ${nenKhu} ${anh ? "bg-bg-soft" : "border border-line bg-gradient-to-br from-accent-soft to-bg-soft"}`}
+                          >
+                            {anh ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={`/api/img/${anh}?w=760`}
+                                alt=""
+                                loading="lazy"
+                                className="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-105"
+                              />
+                            ) : (
+                              <span className="absolute top-5 left-5 grid size-14 place-items-center rounded-full border border-line-strong bg-bg-raised text-accent">
+                                <StudioIcon ten={the[0].icon} className="size-6" />
+                              </span>
+                            )}
+                            {anh && <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />}
+                            <span className={`absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 ${anh ? "text-white" : "text-fg"}`}>
+                              <span className="font-display text-[1.6rem] leading-tight">{mc.ten}</span>
+                              <span
+                                aria-hidden
+                                className={`grid size-8 shrink-0 place-items-center rounded-full transition ${anh ? "bg-white/20 backdrop-blur-sm group-hover:bg-white/35" : "border border-line-strong group-hover:border-accent group-hover:text-accent"}`}
+                              >
+                                →
+                              </span>
+                            </span>
+                          </a>
+                        </FadeIn>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div
+                    className={`${inTenPhan ? "mt-5" : ""} grid gap-4 sm:gap-5 ${
+                      the.length > 1 ? "sm:grid-cols-2 lg:grid-cols-3" : ""
+                    }`}
+                  >
                   {the.map((m, i) => {
                     const anh = anhThe[m.khu];
                     const nhan = m.nhan && m.nhan !== phan.ten ? m.nhan : "";
@@ -352,6 +415,7 @@ export default async function Home() {
                     );
                   })}
                 </div>
+                )}
               </div>
             );
           })}

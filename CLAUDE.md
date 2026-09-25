@@ -367,6 +367,13 @@ nút liên hệ nổi (`NutLienHeNoi`). Mấy điều phải giữ:
   một cái tên), và **nhãn thẻ trùng tên phần thì bỏ nhãn** (thẻ "Bé & gia đình"
   vốn mang nhãn "Hami Baby Studio").
 
+  **Phần một mảng mà mảng đó chia nhiều mục thì bày thẳng CÁC MỤC** (anh yêu
+  cầu 25/09/2026 cho Hami Baby Studio: Bầu, Sơ sinh, Baby - Thôi nôi, Gia
+  đình) — lưới bốn cột thay cho dải ngang. Mục chưa chọn thư mục nào vẫn hiện
+  (ô nền màu nhấn nhạt + biểu tượng) nhưng **dẫn về `hrefThe` của mảng, không
+  dẫn sang trang mục**: mục trống bên đó trả 404. Quy tắc này tự áp dụng cho
+  phần khác khi nhóm của nó có từ hai mục trở lên.
+
 - **Trang từng dịch vụ `/dich-vu/<nhóm>/<mục>`** (17/09/2026). Sáu nhóm khớp sáu
   thẻ "Hamita chụp gì?" — Ảnh cưới, Album & hình cổng, Hamita Garden, Bé & gia
   đình, Váy cưới & trang điểm, Tiệm ảnh nhà Su — **nhóm cố định trong mã nguồn**
