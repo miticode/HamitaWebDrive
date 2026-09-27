@@ -238,7 +238,7 @@ export function HuongDanChon({
                 <strong className="font-semibold text-accent">
                   {tien(giaAnhThem)}đ
                 </strong>
-                , đã gồm cả chỉnh sửa và in ạ.
+                ạ.
               </p>
             ) : (
               /*
@@ -267,8 +267,8 @@ export function HuongDanChon({
                     Chi phí phát sinh thêm trên mỗi tấm ảnh là{" "}
                     <strong className="font-semibold text-accent">
                       {tien(giaAnhThem)}đ
-                    </strong>{" "}
-                    đã gồm chỉnh sửa và in ạ.
+                    </strong>
+                    .
                   </>,
                 ].map((dong, i) => (
                   <li key={i} className="flex gap-2.5">

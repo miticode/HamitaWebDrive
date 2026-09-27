@@ -79,7 +79,7 @@ export function GoiAnh({
             không nó…", mất vế nói rõ hậu quả. Studio đọc dòng đó rồi vẫn đi tìm
             khối gói ảnh trên điện thoại khách, không hiểu vì sao không thấy
             (03/09/2026). Câu cũng viết lại cho nói thẳng vào thứ nhìn thấy được.
-          - Đã đặt: "33 ảnh · thêm 12.000đ/ảnh" cụt mất đuôi giá. Cắt cụt một
+          - Đã đặt: "33 ảnh · thêm 10.000đ/ảnh" cụt mất đuôi giá. Cắt cụt một
             con số tiền là chuyện không nên làm, dù đọc lướt vẫn đoán ra.
 
           Đổi lại thẻ album cao thêm một dòng. Đáng — thẻ này vốn đã dài, thêm
@@ -160,8 +160,8 @@ export function GoiAnh({
         {soAnh.trim() === ""
           ? "Để trống thì phần hướng dẫn cho khách bỏ hẳn đoạn giá cả, chỉ nói cách chọn ảnh."
           : soAnh.trim() === "0"
-            ? `Khách sẽ đọc: "Gói của anh chị là gói chỉ lấy file ảnh, không kèm ảnh in. Tấm nào anh chị muốn Hamita in ra thì mỗi tấm ${tien(giaAnhThem)}đ, đã gồm cả chỉnh sửa và in ạ."`
-            : `Khách sẽ đọc 3 dòng: "Gói của anh chị cần tim ${soAnh} tấm." · "Ghi chú vào ảnh: ảnh cổng, ảnh bàn, ảnh bìa,…" · "Chi phí phát sinh thêm trên mỗi tấm ảnh là ${tien(giaAnhThem)}đ đã gồm chỉnh sửa và in ạ."`}
+            ? `Khách sẽ đọc: "Gói của anh chị là gói chỉ lấy file ảnh, không kèm ảnh in. Tấm nào anh chị muốn Hamita in ra thì mỗi tấm ${tien(giaAnhThem)}đ ạ."`
+            : `Khách sẽ đọc 3 dòng: "Gói của anh chị cần tim ${soAnh} tấm." · "Ghi chú vào ảnh: ảnh cổng, ảnh bàn, ảnh bìa,…" · "Chi phí phát sinh thêm trên mỗi tấm ảnh là ${tien(giaAnhThem)}đ."`}
       </p>
 
       <p className="mt-2 text-[11px] leading-relaxed text-fg-faint">

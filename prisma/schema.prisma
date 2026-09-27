@@ -131,9 +131,10 @@ model Gallery {
   /// rieng cho tung album.
   soAnhTrongGoi Int?
 
-  /// Gia moi tam vuot goi, tinh bang dong, da gom ca chinh sua lan in.
+  /// Gia moi tam vuot goi, tinh bang dong. Anh chot 27/09/2026: 10.000d, va
+  /// bo cau "da gom chinh sua va in" khoi moi cho khach doc.
   /// Chi co y nghia khi soAnhTrongGoi co gia tri.
-  giaAnhThem Int @default(12000)
+  giaAnhThem Int @default(10000)
 
   /// Hop dong cua nha khach nay (dot 2b, 16/09/2026) — nhan vien tu gan o
   /// trang album. AppSheet khong biet gi ve album nen day la du lieu CUA WEB:

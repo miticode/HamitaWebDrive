@@ -111,7 +111,7 @@ export function danhSachHoiDap(album: {
           )
           .join("\n") +
         "\n\nAnh chị mở thư mục nào thì ngay đầu thư mục đó có ghi rõ gói của đợt ấy ạ.\n\n" +
-        `Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái — chi phí phát sinh thêm trên mỗi tấm ảnh là ${tien(album.giaAnhThem)}đ, đã gồm chỉnh sửa và in ạ.`,
+        `Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái — chi phí phát sinh thêm trên mỗi tấm ảnh là ${tien(album.giaAnhThem)}đ ạ.`,
     });
   } else if (album.soAnhTrongGoi === null) {
     ds.push({
@@ -123,14 +123,14 @@ export function danhSachHoiDap(album: {
       hoi: "Anh chị được chọn bao nhiêu tấm ạ?",
       dap:
         "Gói của anh chị là gói chỉ lấy file ảnh, không kèm ảnh in — nên anh chị cứ xem và tải hết về máy thoải mái ạ.\n\n" +
-        `Tấm nào anh chị muốn Hamita in ra thì mỗi tấm ${tien(album.giaAnhThem)}đ, đã gồm chỉnh sửa và in rồi ạ. Anh chị thả tim tấm đó là bên em biết.`,
+        `Tấm nào anh chị muốn Hamita in ra thì mỗi tấm ${tien(album.giaAnhThem)}đ ạ. Anh chị thả tim tấm đó là bên em biết.`,
     });
   } else {
     ds.push({
       hoi: "Anh chị được chọn bao nhiêu tấm ạ?",
       dap:
         `Gói của anh chị cần thả tim ${album.soAnhTrongGoi} tấm ạ.\n\n` +
-        `Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái — chi phí phát sinh thêm trên mỗi tấm ảnh là ${tien(album.giaAnhThem)}đ, đã gồm chỉnh sửa và in ạ.`,
+        `Lỡ thương thêm tấm nào ngoài gói thì cứ chọn thoải mái — chi phí phát sinh thêm trên mỗi tấm ảnh là ${tien(album.giaAnhThem)}đ ạ.`,
     });
   }
 

@@ -10,12 +10,14 @@
  *
  *   "Goi cua anh chi can tim N tam."
  *   "Ghi chu vao anh: anh cong, anh ban, anh bia,..."
- *   "Chi phi phat sinh them tren moi tam anh la 12.000d da gom chinh sua va in a."
+ *   "Chi phi phat sinh them tren moi tam anh la 10.000d."
  *
  * DOI CAU CHU PHIA KHACH THI PHAI SUA LAI DOAN TRICH NAY. Ca gia tri cua no
  * nam o cho no la ban sao chinh xac cua loi da noi voi khach — trich sai thi
  * nguoi doc sau se suy ra quy tac tu mot cau khong con ai thay tren man hinh.
  * Doan cu o day da lech 2 ngay (studio doi cau chu 07/09, phat hien 09/09).
+ * Lan gan nhat: 27/09/2026 anh ha gia xuong 10.000d va bo han cum "da gom
+ * chinh sua va in".
  *
  * Suy ra ba dieu, va don in phai theo dung ba dieu do:
  *
