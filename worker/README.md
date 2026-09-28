@@ -88,7 +88,10 @@ vẫn nằm đó, không ảnh hưởng gì.
 ## Kiểm sau khi bật
 
 1. Mở một album, bấm tải một tấm — file về đúng tên, mở lên xem được.
-2. Xem trong mục tải xuống của trình duyệt: nguồn phải là `workers.dev`.
+2. **Đừng tin dòng "From" trong mục tải xuống của Chrome** — nó ghi trang bấm
+   nút, tức `hamitastudio.com`, kể cả khi ảnh đi qua Worker. Muốn nhìn tận
+   mắt thì mở DevTools → Network trước khi bấm tải: dòng `/api/download` phải
+   trả **302** và dòng kế tiếp là `workers.dev`.
 3. Sau một ngày, vào Vercel → Observability → Fast Data Transfer: dòng
    `/api/download` phải **tụt xuống gần 0**.
 

@@ -442,8 +442,23 @@ với quyền đọc — tức đọc được toàn bộ Drive của tài kho�
 mục ảnh khách. Anh đã chọn cách này (thay vì dùng tài khoản máy phải chia sẻ
 từng thư mục) sau khi em nêu rõ đánh đổi.
 
-**Cách dựng:** xem `worker/README.md` — có đủ từng bước, gồm cả cách lấy mã
-làm mới (`npm run xem:refresh-token`) và cách tắt.
+**Đã bật thật chiều 28/09.** Địa chỉ Worker:
+`https://hamita-tai-anh.hamitastudio.workers.dev`. Tấm `MN_03822.jpg` tải về
+ngon lành qua đường mới.
+
+**Một chỗ dễ hiểu nhầm khi kiểm:** mục tải xuống của Chrome ghi "From
+hamitastudio.com" kể cả khi ảnh đi qua Worker — đó là trang bấm nút, không
+phải nơi file đi ra. Muốn nhìn tận mắt thì mở DevTools → Network, dòng
+`/api/download` phải trả 302 rồi nhảy sang `workers.dev`.
+
+**Đã vấp một lần khi dựng:** dán tay mã làm mới (103 ký tự, có cả `/` và `-`)
+lên Cloudflare bị đứt ký tự → khách bấm tải gặp **502 "Không vào được Drive
+lúc này"**. Không soi ra được vì Cloudflare khoá không cho xem lại. Nay có
+`npm run khai-bi-mat-worker` bơm thẳng giá trị vào, khỏi dán tay.
+
+**Cách dựng:** xem `worker/README.md` — có đủ từng bước và cách tắt. Hai lệnh
+hay dùng: `npm run bi-mat-worker` (xem bí mật) và `npm run khai-bi-mat-worker`
+(khai ba thứ của Google cho Worker).
 
 ### Phòng Media xoá được album (28/09)
 
