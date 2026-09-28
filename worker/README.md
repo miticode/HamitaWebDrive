@@ -41,15 +41,28 @@ Xong sẽ hiện địa chỉ dạng `https://hamita-tai-anh.<tên-anh>.workers.
 
 ### 3. Khai bốn thứ bí mật cho Worker
 
+Ba thứ của Google khai bằng máy, ở thư mục gốc dự án:
+
 ```bash
-npx wrangler secret put KY_CHUNG
-npx wrangler secret put GOOGLE_CLIENT_ID
-npx wrangler secret put GOOGLE_CLIENT_SECRET
-npx wrangler secret put GOOGLE_REFRESH_TOKEN
+npm run khai-bi-mat-worker
 ```
 
-Mỗi lệnh sẽ hỏi rồi anh dán giá trị vào. Những thứ này **không hiện lại** trên
-bảng điều khiển Cloudflare sau khi khai.
+Lệnh này đọc thẳng giá trị từ `.env.local` và database rồi bơm vào wrangler,
+không qua tay dán. Nó cũng thử xin vé Drive trước khi khai, hỏng thì dừng luôn.
+
+Vì sao không dán tay: mã làm mới dài 103 ký tự, có cả `/` và `-`. Đứt một ký
+tự lúc dán là khách bấm tải gặp **502 "Không vào được Drive lúc này"**, mà
+Cloudflare khoá không cho xem lại giá trị đã khai nên không cách nào soi ra.
+Đã vấp đúng lỗi này 28/09/2026.
+
+Còn `KY_CHUNG` thì khai tay, trong thư mục `worker`:
+
+```bash
+npx wrangler secret put KY_CHUNG
+```
+
+Nó phải khớp với `TAI_ANH_KY_CHUNG` bên Vercel — mà bên đó người khai bằng
+tay, nên để máy tự sinh một bên là lệch.
 
 ### 4. Bật ở Vercel
 
