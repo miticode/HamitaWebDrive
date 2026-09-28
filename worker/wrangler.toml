@@ -1,0 +1,9 @@
+name = "hamita-tai-anh"
+main = "src/index.ts"
+compatibility_date = "2026-09-28"
+
+# Không cần biến thường nào. Bốn thứ bí mật đặt bằng lệnh:
+#   npx wrangler secret put KY_CHUNG
+#   npx wrangler secret put GOOGLE_CLIENT_ID
+#   npx wrangler secret put GOOGLE_CLIENT_SECRET
+#   npx wrangler secret put GOOGLE_REFRESH_TOKEN

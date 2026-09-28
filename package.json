@@ -16,7 +16,8 @@
     "db:backup": "tsx scripts/backup-db.mts",
     "db:restore": "tsx scripts/restore-db.mts",
     "kiem:domain": "tsx scripts/kiem-domain.mts",
-    "pdf:huong-dan": "node scripts/xuat-pdf.mjs"
+    "pdf:huong-dan": "node scripts/xuat-pdf.mjs",
+    "xem:refresh-token": "tsx scripts/xem-refresh-token.mts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

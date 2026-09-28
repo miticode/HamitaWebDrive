@@ -414,6 +414,37 @@ một cái tên. Nếu anh muốn thấy đủ bốn dòng tiêu đề thì nói
 Muốn đổi cách gom nhóm (thêm mảng mới, chuyển mảng sang thương hiệu khác) thì
 sửa `PHAN_DICH_VU` trong `src/lib/studio.ts` — em làm cho.
 
+### Cloudflare Worker bắn ảnh cho khách (28/09)
+
+**Vì sao làm:** hoá đơn Vercel tháng 9 là **$77,97**, trong đó riêng đường tải
+ảnh về ngốn **168 GB ≈ $45** — hơn nửa hoá đơn. Cloudflare không tính tiền
+băng thông ra khách, gói miễn phí cho 100.000 lượt mỗi ngày mà studio chỉ dùng
+khoảng 3.300.
+
+**Cách chạy:** khách bấm tải → vẫn hỏi Vercel như cũ → Vercel **kiểm quyền y
+nguyên** (album có cho tải không, ảnh có đúng thuộc album không) → trả về một
+đường dẫn **đã ký tên, sống 10 phút** trỏ sang Worker → Worker lấy ảnh từ Drive
+giao thẳng cho khách. Vercel chỉ còn tốn vài trăm byte mỗi lượt thay vì 1,5 MB.
+
+**Worker không tự quyết được gì.** Không có đường nào để liệt kê thư mục hay
+dò mã ảnh; muốn lấy tấm nào cũng phải có chữ ký của Vercel cho đúng tấm đó.
+
+**Tắt đi lúc nào cũng được:** xoá hai biến `TAI_ANH_WORKER_URL` và
+`TAI_ANH_KY_CHUNG` ở Vercel rồi redeploy — ảnh quay lại đi đường cũ ngay,
+khách không mất đường tải.
+
+**Đã đo trước khi bật:** chữ ký Vercel ký và Worker kiểm cho **kết quả khớp
+tuyệt đối**; ký bằng bí mật khác thì bị chặn; phần gỡ thông tin máy ảnh của
+Worker cho ra file **giống hệt từng byte** với Vercel trên 3 ảnh thật.
+
+**Điều anh cần biết:** Worker cầm mã làm mới của tài khoản `hamita.studio@gmail.com`
+với quyền đọc — tức đọc được toàn bộ Drive của tài khoản đó, không riêng thư
+mục ảnh khách. Anh đã chọn cách này (thay vì dùng tài khoản máy phải chia sẻ
+từng thư mục) sau khi em nêu rõ đánh đổi.
+
+**Cách dựng:** xem `worker/README.md` — có đủ từng bước, gồm cả cách lấy mã
+làm mới (`npm run xem:refresh-token`) và cách tắt.
+
 ### Phòng Media xoá được album (28/09)
 
 Trước đây chỉ ban lãnh đạo xoá được album ảnh. Anh chốt mở cho **phòng Media**

@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { NextRequest } from "next/server";
 import { after } from "next/server";
 import sharp from "sharp";
@@ -9,6 +10,15 @@ import { TRAN_DIEM_ANH } from "@/lib/constants";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+/**
+ * Đường dẫn Worker sống bao lâu.
+ *
+ * Mười phút: đủ cho khách bấm "Tải tất cả" một album lớn (trình duyệt xếp hàng
+ * từng tấm), mà ngắn đủ để một đường dẫn lọt ra ngoài cũng nhanh chết. Hết hạn
+ * thì khách bấm tải lại là có đường mới.
+ */
+const HAN_DUONG_DAN_MS = 10 * 60_000;
 
 /**
  * Tai anh ve may khach. Luon di qua day de khong lo link Drive goc.
@@ -43,6 +53,43 @@ export async function GET(
   const thuocAlbum = tree.albums.some((a) => a.photos.some((p) => p.id === fileId));
   if (!thuocAlbum) {
     return Response.json({ error: "Ảnh không thuộc album này." }, { status: 404 });
+  }
+
+  /*
+    ĐẨY VIỆC GIAO ẢNH SANG CLOUDFLARE WORKER (anh chốt 28/09/2026).
+
+    Đường cũ đi Drive → máy chủ này → khách. Chặng thứ hai tốn 168 GB một
+    tháng, khoảng 45 đô — hơn nửa hoá đơn Vercel. Cloudflare không tính tiền
+    băng thông ra khách.
+
+    MỌI PHÉP KIỂM QUYỀN VẪN Ở ĐÂY, ngay phía trên: album có cho tải không, ảnh
+    có đúng thuộc album đó không. Worker chỉ nhận một đường dẫn đã ký tên và
+    hết hạn sau ít phút, không tự quyết được gì.
+
+    ĐƯỜNG LUI: chưa khai hai biến môi trường thì đoạn này bị bỏ qua và ảnh vẫn
+    đi đường cũ như trước. Worker trục trặc thì xoá biến trong Vercel là mọi
+    thứ chạy lại ngay, khách không bao giờ mất đường tải ảnh.
+  */
+  const nenWorker = process.env.TAI_ANH_WORKER_URL?.trim();
+  const kyChung = process.env.TAI_ANH_KY_CHUNG?.trim();
+  if (nenWorker && kyChung) {
+    try {
+      const meta = await getFileMeta(fileId);
+      const han = Date.now() + HAN_DUONG_DAN_MS;
+      const ky = createHmac("sha256", kyChung).update(`${fileId}.${han}`).digest("hex");
+
+      // Đếm ngay tại đây: từ lúc này ảnh chắc chắn được giao, và máy chủ sẽ
+      // không thấy lượt tải đó nữa vì khách lấy thẳng từ Worker.
+      after(() => ghiLuotTai(gallery.id, 1).catch(() => {}));
+
+      const den = new URL(`/t/${encodeURIComponent(fileId)}`, nenWorker);
+      den.searchParams.set("han", String(han));
+      den.searchParams.set("ky", ky);
+      den.searchParams.set("ten", meta.name);
+      return Response.redirect(den.toString(), 302);
+    } catch {
+      // Drive không trả lời thì rơi xuống đường cũ bên dưới, đừng bắt khách chịu.
+    }
   }
 
   try {
