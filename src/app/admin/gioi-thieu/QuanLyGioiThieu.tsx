@@ -20,6 +20,7 @@ import {
   type ThuMucChon,
 } from "../actionsGioiThieu";
 import { DoiBiaThuMuc } from "./DoiBiaThuMuc";
+import { duongDanAnh } from "@/lib/anhXem";
 
 type AlbumGon = { id: string; ten: string; bia: string | null; soThuMuc: number; ngayTao: string };
 type Muc = MucGioiThieu;
@@ -525,7 +526,7 @@ function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: bool
       <div className="skeleton relative aspect-[4/5] bg-bg-soft">
         {d.anhBia && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={`/api/img/${d.anhBia}?w=640`} alt="" loading="lazy" className="size-full object-cover" />
+          <img src={duongDanAnh(d.anhBia, 640)} alt="" loading="lazy" className="size-full object-cover" />
         )}
 
         {/* Sắp thứ tự: cảnh đẹp nhất lên đầu lưới bên trang khách. */}
@@ -925,7 +926,7 @@ function OChon({
                     <span className="skeleton block aspect-[3/2] bg-bg-soft">
                       {a.bia && (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={`/api/img/${a.bia}?w=320`} alt="" loading="lazy" className="size-full object-cover" />
+                        <img src={duongDanAnh(a.bia, 320)} alt="" loading="lazy" className="size-full object-cover" />
                       )}
                     </span>
                     <span className="block p-2.5">

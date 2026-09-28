@@ -24,6 +24,7 @@ import { NHOM_GIOI_THIEU } from "@/lib/nhomGioiThieu";
 import { NavGioiThieu } from "./NavGioiThieu";
 import { AnhBiaChay } from "./AnhBiaChay";
 import { NutLienHeNoi } from "./NutLienHeNoi";
+import { duongDanAnh } from "@/lib/anhXem";
 
 /* Đọc database mỗi lần mở trang, để anh vừa tích chọn album là thấy ngay. */
 export const dynamic = "force-dynamic";
@@ -296,7 +297,7 @@ export default async function Home() {
                             {anh ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
-                                src={`/api/img/${anh}?w=760`}
+                                src={duongDanAnh(anh, 760)}
                                 alt=""
                                 loading="lazy"
                                 className="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-105"
@@ -351,7 +352,7 @@ export default async function Home() {
                               {anh ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
-                                  src={`/api/img/${anh}?w=1280`}
+                                  src={duongDanAnh(anh, 1280)}
                                   alt=""
                                   loading="lazy"
                                   className="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-105"
@@ -397,7 +398,7 @@ export default async function Home() {
                           {anh ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={`/api/img/${anh}?w=960`}
+                              src={duongDanAnh(anh, 960)}
                               alt=""
                               loading="lazy"
                               className="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-105"
@@ -792,7 +793,7 @@ function AnhThe({ id, className, rong = 640, alt = "" }: { id: string; className
     <div className={`group skeleton overflow-hidden rounded-[1.5rem] ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={`/api/img/${id}?w=${rong}`}
+        src={duongDanAnh(id, rong)}
         alt={alt}
         loading="lazy"
         className="size-full object-cover transition duration-700 ease-out group-hover:scale-105"

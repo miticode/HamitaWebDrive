@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { doiBiaGioiThieuAction } from "../actionsGioiThieu";
+import { duongDanAnh } from "@/lib/anhXem";
 
 type Photo = { id: string; name: string };
 
@@ -149,7 +150,7 @@ export function DoiBiaThuMuc({
                     }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/api/img/${p.id}?w=320`} alt={p.name} loading="lazy" className="size-full object-cover" />
+                    <img src={duongDanAnh(p.id, 320)} alt={p.name} loading="lazy" className="size-full object-cover" />
                     {dangDung && (
                       <span className="absolute inset-x-1 bottom-1 rounded bg-black/60 px-1.5 py-0.5 text-center text-[11px] text-white">
                         Đang dùng

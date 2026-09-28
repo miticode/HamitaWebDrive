@@ -1,6 +1,7 @@
 import { siteUrl } from "@/lib/constants";
 import { loadTree } from "@/lib/gallery";
 import { mapLimit } from "@/lib/drive";
+import { duongDanAnh } from "@/lib/anhXem";
 import { updateGalleryMeta } from "@/lib/store";
 import { guiChoAlbum, tinAnhMoiChung } from "@/lib/push";
 
@@ -137,8 +138,13 @@ export async function warmGallery(folderId: string): Promise<number> {
   await mapLimit([...unique.values()], 4, async (job) => {
     if (Date.now() - started > BUDGET_MS) return;
     try {
-      const url = new URL(`/api/img/${job.fileId}`, base);
-      url.searchParams.set("w", String(job.size));
+      /*
+        Đi đúng con đường khách sẽ đi — qua Worker nếu đang bật, qua Vercel
+        nếu không. Làm nóng nhầm chỗ thì công toi: dựng sẵn ở Vercel trong
+        khi khách lấy ảnh từ Cloudflare là không giúp được ai (28/09/2026).
+      */
+      const duong = duongDanAnh(job.fileId, job.size);
+      const url = duong.startsWith("http") ? new URL(duong) : new URL(duong, base);
       /*
         Khong duoc dat cache: "no-store" o day.
         No gui kem header bao "dung dung cache", khien CDN bo qua va KHONG luu

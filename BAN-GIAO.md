@@ -460,6 +460,39 @@ lúc này"**. Không soi ra được vì Cloudflare khoá không cho xem lại. 
 hay dùng: `npm run bi-mat-worker` (xem bí mật) và `npm run khai-bi-mat-worker`
 (khai ba thứ của Google cho Worker).
 
+### Ảnh khách XEM cũng đi qua Worker (28/09, chiều)
+
+Sau khi đường tải chạy ngon, em đo tiếp hoá đơn thật: hai ngày 27–28/09 tốn
+**$2,86** hạ tầng, trong đó **Fast Origin Transfer $1,70 — 59%**. Phần còn lại
+là `sharp` (CPU $0,41 + bộ nhớ $0,23), theo dõi Observability $0,24, dựng lại
+mã $0,25.
+
+Ảnh xem (`/api/img`) là thứ duy nhất còn đốt cả ba khoản đầu. Nay chuyển nốt
+sang Worker, đường `/i/{mã}?w=960`.
+
+**Điều làm được việc này:** Google có sẵn bản dựng ở mọi cỡ, thêm `-rw` vào
+`thumbnailLink` là ra thẳng **WebP** — đúng thứ `sharp` vẫn phải chạy để tạo.
+Worker chỉ lấy về giao lại, không nén lại lần nào.
+
+**Đã đo chất lượng trước khi làm** (4 ảnh thật, lệch so với ảnh mốc, thang
+0-255): cỡ 640 `sharp` hơn 0,4 — cỡ 960 hơn 0,2 — **cỡ 2048 Google hơn 0,4**.
+Chênh dưới 0,5 ở mọi cỡ, mắt người không thấy; riêng cỡ khách bấm xem to thì
+bản mới còn nét hơn. Kích thước điểm ảnh hai bên **khớp tuyệt đối**, nên bố
+cục trang không xê dịch một li.
+
+Ảnh nặng hơn 20–60% tuỳ cỡ, nhưng Cloudflare không tính tiền băng thông nên
+không thành tiền. Bù lại có **bộ nhớ đệm của Cloudflare** (miễn phí): tấm nào
+đã ai mở một lần thì người sau mở không phải gọi Drive nữa.
+
+**Tắt lúc nào cũng được:** xoá `NEXT_PUBLIC_ANH_WORKER_URL` ở Vercel rồi
+redeploy. Đường tải và đường xem tắt bật độc lập.
+
+**Một lỗi em suýt để lọt:** lớp chặn nhúng ở Vercel đọc `Sec-Fetch-Site`, sang
+Worker thì header đó vô dụng (khác tên miền nên luôn báo `cross-site`). Nếu
+chỉ dựa vào `Referer` thì web khác viết `<img referrerpolicy="no-referrer">`
+là lọt — tức **lỏng hơn bản cũ**. Đã bịt trước khi bật. Bộ kiểm sáu dòng nằm
+trong `worker/README.md`.
+
 ### Phòng Media xoá được album (28/09)
 
 Trước đây chỉ ban lãnh đạo xoá được album ảnh. Anh chốt mở cho **phòng Media**

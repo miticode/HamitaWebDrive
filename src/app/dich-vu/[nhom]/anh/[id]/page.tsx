@@ -7,6 +7,7 @@ import { STUDIO_NAME } from "@/lib/constants";
 import { docMuc, docNhom } from "@/lib/mucDichVu";
 import { docAnhThuMuc, mucDangCo, type AnhCongKhai } from "@/lib/anhGioiThieu";
 import { KhungDichVu, chuNhom } from "../../../KhungDichVu";
+import { duongDanAnh } from "@/lib/anhXem";
 
 export const dynamic = "force-dynamic";
 
@@ -76,7 +77,7 @@ export default async function AnhThuMucPage({ params }: Props) {
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={`/api/img/${a.id}?w=960`}
+                        src={duongDanAnh(a.id, 960)}
                         alt={`Ảnh do ${STUDIO_NAME} chụp`}
                         loading={i < 6 ? "eager" : "lazy"}
                         className="size-full object-cover"

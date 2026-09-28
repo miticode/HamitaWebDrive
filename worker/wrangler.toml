@@ -2,8 +2,23 @@ name = "hamita-tai-anh"
 main = "src/index.ts"
 compatibility_date = "2026-09-28"
 
-# Không cần biến thường nào. Bốn thứ bí mật đặt bằng lệnh:
+# Hai biến thường dưới đây KHÔNG bí mật — ai mở web cũng thấy được, nên để
+# thẳng trong tệp này cho dễ sửa, khỏi phải nhớ đã khai gì ở đâu.
+[vars]
+# Đường lui khi Worker không lo được tấm ảnh (Drive trục trặc, ảnh chưa có bản
+# dựng sẵn): chuyển hướng về /api/img của Vercel, nơi còn sharp để tự thu nhỏ.
+NEN_WEB = "https://www.hamitastudio.com"
+# Các tên miền được phép nhúng ảnh xem. Web khác lấy địa chỉ ảnh về trang họ
+# thì bị từ chối. Ngăn cách bằng dấu phẩy, không có khoảng trắng thừa.
+#
+# Có localhost để chạy thử trên máy còn xem được ảnh. Không mở thêm lỗ nào:
+# trình duyệt tự đặt Referer bằng trang đang mở, kẻ nhúng trộm không tự khai
+# là localhost được. Còn gọi bằng script thì Referer nào cũng giả được — điều
+# đó đúng với mọi tên miền trong danh sách này, không riêng localhost.
+HOST_CHO_PHEP = "www.hamitastudio.com,hamitastudio.com,hamita-gallery.vercel.app,localhost:3000"
+
+# Bốn thứ bí mật KHÔNG đặt ở đây. Ba thứ của Google khai bằng máy, chạy ở thư
+# mục gốc dự án:
+#   npm run khai-bi-mat-worker
+# Riêng KY_CHUNG khai tay vì nó phải khớp với TAI_ANH_KY_CHUNG bên Vercel:
 #   npx wrangler secret put KY_CHUNG
-#   npx wrangler secret put GOOGLE_CLIENT_ID
-#   npx wrangler secret put GOOGLE_CLIENT_SECRET
-#   npx wrangler secret put GOOGLE_REFRESH_TOKEN

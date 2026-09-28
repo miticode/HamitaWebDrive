@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setBiaMucAction, setCoverAction } from "./actions";
+import { duongDanAnh } from "@/lib/anhXem";
 
 type Photo = { id: string; name: string; album: string };
 type Muc = { id: string; ten: string; soAnh: number };
@@ -264,7 +265,7 @@ export function CoverPicker({
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={`/api/img/${p.id}?w=320`}
+                    src={duongDanAnh(p.id, 320)}
                     alt={p.name}
                     loading="lazy"
                     className="size-full object-cover"

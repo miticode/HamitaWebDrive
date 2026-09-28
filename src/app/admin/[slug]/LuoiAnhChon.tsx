@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { duongDanAnh } from "@/lib/anhXem";
 
 export type AnhChon = {
   id: string;
@@ -71,7 +72,7 @@ export function LuoiAnhChon({ anh }: { anh: AnhChon[] }) {
               */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`/api/img/${row.driveFileId}?w=640`}
+                src={duongDanAnh(row.driveFileId, 640)}
                 alt={row.fileName}
                 loading="lazy"
                 className="aspect-square w-full bg-bg-soft object-contain transition duration-300 hover:opacity-85"
@@ -188,7 +189,7 @@ function KhungXem({
   useEffect(() => {
     for (const ke of [viTri + 1, viTri - 1]) {
       const p = anh[(ke + anh.length) % anh.length];
-      if (p) new window.Image().src = `/api/img/${p.driveFileId}?w=1440`;
+      if (p) new window.Image().src = duongDanAnh(p.driveFileId, 1440);
     }
   }, [viTri, anh]);
 
@@ -232,7 +233,7 @@ function KhungXem({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`/api/img/${tam.driveFileId}?w=1440`}
+          src={duongDanAnh(tam.driveFileId, 1440)}
           alt={tam.fileName}
           onClick={(e) => e.stopPropagation()}
           className="max-h-full max-w-full object-contain"

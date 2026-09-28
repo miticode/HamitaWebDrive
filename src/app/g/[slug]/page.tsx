@@ -24,6 +24,7 @@ import { NutTaiFolder } from "./NutTaiFolder";
 import { HopHoiDap } from "./HopHoiDap";
 import { ngayGon } from "@/lib/hoiDap";
 import { goiCuaMuc } from "@/lib/anhIn";
+import { duongDanAnh } from "@/lib/anhXem";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       type: "website",
-      images: cover ? [{ url: `/api/img/${cover}?w=1440`, width: 1440 }] : undefined,
+      images: cover ? [{ url: duongDanAnh(cover, 1440), width: 1440 }] : undefined,
     },
     // Khách hay gửi link cho nhau, không cần Google lập chỉ mục album riêng tư.
     robots: { index: false, follow: false },
@@ -226,7 +227,7 @@ export default async function GalleryPage({ params }: Props) {
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`/api/img/${cover.id}?w=2048`}
+              src={duongDanAnh(cover.id, 2048)}
               alt=""
               aria-hidden
               className="absolute inset-0 size-full object-cover"
@@ -343,7 +344,7 @@ export default async function GalleryPage({ params }: Props) {
                   <div className="skeleton aspect-[3/4] overflow-hidden rounded-sm">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={`/api/img/${biaCuaMuc(album)}?w=960`}
+                      src={duongDanAnh(biaCuaMuc(album), 960)}
                       alt={album.name}
                       loading="lazy"
                       className="size-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.04]"

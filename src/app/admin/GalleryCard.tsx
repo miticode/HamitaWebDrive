@@ -14,6 +14,7 @@ import { MenuThe, MucMenuLink } from "./MenuThe";
 import { NutLamMoi } from "./NutLamMoi";
 import { NutGuiThongBao } from "./NutGuiThongBao";
 import { XoaAlbumDialog } from "./XoaAlbumDialog";
+import { duongDanAnh } from "@/lib/anhXem";
 
 function Stat({
   icon,
@@ -221,7 +222,7 @@ export function GalleryCard({
         {gallery.coverFileId ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={`/api/img/${gallery.coverFileId}?w=960`}
+            src={duongDanAnh(gallery.coverFileId, 960)}
             alt={title}
             loading="lazy"
             className="size-full object-cover transition duration-700 group-hover:scale-105"

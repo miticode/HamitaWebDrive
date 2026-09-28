@@ -6,6 +6,7 @@ import { DICH_VU, STUDIO, TRANG_DICH_VU } from "@/lib/studio";
 import { STUDIO_NAME } from "@/lib/constants";
 import type { NhomGioiThieu } from "@/lib/nhomGioiThieu";
 import { NavGioiThieu } from "../NavGioiThieu";
+import { duongDanAnh } from "@/lib/anhXem";
 
 /** Chữ đầu trang của một nhóm: lấy từ thẻ tương ứng trong lưới "Hamita chụp gì?". */
 export function chuNhom(nhom: NhomGioiThieu) {
@@ -137,7 +138,7 @@ export function LuoiThuMuc({
                   {t.anhBia && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={`/api/img/${t.anhBia}?w=960`}
+                      src={duongDanAnh(t.anhBia, 960)}
                       alt=""
                       loading={i < 6 ? "eager" : "lazy"}
                       className="absolute inset-0 size-full object-cover transition duration-700 ease-out group-hover:scale-105"

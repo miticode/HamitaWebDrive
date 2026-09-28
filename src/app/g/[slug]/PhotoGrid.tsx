@@ -2,6 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelection, type ClientList } from "./Selection";
+import { duongDanAnh } from "@/lib/anhXem";
 import {
   coKhayChiaSe,
   laIOS,
@@ -295,7 +296,7 @@ const GridPhoto = memo(function GridPhoto({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={`/api/img/${photo.id}?w=640`}
+        src={duongDanAnh(photo.id, 640)}
         alt={photo.name}
         loading="lazy"
         decoding="async"
@@ -495,7 +496,7 @@ function Lightbox({
       const p = photos[near];
       if (!p) continue;
       const img = new window.Image();
-      img.src = `/api/img/${p.id}?w=${size}`;
+      img.src = duongDanAnh(p.id, size);
     }
   }, [index, photos, size]);
 
@@ -553,7 +554,7 @@ function Lightbox({
             làm nền tạm, khách không phải nhìn màn hình đen. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`/api/img/${photo.id}?w=640`}
+          src={duongDanAnh(photo.id, 640)}
           alt=""
           aria-hidden
           onClick={(e) => e.stopPropagation()}
@@ -564,7 +565,7 @@ function Lightbox({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           key={photo.id}
-          src={`/api/img/${photo.id}?w=${size}`}
+          src={duongDanAnh(photo.id, size)}
           alt={photo.name}
           onLoad={() => setLoadedId(photo.id)}
           onClick={(e) => e.stopPropagation()}

@@ -1869,6 +1869,22 @@ thức rồi đối chiếu giờ làm việc của studio — lệch nhiều l�
 
 ---
 
+### 57. Địa chỉ ảnh xem luôn đi qua `duongDanAnh()`
+
+Không bao giờ viết thẳng `/api/img/...?w=640` trong thành phần giao diện. Dùng
+`duongDanAnh(id, 640)` từ `src/lib/anhXem.ts`.
+
+Hàm đó là chỗ DUY NHẤT quyết định ảnh đi qua Cloudflare Worker hay qua Vercel.
+Viết thẳng địa chỉ thì tấm ảnh đó vĩnh viễn đi đường Vercel — mà **không ai
+thấy gì bất thường**: ảnh vẫn hiện đúng, chỉ là tháng sau hoá đơn không giảm
+như tính. Đúng kiểu lỗi không bao giờ tự lộ ra.
+
+Trước 28/09/2026 địa chỉ này nằm rải rác 21 chỗ trong 10 tệp.
+
+Cỡ ảnh truyền vào phải nằm trong `ALLOWED_SIZES` của `/api/img`, và danh sách
+đó phải khớp `CO_ANH` trong `worker/src/anhXem.ts` — hai đường cùng phục vụ
+một trang, lệch nhau thì bật/tắt Worker là ảnh đổi kích thước giữa chừng.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại
