@@ -13,33 +13,21 @@ Worker chỉ giao đúng tấm ảnh trong đường dẫn đã ký.
 
 ## Dựng lần đầu
 
-### 1. Lấy ba thứ từ Google
+### 1. Lấy đủ bí mật bằng MỘT lệnh
 
-Vào Vercel → project `hamita-gallery` → Settings → Environment Variables, chép
-ra hai giá trị:
-
-- `GOOGLE_OAUTH_CLIENT_ID`
-- `GOOGLE_OAUTH_CLIENT_SECRET`
-
-Thứ ba — **mã làm mới của tài khoản studio** — nằm trong database **ở dạng đã
-mã hoá**, lấy bản dùng được bằng:
+Ở thư mục gốc dự án:
 
 ```bash
-npm run xem:refresh-token
+npm run bi-mat-worker
 ```
 
-Lệnh này tự giải mã rồi in ra chuỗi bắt đầu bằng `1//`. Nếu anh thấy chuỗi bắt
-đầu bằng `enc:v1:` thì đó là bản mã hoá — **đừng dùng**, Google sẽ từ chối.
+Lệnh in ra đủ bốn chuỗi cần khai cho Worker, kèm sẵn lệnh phải chạy, và hai
+biến phải khai ở Vercel. Cứ để cửa sổ đó mở, lát nữa chép dần.
 
-### 2. Nghĩ một chuỗi bí mật dùng chung
-
-Chuỗi này để Vercel ký và Worker kiểm chữ ký. Sinh một chuỗi ngẫu nhiên:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-Giữ nguyên chuỗi đó, lát nữa khai ở **cả hai nơi**.
+Vì sao cần lệnh này thay vì vào Vercel xem: Vercel **khoá không cho xem lại**
+giá trị đã khai. Nhưng hai chuỗi của Google vốn nằm sẵn trong `.env.local`
+trên máy studio, còn mã làm mới thì trong database **ở dạng đã mã hoá** —
+lệnh trên tự giải ra.
 
 ### 3. Đưa Worker lên Cloudflare
 
