@@ -47,3 +47,14 @@ export async function demMoMucMoiAlbum(): Promise<Record<string, number>> {
   const ds = await getPrisma().moMuc.groupBy({ by: ["galleryId"], _count: true });
   return Object.fromEntries(ds.map((d) => [d.galleryId, d._count]));
 }
+
+/**
+ * Dấu "người trong tiệm đang xem thử" — đặt ở /xem-thu/[slug], đọc ở trang
+ * khách để bỏ qua việc ghi log (anh yêu cầu 28/09/2026).
+ *
+ * Studio mở link khách trên điện thoại không đăng nhập thì web không biết đó
+ * là người nhà; đi qua cửa /xem-thu thì biết.
+ */
+export const COOKIE_XEM_THU = "xem_thu";
+/** Bốn tiếng: kiểm tra xong là thôi, để lâu hơn thì hôm sau mở thật cũng mất log. */
+export const HAN_XEM_THU_GIAY = 4 * 60 * 60;

@@ -427,8 +427,16 @@ Nay mỗi thẻ album có **nút "Logs"** cạnh bánh răng. Bấm vào hiện 
 - **Từng thư mục khách đã mở**, kèm giờ **lần đầu** mở nó.
 - Chưa ai mở thì ghi rõ "Khách chưa mở thư mục nào".
 
-Bốn điều đã khoá sẵn:
+Năm điều đã khoá sẵn:
 
+- **Bấm ảnh bìa trên thẻ album là "xem thử"**, không vào log. Web đóng một
+  dấu vào máy anh trong 4 tiếng, mọi thư mục mở trong khoảng đó đều không ghi
+  — kể cả khi anh mở tiếp trên điện thoại chưa đăng nhập. Link **chép gửi
+  khách** vẫn là link sạch, khách mở vẫn ghi bình thường.
+- **Lượt Next tải sẵn không tính.** Khi khách mới đứng ở trang danh sách, web
+  đã âm thầm tải trước từng trang thư mục cho bấm vào mở nhanh — nếu tính cả
+  những lượt đó thì log báo khách đã mở hết mọi thư mục dù chưa bấm cái nào.
+  Đã dính đúng lỗi này lúc dựng, nay lọc ra rồi.
 - **Chỉ ghi lần đầu.** Khách mở lại thư mục cũ không sinh thêm dòng nào, nên
   giờ trong log luôn là lần đầu thật.
 - **Lượt của studio không tính.** Người trong tiệm hay mở link kiểm tra — ghi

@@ -1,3 +1,4 @@
+import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ROOT_ALBUM } from "@/lib/constants";
 import { loadTree, loadTreeMoi } from "@/lib/gallery";
@@ -9,7 +10,7 @@ import {
   getSelections,
 } from "@/lib/store";
 import { daMoKhoa } from "@/lib/access";
-import { ghiMoMuc } from "@/lib/moMuc";
+import { COOKIE_XEM_THU, ghiMoMuc } from "@/lib/moMuc";
 import { quyenAlbum } from "@/lib/quyenAlbum";
 import { goiCuaMuc } from "@/lib/anhIn";
 import { DriveLoi } from "@/components/DriveLoi";
@@ -79,13 +80,28 @@ export default async function AlbumPage({ params }: Props) {
     Ghi lại LẦN ĐẦU khách mở thư mục này (anh yêu cầu 28/09/2026) — studio xem
     trong nút "Logs" trên thẻ album.
 
-    Bỏ qua lượt của người trong tiệm: studio hay mở link kiểm tra, ghi cả vào
-    thì thẻ nào cũng báo "khách đã xem" trong khi khách chưa hề mở.
+    Bỏ qua lượt của người trong tiệm theo HAI đường: đang đăng nhập trang quản
+    lý, hoặc vừa đi qua cửa /xem-thu/[slug] (dấu sống bốn tiếng) — đường thứ
+    hai dành cho lúc studio mở link trên điện thoại không đăng nhập. Ghi cả
+    vào thì thẻ nào cũng báo "khách đã xem" trong khi khách chưa hề mở.
 
     Không await kết quả cũng không bắt lỗi ở đây: hàm đó tự nuốt lỗi, và việc
     ghi chép bên lề không được phép làm chậm hay làm hỏng trang của khách.
   */
-  if (!(await quyenAlbum())) {
+  /*
+    BỎ QUA LƯỢT TẢI TRƯỚC. Next tự tải sẵn trang của từng thư mục ngay khi
+    khách mới đứng ở trang danh sách, để bấm vào là mở tức thì. Lượt tải sẵn
+    đó cũng chạy hàm này — không lọc ra thì log báo "khách đã mở" cả mấy thư
+    mục khách chưa hề bấm vào.
+
+    Đã dính thật lúc dựng (28/09/2026): mở đúng một thư mục mà log lại ghi
+    tên một thư mục khác.
+  */
+  const h = await headers();
+  const taiTruoc = h.get("next-router-prefetch") === "1" || h.get("purpose") === "prefetch";
+
+  const xemThu = (await cookies()).get(COOKIE_XEM_THU)?.value === "1";
+  if (!taiTruoc && !xemThu && !(await quyenAlbum())) {
     void ghiMoMuc(gallery.id, wanted, album.name || "Ảnh ngoài thư mục gốc");
   }
 

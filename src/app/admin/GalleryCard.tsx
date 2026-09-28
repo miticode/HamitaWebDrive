@@ -205,9 +205,15 @@ export function GalleryCard({
         Chỉ chặn từ 1536px trở lên: dưới mốc đó cả trang cuộn bình thường, để
         bìa đúng 3:2 cho đẹp. `min-h-36` là sàn cho màn quá thấp.
       */}
+      {/*
+        Bấm ảnh bìa là đi qua /xem-thu — cửa đó đóng dấu "người trong tiệm đang
+        xem thử" (4 tiếng) rồi mới thả vào trang khách, nên những lượt studio
+        tự mở không lọt vào nút "Logs" (anh yêu cầu 28/09/2026). Link CHÉP CHO
+        KHÁCH vẫn là /g/[slug] sạch — xem CopyLink.
+      */}
       <Link
-        href={`/g/${gallery.slug}`}
-        title={`/g/${gallery.slug} · tạo ngày ${new Date(gallery.createdAt).toLocaleDateString("vi-VN")}`}
+        href={`/xem-thu/${gallery.slug}`}
+        title={`Xem thử trang của khách — /g/${gallery.slug} · tạo ngày ${new Date(gallery.createdAt).toLocaleDateString("vi-VN")}`}
         className="relative block aspect-[3/2] overflow-hidden rounded-t-[3px] bg-bg-soft 2xl:max-h-[calc(50vh-255px)] 2xl:min-h-36"
       >
         {gallery.coverFileId ? (
