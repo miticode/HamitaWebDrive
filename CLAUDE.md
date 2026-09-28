@@ -1887,6 +1887,40 @@ một trang, lệch nhau thì bật/tắt Worker là ảnh đổi kích thước
 
 ---
 
+### 58. Trang công khai dùng bản dựng sẵn — đụng vào thì phải gọi `revalidatePath`
+
+Trang chủ và hai trang dịch vụ (`/dich-vu/[nhom]`, `/dich-vu/[nhom]/[muc]`) KHÔNG
+đọc database mỗi lượt nữa. Chúng là bản dựng sẵn, làm mới khi studio sửa.
+
+**Thêm bất kỳ việc nào sửa nội dung hiện trên mấy trang đó thì phải gọi
+`revalidatePath("/")` hoặc `revalidatePath("/dich-vu", "layout")` trong action.**
+Quên là trang đứng nguyên, mà không có lỗi nào hiện ra để biết — studio sẽ
+tưởng máy hỏng. Đã vấp đúng thế với `themNhanVienAction` và `suaNhanVienAction`
+(28/09/2026): đổi phòng ban hay cho nghỉ việc đều không hiện ra khu Đội ngũ.
+
+**Hai việc phải làm cùng lúc, thiếu một là vô ích:**
+
+1. Bỏ `dynamic = "force-dynamic"`, đặt `revalidate = 86400`.
+2. Khai `generateStaticParams` cho mọi đoạn động trên đường dẫn.
+
+Thiếu bước 2 thì Next không biết `[nhom]` nhận giá trị nào nên vẫn dựng lại mỗi
+lượt. Đã đo: chỉ có `revalidate` thôi thì trang vẫn trả `Cache-Control:
+no-store`; thêm `generateStaticParams` mới thành `x-nextjs-cache: HIT`.
+
+Con số 86400 là lưới an toàn cho trường hợp quên gọi `revalidatePath`, không
+phải cách làm mới chính.
+
+**`/dich-vu/[nhom]/anh/[id]` cố ý để nguyên động.** Nó đọc Drive; dựng sẵn nghĩa
+là lúc build phải gọi Drive cho từng cảnh một, Drive trục trặc đúng lúc đó là
+hỏng cả bản dựng — trái nguyên tắc 19.
+
+**Cách kiểm sau khi sửa:** `npm run build` rồi `npm start`, gọi
+`curl -s -o /dev/null -D - http://localhost:3000/` và tìm dòng `x-nextjs-cache`.
+Nhớ giết tiến trình giữ cổng 3000 trước, nếu không đo trúng bản cũ mà không biết
+(`netstat -ano | grep :3000`).
+
+---
+
 ## Đã thử và bị loại — đừng đề xuất lại
 
 - **Nhận diện khách bằng số điện thoại** → đã code xong rồi bỏ theo yêu cầu.

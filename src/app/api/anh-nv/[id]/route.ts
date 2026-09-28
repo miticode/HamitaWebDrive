@@ -37,8 +37,18 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       "Content-Type": "image/jpeg",
       "Content-Length": String(anh.duLieu.length),
       ETag: etag,
-      // Ảnh riêng thì cấm CDN giữ hộ, chỉ cho chính trình duyệt người xem nhớ.
-      "Cache-Control": anh.congKhai ? "public, max-age=300, stale-while-revalidate=86400" : "private, max-age=60",
+      /*
+        Ảnh riêng thì cấm CDN giữ hộ, chỉ cho chính trình duyệt người xem nhớ.
+
+        Ảnh công khai thì giữ thật lâu, vì địa chỉ luôn mang sẵn `?v=<lúc cập
+        nhật>` (xem src/app/page.tsx): đổi ảnh là địa chỉ đổi theo, nên nội
+        dung ở MỘT địa chỉ cụ thể không bao giờ đổi.
+
+        Trước 28/09/2026 chỗ này để 5 phút. Hệ quả: trang giới thiệu tuy đã
+        dựng sẵn nhưng cứ 5 phút lại có người ghé là từng tấm ảnh nhân viên
+        đọc database một lượt — đúng thứ vừa bỏ công cắt ở trang.
+      */
+      "Cache-Control": anh.congKhai ? "public, max-age=31536000, immutable" : "private, max-age=60",
     },
   });
 }

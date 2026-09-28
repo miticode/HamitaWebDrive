@@ -460,6 +460,45 @@ lúc này"**. Không soi ra được vì Cloudflare khoá không cho xem lại. 
 hay dùng: `npm run bi-mat-worker` (xem bí mật) và `npm run khai-bi-mat-worker`
 (khai ba thứ của Google cho Worker).
 
+### Trang giới thiệu thôi đánh thức database (28/09, tối)
+
+Neon tính tiền theo **thời gian database thức**, không theo số câu hỏi. Mà
+database ngủ sau 5 phút không ai gọi — nghĩa là chỉ cần cứ vài phút có một
+lượt gọi là nó thức trọn ngày, kể cả 3 giờ sáng.
+
+**Hai chỗ gọi lén tìm ra được:**
+
+1. **Trang giới thiệu và các trang dịch vụ đọc database mỗi lượt ai ghé.**
+   Chúng công khai nên bot tìm kiếm quét suốt ngày đêm. Nay dùng bản dựng sẵn.
+
+2. **Ảnh đại diện nhân viên chỉ giữ 5 phút.** Chỗ này kín đáo hơn: trang tuy
+   đã dựng sẵn nhưng có **9 tấm ảnh nhân viên**, cứ 5 phút lại có người ghé là
+   chín lượt đọc database. Một mình nó đủ giữ database thức 24/7. Nay giữ một
+   năm — làm được vì địa chỉ ảnh mang sẵn `?v=<lúc cập nhật>`, đổi ảnh là địa
+   chỉ đổi theo.
+
+**Studio sửa vẫn thấy ngay.** Mọi việc đụng tới nội dung mấy trang đó đều báo
+trang dựng lại. Em đã rà từng việc một và tìm ra **hai chỗ thiếu**: thêm nhân
+viên và sửa nhân viên. Không vá thì đổi tên, đổi phòng ban hay cho nghỉ việc
+đều không hiện ra khu Đội ngũ, mà chẳng có lỗi nào báo — studio sẽ tưởng máy
+hỏng. Đã vá.
+
+**Đã đo bằng bản thật trên máy:** ba trang đều trả `x-nextjs-cache: HIT`,
+trước đó là `no-store`. Ảnh nhân viên trả `max-age=31536000, immutable`.
+
+**Một bẫy khi đo:** phải giết tiến trình đang giữ cổng 3000 trước, nếu không
+`npm start` im lặng thất bại và mình đo trúng bản cũ mà không biết. Đã mắc
+đúng lỗi này một lần hôm nay.
+
+**CHƯA HẠ GÓI NEON VỘI.** Chạy vài ngày rồi vào Neon xem CU-giờ thật. Thước
+đo nhanh có sẵn ở nguyên tắc 53: database chạy ở sàn 0,25 CU nên thức trọn
+ngày = 6 CU-giờ/ngày; lấy CU-giờ mỗi ngày chia 0,25 ra số giờ thức. Gói miễn
+phí cho 100 CU-giờ/tháng, tức trung bình phải dưới **3,3 CU-giờ/ngày**
+(≈13 giờ thức). Trước khi sửa là ~4,1.
+
+Dung lượng database chỉ **22 MB**, thừa sức so với hạn 0,5 GB của gói miễn phí
+— nên chỗ vướng duy nhất là compute.
+
 ### Ảnh khách XEM cũng đi qua Worker (28/09, chiều)
 
 Sau khi đường tải chạy ngon, em đo tiếp hoá đơn thật: hai ngày 27–28/09 tốn
