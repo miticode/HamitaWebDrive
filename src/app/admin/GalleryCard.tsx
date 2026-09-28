@@ -138,7 +138,7 @@ export function GalleryCard({
   goiMuc,
   soMayChoTin,
   baoTinLuc,
-  quanLy,
+  duocXoa,
 }: {
   gallery: Gallery;
   counts: ListCount[];
@@ -152,8 +152,10 @@ export function GalleryCard({
   soMayChoTin: number;
   /** Lần cuối bấm "Gửi thông báo" (chuỗi ISO). null = chưa ghi được lần nào. */
   baoTinLuc: string | null;
-  /** Người đang xem là quản lý — chỉ họ thấy nút xoá album (xem quyenAlbumNguyHiem). */
-  quanLy: boolean;
+  /* Duoc xoa album khong: quan ly hoac nguoi phong Media (anh chot 28/09/2026,
+     xem quyenXoaAlbum). Tach khoi `quanLy` vi hai quyen nay khong con la mot;
+     may chu van kiem lai, day chi de do bay nut vo ich. */
+  duocXoa: boolean;
 }) {
   const title = gallery.clientName ?? gallery.title;
   const chuaDongBo = gallery.syncedAt === null;
@@ -424,7 +426,7 @@ export function GalleryCard({
               </button>
 
               {/* Chỉ quản lý được xoá album — xoá nhầm là mất cả lựa chọn ảnh của khách. */}
-              {quanLy && (
+              {duocXoa && (
                 <button
                   type="button"
                   className="muc-menu text-red-700 hover:bg-red-50"
@@ -521,7 +523,7 @@ export function GalleryCard({
         />
       )}
 
-      {moXoa && quanLy && (
+      {moXoa && duocXoa && (
         <XoaAlbumDialog
           galleryId={gallery.id}
           ten={title}

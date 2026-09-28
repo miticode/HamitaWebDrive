@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { adminPasswordIsSet } from "@/lib/auth";
-import { quyenAlbum, quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
+import { quyenAlbum, quyenAlbumNguyHiem, quyenXoaAlbum } from "@/lib/quyenAlbum";
 import { Logo } from "@/components/Logo";
 import { NutDoiTong } from "./NutDoiTong";
 import { TheoDoiKhach } from "./TheoDoiKhach";
@@ -98,6 +98,8 @@ export default async function AdminPage() {
     nút cho đỡ bấm nhầm, chặn thật nằm trong từng action và đường API.
   */
   const quanLy = await quyenAlbumNguyHiem();
+  // Nút xoá album: quản lý + phòng Media (anh chốt 28/09/2026).
+  const duocXoa = await quyenXoaAlbum();
 
   /*
     Ca trang nay chi doc database, khong goi Drive lan nao.
@@ -326,7 +328,7 @@ export default async function AdminPage() {
               goiMuc={goiMuc}
               soMayChoTin={soMayChoTin}
               baoTinLuc={baoTinLuc}
-              quanLy={quanLy}
+              duocXoa={duocXoa}
               thongBao={<ThongBao tin={tinThongBao} />}
               heThong={
                 <ChiManLon>

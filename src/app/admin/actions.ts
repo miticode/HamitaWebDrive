@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { invalidate } from "@/lib/cache";
 import { getFolderName, parseFolderId } from "@/lib/drive";
 import { signOut } from "@/lib/auth";
-import { quyenAlbum, quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
+import { quyenAlbum, quyenAlbumNguyHiem, quyenXoaAlbum } from "@/lib/quyenAlbum";
 import { xoaPhienHienTai } from "@/lib/phienNhanVien";
 import { docLog } from "@/lib/moMuc";
 import { disconnect } from "@/lib/googleAuth";
@@ -121,7 +121,8 @@ export async function createGalleryAction(
 }
 
 export async function deleteGalleryAction(formData: FormData) {
-  if (!(await quyenAlbumNguyHiem())) return;
+  // Quản lý + phòng Media (anh chốt 28/09/2026) — xem quyenXoaAlbum.
+  if (!(await quyenXoaAlbum())) return;
   await deleteGallery(String(formData.get("id")));
   revalidatePath("/admin");
 }

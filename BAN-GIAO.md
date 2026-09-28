@@ -414,6 +414,24 @@ một cái tên. Nếu anh muốn thấy đủ bốn dòng tiêu đề thì nói
 Muốn đổi cách gom nhóm (thêm mảng mới, chuyển mảng sang thương hiệu khác) thì
 sửa `PHAN_DICH_VU` trong `src/lib/studio.ts` — em làm cho.
 
+### Phòng Media xoá được album (28/09)
+
+Trước đây chỉ ban lãnh đạo xoá được album ảnh. Anh chốt mở cho **phòng Media**
+— họ là người dựng album nên cũng là người biết cái nào tạo nhầm hay trùng.
+
+Nay **9 trên 15 người** xoá được: 7 người Media và 2 người ban lãnh đạo. Các
+phòng khác (Phòng Váy, Makeup, Tư Vấn, Marketing) vẫn không thấy nút xoá.
+
+Hai thứ **không** đổi, vẫn chỉ ban lãnh đạo: kết nối / ngắt Google Drive, và
+bản sao lưu dữ liệu.
+
+Nhắc lại cho cả phòng Media biết: **xoá album là không lùi được.** Mất hết ảnh
+khách đã thả tim, mất ghi chú "in cỡ 40x60", và link đã gửi khách chết theo.
+Ảnh trên Drive thì vẫn còn nguyên — web chỉ là lớp hiển thị.
+
+Người vừa được cấp mật khẩu tạm mà chưa đổi thì chưa xoá được, phải đổi mật
+khẩu trước.
+
 ### Nút "Logs" — biết khách đã mở thư mục nào (28/09)
 
 Anh up ảnh xong bấm "gửi thông báo" rồi ngồi đợi, không biết khách đã mở ra

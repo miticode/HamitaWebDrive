@@ -1882,6 +1882,14 @@ thức rồi đối chiếu giờ làm việc của studio — lệch nhiều l�
 
 ---
 
+**56. XOÁ ALBUM: quản lý + phòng Media** (anh chốt 28/09/2026, trước đó chỉ
+quản lý). Hàm `quyenXoaAlbum` trong `quyenAlbum.ts` — KHÁC `quyenAlbumNguyHiem`
+(nay chỉ còn lo kết nối Drive và bản sao lưu). Media là phòng dựng album nên
+họ biết album nào tạo nhầm; bắt đi nhờ quản lý từng cái là tắc việc. Vẫn chặn
+người đang cầm mật khẩu tạm chưa đổi. So phòng ban bằng `boDau`, không phân
+biệt hoa thường — trong bảng nhân viên chữ mỗi nơi một kiểu. Đo 28/09: 9/15
+người xoá được (7 Media + 2 quản lý).
+
 **55. Danh sách nhân viên: quản lý + sale, KHÔNG cho nhân viên thường**
 (anh chốt 25/09/2026). Bảng đó có số điện thoại, ngày vào làm, phòng ban của
 cả tiệm — thông tin cá nhân của đồng nghiệp chứ không phải thứ ai cũng cần mở
