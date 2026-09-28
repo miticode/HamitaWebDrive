@@ -21,11 +21,15 @@ ra hai giá trị:
 - `GOOGLE_OAUTH_CLIENT_ID`
 - `GOOGLE_OAUTH_CLIENT_SECRET`
 
-Thứ ba — **mã làm mới của tài khoản studio** — nằm trong database, lấy bằng:
+Thứ ba — **mã làm mới của tài khoản studio** — nằm trong database **ở dạng đã
+mã hoá**, lấy bản dùng được bằng:
 
 ```bash
 npm run xem:refresh-token
 ```
+
+Lệnh này tự giải mã rồi in ra chuỗi bắt đầu bằng `1//`. Nếu anh thấy chuỗi bắt
+đầu bằng `enc:v1:` thì đó là bản mã hoá — **đừng dùng**, Google sẽ từ chối.
 
 ### 2. Nghĩ một chuỗi bí mật dùng chung
 
