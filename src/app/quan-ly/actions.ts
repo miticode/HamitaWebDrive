@@ -331,6 +331,9 @@ export async function themNhanVienAction(
     chiTiet: { ten: nv.ten },
   });
   revalidatePath("/quan-ly/nhan-vien");
+  /* Trang gioi thieu nay dung ban dung san, khong doc lai database moi luot.
+     Quen dong duoi la nguoi moi khong bao gio hien o khu "Doi ngu". */
+  revalidatePath("/");
   return {};
 }
 
@@ -395,6 +398,9 @@ export async function suaNhanVienAction(
     chiTiet: { ten: cu.ten, doi },
   });
   revalidatePath("/quan-ly/nhan-vien");
+  /* Doi ten, doi phong ban hay cho nghi viec deu doi khu "Doi ngu" o trang
+     gioi thieu — ma trang do dung ban dung san nen phai bao no dung lai. */
+  revalidatePath("/");
   return {};
 }
 

@@ -9,7 +9,19 @@ import { docAnhThuMuc, mucDangCo, type AnhCongKhai } from "@/lib/anhGioiThieu";
 import { KhungDichVu, chuNhom } from "../../../KhungDichVu";
 import { duongDanAnh } from "@/lib/anhXem";
 
-export const dynamic = "force-dynamic";
+/*
+  CỐ Ý KHÔNG dựng sẵn trang này, khác ba trang công khai còn lại.
+
+  Nó phải đọc Drive để lấy danh sách ảnh trong thư mục. Dựng sẵn nghĩa là lúc
+  build phải gọi Drive cho từng cảnh một — Drive trục trặc đúng lúc đó là hỏng
+  cả bản dựng, trái nguyên tắc 19 (Drive lỗi không được giết trang).
+
+  Đánh đổi: mỗi lượt mở trang này vẫn đọc database. Chấp nhận được vì đây là
+  trang trong cùng, khách phải bấm qua hai lớp mới tới, còn bot thì dừng ở
+  lưới ảnh bên ngoài. Dòng dưới vẫn có ích: nó cho phép Next giữ lại kết quả
+  thay vì dựng lại từ đầu mỗi lượt.
+*/
+export const revalidate = 86400;
 
 type Props = { params: Promise<{ nhom: string; id: string }> };
 

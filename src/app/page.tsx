@@ -26,8 +26,26 @@ import { AnhBiaChay } from "./AnhBiaChay";
 import { NutLienHeNoi } from "./NutLienHeNoi";
 import { duongDanAnh } from "@/lib/anhXem";
 
-/* Đọc database mỗi lần mở trang, để anh vừa tích chọn album là thấy ngay. */
-export const dynamic = "force-dynamic";
+/*
+  Dùng bản dựng sẵn, KHÔNG đọc database mỗi lượt mở trang.
+
+  Vì sao đổi (28/09/2026): Neon tính tiền theo thời gian database THỨC, mà
+  trang này công khai nên bot tìm kiếm ghé suốt ngày đêm. Mỗi lượt ghé trước
+  đây là một lần đánh thức, giữ database tỉnh cả những giờ studio đã đóng cửa.
+
+  Studio sửa gì thì thấy ngay: mọi việc đụng tới nội dung ở đây đều gọi
+  revalidatePath("/") hoặc revalidatePath("/dich-vu", "layout") — thêm/xoá
+  cảnh, đặt tên, kéo thứ tự, thêm/sửa/xoá mục, đọc lại Drive, thêm/sửa nhân
+  viên, bật tắt hiện ở khu Đội ngũ, đổi ảnh đại diện, sửa dòng giới thiệu.
+
+  Con số dưới là LƯỚI AN TOÀN, không phải cách làm mới chính: lỡ sau này thêm
+  một việc mà quên gọi revalidatePath thì chậm nhất một ngày trang cũng tự đọc
+  lại, thay vì đứng nguyên mãi mãi.
+
+  THÊM VIỆC SỬA NỘI DUNG TRANG NÀY THÌ PHẢI GỌI revalidatePath. Quên là trang
+  không đổi, mà không có lỗi nào hiện ra để biết.
+*/
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: `${STUDIO.ten} — ${STUDIO.moTa}`,

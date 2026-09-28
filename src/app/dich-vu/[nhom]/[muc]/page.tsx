@@ -1,11 +1,27 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { STUDIO_NAME } from "@/lib/constants";
-import { docMuc, docNhom } from "@/lib/mucDichVu";
+import { docMuc, docNhom, docNhomCoMuc } from "@/lib/mucDichVu";
 import { docThuMucCongKhai, mucDangCo } from "@/lib/anhGioiThieu";
 import { KhungDichVu, LuoiThuMuc, chuNhom } from "../../KhungDichVu";
 
-export const dynamic = "force-dynamic";
+/* Bản dựng sẵn, không đọc database mỗi lượt — xem giải thích đầy đủ ở src/app/page.tsx. */
+export const revalidate = 86400;
+
+/**
+ * Khai trước mọi mục đang có, đọc database MỘT LẦN lúc build.
+ *
+ * Khác trang nhóm ở chỗ danh sách mục do studio tự tạo nên phải hỏi database.
+ * Đổi lại, cả ngày sau đó không phải hỏi lần nào nữa.
+ *
+ * Mục studio vừa tạo mà chưa dựng lại thì Next vẫn phục vụ được (dựng ngay lúc
+ * khách ghé), chỉ là lượt đó có đọc database — chấp nhận, vì tạo mục là việc
+ * dăm bữa nửa tháng, còn bot thì quét suốt ngày.
+ */
+export async function generateStaticParams() {
+  const nhomCoMuc = await docNhomCoMuc();
+  return nhomCoMuc.flatMap((n) => n.muc.map((m) => ({ nhom: n.key, muc: m.key })));
+}
 
 type Props = { params: Promise<{ nhom: string; muc: string }> };
 

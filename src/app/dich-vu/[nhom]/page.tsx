@@ -2,10 +2,27 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { STUDIO_NAME } from "@/lib/constants";
 import { docNhom } from "@/lib/mucDichVu";
+import { NHOM_GIOI_THIEU } from "@/lib/nhomGioiThieu";
 import { docThuMucCongKhai, mucDangCo } from "@/lib/anhGioiThieu";
 import { KhungDichVu, LuoiThuMuc, chuNhom } from "../KhungDichVu";
 
-export const dynamic = "force-dynamic";
+/* Bản dựng sẵn, không đọc database mỗi lượt — xem giải thích đầy đủ ở src/app/page.tsx. */
+export const revalidate = 86400;
+
+/**
+ * Khai trước năm nhóm cố định để Next dựng sẵn trang lúc build.
+ *
+ * Thiếu hàm này thì Next không biết đoạn `[nhom]` nhận những giá trị nào, nên
+ * dựng lại trang mỗi lượt khách ghé — tức đọc database mỗi lượt, đúng cái
+ * đang muốn tránh. Đã đo 28/09/2026: không có nó thì trang trả
+ * `Cache-Control: no-store`; có rồi thì thành bản dựng sẵn.
+ *
+ * Danh sách nhóm nằm ngay trong mã nguồn nên khai được, không phải hỏi
+ * database. Thêm nhóm mới thì sửa `NHOM_GIOI_THIEU`, chỗ này tự theo.
+ */
+export function generateStaticParams() {
+  return NHOM_GIOI_THIEU.map((n) => ({ nhom: n.key }));
+}
 
 type Props = { params: Promise<{ nhom: string }> };
 
