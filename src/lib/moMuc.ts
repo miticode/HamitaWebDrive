@@ -1,0 +1,49 @@
+import { getPrisma } from "./db";
+import { databaseIsConfigured } from "./db";
+
+/**
+ * Ghi lại LẦN ĐẦU khách mở mỗi thư mục con — anh yêu cầu 28/09/2026.
+ *
+ * Studio up ảnh xong bấm "gửi thông báo" rồi ngồi đợi, không biết khách đã mở
+ * ra xem chưa. Trước đây web chỉ biết khách đã vào KHI họ bật thông báo hoặc
+ * thả tim — cả hai đều đến muộn hơn nhiều, còn người xem rồi để đó thì không
+ * để lại dấu vết nào.
+ */
+
+export type DongLog = { albumId: string; tenMuc: string; luc: Date };
+
+/**
+ * Ghi một lượt mở. Gọi được thoải mái: lần thứ hai trở đi không đổi gì, nên
+ * `luc` luôn là lần đầu thật.
+ *
+ * KHÔNG ném lỗi ra ngoài. Đây là việc ghi chép bên lề — Drive trục trặc hay
+ * database bận thì khách vẫn phải xem được ảnh (nguyên tắc 19).
+ */
+export async function ghiMoMuc(galleryId: string, albumId: string, tenMuc: string): Promise<void> {
+  if (!databaseIsConfigured()) return;
+  try {
+    await getPrisma().moMuc.createMany({
+      data: [{ galleryId, albumId, tenMuc }],
+      skipDuplicates: true,
+    });
+  } catch {
+    // Nuốt lỗi có chủ ý: xem chú thích trên.
+  }
+}
+
+/** Log của một album, mới nhất lên đầu. */
+export async function docLog(galleryId: string): Promise<DongLog[]> {
+  const ds = await getPrisma().moMuc.findMany({
+    where: { galleryId },
+    orderBy: { luc: "desc" },
+    select: { albumId: true, tenMuc: true, luc: true },
+  });
+  return ds;
+}
+
+/** Số thư mục khách đã mở, cho mọi album — trang quản lý đọc một lượt. */
+export async function demMoMucMoiAlbum(): Promise<Record<string, number>> {
+  if (!databaseIsConfigured()) return {};
+  const ds = await getPrisma().moMuc.groupBy({ by: ["galleryId"], _count: true });
+  return Object.fromEntries(ds.map((d) => [d.galleryId, d._count]));
+}

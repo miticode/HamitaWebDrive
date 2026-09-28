@@ -6,6 +6,7 @@ import type { BiaMuc, Gallery, GoiMuc, ListCount, MucXong } from "@/lib/store";
 import { MOC_DEM_LUOT_TAI, MOC_GHI_LAN_BAO, MUI_GIO } from "@/lib/constants";
 import { refreshGalleryAction } from "./actions";
 import { CaiDatDialog } from "./CaiDatDialog";
+import { LogKhach } from "./LogKhach";
 import { CopyLink } from "./CopyLink";
 import { CoverPicker } from "./CoverPicker";
 import { TenAlbum } from "./TenAlbum";
@@ -172,6 +173,7 @@ export function GalleryCard({
   const [moXoa, setMoXoa] = useState(false);
   /* Cửa sổ cài đặt album — mở bằng nút bánh răng ngoài mặt thẻ. */
   const [moCaiDat, setMoCaiDat] = useState(false);
+  const [moLog, setMoLog] = useState(false);
 
   /*
     Thẻ ngoài KHÔNG có `overflow-hidden`: bảng "…" mở xuống dưới, thẻ mà cắt
@@ -324,6 +326,21 @@ export function GalleryCard({
             hàng album bên dưới chạy xuống. Nay một cú bấm, mở cửa sổ riêng,
             lưới album đứng yên.
           */}
+            {/*
+              Nút "Logs" (anh yêu cầu 28/09/2026): xem khách đã mở thư mục nào,
+              lần đầu lúc mấy giờ. Để NGOÀI mặt thẻ cạnh bánh răng chứ không
+              nhét vào bảng "…" — up ảnh xong là studio muốn ngó ngay, mà thứ
+              ngó thường xuyên thì đừng bắt bấm hai lần mới tới.
+            */}
+            <button
+              type="button"
+              onClick={() => setMoLog(true)}
+              title={`Khách đã mở thư mục nào của "${title}"`}
+              className="grid h-11 shrink-0 place-items-center rounded-full px-2 text-[11px] font-medium tracking-wide text-fg-faint uppercase transition hover:bg-bg-soft hover:text-fg sm:h-8"
+            >
+              Logs
+            </button>
+
             <button
               type="button"
               onClick={() => setMoCaiDat(true)}
@@ -477,6 +494,10 @@ export function GalleryCard({
           </span>
         </div>
       </div>
+
+      {moLog && (
+        <LogKhach galleryId={gallery.id} ten={title} baoTinLuc={baoTinLuc} dong={() => setMoLog(false)} />
+      )}
 
       {moCaiDat && (
         <CaiDatDialog

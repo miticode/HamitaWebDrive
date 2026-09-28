@@ -414,6 +414,32 @@ một cái tên. Nếu anh muốn thấy đủ bốn dòng tiêu đề thì nói
 Muốn đổi cách gom nhóm (thêm mảng mới, chuyển mảng sang thương hiệu khác) thì
 sửa `PHAN_DICH_VU` trong `src/lib/studio.ts` — em làm cho.
 
+### Nút "Logs" — biết khách đã mở thư mục nào (28/09)
+
+Anh up ảnh xong bấm "gửi thông báo" rồi ngồi đợi, không biết khách đã mở ra
+xem chưa. Trước đây web chỉ biết khách đã vào **khi** họ bật thông báo hoặc
+thả tim — cả hai đều đến muộn hơn nhiều, còn người xem rồi để đó thì không để
+lại dấu vết nào.
+
+Nay mỗi thẻ album có **nút "Logs"** cạnh bánh răng. Bấm vào hiện cửa sổ:
+
+- **Gửi thông báo lần cuối** lúc nào — để đối chiếu.
+- **Từng thư mục khách đã mở**, kèm giờ **lần đầu** mở nó.
+- Chưa ai mở thì ghi rõ "Khách chưa mở thư mục nào".
+
+Bốn điều đã khoá sẵn:
+
+- **Chỉ ghi lần đầu.** Khách mở lại thư mục cũ không sinh thêm dòng nào, nên
+  giờ trong log luôn là lần đầu thật.
+- **Lượt của studio không tính.** Người trong tiệm hay mở link kiểm tra — ghi
+  cả vào thì thẻ nào cũng báo "khách đã xem" trong khi khách chưa hề mở.
+- **Tên thư mục lưu lại lúc khách mở**, nên sau này đổi tên hay xoá thư mục
+  trên Drive thì log cũ vẫn đọc được.
+- **Log hỏng không làm hỏng trang khách**: việc ghi chép này tự nuốt lỗi.
+
+Cửa sổ chỉ đọc database khi anh bấm nút, không tải sẵn cho từng thẻ — lưới có
+mấy chục album, tải sẵn hết là mấy chục lượt hỏi mà phần lớn không ai xem.
+
 ### Khu "Đội ngũ" trên trang giới thiệu (25/09)
 
 Anh muốn giới thiệu từng người trong studio. Danh sách **lấy thẳng từ mục Nhân

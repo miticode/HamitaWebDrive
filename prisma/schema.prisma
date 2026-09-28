@@ -145,6 +145,7 @@ model Gallery {
   lists        SelectionList[]
   pushSubs     PushSub[]
   mucXong      MucXong[]
+  moMuc        MoMuc[]
   biaMuc       BiaMuc[]
   goiMuc       GoiMuc[]
   anhGioiThieu AnhGioiThieu[]
@@ -163,6 +164,35 @@ model Gallery {
 /// Giu ca ten thu muc luc bao, de thong bao ve studio noi ro duoc khach vua
 /// chon xong o dau — va van doc duoc ke ca khi sau do thu muc bi doi ten tren
 /// Drive.
+/// Lan DAU TIEN khach mo mot thu muc con — anh yeu cau 28/09/2026.
+///
+/// Studio up anh xong bam "gui thong bao", roi ngoi doi khong biet khach da mo
+/// ra xem chua. Truoc day web khong ghi gi ca: chi biet khach da mo KHI ho bat
+/// thong bao hoac tha tim — ma ca hai deu den muon hon nhieu, con nguoi xem
+/// roi de do thi khong de lai dau vet nao.
+///
+/// CHI GHI LAN DAU (anh chot): khoa khong trung theo (galleryId, albumId) va
+/// ghi bang createMany skipDuplicates — lan mo thu hai tro di khong dong nao
+/// thay doi, nen "luc" luon la lan dau that.
+///
+/// KHONG ghi luot cua studio: nguoi trong tiem hay mo link kiem tra, ghi ca
+/// vao thi the nao cung bao "khach da xem" trong khi khach chua he mo.
+model MoMuc {
+  id        String   @id @default(cuid())
+  galleryId String
+  /// Ma thu muc con. Chuoi rong = anh nam ngay thu muc goc.
+  albumId   String
+  /// Ten thu muc doc tu Drive luc khach mo — de log con doc duoc ca khi sau
+  /// nay thu muc bi doi ten hoac xoa.
+  tenMuc    String
+  luc       DateTime @default(now())
+
+  gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  @@unique([galleryId, albumId])
+  @@index([galleryId])
+}
+
 model MucXong {
   id        String   @id @default(cuid())
   galleryId String

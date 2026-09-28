@@ -8,6 +8,7 @@ import { getFolderName, parseFolderId } from "@/lib/drive";
 import { signOut } from "@/lib/auth";
 import { quyenAlbum, quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
 import { xoaPhienHienTai } from "@/lib/phienNhanVien";
+import { docLog } from "@/lib/moMuc";
 import { disconnect } from "@/lib/googleAuth";
 import { MA_MAC_DINH, sinhMa } from "@/lib/access";
 import { chiCoMa, ghepMaVoiTenThuMuc } from "@/lib/maAlbum";
@@ -425,4 +426,25 @@ export async function regenerateCodeAction(galleryId: string) {
   await setAccess(galleryId, sinhMa());
   revalidatePath("/admin");
   return {};
+}
+
+export type DongLogGon = { albumId: string; tenMuc: string; luc: string };
+
+/**
+ * Log "khách đã mở thư mục nào" của một album (anh yêu cầu 28/09/2026).
+ *
+ * Đọc khi studio bấm nút "Logs" chứ không tải sẵn theo thẻ: lưới có mấy chục
+ * album, tải sẵn hết là mấy chục lượt hỏi database mà phần lớn không ai xem
+ * (nguyên tắc 53).
+ */
+export async function docLogAction(
+  galleryId: string,
+): Promise<{ loi?: string; ds?: DongLogGon[] }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  try {
+    const ds = await docLog(galleryId);
+    return { ds: ds.map((d) => ({ albumId: d.albumId, tenMuc: d.tenMuc, luc: d.luc.toISOString() })) };
+  } catch {
+    return { loi: "Không đọc được log lúc này, anh chị thử lại sau ít phút." };
+  }
 }

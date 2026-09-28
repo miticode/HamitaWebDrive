@@ -9,6 +9,8 @@ import {
   getSelections,
 } from "@/lib/store";
 import { daMoKhoa } from "@/lib/access";
+import { ghiMoMuc } from "@/lib/moMuc";
+import { quyenAlbum } from "@/lib/quyenAlbum";
 import { goiCuaMuc } from "@/lib/anhIn";
 import { DriveLoi } from "@/components/DriveLoi";
 import { AlbumView } from "../AlbumView";
@@ -71,6 +73,20 @@ export default async function AlbumPage({ params }: Props) {
     if (!moi || !timLai) notFound();
     tree = moi;
     album = timLai;
+  }
+
+  /*
+    Ghi lại LẦN ĐẦU khách mở thư mục này (anh yêu cầu 28/09/2026) — studio xem
+    trong nút "Logs" trên thẻ album.
+
+    Bỏ qua lượt của người trong tiệm: studio hay mở link kiểm tra, ghi cả vào
+    thì thẻ nào cũng báo "khách đã xem" trong khi khách chưa hề mở.
+
+    Không await kết quả cũng không bắt lỗi ở đây: hàm đó tự nuốt lỗi, và việc
+    ghi chép bên lề không được phép làm chậm hay làm hỏng trang của khách.
+  */
+  if (!(await quyenAlbum())) {
+    void ghiMoMuc(gallery.id, wanted, album.name || "Ảnh ngoài thư mục gốc");
   }
 
   /*
