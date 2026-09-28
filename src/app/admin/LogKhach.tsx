@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { docLogAction, type DongLogGon } from "./actions";
+import { docLogAction, type DongLogGon, type ViecStudioGon } from "./actions";
+import { CHU_HANH_DONG, type HanhDong } from "@/lib/nhatKyChung";
 import { MUI_GIO } from "@/lib/constants";
 
 /**
@@ -36,6 +37,7 @@ export function LogKhach({
   dong: () => void;
 }) {
   const [ds, setDs] = useState<DongLogGon[] | null>(null);
+  const [viec, setViec] = useState<ViecStudioGon[]>([]);
   const [loi, setLoi] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,7 +45,10 @@ export function LogKhach({
     docLogAction(galleryId).then((kq) => {
       if (boQua) return;
       if (kq.loi) setLoi(kq.loi);
-      else setDs(kq.ds ?? []);
+      else {
+        setDs(kq.ds ?? []);
+        setViec(kq.viec ?? []);
+      }
     });
     return () => {
       boQua = true;
@@ -76,7 +81,7 @@ export function LogKhach({
           ✕
         </button>
 
-        <p className="eyebrow">Khách đã mở</p>
+        <p className="eyebrow">Nhật ký album</p>
         <h2 className="mt-1 pr-10 font-display text-2xl">{ten}</h2>
 
         {baoTinLuc && (
@@ -84,6 +89,35 @@ export function LogKhach({
         )}
 
         {loi && <p className="mt-4 text-sm text-red-700">{loi}</p>}
+
+        {/*
+          Studio làm gì với album này — ai bấm gửi thông báo lúc mấy giờ là câu
+          anh hỏi 28/09/2026. Đặt TRÊN phần của khách vì việc studio xảy ra
+          trước: gửi tin rồi khách mới mở.
+        */}
+        {viec.length > 0 && (
+          <>
+            <p className="eyebrow mt-5">Studio đã làm</p>
+            <ul className="mt-2 divide-y divide-line border-y border-line">
+              {viec.map((v, i) => (
+                <li key={i} className="flex items-baseline justify-between gap-4 py-2.5">
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium">
+                      {CHU_HANH_DONG[v.hanhDong as HanhDong] ?? v.hanhDong}
+                      {v.daGui !== undefined && (
+                        <span className="ml-1.5 font-normal text-fg-muted">
+                          · {v.daGui > 0 ? `tới ${v.daGui} máy` : "không máy nào nhận"}
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-xs text-fg-muted">{v.nguoiTen}</span>
+                  </span>
+                  <span className="shrink-0 text-xs text-fg-muted tabular-nums">{GIO_NGAY.format(new Date(v.luc))}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
 
         {!loi && ds === null && <p className="mt-4 text-sm text-fg-muted">Đang đọc…</p>}
 
@@ -94,7 +128,9 @@ export function LogKhach({
         )}
 
         {ds !== null && ds.length > 0 && (
-          <ul className="mt-4 divide-y divide-line border-y border-line">
+          <>
+            <p className="eyebrow mt-5">Khách đã mở</p>
+          <ul className="mt-2 divide-y divide-line border-y border-line">
             {ds.map((d) => (
               <li key={d.albumId || "goc"} className="flex items-baseline justify-between gap-4 py-2.5">
                 <span className="min-w-0 truncate text-sm font-medium">{d.tenMuc}</span>
@@ -102,6 +138,7 @@ export function LogKhach({
               </li>
             ))}
           </ul>
+          </>
         )}
 
         <p className="mt-3 text-[11px] leading-relaxed text-fg-faint">

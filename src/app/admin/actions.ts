@@ -7,8 +7,9 @@ import { invalidate } from "@/lib/cache";
 import { getFolderName, parseFolderId } from "@/lib/drive";
 import { signOut } from "@/lib/auth";
 import { quyenAlbum, quyenAlbumNguyHiem, quyenXoaAlbum } from "@/lib/quyenAlbum";
-import { xoaPhienHienTai } from "@/lib/phienNhanVien";
-import { docLog } from "@/lib/moMuc";
+import { layNguoiDung, xoaPhienHienTai } from "@/lib/phienNhanVien";
+import { ghiNhatKy, type HanhDong } from "@/lib/nhatKy";
+import { docLog, docViecStudio } from "@/lib/moMuc";
 import { disconnect } from "@/lib/googleAuth";
 import { MA_MAC_DINH, sinhMa } from "@/lib/access";
 import { chiCoMa, ghepMaVoiTenThuMuc } from "@/lib/maAlbum";
@@ -39,6 +40,32 @@ export type ActionState = { error?: string; ok?: string };
  * 16/09/2026 hai đường đăng nhập gộp làm một, chỉ xoá một bên thì bấm "Đăng
  * xuất" xong vẫn vào lại được như thường, mà người bấm tưởng mình đã ra.
  */
+/**
+ * Ghi một việc vừa làm trên trang album vào Nhật ký thao tác (anh yêu cầu
+ * 28/09/2026).
+ *
+ * Trước đó nhật ký chỉ theo dõi phần CRM; cả mảng ảnh — nơi phòng Media làm
+ * việc suốt ngày — không ghi gì, nên xoá nhầm một album là không truy được ai.
+ *
+ * Người đăng nhập bằng MẬT KHẨU QUẢN LÝ CHUNG không gắn với nhân viên nào,
+ * nên ghi rõ là tài khoản chung thay vì để "(không rõ)" — đọc lại còn biết
+ * đường mà hỏi.
+ */
+async function ghiViecAlbum(
+  hanhDong: HanhDong,
+  galleryId: string | null,
+  chiTiet?: Record<string, unknown>,
+): Promise<void> {
+  const nguoi = await layNguoiDung();
+  await ghiNhatKy({
+    nguoi: nguoi ? { id: nguoi.id, ten: nguoi.ten } : { id: null, ten: "Tài khoản quản lý chung" },
+    hanhDong,
+    doiTuong: "album",
+    doiTuongId: galleryId ?? undefined,
+    chiTiet,
+  });
+}
+
 export async function logoutAction() {
   await signOut();
   await xoaPhienHienTai();
@@ -114,6 +141,8 @@ export async function createGalleryAction(
   // luc nay cung khong phai doi tung tam mot.
   after(() => syncAndWarm(gallery.id, folderId).catch(() => {}));
 
+  await ghiViecAlbum("tao-album", gallery.id, { ten: clientName || folderName, thuMucDrive: folderId });
+
   revalidatePath("/admin");
   return {
     ok: `Đã tạo gallery cho "${folderName}". Đang dựng sẵn ảnh đầu tiên…`,
@@ -123,7 +152,14 @@ export async function createGalleryAction(
 export async function deleteGalleryAction(formData: FormData) {
   // Quản lý + phòng Media (anh chốt 28/09/2026) — xem quyenXoaAlbum.
   if (!(await quyenXoaAlbum())) return;
-  await deleteGallery(String(formData.get("id")));
+  const id = String(formData.get("id"));
+  // Đọc tên TRƯỚC khi xoá: xoá xong thì không còn gì để mà ghi vào nhật ký.
+  const g = await getGalleryById(id).catch(() => null);
+  await deleteGallery(id);
+  await ghiViecAlbum("xoa-album", id, {
+    ten: g?.clientName ?? g?.title ?? "(không đọc được tên)",
+    thuMucDrive: g?.driveFolderId,
+  });
   revalidatePath("/admin");
 }
 
@@ -138,6 +174,8 @@ export async function refreshGalleryAction(formData: FormData) {
 
   // Doc lai so lieu tu Drive roi dung san anh cua nhung folder vua them.
   after(() => syncAndWarm(galleryId, folderId).catch(() => {}));
+
+  await ghiViecAlbum("lam-moi-album", galleryId);
 
   revalidatePath("/admin");
 }
@@ -178,6 +216,13 @@ export async function guiThongBaoAction(
     bai, vi tin da roi vao dien thoai khach roi. Cung ly do voi `ghiMoc` o
     duong sao luu.
   */
+  /*
+    Ghi nhật ký cả khi KHÔNG máy nào nhận được (anh yêu cầu 28/09/2026): mốc
+    "đã báo tin" thì chỉ ghi khi có người nhận, còn nhật ký là để trả lời "ai
+    đã bấm nút này lúc mấy giờ" — bấm hụt cũng là đã bấm.
+  */
+  await ghiViecAlbum("gui-thong-bao", galleryId, { daGui: kq.daGui, ten: g.clientName ?? g.title });
+
   if (kq.daGui > 0) {
     await ghiMoc(khoaBaoTin(galleryId), new Date()).catch(() => {});
     revalidatePath("/admin");
@@ -221,6 +266,7 @@ export async function disconnectDriveAction() {
 export async function setCoverAction(galleryId: string, fileId: string | null) {
   if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
   await setCover(galleryId, fileId);
+  await ghiViecAlbum("sua-album", galleryId, { doi: "ảnh bìa" });
   revalidatePath("/admin");
   return {};
 }
@@ -236,6 +282,8 @@ export async function setAccessAction(
   if (ma.length < 4) return { error: "Mã phải có ít nhất 4 ký tự." };
 
   await setAccess(galleryId, ma);
+  // KHÔNG ghi chính cái mã vào nhật ký — nhật ký là thứ nhiều người đọc được.
+  await ghiViecAlbum("sua-album", galleryId, { doi: "mã chọn ảnh" });
   revalidatePath("/admin");
   return {};
 }
@@ -256,6 +304,7 @@ export async function setMessageAction(
   if (noiDung.length > 500) return { error: "Lời nhắn dài quá 500 ký tự." };
 
   await setMessage(galleryId, noiDung || null);
+  await ghiViecAlbum("sua-album", galleryId, { doi: "lời nhắn", coNoiDung: noiDung.length > 0 });
   revalidatePath("/admin");
   return {};
 }
@@ -296,6 +345,7 @@ export async function setGoiAnhAction(
   }
 
   await setGoiAnh(galleryId, so, GIA_ANH_THEM_MAC_DINH);
+  await ghiViecAlbum("sua-album", galleryId, { doi: "gói ảnh", soAnhTrongGoi: so });
   revalidatePath("/admin");
   // So nay hien o trang khach xem nen phai lam moi ca duong do.
   revalidatePath("/", "layout");
@@ -360,6 +410,7 @@ export async function setClientNameAction(
   if (sach.length > 120) return { error: "Tên dài quá 120 ký tự." };
 
   await setClientName(galleryId, sach || null);
+  await ghiViecAlbum("sua-album", galleryId, { doi: "tên album", tenMoi: sach });
   revalidatePath("/admin");
   // Ten hien ca o trang khach xem lan the xem truoc luc gui link.
   revalidatePath("/", "layout");
@@ -393,6 +444,7 @@ export async function setExpiryAction(
   }
 
   await setExpiry(galleryId, expiresAt);
+  await ghiViecAlbum("sua-album", galleryId, { doi: "hạn giữ ảnh", hanMoi: expiresAt });
   revalidatePath("/admin");
   return {};
 }
@@ -425,11 +477,13 @@ export async function setBiaMucAction(
 export async function regenerateCodeAction(galleryId: string) {
   if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
   await setAccess(galleryId, sinhMa());
+  await ghiViecAlbum("sua-album", galleryId, { doi: "sinh mã chọn ảnh mới" });
   revalidatePath("/admin");
   return {};
 }
 
 export type DongLogGon = { albumId: string; tenMuc: string; luc: string };
+export type ViecStudioGon = { hanhDong: string; nguoiTen: string; luc: string; daGui?: number };
 
 /**
  * Log "khách đã mở thư mục nào" của một album (anh yêu cầu 28/09/2026).
@@ -440,11 +494,22 @@ export type DongLogGon = { albumId: string; tenMuc: string; luc: string };
  */
 export async function docLogAction(
   galleryId: string,
-): Promise<{ loi?: string; ds?: DongLogGon[] }> {
+): Promise<{ loi?: string; ds?: DongLogGon[]; viec?: ViecStudioGon[] }> {
   if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
   try {
-    const ds = await docLog(galleryId);
-    return { ds: ds.map((d) => ({ albumId: d.albumId, tenMuc: d.tenMuc, luc: d.luc.toISOString() })) };
+    const [ds, viec] = await Promise.all([docLog(galleryId), docViecStudio(galleryId)]);
+    return {
+      ds: ds.map((d) => ({ albumId: d.albumId, tenMuc: d.tenMuc, luc: d.luc.toISOString() })),
+      viec: viec.map((v) => {
+        const ct = v.chiTiet as { daGui?: number } | null;
+        return {
+          hanhDong: v.hanhDong,
+          nguoiTen: v.nguoiTen,
+          luc: v.luc.toISOString(),
+          daGui: typeof ct?.daGui === "number" ? ct.daGui : undefined,
+        };
+      }),
+    };
   } catch {
     return { loi: "Không đọc được log lúc này, anh chị thử lại sau ít phút." };
   }

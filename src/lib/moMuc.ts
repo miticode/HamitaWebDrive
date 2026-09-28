@@ -58,3 +58,24 @@ export async function demMoMucMoiAlbum(): Promise<Record<string, number>> {
 export const COOKIE_XEM_THU = "xem_thu";
 /** Bốn tiếng: kiểm tra xong là thôi, để lâu hơn thì hôm sau mở thật cũng mất log. */
 export const HAN_XEM_THU_GIAY = 4 * 60 * 60;
+
+/**
+ * Việc studio đã làm với một album — đọc từ Nhật ký thao tác (anh yêu cầu
+ * 28/09/2026: "ghi trong logs trên album là ai đã ấn nút gửi thông báo vào
+ * lúc mấy giờ").
+ *
+ * Đọc ngược từ bảng nhật ký chứ không chép sang bảng khác: một việc ghi hai
+ * nơi là sớm muộn hai nơi lệch nhau, mà nhật ký thì đã có sẵn người và giờ.
+ */
+export type ViecStudio = { hanhDong: string; nguoiTen: string; luc: Date; chiTiet: unknown };
+
+export async function docViecStudio(galleryId: string): Promise<ViecStudio[]> {
+  if (!databaseIsConfigured()) return [];
+  const ds = await getPrisma().nhatKy.findMany({
+    where: { doiTuong: "album", doiTuongId: galleryId },
+    orderBy: { luc: "desc" },
+    take: 30,
+    select: { hanhDong: true, nguoiTen: true, luc: true, chiTiet: true },
+  });
+  return ds;
+}
