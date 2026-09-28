@@ -29,7 +29,7 @@ giá trị đã khai. Nhưng hai chuỗi của Google vốn nằm sẵn trong `.
 trên máy studio, còn mã làm mới thì trong database **ở dạng đã mã hoá** —
 lệnh trên tự giải ra.
 
-### 3. Đưa Worker lên Cloudflare
+### 2. Đưa Worker lên Cloudflare
 
 ```bash
 cd worker
@@ -39,7 +39,7 @@ npx wrangler deploy
 
 Xong sẽ hiện địa chỉ dạng `https://hamita-tai-anh.<tên-anh>.workers.dev`.
 
-### 4. Khai bốn thứ bí mật cho Worker
+### 3. Khai bốn thứ bí mật cho Worker
 
 ```bash
 npx wrangler secret put KY_CHUNG
@@ -51,14 +51,14 @@ npx wrangler secret put GOOGLE_REFRESH_TOKEN
 Mỗi lệnh sẽ hỏi rồi anh dán giá trị vào. Những thứ này **không hiện lại** trên
 bảng điều khiển Cloudflare sau khi khai.
 
-### 5. Bật ở Vercel
+### 4. Bật ở Vercel
 
 Vào Vercel → Settings → Environment Variables, thêm hai biến cho **Production**:
 
 | Tên | Giá trị |
 |---|---|
-| `TAI_ANH_WORKER_URL` | địa chỉ Worker ở bước 3 |
-| `TAI_ANH_KY_CHUNG` | chuỗi bí mật ở bước 2 |
+| `TAI_ANH_WORKER_URL` | địa chỉ Worker ở bước 2 |
+| `TAI_ANH_KY_CHUNG` | chuỗi `KY_CHUNG` ở bước 1 |
 
 Rồi **Redeploy**. Từ lúc này ảnh tải về đi qua Cloudflare.
 
@@ -88,6 +88,11 @@ vẫn nằm đó, không ảnh hưởng gì.
   `GOOGLE_REFRESH_TOKEN` cho Worker, nếu không khách tải sẽ gặp lỗi 502.
 - **`worker/src/jpeg.ts` là bản sao của `src/lib/jpeg.ts`.** Sửa một bên thì
   phải sửa bên kia, nếu không ảnh tải từ Worker và từ Vercel sẽ khác nhau.
+- **`npm run bi-mat-worker` sinh `KY_CHUNG` MỚI mỗi lần chạy.** Chạy lại để
+  xem ba thứ của Google thì cứ xem, nhưng đừng khai lại riêng `KY_CHUNG` —
+  Worker và Vercel lệch nhau là khách bấm tải gặp 403. Muốn đổi thì đổi cả hai
+  nơi cùng lúc: `npx wrangler secret put KY_CHUNG` rồi sửa `TAI_ANH_KY_CHUNG`
+  ở Vercel và redeploy.
 - **Quyền của mã làm mới là `drive.readonly`** — đọc được toàn bộ Drive của
   tài khoản studio, không riêng thư mục ảnh khách. Đây là điều đã biết và chấp
   nhận khi chọn cách này (28/09/2026).
