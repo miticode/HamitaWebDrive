@@ -2012,6 +2012,30 @@ Luật chung: trong flex, `shrink-0` chỉ dành cho thứ có bề rộng CỐ 
 mục, tên khách — thì `min-w-0` cộng `truncate` hoặc `flex-wrap`, không bao giờ
 `shrink-0`.
 
+**ĐỔI ĐƯỜNG TẢI SANG TÊN MIỀN KHÁC LÀM CHẾT MỌI LƯỢT `fetch` CỦA TRANG.**
+Anh gặp thật trên điện thoại ngày 29/09/2026: bấm "Lưu ảnh" chỉ thấy
+*"Chưa tải được — bấm thử lại nhé"*.
+
+Nút đó không mở link mà gọi `fetch` để lấy tệp vào bộ nhớ rồi đưa sang khay
+chia sẻ của máy (bắt buộc với iPhone, xem nguyên tắc 44). Khi `/api/download`
+còn cùng tên miền với trang thì không phải xin phép gì. Từ lúc nó chuyển hướng
+sang `workers.dev`, lượt `fetch` ấy thành **khác tên miền** — trình duyệt chặn
+nếu bên nhận không khai `Access-Control-Allow-Origin`, và chặn **sau khi** đã
+theo chuyển hướng nên chẳng có mã lỗi nào để lần.
+
+**Vì sao máy tính vẫn tải được, làm lỗi ẩn thêm một ngày:** trên máy tính và
+Android, nút tải trỏ thẻ `<a download>` thẳng vào đường dẫn — điều hướng thật,
+không phải `fetch`, nên không dính luật này. Chỉ đường đi qua `fetch` mới chết.
+
+Nay Worker kèm lời cho phép vào **mọi** phản hồi của `/t/`, kể cả báo lỗi:
+thiếu nó thì ngay cả câu "đường dẫn hết hạn" cũng không tới được trang, khách
+chỉ thấy lỗi chung chung. Chỉ cho phép đúng tên miền đang hỏi (đọc từ
+`HOST_CHO_PHEP`), không dùng `*`.
+
+**Luật rút ra: dời một đường API sang tên miền khác thì phải rà xem có chỗ nào
+gọi nó bằng `fetch` không.** Thẻ `<a>` và `<img>` không sao, `fetch` và
+`XMLHttpRequest` thì chết — mà hai thứ đó lại hay nằm ở đường quan trọng nhất.
+
 **Chữ bị `truncate` thì phải có `title`.** Ba dòng trên thẻ album bị cắt mà
 không có cách nào xem lại: tên album, lời nhắn, và dòng đường dẫn kèm ngày tạo.
 Cắt cho vừa thẻ là đúng, nhưng cắt xong không cho xem lại là mất thông tin thật —

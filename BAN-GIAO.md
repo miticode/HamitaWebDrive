@@ -460,6 +460,26 @@ lúc này"**. Không soi ra được vì Cloudflare khoá không cho xem lại. 
 hay dùng: `npm run bi-mat-worker` (xem bí mật) và `npm run khai-bi-mat-worker`
 (khai ba thứ của Google cho Worker).
 
+### Vá lỗi khách không lưu được ảnh trên điện thoại (29/09)
+
+Anh báo sáng 29/09: bấm "Lưu ảnh" trên iPhone chỉ thấy **"Chưa tải được —
+bấm thử lại nhé"**. Lỗi do chính việc chuyển đường tải sang Cloudflare hôm 28/09.
+
+**Vì sao:** nút đó trên điện thoại không mở link mà phải lấy tệp vào bộ nhớ
+rồi đưa sang khay chia sẻ của máy — iPhone không có đường nào khác. Lượt lấy
+đó trước đây cùng tên miền với trang nên không phải xin phép; từ khi đường tải
+nhảy sang workers.dev thì thành khác tên miền và trình duyệt chặn.
+
+**Vì sao máy tính không sao, làm lỗi ẩn thêm một ngày:** trên máy tính và
+Android, nút tải mở thẳng đường dẫn chứ không lấy tệp vào bộ nhớ. Hôm 28/09
+em thử trên máy tính nên thấy chạy tốt.
+
+**Đã vá và đo trọn đường khách đi:** Vercel chuyển hướng sang Worker, Worker
+trả ảnh kèm lời cho phép, file JPEG 1,6 MB về đúng tên. Chỉ trang của studio
+được phép; web khác gọi vẫn bị từ chối.
+
+Chỉ sửa Worker, **không cần dựng lại web**.
+
 ### Trang giới thiệu thôi đánh thức database (28/09, tối)
 
 Neon tính tiền theo **thời gian database thức**, không theo số câu hỏi. Mà
