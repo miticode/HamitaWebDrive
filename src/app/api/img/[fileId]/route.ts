@@ -1,8 +1,6 @@
 import { NextRequest } from "next/server";
-import sharp from "sharp";
-import { downloadFile, fetchThumbnail } from "@/lib/drive";
+import { fetchThumbnail } from "@/lib/drive";
 import { readCache, writeCache } from "@/lib/imageCache";
-import { TRAN_DIEM_ANH } from "@/lib/constants";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -49,16 +47,6 @@ function laNhungTuNoiKhac(req: NextRequest): boolean {
   }
 }
 
-/**
- * Uu tien ban dung san cua Google o moi kich thuoc.
- * Ban goc o day co the nang 6MB; tai ve chi de thu nho lai vua cham vua ton
- * bang thong. Chi tai ban goc khi Drive chua sinh ban dung san.
- */
-async function loadSource(fileId: string, size: number): Promise<Buffer> {
-  const thumb = await fetchThumbnail(fileId, size);
-  if (thumb) return thumb;
-  return downloadFile(fileId);
-}
 
 export async function GET(
   req: NextRequest,
@@ -70,37 +58,47 @@ export async function GET(
 
   const { fileId } = await ctx.params;
   const size = pickSize(req.nextUrl.searchParams.get("w"));
-  const blur = req.nextUrl.searchParams.get("blur") === "1";
-  const cacheKey = `${fileId}:${size}:${blur ? "blur" : "sharp"}:webp:v2`;
+  const cacheKey = `${fileId}:${size}:google:v3`;
 
   try {
-    let output = await readCache(cacheKey);
-
-    if (!output) {
-      const source = await loadSource(fileId, size);
-      // Noi tran diem anh: anh in kho lon vuot xa muc mac dinh cua sharp.
-      // Xem giai thich day du o TRAN_DIEM_ANH trong constants.ts.
-      let pipeline = sharp(source, { failOn: "none", limitInputPixels: TRAN_DIEM_ANH })
-        .rotate() // tu xoay theo EXIF
-        // fit "inside" = gioi han ca hai chieu, tuc la chan theo canh dai
-        .resize({ width: size, height: size, fit: "inside", withoutEnlargement: true });
-
-      if (blur) pipeline = pipeline.blur(12);
-
-      output = await pipeline.webp({ quality: blur ? 40 : 80 }).toBuffer();
-      await writeCache(cacheKey, output);
+    const sanCo = await readCache(cacheKey);
+    if (sanCo) {
+      return traAnh(sanCo, "image/webp");
     }
 
-    return new Response(new Uint8Array(output), {
-      headers: {
-        "Content-Type": "image/webp",
-        "Content-Length": String(output.length),
-        // Noi dung cua mot fileId + size la bat bien -> cache that lau o CDN.
-        "Cache-Control": "public, max-age=31536000, s-maxage=31536000, immutable",
-      },
-    });
+    /*
+      Lay THANG ban dung san cua Google, khong nen lai lan nao.
+
+      Truoc 30/09/2026 cho nay tai anh ve roi cho sharp thu nho va doi sang
+      WebP. Nay Google tra san WebP dung co (hau to "-rw" trong fetchThumbnail),
+      nen bo han sharp: nhanh hon, khong ton CPU, va ban WebP cua Google do
+      duoc la trung thuc ngang — o co 2048 con net hon.
+
+      Anh KHONG co ban dung san thi tra 404 chu khong tu thu nho: khong con
+      thu vien nao lam viec do. Da do 25/25 anh that deu co ban dung san, nen
+      truong hop nay rat hiem; Worker ban anh gap thi tu quay ve day, va day
+      tra 404 thi <img> chi hien o trong.
+    */
+    const thumb = await fetchThumbnail(fileId, size);
+    if (!thumb) {
+      return Response.json({ error: "Ảnh này chưa có bản dựng sẵn." }, { status: 404 });
+    }
+
+    await writeCache(cacheKey, thumb.du);
+    return traAnh(thumb.du, thumb.kieu);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Loi khong xac dinh";
     return Response.json({ error: message }, { status: 502 });
   }
+}
+
+function traAnh(du: Buffer, kieu: string): Response {
+  return new Response(new Uint8Array(du), {
+    headers: {
+      "Content-Type": kieu,
+      "Content-Length": String(du.length),
+      // Noi dung cua mot fileId + size la bat bien -> cache that lau o CDN.
+      "Cache-Control": "public, max-age=31536000, s-maxage=31536000, immutable",
+    },
+  });
 }

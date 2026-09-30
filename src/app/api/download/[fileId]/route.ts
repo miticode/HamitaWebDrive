@@ -1,12 +1,10 @@
 import { createHmac } from "node:crypto";
 import { NextRequest } from "next/server";
 import { after } from "next/server";
-import sharp from "sharp";
 import { downloadFile, getFileMeta } from "@/lib/drive";
 import { boMetadataJpeg } from "@/lib/jpeg";
 import { loadTree } from "@/lib/gallery";
 import { getGalleryBySlug, ghiLuotTai } from "@/lib/store";
-import { TRAN_DIEM_ANH } from "@/lib/constants";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -98,7 +96,7 @@ export async function GET(
       downloadFile(fileId),
     ]);
 
-    const cleaned = await donDep(original, meta.mimeType);
+    const cleaned = donDep(original, meta.mimeType);
 
     /*
       Dem mot tam khach vua tai ve.
@@ -130,41 +128,24 @@ export async function GET(
 /**
  * Xoa thong tin may anh/GPS truoc khi giao cho khach.
  *
- * Duong chinh la cat bo cac doan metadata trong file JPEG, khong dung toi phan
- * anh — khach nhan dung tung byte anh goc. Chi khi file khong doc duoc theo
- * cach do moi phai giai nen lai bang sharp.
+ * Chi cat bo cac doan metadata trong file JPEG, KHONG dung toi phan anh —
+ * khach nhan dung tung byte anh goc, khong mat mot chut chat luong nao.
+ *
+ * KHONG CON DUNG sharp (bo han 30/09/2026). Truoc day sharp lo hai viec:
+ * xoay san anh co the huong khac 1, va nen lai nhung dinh dang khac JPEG.
+ * Nay ca hai truong hop deu GIAO NGUYEN BAN GOC — trinh duyet va may anh tu
+ * doc the huong de xoay, con dinh dang khac thi von da khong co gi de cat.
+ *
+ * Danh doi: anh can xoay van mang theo EXIF (co the co toa do GPS). Rat it —
+ * anh xuat tu phan mem chinh sua deu ve huong 1. Doi lai bo duoc mot thu vien
+ * nang, va ban tai ve giong het ban goc.
+ *
+ * Worker ban anh lam y het tu 28/09, nen anh tai tu hai duong khong khac nhau.
  */
-async function donDep(goc: Buffer, mimeType: string): Promise<Buffer> {
-  /*
-    Noi tran diem anh o MOI lan goi sharp trong ham nay.
-
-    Anh in kho lon (mica 60x120cm do duoc 18000x36000 = 648 trieu diem anh)
-    vuot muc mac dinh 268 trieu cua sharp. Bo sot mot cho la khach bam tai
-    dung tam do se nhan ve loi thay vi file. Xem TRAN_DIEM_ANH trong
-    constants.ts.
-  */
-  const tuyChon = { failOn: "none" as const, limitInputPixels: TRAN_DIEM_ANH };
-
+function donDep(goc: Buffer, mimeType: string): Buffer {
   if (mimeType === "image/jpeg") {
-    /*
-      Chi cat bo duoc khi anh khong dua vao the huong de xoay. Anh co the huong
-      khac 1 ma bi cat mat EXIF thi se hien ra nam ngang — luc do phai nho sharp
-      xoay san vao pixel.
-    */
-    const { orientation } = await sharp(goc, tuyChon).metadata();
-    if (!orientation || orientation === 1) {
-      const sach = boMetadataJpeg(goc);
-      if (sach) return sach;
-    }
-
-    // Duong lui cho JPEG: nen lai o muc cao nhat, khong giam mau, de phan chenh
-    // lech so voi ban goc nho toi muc mat thuong khong thay.
-    return sharp(goc, tuyChon)
-      .rotate()
-      .jpeg({ quality: 100, chromaSubsampling: "4:4:4" })
-      .toBuffer();
+    const sach = boMetadataJpeg(goc);
+    if (sach) return sach;
   }
-
-  // PNG va cac dinh dang khong mat du lieu: nen lai khong lam giam chat luong.
-  return sharp(goc, tuyChon).rotate().toBuffer();
+  return goc;
 }
