@@ -39,6 +39,9 @@ const BANG_SAO_LUU = [
   "BiaMuc",
   "GoiMuc",
   "AnhGioiThieu",
+  "MoMuc",
+  "MucDichVu",
+  "AnhNhanVien",
   "Moc",
   "GoogleAccount",
   "NhanVien",
@@ -118,6 +121,9 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     biaMuc,
     goiMuc,
     anhGioiThieu,
+    moMuc,
+    mucDichVu,
+    anhNhanVien,
     moc,
     googleAccount,
     nhanVien,
@@ -141,6 +147,9 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     prisma.biaMuc.findMany(),
     prisma.goiMuc.findMany(),
     prisma.anhGioiThieu.findMany({ orderBy: { taoLuc: "asc" } }),
+    prisma.moMuc.findMany({ orderBy: { luc: "asc" } }),
+    prisma.mucDichVu.findMany({ orderBy: [{ nhom: "asc" }, { thuTu: "asc" }] }),
+    prisma.anhNhanVien.findMany(),
     prisma.moc.findMany(),
     prisma.googleAccount.findMany({
       // Cố tình KHÔNG lấy refreshToken — xem chú thích đầu tệp.
@@ -178,6 +187,20 @@ export async function taoBanSaoLuu(luc = new Date()): Promise<BanSaoLuu> {
     biaMuc,
     goiMuc,
     anhGioiThieu,
+    moMuc,
+    mucDichVu,
+    /*
+      Ảnh đại diện đổi sang base64 trước khi ghi.
+
+      Prisma trả cột Bytes dưới dạng Uint8Array, mà JSON.stringify biến nó
+      thành {"0":255,"1":216,…} — mỗi byte thành một dòng khoá-giá trị. Đã đo
+      28/09/2026: 305 KB ảnh phình thành 3,36 MB, gấp 11,3 lần. Base64 chỉ gấp
+      1,34 lần (408 KB). Script phục hồi giải ngược bằng Buffer.from(…, "base64").
+    */
+    anhNhanVien: anhNhanVien.map((a) => ({
+      ...a,
+      duLieu: Buffer.from(a.duLieu).toString("base64"),
+    })),
     moc,
     googleAccount,
     nhanVien,

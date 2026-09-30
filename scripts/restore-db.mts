@@ -43,6 +43,10 @@ const COT_NGAY: Record<string, string[]> = {
   biaMuc: [],
   goiMuc: [],
   anhGioiThieu: [],
+  // Ba bang them 28/09/2026:
+  moMuc: ["luc"],
+  mucDichVu: ["taoLuc"],
+  anhNhanVien: ["capNhatLuc"],
   moc: ["luc"],
   nhanVien: ["ngayVaoLam", "dangNhapLuc", "taoLuc", "capNhatLuc"],
   nhatKy: ["luc"],
@@ -172,6 +176,8 @@ const dsBiaMuc = (ban.bang.biaMuc ?? []).filter((m) => idGallery.has(m.galleryId
 const dsGoiMuc = (ban.bang.goiMuc ?? []).filter((m) => idGallery.has(m.galleryId as string));
 // Thu muc dua len trang Anh cuoi (tu 17/09/2026) — di theo album nhu GoiMuc.
 const dsAnhGioiThieu = (ban.bang.anhGioiThieu ?? []).filter((m) => idGallery.has(m.galleryId as string));
+// Lan dau khach mo tung thu muc (tu 28/09/2026) — di theo album.
+const dsMoMuc = (ban.bang.moMuc ?? []).filter((m) => idGallery.has(m.galleryId as string));
 
 /*
   PushSub co tinh khong phuc hoi: phieu do gan voi mot trinh duyet cu the va
@@ -201,6 +207,7 @@ for (const g of dsGallery) {
   const biaCuaNo = dsBiaMuc.filter((m) => m.galleryId === g.id);
   const goiCuaNo = dsGoiMuc.filter((m) => m.galleryId === g.id);
   const gtCuaNo = dsAnhGioiThieu.filter((m) => m.galleryId === g.id);
+  const moMucCuaNo = dsMoMuc.filter((m) => m.galleryId === g.id);
 
   console.log(
     `  ${ghiThat ? "phuc hoi" : "SE them "} ${String(g.slug).padEnd(36)} ${ten}` +
@@ -226,6 +233,7 @@ for (const g of dsGallery) {
       ...biaCuaNo.map((m) => prisma.biaMuc.create({ data: m as never })),
       ...goiCuaNo.map((m) => prisma.goiMuc.create({ data: m as never })),
       ...gtCuaNo.map((m) => prisma.anhGioiThieu.create({ data: { ...m, taoLuc: new Date(m.taoLuc as string) } as never })),
+      ...moMucCuaNo.map((m) => prisma.moMuc.create({ data: doiNgay("moMuc", m) as never })),
     ]);
   }
   daThem++;
@@ -247,6 +255,8 @@ let nqThem = 0;
 let ttThem = 0;
 let dvThem = 0;
 let cpThem = 0;
+let mdvThem = 0;
+let anvThem = 0;
 const dot2: Record<string, number> = {};
 if (!chiAlbum) {
   for (const nv of ban.bang.nhanVien ?? []) {
@@ -295,6 +305,41 @@ if (!chiAlbum) {
   if (tt && !(await prisma.thongTinStudio.findUnique({ where: { id: tt.id as string } }))) {
     ttThem = 1;
     if (ghiThat) await prisma.thongTinStudio.create({ data: doiNgay("thongTinStudio", tt) as never });
+  }
+
+  /*
+    Muc dich vu cua trang gioi thieu (Dam ngo, Dinh hon…) — studio tu tao tren
+    web nen khong lay lai duoc tu dau. Ghep theo id hoac key; key la duong dan
+    da gui khach nen khong duoc trung.
+  */
+  for (const m of ban.bang.mucDichVu ?? []) {
+    const dangCo = await prisma.mucDichVu.findFirst({
+      where: { OR: [{ id: m.id as string }, { key: m.key as string }] },
+    });
+    if (dangCo) continue;
+    mdvThem++;
+    if (ghiThat) await prisma.mucDichVu.create({ data: doiNgay("mucDichVu", m) as never });
+  }
+
+  /*
+    Anh dai dien nhan vien. Luu dang base64 trong tep sao luu (xem saoLuu.ts),
+    phai giai nguoc truoc khi ghi. Chi ghi cho nguoi DA CO trong database —
+    khoa chinh tro thang toi NhanVien, thieu nguoi thi Postgres nem loi.
+  */
+  for (const a of ban.bang.anhNhanVien ?? []) {
+    const id = a.nhanVienId as string;
+    if (await prisma.anhNhanVien.findUnique({ where: { nhanVienId: id } })) continue;
+    if (!(await prisma.nhanVien.findUnique({ where: { id } }))) continue;
+    anvThem++;
+    if (ghiThat) {
+      await prisma.anhNhanVien.create({
+        data: {
+          nhanVienId: id,
+          duLieu: Buffer.from(a.duLieu as string, "base64"),
+          capNhatLuc: new Date(a.capNhatLuc as string),
+        },
+      });
+    }
   }
 
   /*
@@ -347,14 +392,14 @@ if (!chiAlbum) {
   }
 
   console.log(
-    `${ghiThat ? "Da phuc hoi" : "Se phuc hoi"} ${nvThem} nhan vien, ${nkThem} dong nhat ky, ${nqThem} noi quy, ${ttThem} thong tin studio, ${dvThem} dich vu, ${cpThem} chi phi hang muc` +
+    `${ghiThat ? "Da phuc hoi" : "Se phuc hoi"} ${nvThem} nhan vien, ${nkThem} dong nhat ky, ${nqThem} noi quy, ${ttThem} thong tin studio, ${dvThem} dich vu, ${cpThem} chi phi hang muc, ${mdvThem} muc dich vu, ${anvThem} anh nhan vien` +
       (Object.keys(dot2).length ? `, ${Object.entries(dot2).map(([k, n]) => `${n} ${k}`).join(", ")}` : "") +
       "." +
       (nvThem ? " Nho cap lai mat khau cho nhung nguoi nay." : ""),
   );
 }
 
-if (!ghiThat && (daThem > 0 || nvThem > 0 || nkThem > 0 || nqThem > 0 || ttThem > 0 || dvThem > 0 || cpThem > 0 || Object.values(dot2).some((n) => n > 0))) {
+if (!ghiThat && (daThem > 0 || nvThem > 0 || nkThem > 0 || nqThem > 0 || ttThem > 0 || dvThem > 0 || cpThem > 0 || mdvThem > 0 || anvThem > 0 || Object.values(dot2).some((n) => n > 0))) {
   console.log("\nGhi that thi them --ghi vao cuoi lenh.");
 }
 if (ghiThat && daThem > 0) {

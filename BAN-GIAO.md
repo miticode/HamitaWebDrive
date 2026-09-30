@@ -460,6 +460,26 @@ lúc này"**. Không soi ra được vì Cloudflare khoá không cho xem lại. 
 hay dùng: `npm run bi-mat-worker` (xem bí mật) và `npm run khai-bi-mat-worker`
 (khai ba thứ của Google cho Worker).
 
+### Sao lưu đêm hỏng từ 28/09 — đã vá (30/09)
+
+Soi bảng lỗi trên Vercel sáng 30/09 thấy `/api/cron/sao-luu` lỗi 5XX, tỉ lệ
+100%. Nguyên nhân: ba bảng thêm hôm 28/09 — **MoMuc, MucDichVu, AnhNhanVien**
+— chưa khai vào danh mục sao lưu, mà hệ thống được làm ra để **báo lỗi thay vì
+lặng lẽ bỏ sót** (nguyên tắc 26) nên nó dừng hẳn.
+
+**Hệ quả: không có bản sao lưu tự động nào từ đêm 28/09 tới 30/09.** Dữ liệu
+không mất gì, nhưng mấy đêm đó không có lưới an toàn.
+
+**Một chỗ phải cẩn thận khi vá:** cột ảnh là dữ liệu nhị phân. Để nguyên thì
+JSON biến mỗi byte thành một dòng khoá-giá trị — đo được **305 KB ảnh phình
+thành 3,36 MB, gấp 11,3 lần**. Nay đổi sang base64, chỉ gấp 1,34 lần.
+
+**Đã vá cả hai đầu** — ghi và phục hồi. Script phục hồi mà quên sửa thì lúc
+cần cứu dữ liệu mới phát hiện thiếu, đúng lúc không kịp làm gì. Đo bằng một
+bản sao lưu giả ở chế độ xem trước: nhận đúng 1 mục dịch vụ và 1 ảnh nhân viên.
+
+Bản sao lưu nay 16,4 MB, đủ 25 bảng.
+
 ### Vá lỗi khách không lưu được ảnh trên điện thoại (29/09)
 
 Anh báo sáng 29/09: bấm "Lưu ảnh" trên iPhone chỉ thấy **"Chưa tải được —
