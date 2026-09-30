@@ -1,0 +1,43 @@
+{
+  // Cấu hình đưa CẢ WEB lên Cloudflare Workers — đang THỬ, chưa dùng thật.
+  //
+  // ĐỪNG NHẦM với worker/wrangler.toml: tệp đó là Worker "bắn ảnh" đang phục
+  // vụ khách thật (hamita-tai-anh). Tên ở đây cố ý khác hẳn để một lệnh deploy
+  // gõ nhầm chỗ không ghi đè lên nó.
+  //
+  // Vì sao có tệp này: Vercel Pro tốn $20/tháng và không bỏ được vì gói miễn
+  // phí của họ cấm dùng vào việc kinh doanh. Cloudflare thì cho phép. Xem
+  // KE-HOACH-CHI-PHI.md, bậc 2.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hamita-web-thu",
+  "main": ".open-next/worker.js",
+
+  // Phải từ 2024-09-23 trở đi thì OpenNext mới chạy.
+  "compatibility_date": "2026-09-28",
+  // nodejs_compat là BẮT BUỘC — Next cần các API của Node.
+  // global_fetch_strictly_public: fetch tới chính tên miền của mình đi vòng ra
+  // ngoài rồi vào lại, đúng cách Vercel vẫn làm (hệ thống dựng ảnh sẵn dựa vào
+  // điều này).
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "hamita-web-thu"
+    }
+  ],
+
+  // Chỗ chứa bản dựng sẵn của các trang (ISR). Trang giới thiệu và trang dịch
+  // vụ dựa vào đây để không phải đọc database mỗi lượt — xem nguyên tắc 58.
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "hamita-web-thu-cache"
+    }
+  ]
+}
