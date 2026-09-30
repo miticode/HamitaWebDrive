@@ -182,10 +182,40 @@ export async function getUserAccessToken(): Promise<string | null> {
       .catch(() => {});
   }
 
-  const client = createClient();
-  client.setCredentials({ refresh_token: refreshToken });
+  /*
+    Gọi thẳng Google bằng `fetch`, KHÔNG qua google-auth-library.
 
-  const { token } = await client.getAccessToken();
+    Vì sao (30/09/2026): thư viện đó viết cho Node, không chạy trên Cloudflare
+    Workers — thử đưa web lên đó thì Drive câm lặng, trang hiện "Ảnh đang tải
+    chưa được" mà không có lỗi nào để lần. Worker bắn ảnh vốn đã gọi đúng
+    đường này bằng fetch thuần và chạy tốt từ 28/09, nên chép cách làm đó về.
+
+    Đổi lại cũng nhẹ hơn ở Vercel: một lượt POST thay cho cả một thư viện.
+    Phần OAuth lúc studio bấm "Kết nối Drive" vẫn dùng thư viện như cũ — chỗ
+    đó chạy vài lần một năm, không đáng viết lại.
+  */
+  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID?.trim();
+  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET?.trim();
+  if (!clientId || !clientSecret) return null;
+
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: "refresh_token",
+    }),
+  });
+  if (!res.ok) {
+    // Nói rõ mã lỗi: 400 thường là mã làm mới đã chết, phải kết nối lại Drive.
+    console.error(`[google] khong xin duoc ve vao Drive (${res.status})`);
+    return null;
+  }
+
+  const data = (await res.json()) as { access_token?: string };
+  const token = data.access_token ?? null;
   if (token) tokenCache = { token, hetHan: Date.now() + HAN_TOKEN };
-  return token ?? null;
+  return token;
 }
