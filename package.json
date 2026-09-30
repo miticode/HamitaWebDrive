@@ -19,8 +19,8 @@
     "pdf:huong-dan": "node scripts/xuat-pdf.mjs",
     "bi-mat-worker": "tsx scripts/xem-bi-mat-worker.mts",
     "khai-bi-mat-worker": "tsx scripts/khai-bi-mat-worker.mts",
-    "cf:xem": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "cf:dung": "opennextjs-cloudflare build"
+    "cf:xem": "npm run cf:dung && opennextjs-cloudflare preview",
+    "cf:dung": "prisma generate --generator clientCf && opennextjs-cloudflare build && prisma generate --generator client"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

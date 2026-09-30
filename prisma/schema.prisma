@@ -1,4 +1,23 @@
+/// HAI BAN PRISMA, cung mot cho ghi ra — chon bang co --generator.
+///
+/// Vi sao (30/09/2026): ban sinh cho Cloudflare nhung WebAssembly theo kieu
+/// nhap tinh, chay duoc tren Workers nhung KHONG chay tren Node — moi script
+/// va ca ban Vercel deu do voi loi LinkError. Nguoc lai ban Node thi Cloudflare
+/// tu choi voi loi "Wasm code generation disallowed by embedder".
+///
+/// Nen:
+///   prisma generate --generator client     -> ban Node    (mac dinh, dung o moi noi)
+///   prisma generate --generator clientCf   -> ban Workers (chi khi dung cho Cloudflare)
+///
+/// Lenh "npm run cf:dung" tu doi sang ban Workers roi DOI TRA LAI ban Node sau
+/// khi dung xong. Khong duoc de lai ban Workers: de lai la lan sau go
+/// "npm run dev" hay chay bat ky script nao cung do ngay.
 generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+generator clientCf {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
   runtime  = "workerd"
