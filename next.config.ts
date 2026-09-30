@@ -47,6 +47,47 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: HEADERS }];
   },
+
+  /*
+    Nhung thu CHI DUNG LUC LAP TRINH, dung goi vao ban chay that.
+
+    Next lan theo cac loi nhap de biet tep nao can mang theo, va no lan hoi
+    rong tay: do 30/09/2026 khi dung ban cho Cloudflare, no keo theo
+    wrangler.exe 92 MB, Prisma engine 20 MB, Prisma Studio 28 MB va pglite
+    16 MB — goi ma phinh tu 4,2 MB len 20,1 MB nen, vuot gioi han 10 MB cua
+    Cloudflare Workers.
+
+    Khong cai nao trong so do duoc dung luc chay: wrangler la cong cu dua len
+    mang, Prisma engine chi dung cho lenh migrate, Studio la giao dien xem
+    database, pglite la Postgres chay trong bo nho de thu.
+
+    Tren Vercel dong nay vo hai, chi lam ban dung nhe bot.
+  */
+  outputFileTracingExcludes: {
+    "*": [
+      "node_modules/@cloudflare/workerd-*/**",
+      "node_modules/wrangler/**",
+      "node_modules/miniflare/**",
+      "node_modules/@prisma/engines/**",
+      "node_modules/@prisma/studio-core/**",
+      "node_modules/@prisma/dev/**",
+      "node_modules/@electric-sql/**",
+      "node_modules/@img/**",
+      "node_modules/sharp/**",
+      // Prisma CLI (lenh migrate, generate) va ban workerd dung de chay thu.
+      "node_modules/prisma/**",
+      "node_modules/workerd/**",
+      /*
+        Prisma nhung bo bien dich cho MOI loai database — SQL Server,
+        CockroachDB, MySQL, SQLite — moi cai 4,7 MB, du du an chi dung
+        PostgreSQL. Bo het tru postgresql.
+      */
+      "node_modules/@prisma/client/runtime/*sqlserver*",
+      "node_modules/@prisma/client/runtime/*cockroachdb*",
+      "node_modules/@prisma/client/runtime/*mysql*",
+      "node_modules/@prisma/client/runtime/*sqlite*",
+    ],
+  },
 };
 
 export default nextConfig;
