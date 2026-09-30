@@ -29,9 +29,46 @@ const KHONG_CO_THAN = (m: number) => m === 0x01 || (m >= 0xd0 && m <= 0xd7);
 */
 
 /**
+ * Anh co the huong khac 1 (can xoay) khong.
+ *
+ * Bo EXIF cua mot tam can xoay la anh hien ra nam ngang. Truoc 30/09/2026 cho
+ * nay nho sharp xoay san vao diem anh, nhung sharp da bo han (goi ma qua nang
+ * cho Cloudflare). Nay gap tam do thi GIU NGUYEN ca EXIF va giao ban goc —
+ * dung cach Worker ban anh lam tu 28/09.
+ *
+ * Ban nay va `worker/src/jpeg.ts` la HAI BAN SAO cua cung mot thuat toan.
+ * Sua mot ben thi phai sua ben kia, khong thi anh tai tu hai duong se khac nhau.
+ */
+function huongKhac1(goc: Buffer, dauApp1: number, dai: number): boolean {
+  // Than APP1 bat dau bang sau chu "Exif" roi hai byte 0 roi toi phan TIFF.
+  const than = dauApp1 + 2;
+  if (than + 14 > goc.length) return false;
+  const laExif =
+    goc[than] === 0x45 && goc[than + 1] === 0x78 && goc[than + 2] === 0x69 && goc[than + 3] === 0x66;
+  if (!laExif) return false;
+
+  const tiff = than + 6;
+  const bigEndian = goc[tiff] === 0x4d;
+  const doc16 = (q: number) => (bigEndian ? goc.readUInt16BE(q) : goc.readUInt16LE(q));
+  const doc32 = (q: number) => (bigEndian ? goc.readUInt32BE(q) : goc.readUInt32LE(q));
+
+  const ifd0 = tiff + doc32(tiff + 4);
+  if (ifd0 + 2 > goc.length) return false;
+  const soMuc = doc16(ifd0);
+  for (let k = 0; k < soMuc; k++) {
+    const muc = ifd0 + 2 + k * 12;
+    if (muc + 12 > goc.length || muc + 12 > dauApp1 + dai) break;
+    if (doc16(muc) === 0x0112) {
+      const huong = doc16(muc + 8);
+      return huong !== 0 && huong !== 1;
+    }
+  }
+  return false;
+}
+
+/**
  * Tra ve file JPEG da bo thong tin may anh, hoac `null` neu file khong dung
- * dinh dang mong doi — luc do nguoi goi phai tu chon duong lui, tuyet doi
- * khong doan bua.
+ * dinh dang mong doi HOAC anh can xoay — luc do nguoi goi giao nguyen ban goc.
  */
 export function boMetadataJpeg(goc: Buffer): Buffer | null {
   if (goc.length < 4 || goc[0] !== 0xff || goc[1] !== 0xd8) return null;
@@ -66,6 +103,7 @@ export function boMetadataJpeg(goc: Buffer): Buffer | null {
     const het = dauThan + dai;
     if (dai < 2 || het > goc.length) return null;
 
+    if (ma === APP1 && huongKhac1(goc, dauThan, dai)) return null;
     if (ma !== APP1 && ma !== APP13) giuLai.push(goc.subarray(i, het));
     i = het;
   }

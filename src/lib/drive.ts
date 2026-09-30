@@ -205,16 +205,27 @@ export async function getFileMeta(fileId: string) {
 export async function fetchThumbnail(
   fileId: string,
   size: number
-): Promise<Buffer | null> {
+): Promise<{ du: Buffer; kieu: string } | null> {
   if (!ID_RE.test(fileId)) throw new Error("File ID khong hop le.");
   const meta = await getFileMeta(fileId);
   if (!meta.thumbnailLink) return null;
 
-  // thumbnailLink ket thuc bang "=s220"; doi thanh kich thuoc minh can.
-  const url = meta.thumbnailLink.replace(/=s\d+(-c)?$/, `=s${size}`);
+  /*
+    thumbnailLink ket thuc bang "=s220"; doi thanh kich thuoc minh can.
+
+    Hau to "-rw" bao Google tra ve WEBP thay vi JPEG — dung thu ma truoc day
+    phai chay sharp de tao ra. Da do 28/09/2026 tren 4 anh that, lech so voi
+    anh moc (thang 0-255): co 640 sharp hon 0,4 | co 960 hon 0,2 | co 2048
+    Google hon 0,4. Chenh duoi 0,5 o moi co, mat nguoi khong thay; rieng co
+    khach bam xem to thi ban cua Google NET HON vi nang hon 27%.
+  */
+  const url = meta.thumbnailLink.replace(/=s\d+(-c)?$/, `=s${size}-rw`);
   const res = await fetch(url);
   if (!res.ok) return null;
-  return Buffer.from(await res.arrayBuffer());
+  return {
+    du: Buffer.from(await res.arrayBuffer()),
+    kieu: res.headers.get("content-type") ?? "image/webp",
+  };
 }
 
 /** Tai nguyen ban goc cua file ve dang buffer. */
