@@ -1844,7 +1844,14 @@ Ba điều đừng phá:
   thì hỏi NGAY một lần rồi mới tính nhịp tiếp — không thì người vừa quay lại
   bàn phải đợi hết một nhịp mới thấy tin mới. Thêm một vòng lặp mới mà quên hai
   phép kiểm này là quay lại đúng chỗ làm sập web.
-- **Cron `dong-bo` đang TẮT trong `vercel.json`.** Nút "Đồng bộ ngay" và
+- - **Chưa nhập mã thì KHÔNG hỏi lại danh sách** (30/09/2026). Máy chủ đòi mã
+  mới cho đọc (nguyên tắc 3), nên khách chưa nhập mã thì mọi nhịp đều bị từ
+  chối 403 — hỏi bao nhiêu lần cũng không được gì, mà mỗi lượt vẫn đánh thức
+  database thêm 5 phút. Soi nhật ký Vercel 30/09 thấy 403 đều tăm tắp 30 giây
+  một lượt suốt nửa tiếng, cho một khách không định chọn tấm nào. Nay effect
+  trong `Selection.tsx` thoát ngay khi `!unlocked`; nhập mã xong nó chạy lại
+  và tải NGAY nên khách không phải đợi hết một nhịp.
+**Cron `dong-bo` đang TẮT trong `vercel.json`.** Nút "Đồng bộ ngay" và
   `npx tsx scripts/dong-bo-appsheet.mts` vẫn chạy được. Bật lại khi studio dùng
   CRM: thêm lại dòng `{ "path": "/api/cron/dong-bo", "schedule": "5 0-15,19 * * *" }`.
 

@@ -164,6 +164,26 @@ export function SelectionProvider({
     hoi moi 15 giay gan nhu khong ton gi.
   */
   useEffect(() => {
+    /*
+      CHƯA NHẬP MÃ THÌ KHÔNG HỎI GÌ CẢ (30/09/2026).
+
+      Máy chủ đòi mã mới cho đọc danh sách (nguyên tắc 3), nên khách chưa nhập
+      mã thì mọi nhịp đều bị từ chối 403 và `tai()` chỉ `return` — hỏi bao
+      nhiêu lần cũng không được gì.
+
+      Nhưng nó KHÔNG hề miễn phí: mỗi lượt vẫn là một lần chạy hàm và một lần
+      đọc database, mà Neon tính tiền theo THỜI GIAN DATABASE THỨC (nguyên tắc
+      53) — mỗi lần gọi giữ nó thức thêm 5 phút. Một khách mở album ra ngắm
+      rồi để đó là đủ giữ database thức vô hạn.
+
+      Soi nhật ký Vercel ngày 30/09 thấy rõ: 403 đều tăm tắp 30 giây một lượt,
+      suốt cả nửa tiếng, cho một khách không định chọn tấm nào.
+
+      Nhập mã xong thì `unlocked` đổi, effect này chạy lại và tải NGAY — khách
+      không phải đợi hết một nhịp.
+    */
+    if (!unlocked) return;
+
     let con = true;
     let chamCuoi = Date.now();
 
