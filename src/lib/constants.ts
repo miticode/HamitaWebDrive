@@ -94,6 +94,33 @@ export const SO_NGAY_GIU_ANH_MAC_DINH = 90;
  *   nguoi xem dang dung.
  */
 export const MUI_GIO = "Asia/Ho_Chi_Minh";
+/**
+ * "7/9 17:40" — theo gio studio, khong theo gio may dang mo trang
+ * (nguyen tac 35).
+ *
+ * Ghep tu `formatToParts` chu khong dung thang chuoi `format()` tra ve: ban
+ * tieng Viet xep gio len TRUOC ngay ("17:40 7/9"), doc nguoc voi cach nguoi ta
+ * noi. Ghep tay thi thu tu do minh quyet, ma mui gio van do Intl lo.
+ *
+ * De o day chu khong o GalleryCard.tsx (noi no ra doi): tu 01/10/2026 trang
+ * "Anh khach chon" — mot trang MAY CHU — cung in gio chon gan nhat cua moi thu
+ * muc. Hai ban chep tay thi co ngay hai noi in hai kieu cho cung mot moc.
+ */
+export function lucGon(iso: string): string {
+  const phan = new Intl.DateTimeFormat("vi-VN", {
+    timeZone: MUI_GIO,
+    day: "numeric",
+    month: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date(iso));
+
+  const lay = (loai: string) => phan.find((p) => p.type === loai)?.value ?? "";
+
+  return `${lay("day")}/${lay("month")} ${lay("hour")}:${lay("minute")}`;
+}
+
 
 /**
  * Moc bat dau dem so anh khach tai ve.

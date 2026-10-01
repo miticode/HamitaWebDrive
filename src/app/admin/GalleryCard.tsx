@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { BiaMuc, Gallery, GoiMuc, ListCount, MucXong } from "@/lib/store";
-import { MOC_DEM_LUOT_TAI, MOC_GHI_LAN_BAO, MUI_GIO } from "@/lib/constants";
+import { MOC_DEM_LUOT_TAI, MOC_GHI_LAN_BAO, lucGon } from "@/lib/constants";
 import { refreshGalleryAction } from "./actions";
 import { CaiDatDialog } from "./CaiDatDialog";
 import { LogKhach } from "./LogKhach";
@@ -58,27 +58,6 @@ function Stat({
   );
 }
 
-/**
- * "7/9 17:40" — theo giờ studio, không theo giờ máy đang mở trang (nguyên tắc 35).
- *
- * Ghép từ `formatToParts` chứ không dùng thẳng chuỗi `format()` trả về: bản
- * tiếng Việt xếp giờ lên TRƯỚC ngày ("17:40 7/9"), đọc ngược với cách người ta
- * nói. Ghép tay thì thứ tự do mình quyết, mà múi giờ vẫn do Intl lo.
- */
-function lucGon(iso: string): string {
-  const phan = new Intl.DateTimeFormat("vi-VN", {
-    timeZone: MUI_GIO,
-    day: "numeric",
-    month: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(new Date(iso));
-
-  const lay = (loai: string) => phan.find((p) => p.type === loai)?.value ?? "";
-
-  return `${lay("day")}/${lay("month")} ${lay("hour")}:${lay("minute")}`;
-}
 
 /**
  * Dòng "đã gửi thông báo chưa" — nay là một nhãn nhỏ nằm trên ảnh bìa.

@@ -1948,6 +1948,53 @@ hỏng cả bản dựng — trái nguyên tắc 19.
 Nhớ giết tiến trình giữ cổng 3000 trước, nếu không đo trúng bản cũ mà không biết
 (`netstat -ano | grep :3000`).
 
+
+---
+
+### 59. Trang "Ảnh khách chọn": mỗi thư mục là một khối có ranh giới, thư mục khách chọn SAU đứng TRƯỚC
+
+Anh yêu cầu 01/10/2026 trên album 224 tấm chia hai thư mục: *"tách biệt rõ ra
+file nào với file nào, hiện tại đang khó nhìn"* và *"file nào chọn sau đưa lên
+trước"*. Studio gọi thư mục con là "file" (đúng như tên trên Drive: "File gốc
+nhà gái", "File gốc nhà trai").
+
+**Thứ tự nhóm: mốc `createdAt` LỚN NHẤT trong thư mục, giảm dần.** Trước đó
+thứ tự là thứ database trả về — không mang nghĩa gì với người đang làm việc,
+nên thư mục khách vừa động vào có thể nằm tận đáy trang. Dùng mốc lớn nhất chứ
+không phải nhỏ nhất: câu hỏi của studio là "khách vừa làm gì", không phải
+"khách bắt đầu từ đâu". Đo trên album Văn Chiêu & Nhã Linh: nhà trai (chọn gần
+nhất 25/9 07:02) nhảy lên trên nhà gái (21/9 17:36).
+
+**Ba thứ cùng làm nên ranh giới, bỏ một thứ là yếu hẳn:**
+
+| Thứ | Trước | Sau |
+|---|---|---|
+| Tên thư mục | `.eyebrow` 11px màu nhạt | phông tiêu đề 24px màu `fg` |
+| Khoảng cách giữa hai thư mục | 24px | **96px** (56 lề + 40 đệm) |
+| Vạch ngăn | không có | kẻ `border-line-strong` hết bề ngang |
+
+**Đầu mục DÍNH LẠI khi cuộn** (`sticky top-0 z-10`) — đây mới là thứ trả lời
+câu "đang xem thư mục nào" ở giữa một lưới trăm tấm. Kẻ ngang chỉ nói được chỗ
+giáp ranh; cuộn qua rồi thì không còn gì trên màn hình nhắc nữa. Hai điều phải
+giữ:
+
+- **Nền phải ĐẶC (`bg-bg`), không trong suốt** — ảnh chạy phía dưới sẽ lộ qua
+  và chữ không đọc nổi. Đo sau khi làm: cuộn tới 900px, điểm giữa đầu mục trả
+  về `SPAN.eyebrow` chứ không phải thẻ ảnh, tức nền che trọn.
+- **Dải nền kéo rộng bằng lề âm rồi bù bằng đệm** (`-mx-5 px-5`), không thì ảnh
+  ló ra ở hai mép.
+
+Mọi màu lấy từ biến, **không viết màu cứng**: đo ở tông tối ra nền `#181614`,
+chữ `#f1ebe3`, kẻ `#443d35` — đúng bộ biến tối (nguyên tắc 12).
+
+**Thứ tự ẢNH TRONG thư mục giữ nguyên**: tấm có lời dặn lên đầu, còn lại theo
+tên file (chốt 15/09, xem nguyên tắc 28). Anh nói "file" tức thư mục; đổi cả
+thứ tự ảnh sẽ nuốt mất quy tắc lời dặn.
+
+`lucGon()` chuyển từ `GalleryCard.tsx` sang `constants.ts` vì nay cả thẻ album
+(máy khách) lẫn trang này (máy chủ) cùng in giờ theo múi giờ studio. Hai bản
+chép tay thì có ngày hai nơi in hai kiểu cho cùng một mốc.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại
