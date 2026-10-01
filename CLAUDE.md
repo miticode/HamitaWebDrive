@@ -1685,7 +1685,7 @@ thì tự dựng ra một con số là thu tiền thứ khách không đặt.
 | Giá trị | Nghĩa | Khách thấy gì |
 |---|---|---|
 | `null` | không tính theo gói | không có khối gói ảnh |
-| `0` | **gói chỉ lấy file, không kèm ảnh in** | "gói chỉ lấy file ảnh… tấm nào muốn in thì 12.000đ" |
+| `0` | **gói chỉ lấy file, không kèm ảnh in** | "gói chỉ lấy file ảnh… tấm nào muốn in thì 15.000đ, đã bao gồm cả chỉnh sửa và in" |
 | `N > 0` | gói có N tấm in | ba gạch đầu dòng, mở đầu bằng "Gói của anh chị cần tim N tấm" |
 
 **Phải so với `null`, không được viết `soAnhTrongGoi ? …`** — số 0 cũng là giá
@@ -1695,7 +1695,29 @@ bẫy này lúc thêm trạng thái 0.
 
 Phần tính tiền **không phải sửa gì**: `tinhTienIn(soTam, 0, gia)` cho ra
 `vuotGoi = soTam` — đúng nghiệp vụ, vì gói không kèm tấm in nào thì tấm nào
-khách thả tim cũng là in thêm. Đo: 5 tấm → 60.000đ, 100 tấm → 1.200.000đ.
+khách thả tim cũng là in thêm. Đo: 5 tấm → 75.000đ, 100 tấm → 1.500.000đ.
+
+**GIÁ HIỆN HÀNH: 15.000đ MỘT TẤM IN THÊM, ĐÃ BAO GỒM CẢ CHỈNH SỬA VÀ IN**
+(anh chốt 01/10/2026). Quyết định này **đảo ngược** đợt 27/09/2026 — khi đó anh
+hạ xuống 10.000đ và bỏ hẳn cụm "đã gồm chỉnh sửa và in" khỏi mọi chỗ khách đọc.
+Nay cả hai vế quay lại: giá lên 15.000đ, và câu đó có mặt ở **bốn chỗ** khách
+đọc, phải nói giống nhau cả bốn:
+
+| Chỗ | Tệp |
+|---|---|
+| Khối gói ảnh, nhánh gói 0 tấm | `HuongDanChon.tsx` |
+| Khối gói ảnh, gạch đầu dòng thứ ba | `HuongDanChon.tsx` |
+| "Hỏi Hamita" — album nhiều gói, và album gói N tấm | `hoiDap.ts` (2 câu) |
+| "Hỏi Hamita" — album gói chỉ lấy file | `hoiDap.ts` |
+
+Giá là **một khoản đã trộn công chỉnh sửa**, không phải hai khoản cộng lại —
+đừng tách thành dòng riêng trên đơn in hay trong câu chữ phía khách.
+
+**Đã đổi cả 74 album đang có sang 15.000đ** (đo lại sau khi chạy: 74/74), kể cả
+**39 album khách đã bấm "chọn xong"** khi giá còn 10.000đ hoặc 12.000đ — anh
+yêu cầu "đổi tất cả" và đã được nêu rủi ro trước khi chạy. Nghĩa là đơn in của
+39 nhà đó tính theo giá mới; khi báo giá thì studio tự cân lại. `@default` của
+cột cũng lên 15.000 nên album tạo sau này tự mang giá mới.
 
 Đơn giao in bỏ hàng "Trong gói 0/0" khi gói là 0 — hàng đó không nói được gì mà
 còn làm người cầm tờ đơn tưởng studio quên điền số; thay bằng một dòng nói thẳng
