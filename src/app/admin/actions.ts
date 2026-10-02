@@ -21,6 +21,7 @@ import {
   setAccess,
   setBiaMuc,
   setClientName,
+  setChoTai,
   setGoiAnh,
   setGoiMuc,
   setCover,
@@ -306,6 +307,37 @@ export async function setMessageAction(
   await setMessage(galleryId, noiDung || null);
   await ghiViecAlbum("sua-album", galleryId, { doi: "lời nhắn", coNoiDung: noiDung.length > 0 });
   revalidatePath("/admin");
+  return {};
+}
+
+/**
+ * Bat/tat quyen tai anh cua mot album.
+ *
+ * Them 02/10/2026 theo yeu cau cua anh. Truoc do co nay chi dat duoc mot lan
+ * luc tao link (o tich trong khung "Tao link moi") roi khong con duong nao
+ * doi — nha nao luc tao quen tich thi khach vinh vien khong tai duoc anh.
+ *
+ * Quyen: quyenAlbum() nhu moi cai dat khac cua album, KHONG phai
+ * quyenAlbumNguyHiem(). Bat nham thi tat lai duoc ngay, khac han voi xoa album
+ * hay ngat ket noi Drive — nhung thu khong lui lai duoc moi can quan ly.
+ *
+ * Phai revalidate CA duong trang khach: nut tai anh, dong dem nguoc va nut
+ * "Tai ca thu muc" deu doc co nay, nen tat o day ma trang khach con giu ban
+ * dung san thi khach van thay nut tai trong vai phut (nguyen tac 58).
+ */
+export async function setChoTaiAction(
+  galleryId: string,
+  choTai: boolean,
+): Promise<{ error?: string }> {
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
+
+  await setChoTai(galleryId, choTai);
+  await ghiViecAlbum("sua-album", galleryId, {
+    doi: "cho khách tải ảnh",
+    choTai,
+  });
+  revalidatePath("/admin");
+  revalidatePath("/", "layout");
   return {};
 }
 

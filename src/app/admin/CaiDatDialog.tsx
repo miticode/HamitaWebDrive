@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import type { GoiMuc } from "@/lib/store";
 import { AccessControl } from "./AccessControl";
+import { ChoTai } from "./ChoTai";
 import { LoiNhan } from "./LoiNhan";
 import { ThoiHan } from "./ThoiHan";
 import { GoiAnh } from "./GoiAnh";
 
 /**
- * Bốn cài đặt của một album — mã chọn ảnh, lời nhắn, hạn giữ ảnh, gói ảnh —
- * mở thành MỘT CỬA SỔ chồng lên trang.
+ * Năm cài đặt của một album — mã chọn ảnh, cho tải ảnh, lời nhắn, hạn giữ
+ * ảnh, gói ảnh — mở thành MỘT CỬA SỔ chồng lên trang.
  *
  * Anh yêu cầu 21/09/2026: trước đó chúng xổ ra ngay trong thẻ, thẻ phình cao
  * gấp đôi và đẩy cả hàng album bên dưới chạy xuống, mà bốn ô nhập thì chen
@@ -22,7 +23,7 @@ import { GoiAnh } from "./GoiAnh";
  *
  * KHÔNG có nút "Lưu" chung: mỗi mục con tự lưu phần của nó ngay khi bấm xong,
  * y như hồi còn nằm trong thẻ. Thêm một nút lưu chung ở đây là hứa một điều
- * mà bốn component kia không làm.
+ * mà năm component kia không làm.
  */
 export function CaiDatDialog({
   galleryId,
@@ -32,6 +33,7 @@ export function CaiDatDialog({
   createdAt,
   expiresAt,
   driveFolderId,
+  choTai,
   soAnhTrongGoi,
   giaAnhThem,
   goiMuc,
@@ -44,6 +46,7 @@ export function CaiDatDialog({
   createdAt: string;
   expiresAt: string | null;
   driveFolderId: string;
+  choTai: boolean;
   soAnhTrongGoi: number | null;
   giaAnhThem: number;
   goiMuc: GoiMuc[];
@@ -108,6 +111,7 @@ export function CaiDatDialog({
         */}
         <div className="min-h-0 flex-1 divide-y divide-line overflow-y-auto px-5">
           <AccessControl galleryId={galleryId} code={accessCode} />
+          <ChoTai galleryId={galleryId} choTai={choTai} />
           <LoiNhan galleryId={galleryId} message={message} />
           <ThoiHan galleryId={galleryId} createdAt={createdAt} expiresAt={expiresAt} />
           <GoiAnh

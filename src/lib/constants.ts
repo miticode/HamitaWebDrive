@@ -50,10 +50,21 @@ export function siteUrl(): URL {
 export const TRAN_DIEM_ANH = 2_000_000_000;
 
 /**
- * Gia mac dinh cho moi tam anh vuot goi, tinh bang dong.
- * Da gom ca chinh sua lan in. Sua duoc cho tung album o trang quan ly.
+ * Gia moi tam anh vuot goi, tinh bang dong. Da gom ca chinh sua lan in.
+ *
+ * DAY LA CON SO THAT SU DIEU KHIEN GIA, khong phai @default trong schema.
+ * Moi lan studio bam Luu o muc "Goi anh" la setGoiAnh ghi de gia cua album do
+ * bang hang nay — co y, de moi album luon cung mot gia (xem chu thich o
+ * setGoiAnhAction). Hau qua: doi gia ma quen cho nay thi album cu van dung,
+ * nhung album nao studio dong vao goi anh se am tham tut ve gia cu.
+ *
+ * Da xay ra that: 01/10/2026 doi gia len 15.000d o schema va o ca 74 album
+ * dang co, nhung bo sot hang nay (dang 12.000d). Trong hai ngay, 3 album moi
+ * tao bi keo ve 12.000d ngay khi studio dat goi anh cho chung. Doi gia thi
+ * phai sua DU BA CHO: hang nay, @default trong schema, va du lieu album dang
+ * co (xem nguyen tac 38).
  */
-export const GIA_ANH_THEM_MAC_DINH = 12_000;
+export const GIA_ANH_THEM_MAC_DINH = 15_000;
 
 /**
  * Viet 12000 thanh "12.000" — cach viet tien quen thuoc voi nguoi Viet.

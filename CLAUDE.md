@@ -1995,6 +1995,59 @@ thứ tự ảnh sẽ nuốt mất quy tắc lời dặn.
 (máy khách) lẫn trang này (máy chủ) cùng in giờ theo múi giờ studio. Hai bản
 chép tay thì có ngày hai nơi in hai kiểu cho cùng một mốc.
 
+
+---
+
+### 60. Quyền tải ảnh bật/tắt được bất cứ lúc nào, ở cửa sổ Cài đặt
+
+Anh hỏi 02/10/2026 *"nút bật cho phép tải ảnh ở đâu"* — câu trả lời đúng lúc đó
+là **không có**. `allowDownload` chỉ ghi được MỘT LẦN trong `createGalleryAction`
+(ô tích của khung "Tạo link mới"); cửa sổ Cài đặt không có mục nào, và không
+đường API nào chạm tới cột đó. Nhà nào lúc tạo quên tích thì khách vĩnh viễn
+không tải được ảnh — tạo lại link là giết link cũ đã gửi khách (nguyên tắc 17).
+
+Nay là mục **"Tải ảnh"** trong `CaiDatDialog`, đứng **ngay sau "Mã gửi khách"**:
+hai mục đó cùng trả lời "khách làm được gì với album này", còn Lời nhắn / Thời
+hạn / Gói ảnh là nội dung. Cửa sổ nay có **năm** mục, không phải bốn.
+
+- **Một cú bấm là đổi, không có bước hỏi lại** — khác nút "Gửi thông báo"
+  (nguyên tắc 34). Việc này không chạm tới điện thoại khách và bấm nhầm thì bấm
+  lại là xong; thêm một bước hỏi chỉ làm chậm thứ studio phải làm thường xuyên.
+- **Nhưng luôn nói hậu quả theo đúng trạng thái đang có**, ngay dưới nút. Hai
+  chữ "cho tải" một mình không nói ra rằng đây là cái quyết định khách có mang
+  được bộ ảnh cưới về máy hay không.
+- **Quyền là `quyenAlbum()`**, không phải `quyenAlbumNguyHiem()`: bật nhầm thì
+  tắt lại được ngay, khác hẳn xoá album hay ngắt Drive.
+- **Phải `revalidatePath("/", "layout")`** — nút tải từng tấm, nút tải cả thư
+  mục và dòng đếm ngược đều đọc cờ này (nguyên tắc 58).
+
+### Lỗi đã vấp cùng ngày: GIÁ ẢNH THÊM NẰM Ở BA CHỖ, sửa thiếu một là hỏng ngầm
+
+Trong lúc làm mục trên, phát hiện `GIA_ANH_THEM_MAC_DINH` trong `constants.ts`
+vẫn là **12.000đ** — em đổi giá hôm 01/10 mà bỏ sót đúng chỗ này.
+
+`setGoiAnhAction` gọi `setGoiAnh(galleryId, so, GIA_ANH_THEM_MAC_DINH)`, tức
+**mỗi lần studio bấm Lưu ở mục "Gói ảnh" là giá của album đó bị ghi đè bằng
+hằng số**. Ghi đè là có chủ đích (để mọi album cùng một giá), nên hằng sai thì
+mọi album studio đụng vào đều âm thầm tụt về giá cũ — không lỗi, không cảnh báo,
+chỉ có con số trên trang khách đổi.
+
+Đo trên dữ liệu thật 02/10: **3 album** đã bị kéo về 12.000đ trong hai ngày —
+Minh Trọng & Kiều Nhi, AB Hoàng Phúc & Trúc Viên, HC Văn Chiến & Kim Loan — cả
+ba đều là album mới tạo rồi studio đặt gói ảnh cho chúng. Đã sửa hằng thành
+15.000 và đưa cả ba về 15.000đ (đo lại: 79/79 album).
+
+**Đổi giá ảnh thêm thì phải sửa ĐỦ BA CHỖ:**
+
+| Chỗ | Tệp | Hỏng thế nào nếu quên |
+|---|---|---|
+| `GIA_ANH_THEM_MAC_DINH` | `constants.ts` | album nào studio đụng vào gói ảnh là tụt về giá cũ |
+| `@default` của cột | `prisma/schema.prisma` + `ALTER TABLE` trên database thật | album tạo mới mang giá cũ |
+| Dữ liệu album đang có | `updateMany` rồi đếm lại | album cũ giữ giá cũ |
+
+Sửa schema thôi là chưa đủ: Prisma để **Postgres** lo giá trị mặc định, nên
+`@default` mới chỉ có tác dụng sau khi đã đẩy xuống database thật.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại

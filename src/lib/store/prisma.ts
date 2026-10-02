@@ -299,6 +299,13 @@ export const prismaStore: Store = {
     });
   },
 
+  async setChoTai(galleryId: string, choTai: boolean) {
+    await getPrisma().gallery.update({
+      where: { id: galleryId },
+      data: { allowDownload: choTai },
+    });
+  },
+
   async setGoiAnh(
     galleryId: string,
     soAnhTrongGoi: number | null,

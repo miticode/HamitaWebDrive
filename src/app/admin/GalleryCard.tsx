@@ -496,6 +496,7 @@ export function GalleryCard({
           createdAt={gallery.createdAt}
           expiresAt={gallery.expiresAt}
           driveFolderId={gallery.driveFolderId}
+          choTai={gallery.allowDownload}
           soAnhTrongGoi={gallery.soAnhTrongGoi}
           giaAnhThem={gallery.giaAnhThem}
           goiMuc={goiMuc}

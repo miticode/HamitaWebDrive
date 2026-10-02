@@ -214,6 +214,17 @@ export type Store = {
   setKhuGioiThieu(galleryId: string, khu: KhuGioiThieu): Promise<void>;
 
   /**
+   * Bat/tat quyen tai anh cua mot album.
+   *
+   * Them 02/10/2026. Truoc do co nay chi dat duoc MOT LAN luc tao link, roi
+   * khong co duong nao doi — anh bao "nut bat cho phep tai anh o dau" va cau
+   * tra loi dung la: khong co. Nha khach nao luc tao quen tich o do thi vinh
+   * vien khong tai duoc anh, tru khi tao lai link moi (ma lam vay la link cu
+   * da gui khach chet theo).
+   */
+  setChoTai(galleryId: string, choTai: boolean): Promise<void>;
+
+  /**
    * Dat so anh trong goi va gia moi tam vuot goi.
    * soAnhTrongGoi = null nghia la khong noi toi goi o trang khach.
    */

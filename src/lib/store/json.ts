@@ -291,6 +291,16 @@ export const jsonStore: Store = {
     });
   },
 
+  setChoTai(galleryId: string, choTai: boolean) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const g = db.galleries.find((x) => x.id === galleryId);
+      if (!g) return;
+      g.allowDownload = choTai;
+      await writeToDisk(db);
+    });
+  },
+
   setGoiAnh(galleryId: string, soAnhTrongGoi: number | null, giaAnhThem: number) {
     return withLock(async () => {
       const db = await readFromDisk();

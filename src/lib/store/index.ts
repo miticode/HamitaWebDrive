@@ -62,6 +62,8 @@ export const setFeatured: Store["setFeatured"] = (id, featured) =>
 export const setKhuGioiThieu: Store["setKhuGioiThieu"] = (id, khu) =>
   store.setKhuGioiThieu(id, khu);
 
+export const setChoTai: Store["setChoTai"] = (id, choTai) =>
+  store.setChoTai(id, choTai);
 export const setGoiAnh: Store["setGoiAnh"] = (id, so, gia) =>
   store.setGoiAnh(id, so, gia);
 export const setExpiry: Store["setExpiry"] = (id, expiresAt) =>

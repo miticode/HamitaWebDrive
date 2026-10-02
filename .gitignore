@@ -57,3 +57,4 @@ docs/*.pdf
 # San pham dung Cloudflare (nhanh thu) va bi mat chay o may
 .open-next/
 .dev.vars
+.wrangler/
