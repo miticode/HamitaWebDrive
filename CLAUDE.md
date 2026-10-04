@@ -2048,6 +2048,70 @@ ba đều là album mới tạo rồi studio đặt gói ảnh cho chúng. Đã 
 Sửa schema thôi là chưa đủ: Prisma để **Postgres** lo giá trị mặc định, nên
 `@default` mới chỉ có tác dụng sau khi đã đẩy xuống database thật.
 
+
+---
+
+### 61. Ảnh trang khách sắp theo GIỜ CHỤP, trừ thư mục ảnh đã chỉnh
+
+Anh yêu cầu 04/10/2026: *"1 bộ hình nhưng nhiều máy chụp nên có nhiều mã số ảnh
+khác nhau, up lên bị nhảy ảnh tùm lum"*.
+
+Trước đó thứ tự là thứ Drive trả về với `orderBy: "folder,name_natural"` — tức
+**theo tên file**, và trang khách không sắp lại lần nào. Đo trên thư mục thật
+"File gốc ĐH" (2.755 ảnh, **ba** máy Sony — tiền tố `TB_`, `HMT`, `DY_`):
+
+| | Số lần đổi máy | Ảnh đầu | Giữa thư mục |
+|---|---|---|---|
+| theo TÊN | 1 | 10:00 | **09:09** ← thời gian lùi về quá khứ |
+| theo GIỜ CHỤP | 563 | 07:25 | 09:40, ba máy xen kẽ |
+
+Theo tên thì mỗi máy thành một khối riêng: khách xem hết buổi lễ qua góc máy
+một, rồi quay lại từ đầu với góc máy hai. Ngay trong MỘT máy tên cũng đã sai —
+`DY_00235` (12:17 trưa) đứng trước `DY_09462` (07:27 sáng) vì số file reset
+vòng. Sau khi sửa: **0 chỗ thời gian lùi** trên cả 2.755 tấm.
+
+**Giờ chụp lấy từ `imageMediaMetadata.time`** — Drive trả sẵn trong **cùng lời
+gọi liệt kê tệp**, chỉ thêm một chữ vào `fields`. Không tốn thêm lượt gọi nào,
+y như `width/height` (nguyên tắc 24). **Đừng đi đo lại bằng cách tải ảnh về.**
+
+**KHÔNG dùng `createdTime`** — đó là lúc tệp được up lên Drive. Đo 198 ảnh một
+thư mục: giờ up xáo trộn hoàn toàn (10:24, 10:25, 10:23, 10:32…) trong khi giờ
+chụp tăng đều. Up bằng nhiều luồng song song nên thứ tự đó là ngẫu nhiên.
+
+**THƯ MỤC ẢNH ĐÃ CHỈNH TỰ GIỮ NGUYÊN THEO TÊN — phần quan trọng nhất.** Đo 18
+thư mục thật: ảnh file gốc có giờ chụp **99,7%** (8.031/8.059), còn ảnh hoàn
+thiện **mất sạch** (photobook 11/11, file hoàn thiện ptb 14/14) vì xuất lại từ
+phần mềm chỉnh sửa là bay EXIF. Ở đó **tên file mới là thứ mang thứ tự** —
+`1.jpg`, `2.jpg`, `3.jpg` là trang 1, 2, 3 của quyển photobook — nên sắp theo
+giờ sẽ đảo lộn cả quyển sách.
+
+Vì vậy `sapAnh()` chỉ sắp theo giờ khi **quá nửa số ảnh trong thư mục có giờ
+chụp**. Khoảng cách giữa hai nhóm là ~100% và 0% nên mốc ở giữa rất an toàn.
+Dùng một mốc tự đo chứ **không bắt studio đánh dấu tay từng thư mục** — họ sẽ
+quên, cùng lý do với `laMucHoanThien` (nguyên tắc 49).
+
+Tấm lẻ không có giờ chụp nằm trong thư mục CÓ giờ chụp thì **xếp cuối theo
+tên**: không biết nó chụp lúc nào nên không xen vào giữa mạch được, mà bỏ ra
+ngoài thì khách mất ảnh.
+
+**So sánh CHUỖI, không dựng `Date`.** Drive trả về dạng `"2026:05:17 11:50:54"`
+— cùng một khuôn, số có số 0 đứng đầu, nên so chữ đã ra đúng thứ tự thời gian.
+Khỏi tạo vài nghìn đối tượng `Date` chỉ để sắp một lần.
+
+**Giờ EXIF là giờ của MÁY ẢNH, không kèm múi giờ.** Hai máy đặt lệch giờ thì
+trộn ra sai — đã đo thư mục trên, ba máy khớp nhau nên không vấn đề, nhưng đó
+là thứ studio phải giữ đúng chứ web không đoán được.
+
+**Tác dụng phụ đã biết: ảnh bìa của album/thư mục CHƯA GHIM sẽ đổi.** Bìa mặc
+định lấy `photos[0]` (`warm.ts`, `g/[slug]/page.tsx`, `anhGioiThieu.ts`), nay
+là tấm **chụp sớm nhất** thay vì tấm có tên nhỏ nhất — thường là ảnh chuẩn bị
+hoặc ảnh cổng. Không hỏng gì, và studio ghim bìa tay thì `coverPinned` vẫn
+thắng (nguyên tắc 10).
+
+Sắp **SAU khi đã gộp cả thư mục con sâu hơn** (`collectPhotos`), để cả cụm kể
+lại đúng một mạch thời gian. `orderBy` của Drive vẫn giữ `name_natural`: nó lo
+thứ tự THƯ MỤC, và là thứ tự dự phòng cho thư mục không có EXIF.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại
