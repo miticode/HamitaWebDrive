@@ -2186,6 +2186,53 @@ chật nhất.
 có `navigator.share` (đúng cảnh báo ở nguyên tắc 44), nên mọi lượt bấm ở đó
 đều rơi xuống nhánh chép link. **Cần anh thử bằng một điện thoại thật.**
 
+
+---
+
+### 63. Link chia sẻ GIẤU hết đường sang thư mục khác — nhưng chỉ giấu, không chặn
+
+Anh phát hiện ngay sau khi làm nút chia sẻ (08/10/2026): *"người thân nhận được
+link và mở lên vẫn có nút quay lại, ấn quay lại thì vẫn thấy được các thư mục
+khác"*. Đúng — cô dâu gửi "File gốc nhà gái" cho họ hàng bên gái, mà họ bấm một
+cái là sang được "file gốc nhà trai" và "file hoàn thiện HC".
+
+Link do nút chia sẻ sinh ra mang thêm `?nguoithan=1` (`THAM_SO_CHIA_SE` trong
+`constants.ts` — **một nguồn duy nhất** cho cả hai đầu; hai nơi gõ tay thì lệch
+một chữ là nút vẫn gửi mà trang không nhận ra, và không có lỗi nào hiện ra để
+biết). Trang thư mục đọc tham số đó rồi bỏ **ba** thứ:
+
+| Bỏ gì | Vì sao |
+|---|---|
+| Nút "← tên nhà khách" | cửa đầu tiên dẫn sang trang bìa rồi sang mọi thư mục |
+| Hàng chọn thư mục | liệt kê thẳng tên các thư mục còn lại |
+| Chính nút chia sẻ | người thân không phải chủ nhà; mời họ phát tán tiếp bộ ảnh của nhà khác là thứ studio không muốn mời |
+
+Đo trên trang thật: link thường có **5 liên kết nội bộ** (1 về trang bìa + 4 thư
+mục), link chia sẻ còn **0**. Ảnh vẫn hiện đủ 60 tấm đầu, nút tải vẫn chạy như
+khách (anh chốt 08/10: người thân tải ảnh được như khách).
+
+**Tên nhà khách vẫn hiện, dạng chữ thường chứ không phải liên kết.** Bỏ nút quay
+lại là bỏ luôn chỗ duy nhất in tên nhà khách — người thân mở ra chỉ thấy "File
+gốc nhà gái" thì không biết đây là ảnh cưới của ai.
+
+**ĐỌC THAM SỐ Ở MÁY CHỦ, không giấu bằng JavaScript ở máy khách.** Giấu ở máy
+khách thì nút quay lại và hàng thư mục vẫn nằm trong dòng HTML đầu tiên, hiện ra
+một nhịp rồi mới biến mất — đủ để người thân kịp đọc tên các thư mục khác, đúng
+thứ đang muốn giấu.
+
+**ĐÂY LÀ GIẤU, KHÔNG PHẢI CHẶN — anh biết và đã chọn mức này.** Địa chỉ trang
+vẫn chứa slug album, nên ai xoá `?nguoithan=1` hoặc xoá đoạn mã thư mục ở cuối
+là vào được trang bìa như thường. Với họ hàng trong nhà thì đủ; đây không phải
+lớp bảo vệ trước người cố tình.
+
+**Muốn chặn thật thì phải đi đường khác hẳn** (đã bàn và hoãn 08/10): một đường
+riêng kiểu `/x/<mã>` không chứa slug nên không ghép ngược ra được, máy chủ chỉ
+phục vụ đúng thư mục đó. Nặng hơn nhiều — phải dựng trang riêng và sửa lại nút
+tải ảnh (đang bắt buộc kèm `?slug=`, nguyên tắc 13). **Đừng tự nâng cấp lên mức
+đó nếu anh không yêu cầu**, và cũng đừng nhầm mức hiện tại là chặn thật.
+
+`laChiaSe` mặc định `false` để mọi chỗ gọi `AlbumView` cũ chạy y như trước.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại

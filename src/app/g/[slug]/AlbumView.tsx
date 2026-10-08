@@ -32,6 +32,7 @@ export function AlbumView({
   mucXongLuc,
   daTungChon,
   dsMuc,
+  laChiaSe = false,
 }: {
   slug: string;
   gallery: Gallery;
@@ -53,6 +54,13 @@ export function AlbumView({
   daTungChon: boolean;
   /** Mọi thư mục của album — để nhảy thẳng giữa chúng. Rỗng khi ở trang bìa. */
   dsMuc: { id: string; ten: string; soAnh: number }[];
+  /**
+   * Trang đang mở bằng LINK CHIA SẺ mà khách gửi cho người thân.
+   *
+   * Lúc đó giấu hết đường sang thư mục khác — xem nguyên tắc 63. Mặc định
+   * false để mọi chỗ gọi cũ chạy y như trước.
+   */
+  laChiaSe?: boolean;
 }) {
   const photos = album.photos.map((p) => ({
     id: p.id,
@@ -87,9 +95,14 @@ export function AlbumView({
       */}
       <TuLamMoi />
 
+      {/*
+        Link chia sẻ thì BỎ đường quay lại — đó là cửa đầu tiên dẫn người thân
+        sang trang bìa rồi sang mọi thư mục khác của nhà khách (anh phát hiện
+        08/10/2026). Vẫn truyền backLabel để tên nhà khách hiện dạng chữ.
+      */}
       <GalleryHeader
         title={backHref ? album.name : galleryTitle}
-        backHref={backHref}
+        backHref={laChiaSe ? null : backHref}
         backLabel={galleryTitle}
         total={photos.length}
         hoanThien={hoanThien}
@@ -123,10 +136,17 @@ export function AlbumView({
           */}
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-3">
             <p className="eyebrow">{photos.length} tấm ảnh</p>
-            <NutChiaSe
-              tenKhach={galleryTitle}
-              tenMuc={backHref ? album.name : galleryTitle}
-            />
+            {/*
+            Trang đang MỞ BẰNG link chia sẻ thì không hiện nút chia sẻ nữa:
+            người thân không phải chủ nhà, và một nút mời họ phát tán tiếp bộ
+            ảnh cưới của nhà khác là thứ studio không muốn mời.
+          */}
+            {!laChiaSe && (
+              <NutChiaSe
+                tenKhach={galleryTitle}
+                tenMuc={backHref ? album.name : galleryTitle}
+              />
+            )}
           </div>
 
           {/* Chi hien o trang goc cua album. Vao tung thu muc con roi ma van
@@ -145,7 +165,12 @@ export function AlbumView({
           chuyện "chọn ảnh thế nào". Gộp hai thứ vào một khối thì khách phải
           đọc qua hướng dẫn mới thấy đường sang thư mục khác.
         */}
-        <ChonThuMuc slug={slug} dsMuc={dsMuc} mucDangMo={album.id} />
+        {/*
+          Cửa thứ hai: hàng thư mục liệt kê thẳng tên mọi thư mục còn lại
+          ("file gốc nhà trai", "file hoàn thiện HC"). Link chia sẻ thì truyền
+          danh sách rỗng — ChonThuMuc tự ẩn khi dưới hai mục.
+        */}
+        <ChonThuMuc slug={slug} dsMuc={laChiaSe ? [] : dsMuc} mucDangMo={album.id} />
 
         {/*
           Ba bước hướng dẫn đặt ngay đây — trong thư mục con, sát trên lưới

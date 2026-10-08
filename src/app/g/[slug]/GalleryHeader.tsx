@@ -149,6 +149,17 @@ export function GalleryHeader({
     >
       <div className="mx-auto flex w-full max-w-[1700px] items-center gap-3 px-4 py-2.5 sm:px-6">
         <div className="min-w-0 flex-1">
+          {/*
+            Link chia se cho nguoi than KHONG co duong quay lai (xem nguyen tac
+            63), nhung ten nha khach thi van phai hien: nguoi than mo ra chi
+            thay "File goc nha gai" thi khong biet day la anh cuoi cua ai.
+            Hien dang chu thuong, khong phai lien ket.
+          */}
+          {!backHref && backLabel && (
+            <p className="-mt-2 truncate py-2 text-xs text-fg-muted">
+              {backLabel}
+            </p>
+          )}
           {backHref && (
             <Link
               href={backHref}

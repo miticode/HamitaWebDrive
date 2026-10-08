@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { THAM_SO_CHIA_SE } from "@/lib/constants";
 
 /**
  * Nút để cô dâu chú rể gửi link thư mục này cho người thân.
@@ -47,7 +48,17 @@ export function NutChiaSe({
       đang phục vụ cả hamitastudio.com lẫn địa chỉ .vercel.app cũ, đoán sai là
       gửi người thân một link chết.
     */
-    const url = window.location.href;
+    /*
+      Gan dau hieu "link chia se" vao dia chi gui di.
+
+      Nho no ma trang ben kia bo nut quay lai va hang thu muc, nen nguoi than
+      chi thay dung thu muc duoc gui (nguyen tac 63). Dung `URL` chu khong
+      noi chuoi "?..." bang tay: dia chi co the da mang san tham so khac va
+      noi tay se ra hai dau hoi.
+    */
+    const dia = new URL(window.location.href);
+    dia.searchParams.set(THAM_SO_CHIA_SE, "1");
+    const url = dia.toString();
     const loiNhan = `Ảnh cưới của ${tenKhach} — ${tenMuc}`;
 
     /*

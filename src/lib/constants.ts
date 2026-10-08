@@ -105,6 +105,16 @@ export const SO_NGAY_GIU_ANH_MAC_DINH = 90;
  *   nguoi xem dang dung.
  */
 export const MUI_GIO = "Asia/Ho_Chi_Minh";
+
+/**
+ * Dau hieu trong dia chi trang bao "day la link khach gui cho nguoi than".
+ *
+ * Mot nguon duy nhat cho ca hai dau: nut chia se gan no vao, trang thu muc
+ * doc no ra. Hai noi go tay thi chi can lech mot chu la nut van gui di ma
+ * trang khong nhan ra, roi nguoi than van thay duong sang thu muc khac — ma
+ * khong co loi nao hien ra de biet (xem nguyen tac 63).
+ */
+export const THAM_SO_CHIA_SE = "nguoithan";
 /**
  * "7/9 17:40" — theo gio studio, khong theo gio may dang mo trang
  * (nguyen tac 35).

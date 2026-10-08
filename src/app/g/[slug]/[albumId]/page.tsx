@@ -1,6 +1,6 @@
 import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { ROOT_ALBUM } from "@/lib/constants";
+import { ROOT_ALBUM, THAM_SO_CHIA_SE } from "@/lib/constants";
 import { loadTree, loadTreeMoi } from "@/lib/gallery";
 import {
   getGalleryBySlug,
@@ -18,10 +18,23 @@ import { AlbumView } from "../AlbumView";
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ slug: string; albumId: string }> };
+type Props = {
+  params: Promise<{ slug: string; albumId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
-export default async function AlbumPage({ params }: Props) {
+export default async function AlbumPage({ params, searchParams }: Props) {
   const { slug, albumId } = await params;
+
+  /*
+    Trang nay co mo bang LINK CHIA SE khong (xem nguyen tac 63).
+
+    Doc o may chu chu khong doc `location` o may khach: giau bang JavaScript
+    thi nut quay lai va hang thu muc van nam trong dong HTML dau tien, hien ra
+    mot nhip roi moi bien mat — du de nguoi than kip nhin thay ten cac thu muc
+    khac, dung thu dang muon giau.
+  */
+  const laChiaSe = (await searchParams)[THAM_SO_CHIA_SE] === "1";
 
   const gallery = await getGalleryBySlug(slug);
   if (!gallery) notFound();
@@ -156,6 +169,7 @@ export default async function AlbumPage({ params }: Props) {
       unlocked={unlocked}
       mucXongLuc={mucXongLuc}
       daTungChon={daTungChon}
+      laChiaSe={laChiaSe}
       dsMuc={tree.albums.map((a) => ({
         id: a.id,
         ten: a.name,
