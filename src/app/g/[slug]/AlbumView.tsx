@@ -10,6 +10,7 @@ import { HuongDanChon } from "./HuongDanChon";
 import { TuLamMoi } from "./TuLamMoi";
 import { CodeDialog } from "./CodeDialog";
 import { ChonThuMuc } from "./ChonThuMuc";
+import { NutChiaSe } from "./NutChiaSe";
 import { XacNhanXong } from "./XacNhanXong";
 import { SelectionProvider } from "./Selection";
 import { HopHoiDap } from "./HopHoiDap";
@@ -109,7 +110,24 @@ export function AlbumView({
           <h1 className="rule mt-5 font-display text-3xl leading-tight font-light sm:text-5xl">
             {backHref ? album.name : galleryTitle}
           </h1>
-          <p className="eyebrow mt-5">{photos.length} tấm ảnh</p>
+          {/*
+            Dòng số ảnh và nút gửi link đứng CÙNG MỘT HÀNG, không xếp chồng.
+
+            Xếp chồng thì riêng nút ngốn thêm 107px và đẩy tấm ảnh đầu tiên
+            xuống 874px trên màn 375px — quá màn hình 812px, phá mốc của
+            nguyên tắc 30. Cùng hàng thì nút gần như không tốn thêm chiều cao,
+            mà vẫn nằm đúng chỗ khách đang nhìn.
+
+            Màn hẹp vẫn cho xuống dòng (`flex-wrap`): tên thư mục dài cộng
+            nút thì hai thứ chen nhau không đủ chỗ.
+          */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-3">
+            <p className="eyebrow">{photos.length} tấm ảnh</p>
+            <NutChiaSe
+              tenKhach={galleryTitle}
+              tenMuc={backHref ? album.name : galleryTitle}
+            />
+          </div>
 
           {/* Chi hien o trang goc cua album. Vao tung thu muc con roi ma van
               lap lai loi chuc thi thanh ra sao rong. */}
@@ -118,6 +136,7 @@ export function AlbumView({
               <LoiChuc noiDung={gallery.message} />
             </div>
           )}
+
         </div>
 
         {/*

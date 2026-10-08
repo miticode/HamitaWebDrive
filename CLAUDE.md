@@ -2112,6 +2112,80 @@ Sắp **SAU khi đã gộp cả thư mục con sâu hơn** (`collectPhotos`), đ
 lại đúng một mạch thời gian. `orderBy` của Drive vẫn giữ `name_natural`: nó lo
 thứ tự THƯ MỤC, và là thứ tự dự phòng cho thư mục không có EXIF.
 
+
+---
+
+### 62. Nút "Gửi link cho người thân" — chia sẻ ĐÚNG THƯ MỤC đang mở
+
+Anh yêu cầu 08/10/2026: *"trong từng thư mục con, làm chức năng share link để
+dâu rể có thể gửi link ảnh cho người thân"*. Trước đó muốn gửi thì khách phải
+tự chép địa chỉ trên thanh trình duyệt — trên điện thoại, nơi gần như cả tệp
+khách của studio ngồi, thao tác đó rất lóng ngóng.
+
+**Gửi link của THƯ MỤC ĐANG MỞ, không phải trang bìa album.** Người thân
+thường chỉ quan tâm một phần — nhà gái gửi "File gốc nhà gái" cho họ hàng bên
+gái. Gửi link trang bìa thì người nhận mở ra còn phải tự dò vào thư mục nào,
+mà tên thư mục là chữ nội bộ của studio ("file gốc HC").
+
+**Không kèm mã, và cũng không có gì để kèm:** mã không nằm trong địa chỉ trang.
+Người nhận xem được toàn bộ ảnh nhưng KHÔNG thả tim được — đúng nguyên tắc 1.
+Nhờ vậy gửi cho mười người thân cũng không ai lỡ tay thêm một tấm vào đơn in.
+
+**Điện thoại mở khay, máy tính chép link — NGOẠI LỆ CÓ CHỦ Ý với nguyên tắc
+46.** Nguyên tắc đó ("khay chia sẻ chỉ dành cho iPhone") nói về chia sẻ TỆP
+ẢNH: ở đó máy tính và Android vốn đã tải xuống ngon lành nên mở khay chỉ chen
+thêm một câu hỏi, lại dẫn tới chỗ khách bấm nhầm "Discord". Ở đây ngược hẳn —
+việc khách muốn làm ĐÚNG LÀ gửi đi chỗ khác, nên khay là đường thẳng nhất tới
+Zalo và Messenger, trên cả Android lẫn iPhone. Riêng máy tính vẫn chép link:
+Windows mở bảng "Nearby Sharing, Mail, Paint…", thứ không ai dùng để nhắn cho
+người thân. Nhận ra điện thoại bằng **số điểm chạm**, không bằng chuỗi
+UserAgent — chuỗi đó mỗi hãng viết một kiểu, số điểm chạm thì đo được.
+
+**CHÉP LINK PHẢI CÓ HAI ĐƯỜNG, và đường thứ hai không phải để cho đẹp.**
+`navigator.clipboard` bị trình duyệt từ chối ở khá nhiều chỗ khách thật sự
+ngồi — nhất là trang nhúng trong Zalo/Messenger (xem `laTrongUngDungKhac`).
+Đo ngay khi làm, trong khung xem thử: lời gọi đi **đúng địa chỉ trang** nhưng
+trả về `NotAllowedError`, và nút rơi vào nhánh báo hỏng. Thêm
+`execCommand("copy")` làm lưới đỡ thì đo lại ra đúng chu trình
+**"Gửi link cho người thân" → "Đã chép link" → về lại sau 2,5 giây**. Ô nhập
+tạm phải nằm trong trang thật (không `display:none`), đẩy ra ngoài khung nhìn
+bằng toạ độ âm và khai `readOnly` để iPhone không bật bàn phím giữa chừng.
+
+**KHÔNG báo "đã gửi xong" sau khi khay đóng.** Khay đóng chỉ có nghĩa hệ điều
+hành báo xong; khách bấm gửi thật hay bấm huỷ thì trang không hề biết — cùng
+luật với nút tải ảnh (nguyên tắc 44).
+
+#### Nút này suýt phá mốc của nguyên tắc 30 — ghi lại vì đúng là cái bẫy
+
+Bản đầu: nút đứng riêng một hàng, kèm hai dòng trấn an ("người nhận chỉ xem
+được…"). Đo trên màn **375×812** ở album bốn thư mục, lúc hướng dẫn đã thu lại:
+
+| Bản | Ảnh đầu tiên nằm ở | Lọt màn hình đầu? |
+|---|---:|---|
+| chưa có nút | 767px | có |
+| nút riêng một hàng + 2 dòng chữ | **874px** | **không** |
+| gộp nút vào hàng "N tấm ảnh" | **840px** | **không** |
+| thêm: chữ chỉ hiện khi chép hỏng | **786px** | **có**, dư 26px |
+
+Hai việc phải giữ, bỏ một là ảnh tụt khỏi màn hình đầu trở lại:
+
+- **Nút đứng CÙNG HÀNG với dòng "N tấm ảnh"** (`flex-wrap` để màn hẹp vẫn
+  xuống dòng được), không xếp chồng thành hàng mới.
+- **Không có dòng chữ nào đứng thường trực dưới nút.** Câu trấn an dời vào
+  chú thích (`title`) của nút. Mất chỗ đứng trên điện thoại, nhưng nó vốn chỉ
+  để yên lòng chứ không cảnh báo gì: khay chia sẻ mở ra đã mang sẵn dòng
+  "Ảnh cưới của … — tên thư mục". Câu **báo hỏng** thì vẫn hiện thật, không
+  nuốt — khách bấm mà không thấy gì xảy ra là kiểu hỏng tệ nhất.
+
+Bài học chung: **thêm bất cứ thứ gì vào khoảng giữa tiêu đề và lưới ảnh thì
+phải đo lại mốc "ảnh đầu tiên trong màn hình đầu"** (nguyên tắc 30), và đo ở
+album NHIỀU THƯ MỤC — hàng chọn thư mục đã ngốn sẵn ~70px nên đó mới là ca
+chật nhất.
+
+*Chưa đo được:* nhánh khay chia sẻ trên điện thoại thật. Khung xem thử không
+có `navigator.share` (đúng cảnh báo ở nguyên tắc 44), nên mọi lượt bấm ở đó
+đều rơi xuống nhánh chép link. **Cần anh thử bằng một điện thoại thật.**
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại
