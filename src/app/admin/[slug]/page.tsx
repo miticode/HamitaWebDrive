@@ -231,8 +231,43 @@ export default async function ResultsPage({ params }: Props) {
                       chỗ chép phải cho ra cùng một dãy.
                     */}
                     <NutChep
-                      nhan="Chép mã số"
-                      lop="btn-gon"
+                      /*
+                        NỀN ĐẬM — anh yêu cầu làm nổi bật hơn (08/10/2026).
+
+                        Bản đầu em truyền mỗi `btn-gon`, mà lớp đó CHỈ đổi cỡ
+                        chữ và chiều cao chứ không mang viền hay nền nào, nên
+                        nút trông y như một dòng chữ xám nằm cạnh ngày tháng.
+                        Lỗi của em: `.btn-gon` luôn phải đi kèm một lớp nền.
+
+                        Thử bản tô MÀU NHẤN (viền + chữ #9c7c4f trên nền
+                        #f3ede2) và bỏ: đo ra tương phản chữ chỉ **3,33**,
+                        dưới mức 4,5 cho chữ nhỏ — đúng cái bẫy đã ghi ở
+                        nguyên tắc 25 ("chữ trắng trên #9c7c4f chỉ 3,9:1").
+                        Nền đậm đo lại được **16,53** ở tông sáng và **15,24**
+                        ở tông tối, nơi nút tự đảo thành nền sáng chữ đen.
+
+                        Không sợ lấn tên thư mục: nút chữ 12px cạnh tiêu đề
+                        24px, đo ở 1200px thì nút chỉ 117×32px.
+                      */
+                      lop="btn-primary min-h-11 gap-1.5 px-3 text-[0.78125rem] sm:min-h-8 sm:px-2.5 sm:py-1 sm:text-xs"
+                      nhan={
+                        <>
+                          <svg
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                            className="size-3.5 shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <rect x="9" y="9" width="11" height="11" rx="2" />
+                            <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                          </svg>
+                          Chép mã số
+                        </>
+                      }
                       text={rows.map((r) => maSoFile(r.fileName)).join(" ")}
                     />
                   </h3>

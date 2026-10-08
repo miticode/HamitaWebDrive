@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 /**
  * Mot nut chep-vao-clipboard dung lai duoc cho nhieu dinh dang khac nhau.
@@ -16,7 +16,11 @@ export function NutChep({
   text,
   lop = "btn",
 }: {
-  nhan: string;
+  /**
+   * ReactNode chu khong phai string: nut cua tung thu muc deo them mot bieu
+   * tuong chep ben trai chu (xem nguyen tac 64).
+   */
+  nhan: ReactNode;
   text: string;
   /** Hinh dang nut theo cho dung — hang nut thuong (.btn) hay nut gon trong dau muc (.btn-gon). */
   lop?: string;

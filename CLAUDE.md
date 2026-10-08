@@ -2266,9 +2266,30 @@ component — chép thành bản thứ hai thì có ngày một bên báo "Đã 
 kia không. Mỗi nút giữ trạng thái riêng (đo: bấm nút thư mục đầu thì nút thư
 mục thứ hai vẫn nguyên nhãn cũ).
 
-Nút nhận prop `lop` để đổi hình dạng theo chỗ đứng — `.btn` ở hàng nút đầu
-trang, `.btn-gon` trong đầu mục. Đo: 32px từ 640px trở lên, **tự về 44px** dưới
-mốc đó, đúng mức tối thiểu cho đầu ngón tay (nguyên tắc 45).
+Nút nhận prop `lop` để đổi hình dạng theo chỗ đứng. Đo: **32px** từ 640px trở
+lên, **tự về 44px** dưới mốc đó — đúng mức tối thiểu cho đầu ngón tay
+(nguyên tắc 45).
+
+**Nút để NỀN ĐẬM, và đường tới đó đáng ghi vì vấp hai lần.**
+
+Bản đầu em truyền mỗi `lop="btn-gon"`. Lớp đó **CHỈ đổi cỡ chữ và chiều cao**,
+không mang viền hay nền nào — nó sinh ra để đi KÈM một lớp nền (`.btn`,
+`.btn-primary`). Thiếu lớp nền thì nút ra đúng một dòng chữ xám nằm cạnh ngày
+tháng, và anh phải báo lại "làm cho nút này nổi bật hơn".
+
+Bản thứ hai tô **màu nhấn** (viền + chữ `#9c7c4f` trên nền `#f3ede2`) — nhìn
+thì nổi, nhưng đo ra tương phản chữ chỉ **3,33**, dưới mức 4,5 cho chữ nhỏ.
+Đây đúng cái bẫy đã ghi ở nguyên tắc 25: *"Nút chính nền đậm, không nền vàng
+đồng: chữ trắng trên #9c7c4f chỉ 3,9:1"*. **Màu nhấn của web này dùng làm chữ
+thì không bao giờ đủ tương phản** — nó là màu để viền, để tô số, không phải để
+đọc.
+
+Bản chốt dùng `.btn-primary` thu nhỏ bằng utility: đo **16,53** ở tông sáng và
+**15,24** ở tông tối (nút tự đảo thành nền sáng chữ đen). Không lấn tên thư
+mục: nút chữ 12px đứng cạnh tiêu đề 24px, đo ở 1200px ra 117×32px.
+
+Nút đeo thêm **biểu tượng chép** bên trái chữ, nên `NutChep` nhận `nhan` kiểu
+`ReactNode` chứ không còn là `string`.
 
 ---
 
