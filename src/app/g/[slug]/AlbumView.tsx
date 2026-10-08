@@ -1,6 +1,6 @@
 import type { Album } from "@/lib/drive";
 import { STUDIO_NAME, laMucHoanThien } from "@/lib/constants";
-import type { Gallery, SelectionList } from "@/lib/store";
+import type { Gallery, LoaiBaoXong, SelectionList } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { GalleryHeader } from "./GalleryHeader";
 import { LoiChuc } from "@/components/LoiChuc";
@@ -30,6 +30,7 @@ export function AlbumView({
   backHref,
   unlocked,
   mucXongLuc,
+  mucXongLoai,
   daTungChon,
   dsMuc,
   laChiaSe = false,
@@ -50,6 +51,8 @@ export function AlbumView({
   unlocked: boolean;
   /** Khách đã báo chọn xong THƯ MỤC NÀY lúc nào — null nếu chưa báo. */
   mucXongLuc: string | null;
+  /** Khách báo LOẠI gì — "xong" hay "can-sua". null nếu chưa báo. */
+  mucXongLoai: LoaiBaoXong | null;
   /** Khách đã chọn tấm nào trong album này chưa — quyết định hướng dẫn mở hay thu. */
   daTungChon: boolean;
   /** Mọi thư mục của album — để nhảy thẳng giữa chúng. Rỗng khi ở trang bìa. */
@@ -88,6 +91,7 @@ export function AlbumView({
       anhTrongMuc={photos}
       mucDangXem={{ id: album.id, ten: album.name }}
       mucXongLuc={mucXongLuc}
+      mucXongLoai={mucXongLoai}
     >
       {/*
         Cũng cần ở đây, không chỉ trang bìa: thông báo "có ảnh mới" dẫn khách

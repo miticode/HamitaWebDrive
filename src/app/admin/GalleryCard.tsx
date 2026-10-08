@@ -13,6 +13,7 @@ import { TenAlbum } from "./TenAlbum";
 import { MenuThe, MucMenuLink } from "./MenuThe";
 import { NutLamMoi } from "./NutLamMoi";
 import { NutGuiThongBao } from "./NutGuiThongBao";
+import { NutDaSuaXong } from "./NutDaSuaXong";
 import { XoaAlbumDialog } from "./XoaAlbumDialog";
 import { duongDanAnh } from "@/lib/anhXem";
 
@@ -259,30 +260,54 @@ export function GalleryCard({
         */}
         {mucXong.length > 0 && (
           <div className="absolute right-2 bottom-2 left-2 flex flex-wrap items-center gap-1.5">
-            {mucXong.map((m) => (
-              <span
-                key={m.albumId}
-                title={`Khách báo xong thư mục "${m.tenMuc}" lúc ${new Date(
-                  m.xongLuc,
-                ).toLocaleString("vi-VN", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  day: "2-digit",
-                  month: "2-digit",
-                })}`}
-                className="flex max-w-full items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur"
-              >
+            {mucXong.map((m) => {
+              /*
+                HAI LOẠI BÁO, hai màu, hai câu (anh yêu cầu 08/10/2026).
+
+                "can-sua" = khách xem ảnh đã chỉnh rồi nhờ Media sửa lại. Đây
+                là VIỆC ĐANG CHỜ chứ không phải việc đã xong, nên nhãn phải
+                khác hẳn — để chung chấm xanh "Đã chọn xong" thì studio liếc
+                qua thẻ sẽ tưởng nhà này xong rồi và đem đi in luôn.
+
+                Nền nhãn đậm hơn hẳn cho loại cần sửa: nó là thứ duy nhất trên
+                thẻ nói rằng còn người đang đợi mình.
+              */
+              const canSua = m.loai === "can-sua";
+              return (
                 <span
-                  aria-hidden
-                  className="size-1.5 shrink-0 rounded-full bg-emerald-400"
-                />
-                <span className="truncate">
-                  {gallery.albumCount > 1
-                    ? `Xong · ${m.tenMuc}`
-                    : "Đã chọn xong"}
+                  key={m.albumId}
+                  title={`${
+                    canSua
+                      ? `Khách nhờ chỉnh lại thư mục "${m.tenMuc}"`
+                      : `Khách báo xong thư mục "${m.tenMuc}"`
+                  } lúc ${new Date(m.xongLuc).toLocaleString("vi-VN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    day: "2-digit",
+                    month: "2-digit",
+                  })}`}
+                  className={`flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium backdrop-blur ${
+                    canSua ? "bg-amber-500/90 text-white" : "bg-black/60 text-white"
+                  }`}
+                >
+                  <span
+                    aria-hidden
+                    className={`size-1.5 shrink-0 rounded-full ${
+                      canSua ? "bg-white" : "bg-emerald-400"
+                    }`}
+                  />
+                  <span className="truncate">
+                    {canSua
+                      ? gallery.albumCount > 1
+                        ? `Cần chỉnh lại · ${m.tenMuc}`
+                        : "Khách cần chỉnh lại"
+                      : gallery.albumCount > 1
+                        ? `Xong · ${m.tenMuc}`
+                        : "Đã chọn xong"}
+                  </span>
                 </span>
-              </span>
-            ))}
+              );
+            })}
           </div>
         )}
       </Link>
@@ -364,6 +389,27 @@ export function GalleryCard({
               <MucMenuLink href={`/admin/${gallery.slug}`}>
                 Ảnh khách chọn
               </MucMenuLink>
+
+              {/*
+                Thư mục nào khách đang nhờ chỉnh lại thì có một mục gỡ nhãn
+                ngay đây (anh chốt 08/10/2026: studio tự bấm dẹp).
+
+                Đặt NGAY SAU "Ảnh khách chọn" vì hai việc đi liền nhau: Media
+                mở album đọc lời dặn, sửa, up ảnh mới, rồi quay ra dẹp nhãn.
+                Để tận cuối bảng thì phải lướt qua cả cụm chép link và gửi
+                thông báo mới tới.
+              */}
+              {mucXong
+                .filter((m) => m.loai === "can-sua")
+                .map((m) => (
+                  <NutDaSuaXong
+                    key={m.albumId}
+                    galleryId={gallery.id}
+                    albumId={m.albumId}
+                    tenMuc={m.tenMuc}
+                    nhieuThuMuc={gallery.albumCount > 1}
+                  />
+                ))}
 
               <form action={refreshGalleryAction}>
                 <input

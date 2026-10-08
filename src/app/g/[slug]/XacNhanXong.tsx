@@ -37,7 +37,16 @@ export function XacNhanXong({
   /** Thư mục ảnh đã chỉnh xong — khách duyệt để in, không phải chọn. */
   hoanThien: boolean;
 }) {
-  const { unlocked, tongSoDaChon, daBaoXong, baoXongLuc, baoDaXong } = useSelection();
+  const {
+    unlocked,
+    tongSoDaChon,
+    soLoiDan,
+    daBaoXong,
+    loaiBao,
+    baoXongLuc,
+    baoDaXong,
+  } = useSelection();
+  const canSua = loaiBao === "can-sua";
 
   /*
     Chua nhap ma thi khong the bao gi ca — van an nhu cu.
@@ -57,10 +66,22 @@ export function XacNhanXong({
   if (daBaoXong) {
     return (
       <section className="mx-auto mt-14 mb-4 max-w-md px-5">
-        <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-6 py-7 text-center">
+        {/*
+          Hai mau cho hai viec khac han: XANH la xong chuyen, VANG la Hamita
+          con phai lam tiep. Dung chung mot mau xanh cho ca hai thi khach bao
+          "can chinh lai" xong nhin thay dau tich xanh va tuong minh vua duyet
+          nham.
+        */}
+        <div
+          className={`rounded-lg border px-6 py-7 text-center ${
+            canSua ? "border-amber-300 bg-amber-50" : "border-emerald-300 bg-emerald-50"
+          }`}
+        >
           <span
             aria-hidden
-            className="mx-auto grid size-11 place-items-center rounded-full bg-emerald-500 text-white"
+            className={`mx-auto grid size-11 place-items-center rounded-full text-white ${
+              canSua ? "bg-amber-500" : "bg-emerald-500"
+            }`}
           >
             <svg
               viewBox="0 0 24 24"
@@ -71,15 +92,35 @@ export function XacNhanXong({
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M20 6.5 9.2 17.3 4 12.1" />
+              {canSua ? (
+                /* Cây cọ — việc chuyển sang tay Media, không phải dấu tích. */
+                <>
+                  <path d="M9.5 14.5 4 20l5.5-1.5z" />
+                  <path d="M12 12 19.5 4.5a1.8 1.8 0 0 1 2.5 2.5L14.5 14.5" />
+                </>
+              ) : (
+                <path d="M20 6.5 9.2 17.3 4 12.1" />
+              )}
             </svg>
           </span>
 
-          <p className="mt-4 font-display text-xl font-light text-emerald-900">
-            Hamita đã nhận được rồi ạ
+          <p
+            className={`mt-4 font-display text-xl font-light ${
+              canSua ? "text-amber-900" : "text-emerald-900"
+            }`}
+          >
+            {canSua ? "Hamita nhận lời dặn rồi ạ" : "Hamita đã nhận được rồi ạ"}
           </p>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-emerald-800">
-            {hoanThien ? "Anh chị đã duyệt thư mục " : "Anh chị đã báo xong thư mục "}
+          <p
+            className={`mt-1.5 text-[13px] leading-relaxed ${
+              canSua ? "text-amber-800" : "text-emerald-800"
+            }`}
+          >
+            {canSua
+              ? "Anh chị đã nhờ Hamita chỉnh lại thư mục "
+              : hoanThien
+                ? "Anh chị đã duyệt thư mục "
+                : "Anh chị đã báo xong thư mục "}
             <strong className="font-medium">{tenMuc}</strong>
             {baoXongLuc &&
               ` lúc ${new Date(baoXongLuc).toLocaleString("vi-VN", {
@@ -88,23 +129,57 @@ export function XacNhanXong({
                 day: "2-digit",
                 month: "2-digit",
               })}`}
-            {hoanThien
-              ? ". Hamita mang đi in liền đây ạ."
-              : ". Hamita bắt tay vào làm liền đây ạ."}
+            {canSua
+              ? ". Bên em chỉnh xong sẽ báo lại anh chị ngay ạ."
+              : hoanThien
+                ? ". Hamita mang đi in liền đây ạ."
+                : ". Hamita bắt tay vào làm liền đây ạ."}
           </p>
 
-          <p className="mt-4 text-[13px] leading-relaxed text-emerald-800">
-            {hoanThien
-              ? "Xem lại thấy cần sửa chỗ nào thì anh chị bấm nút dưới, rồi nhắn Hamita nhé."
-              : "Lỡ quên tấm nào hay đổi ý thì anh chị vẫn chọn lại bình thường nhé."}
-          </p>
-          <button
-            type="button"
-            onClick={() => baoDaXong(false)}
-            className="mt-3 inline-flex min-h-11 items-center rounded-full border border-emerald-300 bg-white/70 px-5 text-sm font-medium text-emerald-900 transition hover:border-emerald-500"
+          <p
+            className={`mt-4 text-[13px] leading-relaxed ${
+              canSua ? "text-amber-800" : "text-emerald-800"
+            }`}
           >
-            {hoanThien ? "Chưa ok, xem lại" : "Chọn thêm nữa"}
-          </button>
+            {canSua
+              ? "Còn muốn dặn thêm tấm nào thì anh chị cứ ghi vào ảnh, Hamita đọc được hết ạ."
+              : hoanThien
+                ? "Xem lại thấy cần sửa chỗ nào thì anh chị bấm nút dưới, rồi nhắn Hamita nhé."
+                : "Lỡ quên tấm nào hay đổi ý thì anh chị vẫn chọn lại bình thường nhé."}
+          </p>
+
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            {/*
+              Khách đang ở trạng thái "cần chỉnh lại" vẫn phải có đường bấm
+              thẳng sang "đã ok" — không bắt họ gỡ trạng thái cũ rồi bấm lại
+              từ đầu. Hay gặp nhất: khách dặn xong, xem lại lần nữa thấy thật
+              ra cũng được, muốn chốt luôn.
+            */}
+            {canSua && (
+              <button
+                type="button"
+                onClick={() => baoDaXong("xong")}
+                className="inline-flex min-h-11 items-center rounded-full border border-amber-400 bg-amber-500 px-5 text-sm font-medium text-white transition hover:bg-amber-600"
+              >
+                Thôi, đã ok rồi
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => baoDaXong(null)}
+              className={`inline-flex min-h-11 items-center rounded-full border bg-white/70 px-5 text-sm font-medium transition ${
+                canSua
+                  ? "border-amber-300 text-amber-900 hover:border-amber-500"
+                  : "border-emerald-300 text-emerald-900 hover:border-emerald-500"
+              }`}
+            >
+              {canSua
+                ? "Bỏ lời báo này"
+                : hoanThien
+                  ? "Chưa ok, xem lại"
+                  : "Chọn thêm nữa"}
+            </button>
+          </div>
         </div>
       </section>
     );
@@ -152,13 +227,60 @@ export function XacNhanXong({
         */}
         <button
           type="button"
-          onClick={() => baoDaXong(true)}
+          onClick={() => baoDaXong("xong")}
           className="btn-primary mt-5 w-full text-sm"
         >
           {hoanThien
             ? "Đã ok, báo Hamita để in"
             : `Báo cho Hamita — đã chọn xong ${tongSoDaChon} tấm`}
         </button>
+
+        {/*
+          LỐI RA THỨ HAI, chỉ ở thư mục ảnh đã chỉnh (anh yêu cầu 08/10/2026).
+
+          Trước đó thư mục hoàn thiện chỉ có đúng một nút "Đã ok, báo Hamita
+          để in". Khách xem thấy cần sửa thì ghi lời dặn vào từng tấm rồi…
+          hết, không có nút nào báo là mình dặn xong. Hậu quả đúng như anh nói:
+          "bên phía media không biết khách đã yêu cầu chỉnh sửa xong chưa" —
+          Media ngồi đợi, khách tưởng đã báo, hai bên cùng đợi nhau.
+
+          Nút này để NHẸ hơn nút chính, không phải vì nó kém quan trọng mà vì
+          phần lớn khách sẽ bấm "đã ok"; để hai nút nặng ngang nhau thì thành
+          một câu hỏi bắt khách cân nhắc, trong khi đa số chỉ cần gật đầu.
+
+          Thư mục FILE GỐC không có nút này: ở đó khách đang chọn ảnh, chưa có
+          bản chỉnh nào để mà yêu cầu sửa.
+        */}
+        {hoanThien && (
+          <>
+            <button
+              type="button"
+              onClick={() => baoDaXong("can-sua")}
+              className="mt-2.5 inline-flex min-h-11 w-full items-center justify-center rounded-[3px] border border-line-strong bg-bg-raised px-5 text-sm text-fg-muted transition hover:border-amber-500 hover:text-amber-700"
+            >
+              Cần chỉnh lại
+            </button>
+
+            {/*
+              Nhắc khi khách chưa ghi lời dặn nào — anh chốt 08/10/2026: VẪN
+              cho báo, nhưng phải nhắc. Có khách muốn dặn chung cả bộ ("sáng
+              hơn chút") chứ không riêng tấm nào, chặn lại là bế tắc; nhưng
+              báo suông mà không ghi gì thì Media mở ra không biết sửa cái gì.
+            */}
+            {soLoiDan === 0 ? (
+              <p className="mt-2.5 text-xs leading-relaxed text-fg-faint">
+                Cần sửa tấm nào, anh chị bấm vào tấm đó rồi ghi vào ô dưới ảnh
+                giúp Hamita nhé — có ghi thì bên em mới biết sửa chỗ nào ạ.
+              </p>
+            ) : (
+              <p className="mt-2.5 text-xs leading-relaxed text-fg-faint">
+                Anh chị đã dặn{" "}
+                <strong className="font-medium text-fg-muted">{soLoiDan} tấm</strong>{" "}
+                trong thư mục này.
+              </p>
+            )}
+          </>
+        )}
 
         <p className="mt-3 text-xs leading-relaxed text-fg-faint">
           {hoanThien

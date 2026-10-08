@@ -8,6 +8,7 @@ import {
   type CreateGalleryInput,
   type Gallery,
   type GoiMuc,
+  type LoaiBaoXong,
   type MucXong,
   type KhuGioiThieu,
   type Selection,
@@ -357,7 +358,12 @@ export const jsonStore: Store = {
     });
   },
 
-  setMucXong(galleryId: string, albumId: string, tenMuc: string, xong: boolean) {
+  setMucXong(
+    galleryId: string,
+    albumId: string,
+    tenMuc: string,
+    loai: LoaiBaoXong | null,
+  ) {
     return withLock(async () => {
       const db = await readFromDisk();
       const ds = db.mucXong ?? [];
@@ -365,8 +371,11 @@ export const jsonStore: Store = {
         (m) => !(m.galleryId === galleryId && m.albumId === albumId)
       );
 
-      db.mucXong = xong
-        ? [...conLai, { galleryId, albumId, tenMuc, xongLuc: new Date().toISOString() }]
+      db.mucXong = loai
+        ? [
+            ...conLai,
+            { galleryId, albumId, tenMuc, loai, xongLuc: new Date().toISOString() },
+          ]
         : conLai;
 
       await writeToDisk(db);

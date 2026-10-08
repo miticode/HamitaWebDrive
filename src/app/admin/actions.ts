@@ -22,6 +22,7 @@ import {
   setBiaMuc,
   setClientName,
   setChoTai,
+  setMucXong,
   setGoiAnh,
   setGoiMuc,
   setCover,
@@ -306,6 +307,37 @@ export async function setMessageAction(
 
   await setMessage(galleryId, noiDung || null);
   await ghiViecAlbum("sua-album", galleryId, { doi: "lời nhắn", coNoiDung: noiDung.length > 0 });
+  revalidatePath("/admin");
+  return {};
+}
+
+/**
+ * Studio bao "Media da sua xong" — go nhan "khach can chinh lai" cua mot thu muc.
+ *
+ * Anh chot 08/10/2026: studio tu bam dep chu khong doi khach bam. Ly do chon
+ * duong nay: Media sua xong la up anh moi len Drive ngay luc do, nen ho dang o
+ * truoc may va dep duoc lien — con cho khach vao bam "da ok" thi co nha quen,
+ * va cai nhan vang nam lai mai tren the.
+ *
+ * XOA HAN DONG, khong doi ve "xong": khach chua duyet ban moi thi khong duoc
+ * thay mat ho noi la da duyet. Sau khi go, thu muc tro ve trang thai chua bao
+ * gi — khach mo lai se thay loi moi duyet nhu lan dau, dung thuc te.
+ *
+ * Quyen `quyenAlbum()` nhu moi viec thuong ngay cua album: ca tiem lam album
+ * (nguyen tac 51), va bam nham thi chi mat mot nhan, khach bao lai duoc.
+ */
+export async function goCanSuaAction(
+  galleryId: string,
+  albumId: string,
+  tenMuc: string,
+): Promise<{ error?: string }> {
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
+
+  await setMucXong(galleryId, albumId, tenMuc, null);
+  await ghiViecAlbum("sua-album", galleryId, {
+    doi: "gỡ nhãn khách cần chỉnh lại",
+    thuMuc: tenMuc,
+  });
   revalidatePath("/admin");
   return {};
 }

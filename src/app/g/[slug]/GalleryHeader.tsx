@@ -39,6 +39,7 @@ export function GalleryHeader({
     openCode,
     tongSoDaChon,
     daBaoXong,
+    loaiBao,
     baoXongLuc,
     baoDaXong,
   } = useSelection();
@@ -82,10 +83,19 @@ export function GalleryHeader({
       </span>
     );
   } else if (daBaoXong) {
+    /*
+      Khach bao "can chinh lai" thi cham doi mau va cau chu noi dung viec dang
+      cho — khong the dung chung mot dong "da nhan duoc" cho ca hai: mot ben
+      la xong viec, mot ben la Media sap phai lam tiep.
+    */
+    const canSua = loaiBao === "can-sua";
     muc.push(
       <span key="xong" className="inline-flex items-center gap-1.5">
-        <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
-        Hamita đã nhận được rồi ạ
+        <span
+          aria-hidden
+          className={`size-1.5 shrink-0 rounded-full ${canSua ? "bg-amber-500" : "bg-emerald-500"}`}
+        />
+        {canSua ? "Hamita nhận lời dặn rồi ạ" : "Hamita đã nhận được rồi ạ"}
         {baoXongLuc &&
           ` lúc ${new Date(baoXongLuc).toLocaleString("vi-VN", {
             hour: "2-digit",
@@ -94,7 +104,7 @@ export function GalleryHeader({
             month: "2-digit",
           })}`}{" "}
         <button
-          onClick={() => baoDaXong(false)}
+          onClick={() => baoDaXong(null)}
           className="underline underline-offset-2 hover:text-accent"
         >
           {/* Cùng chữ với nút trong khối cuối trang — hai chỗ làm đúng một
@@ -118,11 +128,33 @@ export function GalleryHeader({
             ? `Anh chị ưng ${tongSoDaChon} tấm này rồi phải không ạ? `
             : "Anh chị xem xong thư mục này chưa ạ? "}
         <button
-          onClick={() => baoDaXong(true)}
+          onClick={() => baoDaXong("xong")}
           className="font-medium text-accent underline underline-offset-2 hover:text-fg"
         >
           {hoanThien ? "Đã ok, báo Hamita để in" : "Báo cho Hamita"}
         </button>
+        {/*
+          Đường thứ hai, CHỈ ở thư mục ảnh đã chỉnh (anh yêu cầu 08/10/2026).
+
+          Trước đó thư mục hoàn thiện chỉ có một lối ra là "đã ok" — khách muốn
+          sửa thì ghi lời dặn vào từng tấm rồi… thôi, không có nút nào báo là
+          mình dặn xong. Media không biết lúc nào bắt tay vào sửa, mà khách thì
+          tưởng đã báo rồi. Hai bên cùng đợi nhau.
+
+          Ở thư mục FILE GỐC thì không có nút này: ở đó khách đang chọn ảnh,
+          chưa có bản chỉnh nào để mà yêu cầu sửa.
+        */}
+        {hoanThien && (
+          <>
+            {" · "}
+            <button
+              onClick={() => baoDaXong("can-sua")}
+              className="underline underline-offset-2 hover:text-accent"
+            >
+              Cần chỉnh lại
+            </button>
+          </>
+        )}
       </span>
     );
   }

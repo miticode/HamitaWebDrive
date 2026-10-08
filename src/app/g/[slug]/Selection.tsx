@@ -10,6 +10,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
+/*
+  Nhap tu `store/shared` chu khong tu `@/lib/store`: tep nay chay o MAY KHACH,
+  ma index cua kho nhap `getPrisma` (nguyen tac 43). `import type` bi xoa han
+  luc bien dich nen khong keo gi sang goi phia khach, nhung tro thang vao tep
+  type thuan thi khong co duong nao vap lai cai bay do.
+*/
+import type { LoaiBaoXong } from "@/lib/store/shared";
 
 export type ClientList = { id: string; name: string; icon: "heart" };
 
@@ -45,12 +52,27 @@ type Ctx = {
    * o day la hoi mot dang, ghi nhan mot neo.
    */
   tongSoDaChon: number;
-  /** Khach da bao "chon xong" chua. */
+  /**
+   * So tam TRONG THU MUC DANG XEM co loi dan cua khach.
+   *
+   * Dung de nhac truoc khi khach bam "can chinh lai": bao can sua ma khong ghi
+   * gi thi Media mo ra khong biet sua cai gi (anh chot 08/10/2026 — van cho
+   * bam, nhung phai nhac).
+   */
+  soLoiDan: number;
+  /** Khach da bao gi chua (xong hoac can sua). */
   daBaoXong: boolean;
   /** Luc bao, dang ISO — null neu chua bao. */
   baoXongLuc: string | null;
-  /** Bao hoac huy bao da chon xong. */
-  baoDaXong: (xong: boolean) => void;
+  /**
+   * Khach bao LOAI gi — null neu chua bao.
+   *
+   * "xong"    = duyet xong, Hamita dem di in.
+   * "can-sua" = muon Media chinh lai (anh yeu cau 08/10/2026).
+   */
+  loaiBao: LoaiBaoXong | null;
+  /** Bao, hoac huy bao. Truyen null de go trang thai. */
+  baoDaXong: (loai: LoaiBaoXong | null) => void;
 
   /** Da nhap dung ma chua. */
   unlocked: boolean;
@@ -96,6 +118,7 @@ export function SelectionProvider({
   allowDownload,
   unlocked: unlockedBanDau,
   mucDangXem,
+  mucXongLoai,
   mucXongLuc,
   anhTrongMuc,
   children,
@@ -112,6 +135,7 @@ export function SelectionProvider({
   mucDangXem: { id: string; ten: string };
   /** Khach da bao xong THU MUC NAY luc nao — null neu chua bao. */
   mucXongLuc: string | null;
+  mucXongLoai: LoaiBaoXong | null;
   /** Anh cua muc dang mo — dung de dem cho dung pham vi. */
   anhTrongMuc: { id: string }[];
   children: ReactNode;
@@ -126,6 +150,7 @@ export function SelectionProvider({
   const [filter, setFilter] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState(unlockedBanDau);
   const [baoXongLuc, setBaoXongLuc] = useState(mucXongLuc);
+  const [loaiBao, setLoaiBao] = useState<LoaiBaoXong | null>(mucXongLoai);
 
   /*
     Con so tren the loc phai dem DUNG nhung tam bo loc se hien ra.
@@ -408,9 +433,11 @@ export function SelectionProvider({
   );
 
   const baoDaXongThat = useCallback(
-    (xong: boolean) => {
+    (loai: LoaiBaoXong | null) => {
       const truoc = baoXongLuc;
-      setBaoXongLuc(xong ? new Date().toISOString() : null);
+      const truocLoai = loaiBao;
+      setBaoXongLuc(loai ? new Date().toISOString() : null);
+      setLoaiBao(loai);
 
       // Kèm thư mục đang mở: trạng thái xong tính riêng cho từng thư mục.
       fetch("/api/gallery-done", {
@@ -420,7 +447,13 @@ export function SelectionProvider({
           slug,
           albumId: mucDangXem.id,
           tenMuc: mucDangXem.ten,
-          xong,
+          loai,
+          /*
+            Gui kem dang CU cho may chu ban truoc 08/10/2026 van hieu — ban do
+            chi doc `xong`. Bo di thi trong vai phut Vercel dang doi ban moi,
+            khach bam bao xong se roi vao ham cu va bi coi la "go trang thai".
+          */
+          xong: loai !== null,
         }),
       })
         .then((res) => {
@@ -429,19 +462,20 @@ export function SelectionProvider({
         .catch(() => {
           setFailed(true);
           setBaoXongLuc(truoc);
+          setLoaiBao(truocLoai);
         });
     },
-    [slug, baoXongLuc, mucDangXem]
+    [slug, baoXongLuc, loaiBao, mucDangXem]
   );
 
   const baoDaXong = useCallback(
-    (xong: boolean) => {
+    (loai: LoaiBaoXong | null) => {
       if (!unlocked) {
-        dangCho.current = () => baoDaXongThat(xong);
+        dangCho.current = () => baoDaXongThat(loai);
         setAsking(true);
         return;
       }
-      baoDaXongThat(xong);
+      baoDaXongThat(loai);
     },
     [unlocked, baoDaXongThat]
   );
@@ -518,7 +552,22 @@ export function SelectionProvider({
         }
         return anh.size;
       })(),
+      /*
+        Dem theo TAM, khong theo luot: mot tam nam o hai danh sach van chi la
+        mot loi dan can doc. Cung cach `tongSoDaChon` dem, va cung chi tinh
+        trong thu muc dang xem.
+      */
+      soLoiDan: (() => {
+        const anh = new Set<string>();
+        for (const [k, ghiChu] of selected) {
+          if (!ghiChu?.trim()) continue;
+          const fileId = k.slice(k.indexOf(":") + 1);
+          if (idTrongMuc.has(fileId)) anh.add(fileId);
+        }
+        return anh.size;
+      })(),
       daBaoXong: baoXongLuc !== null,
+      loaiBao,
       baoXongLuc,
       baoDaXong,
     }),
@@ -535,6 +584,7 @@ export function SelectionProvider({
       askingCode,
       idTrongMuc,
       baoXongLuc,
+      loaiBao,
       baoDaXong,
     ]
   );

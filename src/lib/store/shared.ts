@@ -114,6 +114,14 @@ export type GoiMuc = {
   soAnh: number;
 };
 
+/**
+ * Khach bao gi ve mot thu muc.
+ *
+ * "xong"    — duyet xong, Hamita dem di in.
+ * "can-sua" — xem roi nhung muon Media chinh lai (anh yeu cau 08/10/2026).
+ */
+export type LoaiBaoXong = "xong" | "can-sua";
+
 export type MucXong = {
   galleryId: string;
   /** Chuoi rong = anh nam ngay thu muc goc. */
@@ -121,6 +129,7 @@ export type MucXong = {
   tenMuc: string;
   /** Luc bao, dang ISO. */
   xongLuc: string;
+  loai: LoaiBaoXong;
 };
 
 export type CreateGalleryInput = {
@@ -253,11 +262,19 @@ export type Store = {
    * Khach bao da chon xong cho MOT thu muc con (hoac bo bao de chon them).
    * Tinh rieng tung thu muc — xem model MucXong trong schema.
    */
+  /**
+   * `loai` null nghia la GO trang thai — khach bam "chon them", hoac studio
+   * bam "da sua xong" o trang quan ly.
+   *
+   * Thay cho tham so `xong: boolean` cu (doi 08/10/2026): tu khi co hai loai
+   * bao thi mot gia tri dung/sai khong du dien dat, ma them mot tham so thu
+   * hai canh no thi co ngay goi nham thu tu.
+   */
   setMucXong(
     galleryId: string,
     albumId: string,
     tenMuc: string,
-    xong: boolean
+    loai: LoaiBaoXong | null
   ): Promise<void>;
 
   /** Cac thu muc khach da bao xong cua mot album. */

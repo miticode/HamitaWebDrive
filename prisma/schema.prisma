@@ -201,6 +201,15 @@ model MucXong {
   albumId   String
   tenMuc    String
   xongLuc   DateTime @default(now())
+  /// Khach bao gi: "xong" = duyet xong, cho in; "can-sua" = xem roi nhung
+  /// muon Media chinh lai (anh yeu cau 08/10/2026).
+  ///
+  /// Mot thu muc chi mang MOT trang thai — khoa khong trung (galleryId,
+  /// albumId) van giu nguyen. Khach bam nut khac thi dong cu doi loai, khong
+  /// sinh dong thu hai, nen khong bao gio co canh vua "xong" vua "can sua".
+  ///
+  /// Mac dinh "xong" de moi dong da co truoc 08/10/2026 giu dung y nghia cu.
+  loai      String   @default("xong")
 
   gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
 

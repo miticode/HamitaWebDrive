@@ -8,6 +8,7 @@ import {
   type CreateGalleryInput,
   type Gallery,
   type GoiMuc,
+  type LoaiBaoXong,
   type MucXong,
   type KhuGioiThieu,
   type Selection,
@@ -94,8 +95,15 @@ function toMucXong(row: {
   albumId: string;
   tenMuc: string;
   xongLuc: Date;
+  loai: string;
 }): MucXong {
-  return { ...row, xongLuc: row.xongLuc.toISOString() };
+  return {
+    ...row,
+    xongLuc: row.xongLuc.toISOString(),
+    // Chu la trong database nen phai tu quy ve mot trong hai gia tri biet
+    // truoc; gia tri la thi coi nhu "xong", dung nghia cu truoc 08/10/2026.
+    loai: row.loai === "can-sua" ? "can-sua" : "xong",
+  };
 }
 
 /**
@@ -372,12 +380,12 @@ export const prismaStore: Store = {
     galleryId: string,
     albumId: string,
     tenMuc: string,
-    xong: boolean
+    loai: LoaiBaoXong | null
   ) {
     const prisma = getPrisma();
     const khoa = { galleryId_albumId: { galleryId, albumId } };
 
-    if (!xong) {
+    if (!loai) {
       // deleteMany chu khong delete: khach bam "chon them" khi chua tung bao
       // xong thi khong co dong nao, va do khong phai loi.
       await prisma.mucXong.deleteMany({ where: { galleryId, albumId } });
@@ -386,9 +394,11 @@ export const prismaStore: Store = {
 
     await prisma.mucXong.upsert({
       where: khoa,
-      create: { galleryId, albumId, tenMuc },
+      create: { galleryId, albumId, tenMuc, loai },
       // Bao lai thi cap nhat gio, va cap nhat luon ten neu thu muc da doi ten.
-      update: { tenMuc, xongLuc: new Date() },
+      // Doi loai ngay tai day: khach bam "can chinh lai" roi sau do bam "da ok"
+      // thi dong cu chuyen loai chu khong sinh dong thu hai.
+      update: { tenMuc, loai, xongLuc: new Date() },
     });
   },
 

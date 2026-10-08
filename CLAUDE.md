@@ -2291,6 +2291,80 @@ mục: nút chữ 12px đứng cạnh tiêu đề 24px, đo ở 1200px ra 117×3
 Nút đeo thêm **biểu tượng chép** bên trái chữ, nên `NutChep` nhận `nhan` kiểu
 `ReactNode` chứ không còn là `string`.
 
+
+---
+
+### 65. Thư mục ảnh đã chỉnh có HAI lối ra: "Đã ok" và "Cần chỉnh lại"
+
+Anh nêu 08/10/2026: *"trong các file hoàn thiện chỉ có nút ok báo in, chưa có
+nút thông báo cho media cần chỉnh sửa lại, đồng nghĩa với việc bên phía media
+không biết khách đã yêu cầu chỉnh sửa xong chưa"*.
+
+Đúng là một lỗ hổng nghiệp vụ, không phải chuyện giao diện: khách xem ảnh đã
+chỉnh thấy cần sửa thì ghi lời dặn vào từng tấm — lời dặn có lưu, nhưng **không
+có mốc nào nói "tôi dặn xong rồi"**. Media không biết lúc nào bắt tay vào làm,
+khách tưởng đã báo. Hai bên cùng đợi nhau.
+
+**Cột `loai` trên `MucXong`**, giá trị `"xong"` | `"can-sua"`, mặc định `"xong"`
+để 92 dòng có sẵn giữ nguyên nghĩa cũ. **Một thư mục chỉ mang MỘT trạng thái**
+— khoá không trùng `(galleryId, albumId)` giữ nguyên, bấm nút khác thì dòng cũ
+đổi loại chứ không sinh dòng thứ hai (đo khi làm: sau khi bấm "cần chỉnh lại"
+rồi "thôi đã ok", album vẫn đúng **1 dòng**). Nhờ vậy không bao giờ có cảnh vừa
+"xong" vừa "cần sửa".
+
+**Chữ ký `setMucXong` đổi từ `xong: boolean` sang `loai: LoaiBaoXong | null`**
+(null = gỡ). Một giá trị đúng/sai không diễn đạt nổi ba trạng thái, mà thêm
+tham số thứ hai cạnh nó thì có ngày gọi nhầm thứ tự.
+
+**API `/api/gallery-done` vẫn nhận trường `xong` cũ.** Máy khách đang mở sẵn
+trang với bản JavaScript cũ chỉ biết gửi trường đó; bỏ đi là khách đang ngồi
+chọn bấm "báo xong" ra lỗi 400 mà không hiểu vì sao (cùng lý do với `muon` ở
+nguyên tắc 23). Chiều ngược lại cũng vậy: máy khách mới gửi **cả hai** trường,
+để trong vài phút Vercel đang đổi bản thì máy chủ cũ vẫn hiểu. Phân biệt
+`"loai" in body` chứ không `body.loai ?? …` — `loai: null` (gỡ) và "không gửi
+loai" là hai ý định khác hẳn nhau.
+
+**Nút "Cần chỉnh lại" nhẹ hơn nút chính**, không phải vì kém quan trọng mà vì
+phần lớn khách sẽ bấm "đã ok"; để hai nút nặng ngang nhau thì thành một câu hỏi
+bắt khách cân nhắc, trong khi đa số chỉ cần gật đầu. **Thư mục FILE GỐC không
+có nút này** — ở đó khách đang chọn ảnh, chưa có bản chỉnh nào để yêu cầu sửa.
+
+**Khối xác nhận đổi sang MÀU VÀNG kèm biểu tượng cây cọ** (thay dấu tích xanh):
+xanh là xong chuyện, vàng là Hamita còn phải làm tiếp. Dùng chung một màu thì
+khách bấm "cần chỉnh lại" xong nhìn thấy dấu tích xanh và tưởng mình vừa duyệt
+nhầm. Trong khối đó có **"Thôi, đã ok rồi"** để khách chuyển thẳng sang duyệt,
+không bắt gỡ trạng thái cũ rồi bấm lại từ đầu.
+
+**Nhắc khi chưa ghi lời dặn nào** (anh chốt: vẫn cho báo, nhưng nhắc). Có khách
+muốn dặn chung cả bộ ("sáng hơn chút") chứ không riêng tấm nào, chặn lại là bế
+tắc; nhưng báo suông thì Media mở ra không biết sửa gì. `soLoiDan` trong
+`Selection` đếm theo **tấm riêng biệt trong thư mục đang xem**, cùng cách
+`tongSoDaChon` đếm.
+
+**Phía studio thấy ở ba chỗ:**
+
+| Chỗ | Hiện gì |
+|---|---|
+| Nhãn trên ảnh bìa thẻ album | nền **vàng đậm** "Khách cần chỉnh lại", khác hẳn nhãn đen "Đã chọn xong" |
+| Khung Thông báo `/admin` | mục **gấp** "Khách nhờ chỉnh lại", kèm TÊN thư mục — Media mở Drive phải biết vào đâu, một nhà có thể có cả "file hoàn thiện HC" lẫn "file hoàn thiện AB" |
+| Bảng "…" của thẻ | mục **"Đã sửa xong"** cho từng thư mục đang chờ, đặt ngay sau "Ảnh khách chọn" vì hai việc đi liền nhau |
+
+**`thongBao.ts` phải TÁCH hai loại trước khi đếm.** Gộp chung thì mục "Khách đã
+chọn xong" sẽ báo cho một nhà đang chờ sửa lại — studio đọc xong đem đi in. Đo
+sau khi sửa: album đang ở trạng thái cần sửa sinh **1** thông báo "nhờ chỉnh
+lại" và **0** thông báo "đã chọn xong".
+
+**Studio tự bấm dẹp, không đợi khách** (anh chốt 08/10/2026). Media sửa xong là
+đang up ảnh mới lên Drive ngay lúc đó nên họ ở sẵn trước máy; chờ khách vào bấm
+thì có nhà quên và nhãn vàng nằm lại mãi. Nút đó **XOÁ HẲN dòng**, không đổi về
+"xong": khách chưa duyệt bản mới thì không được thay mặt họ nói là đã duyệt —
+gỡ xong thư mục về trạng thái chưa báo gì, khách mở lại thấy lời mời duyệt như
+lần đầu.
+
+*Bẫy gặp khi làm:* đọc `information_schema.columns` bằng `$queryRaw` thì cột
+`column_name` mang kiểu `name` của Postgres, mà adapter Neon không giải tuần tự
+được — lỗi `UnsupportedNativeDataType`. Phải ép `column_name::text`.
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại

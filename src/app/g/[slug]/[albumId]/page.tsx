@@ -124,7 +124,9 @@ export default async function AlbumPage({ params, searchParams }: Props) {
     không phải "đã báo xong" của thư mục trước.
   */
   const dsXong = await getMucXong(gallery.id);
-  const mucXongLuc = dsXong.find((m) => m.albumId === wanted)?.xongLuc ?? null;
+  const banGhiXong = dsXong.find((m) => m.albumId === wanted) ?? null;
+  const mucXongLuc = banGhiXong?.xongLuc ?? null;
+  const mucXongLoai = banGhiXong?.loai ?? null;
 
   /*
     Khach da tung chon tam nao trong album nay chua — de quyet dinh bon buoc
@@ -168,6 +170,7 @@ export default async function AlbumPage({ params, searchParams }: Props) {
       backHref={`/g/${slug}`}
       unlocked={unlocked}
       mucXongLuc={mucXongLuc}
+      mucXongLoai={mucXongLoai}
       daTungChon={daTungChon}
       laChiaSe={laChiaSe}
       dsMuc={tree.albums.map((a) => ({
