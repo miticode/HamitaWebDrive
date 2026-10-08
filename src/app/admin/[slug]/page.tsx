@@ -12,7 +12,7 @@ import { maSoFile } from "@/lib/anhIn";
 import { lucGon } from "@/lib/constants";
 import { goiYHopDong, hopDongCuaAlbum } from "@/lib/noiAlbum";
 import { NutDoiTong } from "../NutDoiTong";
-import { ExportButton } from "./ExportButton";
+import { ExportButton, NutChep } from "./ExportButton";
 import { LuoiAnhChon } from "./LuoiAnhChon";
 import { GanHopDong } from "./GanHopDong";
 
@@ -212,6 +212,29 @@ export default async function ResultsPage({ params }: Props) {
                     <span className="text-xs text-fg-faint">
                       khách chọn gần nhất {lucGon(moiNhat)}
                     </span>
+
+                    {/*
+                      Nút chép mã số của RIÊNG thư mục này (anh yêu cầu
+                      08/10/2026). Nút ở đầu trang chép mã số cả album — nhà
+                      này hai thư mục là ra 238 tấm một lượt, trong khi việc
+                      studio làm là đem từng thư mục đi dò ảnh gốc, mà hai thư
+                      mục nằm ở hai chỗ khác nhau trên Drive.
+
+                      Đặt ngay trong đầu mục dính (sticky) chứ không để dưới
+                      lưới: thư mục vài trăm tấm thì cuộn tới cuối mới gặp nút,
+                      còn ở đây nó đi theo màn hình suốt lúc studio đang xem
+                      đúng thư mục đó.
+
+                      Mã số lấy theo rows — cùng thứ tự TÊN FILE với danh sách
+                      chép ở trên, không phải thứ tự hiển thị (tấm có lời dặn
+                      được đẩy lên đầu lưới). Bên in dò file theo tên, nên hai
+                      chỗ chép phải cho ra cùng một dãy.
+                    */}
+                    <NutChep
+                      nhan="Chép mã số"
+                      lop="btn-gon"
+                      text={rows.map((r) => maSoFile(r.fileName)).join(" ")}
+                    />
                   </h3>
                 </div>
                 {/*

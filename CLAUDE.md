@@ -2233,6 +2233,43 @@ tải ảnh (đang bắt buộc kèm `?slug=`, nguyên tắc 13). **Đừng tự
 
 `laChiaSe` mặc định `false` để mọi chỗ gọi `AlbumView` cũ chạy y như trước.
 
+
+---
+
+### 64. Mỗi thư mục có nút "Chép mã số" riêng; nút ở đầu trang nói rõ là CẢ ALBUM
+
+Anh yêu cầu 08/10/2026: *"chép mã số ảnh đang chép tất cả bao gồm ảnh trong
+nhiều thư mục con, a muốn trên mỗi thư mục đều có nút chép riêng"*.
+
+Trước đó chỉ có một nút ở đầu trang, chép mã số của **cả danh sách**. Nhà
+Lan Hương & Linh Dương có hai thư mục, bấm một cái ra **238 mã** — trong khi
+việc studio làm là đem từng thư mục đi dò ảnh gốc, mà hai thư mục nằm hai chỗ
+khác nhau trên Drive.
+
+**Nút đặt trong ĐẦU MỤC DÍNH của thư mục** (`sticky`, nguyên tắc 59), không để
+dưới lưới: thư mục vài trăm tấm thì cuộn tới cuối mới gặp nút, còn ở đây nó đi
+theo màn hình suốt lúc studio đang xem đúng thư mục đó.
+
+**Mã số lấy theo `rows` — cùng thứ tự TÊN FILE với danh sách chép ở đầu
+trang**, không phải thứ tự hiển thị (tấm có lời dặn được đẩy lên đầu lưới, xem
+nguyên tắc 28). Bên in dò file theo tên, nên hai chỗ chép phải cho ra cùng một
+dãy. Đo trên nhà Lan Hương & Linh Dương: nhà gái **110** mã, nhà trai **128**,
+cộng lại đúng **238** của nút cả album, không mã nào trùng.
+
+**Nút đầu trang đổi nhãn thành "Chép mã số ảnh — cả album".** Đây là phần sửa
+đúng gốc chứ không phải trang trí: chính cái nhãn trần "Chép mã số ảnh" làm anh
+bấm nhầm, và từ khi mỗi thư mục cũng có nút thì hai nút tên giống hệt nhau còn
+nhiều khả năng nhầm hơn trước.
+
+`NutChep` **xuất ra khỏi `ExportButton.tsx`** để cả hai chỗ dùng chung đúng một
+component — chép thành bản thứ hai thì có ngày một bên báo "Đã chép" còn bên
+kia không. Mỗi nút giữ trạng thái riêng (đo: bấm nút thư mục đầu thì nút thư
+mục thứ hai vẫn nguyên nhãn cũ).
+
+Nút nhận prop `lop` để đổi hình dạng theo chỗ đứng — `.btn` ở hàng nút đầu
+trang, `.btn-gon` trong đầu mục. Đo: 32px từ 640px trở lên, **tự về 44px** dưới
+mốc đó, đúng mức tối thiểu cho đầu ngón tay (nguyên tắc 45).
+
 ---
 
 ## Đã thử và bị loại — đừng đề xuất lại
