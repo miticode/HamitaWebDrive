@@ -15,6 +15,63 @@ Tài khoản dùng chung cho Google, Neon và Vercel: `hamita.studio@gmail.com`.
 Chi tiết đầy đủ về trạng thái, việc còn treo và bối cảnh: đọc **`BAN-GIAO.md`**.
 Kiến trúc từng file và các bước cài đặt: đọc **`README.md`**.
 
+
+---
+
+## CÓ SẴN BẢN ĐỒ CẢ HỆ THỐNG — DÙNG NÓ TRƯỚC KHI ĐỌC CODE
+
+Dựng ngày 09/10/2026 bằng `graphify`. Nằm ở `graphify-out/` (**không** commit, đã
+cho vào `.gitignore` — nó dựng lại được từ chính mã nguồn).
+
+**1.680 node · 4.818 cạnh · 87 cụm** — gồm 230 tệp mã (đọc bằng AST, chính xác)
+và 7 tài liệu (CLAUDE.md, BAN-GIAO.md, README, hướng dẫn admin…).
+
+Mục đích: **đỡ phải grep cả kho để tìm một hàm**. Hỏi bản đồ trước, mở tệp sau.
+
+```
+graphify explain "<tên hàm>"      # gọn nhất — hàm ở tệp nào, dòng nào, ai gọi, gọi ai
+graphify path "<A>" "<B>"         # đường ngắn nhất giữa hai thứ
+graphify query "<câu hỏi>"        # rộng, dễ loãng — chỉ dùng khi chưa biết tên gì
+```
+
+Lệnh nằm ở `C:\Users\Admin\.local\bin\graphify.exe`. **PATH của phiên có thể
+chưa có nó** (uv thêm vào lúc cài; phiên mở trước đó không thấy) — gặp
+"command not found" thì gọi thẳng đường dẫn tuyệt đối, đừng vội cài lại gì.
+
+`explain` là lệnh đáng dùng nhất:
+
+```
+laMucHoanThien()  —  src/lib/constants.ts L241
+  <-- AlbumView.tsx  [imports]  L2
+  <-- AlbumView()    [calls]    L83
+  --> boDau()        [calls]    L242
+```
+
+Tên trùng ở hai tệp thì nó báo và liệt kê cả hai, gọi lại bằng
+`<đường dẫn>::<tên>` hoặc id đầy đủ.
+
+**Bản đồ CŨ DẦN theo mỗi lần sửa code.** Sửa nhiều rồi thì chạy lại:
+
+```
+graphify . --update      # chỉ trích lại tệp đã đổi, giữ phần còn lại
+```
+
+**Ba điều phải nhớ khi đọc bản đồ này:**
+
+- **Nó không thay việc đọc code.** Bản đồ nói *ở đâu* và *nối với gì*; muốn biết
+  *làm gì* thì vẫn phải mở tệp. Dùng nó để nhảy thẳng tới đúng dòng.
+- **Phần tài liệu có thể lệch với code.** `docs/huong-dan-admin.html` bản
+  28/08/2026 vẫn mô tả nút tick đã bỏ (15/09), giá 12.000đ (nay 15.000đ) và ô
+  "Trang giới thiệu" đã gỡ (17/09) — bản đồ ghi đúng như tài liệu viết, nên
+  **CLAUDE.md mới là bản gốc khi hai bên nói khác nhau**.
+- **21 cạnh cụt đầu**: chỗ tài liệu nhắc tên một tệp mà bản đồ chưa nối được
+  vào node mã tương ứng. Không phải lỗi dữ liệu, chỉ là thiếu liên kết.
+
+*Số đo đáng nhớ từ lần dựng đầu:* `getPrisma()` có **151 cạnh**, bắc qua **28
+cụm** — mọi đường vào database đều chui qua một cửa đó (`src/lib/db.ts`). Ba
+trục lớn tiếp theo: `quyenAlbum()` 58, `databaseIsConfigured()` 48,
+`laQuanTri()` 46.
+
 ---
 
 ## Giao tiếp

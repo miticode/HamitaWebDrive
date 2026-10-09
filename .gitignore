@@ -58,3 +58,6 @@ docs/*.pdf
 .open-next/
 .dev.vars
 .wrangler/
+
+# Ban do tri thuc do graphify dung (chi de tro ly doc, dung lai duoc tu ma nguon)
+graphify-out/
