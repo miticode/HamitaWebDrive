@@ -261,7 +261,8 @@ export function HuongDanChon({
                     .
                   </>,
                   <>
-                    Ghi chú vào ảnh: ảnh cổng, ảnh bàn, ảnh bìa,…
+                    Ghi chú vào ảnh: ảnh cổng, ảnh bàn, ảnh bìa (đối với
+                    album),…
                   </>,
                   <>
                     Chi phí phát sinh thêm trên mỗi tấm ảnh là{" "}
