@@ -327,68 +327,46 @@ instance là tin không sang được nhau, muốn phát tán phải thêm Redis
 mỗi 15 giây tốn 1.329 byte / 0,25 giây mỗi lượt — rẻ hơn, và chạy đúng cả khi
 hai máy ở hai instance khác nhau.
 
-**24. Trang giới thiệu chia BỐN khu, chọn bằng MỘT cột chữ `khuGioiThieu`.**
+**24. Khung ảnh mỗi khu trang giới thiệu đặt theo TỈ LỆ THẬT của ảnh trong đó.**
 
-> **ĐÃ THAY từ 17/09/2026:** ô tích "Trang giới thiệu" trên thẻ album đã BỎ. Mọi
-> thứ lên trang giới thiệu chọn ở `/admin/gioi-thieu` (bảng `AnhGioiThieu`, xem
-> nguyên tắc 25). Cột `featured`/`khuGioiThieu` còn trong database nhưng KHÔNG
-> ai đọc — đừng dựng lại chỗ tích trên thẻ. Hai album đang tích lúc đó (Hamita
-> Garden, HC Hồng Tâm - Hoàng Minh) đã được chuyển sang, giữ nguyên ảnh bìa.
-> `/phim-truong` chuyển hẳn (308) sang `/dich-vu/hamita-garden`. Phần dưới giữ
-> lại để hiểu lịch sử và lý do tỉ lệ khung ảnh từng khu (vẫn đúng).
-Giá trị: `cuoi` · `albumhc` · `phimtruong` · `baby`. Chỉ có nghĩa khi `featured`
-bật. Hai cột cũ `laBaby`/`laPhimTruong` **không còn dùng**, giữ lại theo tiền lệ
-`accessMode` (xoá cột là không lùi được).
+> *Cơ chế chọn ảnh lên trang giới thiệu đã thay hẳn 17/09/2026:* ô tích "Trang
+> giới thiệu" trên thẻ album **đã bỏ**, mọi thứ nay chọn ở `/admin/gioi-thieu`
+> (bảng `AnhGioiThieu`, xem nguyên tắc 25). Hai cột `featured`/`khuGioiThieu`
+> còn trong database nhưng **không ai đọc** — đừng dựng lại chỗ tích trên thẻ.
+> `/phim-truong` chuyển hẳn (308) sang `/dich-vu/hamita-garden`.
 
-Vì sao một cột chữ chứ không phải nhiều cột đúng/sai: bốn khu **loại trừ nhau**,
-mà ba cột đúng/sai sinh ra tám tổ hợp trong đó bốn cái vô nghĩa ("vừa là bé vừa
-là phim trường"). Ở trang quản lý cũng vì thế mà dùng **ô tròn**, không phải ô
-vuông. Muốn thêm khu thứ năm thì thêm một giá trị, không thêm cột.
+Tỉ lệ khung **đã đo chứ không chọn cho đẹp**: ảnh cưới và ảnh bé dùng 3/4, ảnh
+bối cảnh studio dùng **2/3**, trang album và hình cổng dùng **4/5** (rộng bản
+hơn ảnh chân dung). Bản đầu em dựng khung 16:9 cho ảnh bối cảnh thì
+`object-cover` xén mất khoảng **63% chiều cao** — mà đó đúng là ảnh khoe không
+gian. **Thêm khu mới thì đo tỉ lệ ảnh thật trước rồi mới chọn khung.**
 
-Ba khu đọc dữ liệu kiểu "gom ảnh bìa" — mỗi album góp đúng **một** tấm bìa, vì
-mỗi album là buổi chụp của một nhà khách. Riêng `phimtruong` đọc **thẳng nhiều
-ảnh từ trong một album duy nhất**: đó là bối cảnh của studio, một tấm bìa không
-khoe được gì. Đây cũng là lời gọi Drive **duy nhất** của trang giới thiệu — chấp
-nhận được vì `loadTree` cache 5 phút dùng chung với trang khách, và phải bọc
-`try/catch` để Drive trục trặc không giết cả trang quảng bá.
-
-Khung ảnh mỗi khu khác nhau **theo tỉ lệ thật của ảnh trong đó**, đã đo chứ
-không chọn cho đẹp: `cuoi`/`baby` dùng 3/4, `phimtruong` dùng **2/3** (cả 16 tấm
-đều là ảnh dọc 1365×2048 — bản đầu em dựng khung 16:9 thì `object-cover` xén mất
-khoảng 63% chiều cao, mà đó là ảnh khoe không gian), `albumhc` dùng **4/5** (trang
-album và hình cổng rộng bản hơn ảnh chân dung). Thêm khu mới thì **đo tỉ lệ ảnh
-thật trước rồi mới chọn khung**.
-
-*Cập nhật 03/09/2026 — album phim trường đổi, và cái luật trên vừa cứu một bàn:*
-studio thay album cũ (16 tấm, **toàn ảnh dọc** 2:3) bằng "All View HamitaGarden"
-**60 tấm trộn cả dọc lẫn ngang** — đo 20 tấm ra 12 dọc / 8 ngang, tỉ lệ trải từ
-**0,563 tới 1,499**. Không một khung cố định nào vừa cả hai kiểu: nhét tấm ngang
-3:2 vào khung 2:3 thì `object-cover` xén mất khoảng **55% chiều rộng**, mà đây
-là ảnh khoe KHÔNG GIAN. Hai nơi giải hai kiểu:
+*Và cái luật trên đã cứu một bàn (03/09/2026):* studio thay album bối cảnh cũ
+(16 tấm, **toàn ảnh dọc** 2:3) bằng "All View HamitaGarden" **60 tấm trộn cả
+dọc lẫn ngang** — đo 20 tấm ra 12 dọc / 8 ngang, tỉ lệ trải từ **0,563 tới
+1,499**. Không một khung cố định nào vừa cả hai kiểu: nhét tấm ngang 3:2 vào
+khung 2:3 thì xén mất khoảng **55% chiều rộng**. Hai nơi giải hai kiểu:
 
 - **Trang chủ giữ khung 2:3 nhưng chỉ lấy ẢNH DỌC**, tám tấm. Lưới mời gọi cần
   tám ô đều tăm tắp; đo lại sau khi sửa: 6 tấm xén 0%, 2 tấm xén 17%. Thiếu ảnh
   dọc thì bù bằng tấm còn lại — thà một hai ô bị xén còn hơn khu này trống.
-- **`/phim-truong` bỏ hẳn khung cố định**, dùng lưới cột báo (`columns`) và đặt
-  `aspect-ratio` đúng kích thước Drive trả về cho từng tấm. Không tấm nào bị
+- **Trang xem hết ảnh bỏ hẳn khung cố định**, dùng lưới cột báo (`columns`) và
+  đặt `aspect-ratio` đúng kích thước Drive trả về cho từng tấm. Không tấm nào bị
   cắt, và vì tỉ lệ đặt sẵn nên trang không giật nhảy lúc ảnh lần lượt hiện.
   Drive **có sẵn** `imageMediaMetadata(width,height)` trong cùng lời gọi liệt kê
   tệp — không tốn thêm lần gọi nào, đừng đi đo lại bằng cách tải ảnh về.
 
-**`/phim-truong` là trang riêng, KHÔNG dùng lại `/g/[slug]`.** Trang album là
-chỗ riêng tư của một nhà khách: có nhập mã, thả tim, đếm ngược
-hạn giữ ảnh, và tự khai `noindex`. Phim trường thì ngược hẳn — công khai, càng
-nhiều người tìm thấy càng tốt (nên có trong `sitemap.ts`), và khách xem nó
-không chọn ảnh gì cả. Trang chủ khoe tám tấm; ai muốn xem hết thì sang đây.
+**Trang ảnh công khai KHÔNG dùng lại `/g/[slug]`.** Trang album là chỗ riêng tư
+của một nhà khách: có nhập mã, thả tim, đếm ngược hạn giữ ảnh, và tự khai
+`noindex`. Trang giới thiệu thì ngược hẳn — công khai, càng nhiều người tìm
+thấy càng tốt (nên có trong `sitemap.ts`), và khách xem nó không chọn ảnh gì cả.
 
-`NavGioiThieu` nhận thêm cờ `trangKhac`: các mục là neo trong trang (`#anh`) khi
-ở trang chủ, phải thành `/#anh` khi dùng ở trang khác, không thì bấm vào đứng im.
+`NavGioiThieu` nhận cờ `trangKhac`: các mục là neo trong trang (`#anh`) khi ở
+trang chủ, phải thành `/#anh` khi dùng ở trang khác, không thì bấm vào đứng im.
 
-Tách `albumhc` khỏi `cuoi` là theo yêu cầu ngày 26/08: khách nhìn hai thứ đó với
-hai mục đích khác nhau — xem ảnh cưới là xem **phong cách chụp**, xem album và
-hình cổng là xem **thứ mình sẽ cầm về**. "HC" = hình cổng (đọc được từ tên thư
-mục Drive "File gốc hình cổng"), là tiếng lóng trong nghề nên **không đưa vào
-chữ khách đọc** — thanh điều hướng chỉ ghi "Album".
+**"HC" = hình cổng** (đọc được từ tên thư mục Drive "File gốc hình cổng"), là
+tiếng lóng trong nghề nên **không đưa vào chữ khách đọc** — thanh điều hướng chỉ
+ghi "Album". Mã `AB`/`HC` vẫn dùng để đặt tên album nội bộ.
 
 **25. Trang giới thiệu kể chuyện HÀNH TRÌNH CỦA KHÁCH, không kể lịch sử studio.**
 Đây không phải lựa chọn văn phong mà là ràng buộc về sự thật: **không ai ở đây
