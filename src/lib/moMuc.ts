@@ -72,7 +72,14 @@ export type ViecStudio = { hanhDong: string; nguoiTen: string; luc: Date; chiTie
 export async function docViecStudio(galleryId: string): Promise<ViecStudio[]> {
   if (!databaseIsConfigured()) return [];
   const ds = await getPrisma().nhatKy.findMany({
-    where: { doiTuong: "album", doiTuongId: galleryId },
+    /*
+      Bỏ "Đọc lại album từ Drive" (anh yêu cầu 15/10/2026). Từ nay
+      refreshGalleryAction không ghi nữa, nhưng những lần bấm TRƯỚC đó đã nằm
+      sẵn trong bảng — mà khung này chỉ lấy 30 dòng, nên không lọc thì các album
+      cũ vẫn kín một màn toàn câu đó. Lọc ở đây chứ không xoá dữ liệu: nhật ký
+      là sổ truy vết, xoá là không lùi được.
+    */
+    where: { doiTuong: "album", doiTuongId: galleryId, hanhDong: { not: "lam-moi-album" } },
     orderBy: { luc: "desc" },
     take: 30,
     select: { hanhDong: true, nguoiTen: true, luc: true, chiTiet: true },

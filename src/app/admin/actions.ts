@@ -177,7 +177,20 @@ export async function refreshGalleryAction(formData: FormData) {
   // Doc lai so lieu tu Drive roi dung san anh cua nhung folder vua them.
   after(() => syncAndWarm(galleryId, folderId).catch(() => {}));
 
-  await ghiViecAlbum("lam-moi-album", galleryId);
+  /*
+    KHONG ghi nhat ky (anh yeu cau 15/10/2026).
+
+    "Lam moi" la thao tac nhan vien bam lien tuc trong luc doi Drive len anh —
+    mot lan up anh co the bam nam bay cai trong vai phut. Ghi het vao nhat ky
+    thi khung "Studio da lam" (chi lay 30 dong gan nhat) toan mot cau "Doc lai
+    album tu Drive", day chim nhung viec that su can truy: ai tao album, ai
+    xoa, ai bam gui thong bao cho khach.
+
+    Bo ghi cung bot mot luot GHI database moi lan bam — nguyen tac 53, Neon
+    tinh tien theo thoi gian thuc.
+
+    Nhung dong CU van nam trong bang NhatKy; docViecStudio() loc chung ra.
+  */
 
   revalidatePath("/admin");
 }

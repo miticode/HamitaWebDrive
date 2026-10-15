@@ -719,6 +719,21 @@ không giấu đi — giấu thì studio tưởng tính năng hỏng.
 Không chạy trong `after()` như "Làm mới": studio cần biết ngay tin đã tới mấy
 máy. Gửi xong mà im lặng thì lần sau không ai dám bấm.
 
+**"Làm mới" KHÔNG ghi vào nhật ký** (anh yêu cầu 15/10/2026) — "Gửi thông báo"
+thì có. Cùng một lý do đã tách hai nút: làm mới là thao tác bấm liên tục trong
+lúc đợi Drive lên ảnh, còn gửi thông báo là việc chạm tới khách, cần truy được.
+
+Đo lúc bỏ: **435 trong 847 dòng nhật ký (51,4%)** là "Đọc lại album từ Drive",
+rải trên **59 album**, album nhiều nhất **47 dòng**. Khung "Studio đã làm" chỉ
+lấy **30 dòng gần nhất** — nên ở album đó, nhật ký không còn chỗ cho bất cứ
+việc nào khác.
+
+Những dòng **cũ vẫn nằm trong bảng `NhatKy`**, `docViecStudio()` lọc ra bằng
+`hanhDong: { not: "lam-moi-album" }`. Lọc chứ không xoá: nhật ký là sổ truy vết,
+xoá là không lùi được. Sổ nhật ký hệ thống (`/quan-ly/nhat-ky`) **vẫn hiện**
+các dòng cũ đó, nên chữ `"lam-moi-album"` trong `CHU_HANH_DONG` phải giữ —
+bỏ đi thì chỗ ấy in ra tên khoá thô.
+
 **Lời nhắn CỐ ĐỊNH, dẫn về trang bìa album**, không nêu tên thư mục. Tách hai
 nút ra thì lúc studio bấm gửi, số liệu đã cập nhật xong từ đời nào — không còn
 gì để so ra "thư mục nào vừa thêm". Dựng một kho trạng thái riêng chỉ để giữ
