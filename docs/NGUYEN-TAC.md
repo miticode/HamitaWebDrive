@@ -728,11 +728,15 @@ rải trên **59 album**, album nhiều nhất **47 dòng**. Khung "Studio đã 
 lấy **30 dòng gần nhất** — nên ở album đó, nhật ký không còn chỗ cho bất cứ
 việc nào khác.
 
-Những dòng **cũ vẫn nằm trong bảng `NhatKy`**, `docViecStudio()` lọc ra bằng
-`hanhDong: { not: "lam-moi-album" }`. Lọc chứ không xoá: nhật ký là sổ truy vết,
-xoá là không lùi được. Sổ nhật ký hệ thống (`/quan-ly/nhat-ky`) **vẫn hiện**
-các dòng cũ đó, nên chữ `"lam-moi-album"` trong `CHU_HANH_DONG` phải giữ —
-bỏ đi thì chỗ ấy in ra tên khoá thô.
+**435 dòng cũ đã xoá hẳn** khỏi bảng `NhatKy` chiều 15/10/2026 theo yêu cầu của
+anh (847 → 412 dòng, không sót dòng nào, các loại việc khác nguyên vẹn). Sao
+lưu `data/sao-luu/hamita-2026-10-15-1328.json` chụp **trước** khi xoá nên vẫn
+còn đủ 847 dòng.
+
+`docViecStudio()` **vẫn giữ bộ lọc** `hanhDong: { not: "lam-moi-album" }` dù
+hiện không bỏ dòng nào: `npm run db:restore` một bản trước 15/10 là 435 dòng đó
+quay lại. Chữ `"lam-moi-album"` trong `CHU_HANH_DONG` cũng giữ vì lý do tương
+tự — bỏ đi thì sau khi phục hồi, sổ nhật ký hệ thống in ra tên khoá thô.
 
 **Lời nhắn CỐ ĐỊNH, dẫn về trang bìa album**, không nêu tên thư mục. Tách hai
 nút ra thì lúc studio bấm gửi, số liệu đã cập nhật xong từ đời nào — không còn
