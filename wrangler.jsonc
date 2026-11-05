@@ -30,7 +30,7 @@
       "binding": "WORKER_SELF_REFERENCE",
       "service": "hamita-web-thu"
     }
-  ],
+  ]
 
   // ───────────────────────────────────────────────────────────────────────
   // BIẾN MÔI TRƯỜNG — đối chiếu kỹ trước khi đổi DNS (đo 05/11/2026).
@@ -59,10 +59,20 @@
 
   // Chỗ chứa bản dựng sẵn của các trang (ISR). Trang giới thiệu và trang dịch
   // vụ dựa vào đây để không phải đọc database mỗi lượt — xem nguyên tắc 58.
-  "r2_buckets": [
-    {
-      "binding": "NEXT_INC_CACHE_R2_BUCKET",
-      "bucket_name": "hamita-web-thu-cache"
-    }
-  ]
+  // TAM TAT (05/11/2026): tai khoan chua bat R2 — Cloudflare tra loi 10042
+  // "Please enable R2 through the Cloudflare Dashboard". Bat R2 la thao tac
+  // trong bang dieu khien cua anh Hau, may khong tu lam duoc.
+  //
+  // Bo di de day duoc ban thu len DO CPU truoc, vi do moi la cau hoi dang
+  // tien. Mo lai bang cach xoa dau // o sau khi bat R2 va tao thung:
+  //     npx wrangler r2 bucket create hamita-web-thu-cache
+  // Nho tra lai ca `incrementalCache` trong open-next.config.ts — hai thu
+  // phai di cung nhau, co mot cai thi ban dung bao thieu binding.
+  //
+  // "r2_buckets": [
+  //   {
+  //     "binding": "NEXT_INC_CACHE_R2_BUCKET",
+  //     "bucket_name": "hamita-web-thu-cache"
+  //   }
+  // ]
 }

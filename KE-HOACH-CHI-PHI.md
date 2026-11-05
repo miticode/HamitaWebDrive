@@ -90,12 +90,52 @@ chuyển hai lần.
   Vercel Hobby
 - Worker bắn ảnh đã chạy sẵn ở đó rồi, không phải dựng lại
 
-**Nhưng KHÔNG dùng được gói miễn phí của Cloudflare.** Đã đo: web này tốn trung
-bình **54 ms CPU mỗi lượt gọi**, mà gói miễn phí chỉ cho **10 ms**. Không có
-cách nào lách — dựng một trang React ở máy chủ vốn tốn chừng đó.
+**KHÔNG dùng được gói miễn phí của Cloudflare — ĐÃ CHỨNG MINH BẰNG BẢN CHẠY
+THẬT (05/11/2026).** Bản thử `hamita-web-thu.hamitastudio.workers.dev` chạy
+được, nhưng chỉ sau mười mấy lượt ghé rất thưa là Cloudflare giết thẳng một
+lượt:
 
-Phải dùng **Workers Paid $5/tháng**. Gói đó cho 30 triệu ms CPU, web này ước
-dùng **12,6 triệu** — dư gấp đôi.
+```
+455 ms CPU → outcome: exceededCpu → HTTP 503
+Error: Worker exceeded CPU time limit.
+```
+
+Đây là lỗi khách sẽ thấy, không phải cảnh báo. Gói miễn phí loại hẳn.
+
+**Con số CPU trong bản kế hoạch cũ SAI.** Bản 30/09 ghi 54 ms mỗi lượt — đó là
+số lấy từ đồng hồ "Active CPU" của Vercel, không phải số của Cloudflare. Đo
+thẳng trên Workers bằng `wrangler tail`, 15 lượt liên tiếp vào trang chủ khi
+máy đã ấm:
+
+| | CPU |
+|---|---|
+| thấp nhất | 121 ms |
+| trung vị | **624 ms** |
+| cao nhất | 1 469 ms |
+
+Tức gấp **11,5 lần** con số cũ. Phải dùng **Workers Paid $5/tháng**.
+
+**Tiền thật là bao nhiêu.** Gói $5 cho sẵn 30 triệu ms CPU, vượt thì $0,02 mỗi
+triệu ms — tức CPU ở Cloudflare rất rẻ. Thay vì đoán lượng truy cập, tính
+ngược điểm hoà vốn: để Cloudflare đắt bằng Vercel $20 thì phải vượt 750 triệu
+ms, cộng phần cho sẵn là **780 triệu ms**, chia cho 624 ms ra **1,25 triệu lượt
+dựng trang mỗi tháng**. Web này không tới một phần mười chỗ đó.
+
+Nên kết luận cũ vẫn đúng, chỉ là tiết kiệm **khoảng $12–13/tháng** chứ không
+phải $15.
+
+**Nhưng còn một câu CHƯA trả lời được: web có chậm đi không.** Bản thử chậm hơn
+Vercel rõ rệt — trang chủ 2–6 giây so với 0,2–1,1 giây; album khách 7,5–9,8
+giây so với 0,4–3,0 giây. Chưa kết luận được, vì hai thứ đang bóp méo phép đo
+và cả hai đều KHÔNG có trong bản thật:
+
+1. **Chưa bật R2** nên không có chỗ chứa trang dựng sẵn — mỗi lượt ghé đều dựng
+   lại trang và đọc database, đúng thứ nguyên tắc 58 bỏ công cắt.
+2. **Gói miễn phí bóp CPU.** Nhật ký cho thấy mỗi lượt mất 10–12 giây "wall
+   time" trong khi khách chỉ đợi 2–6 giây — dấu hiệu bị xếp hàng chờ.
+
+**Muốn biết có nên đổi hay không thì bắt buộc phải trả $5 và bật R2 rồi đo
+lại.** Không có đường tắt.
 
 **Ba chỗ phải xử khi chuyển:**
 
