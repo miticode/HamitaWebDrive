@@ -72,7 +72,16 @@ export type ViecStudio = { hanhDong: string; nguoiTen: string; luc: Date; chiTie
 export async function docViecStudio(galleryId: string): Promise<ViecStudio[]> {
   if (!databaseIsConfigured()) return [];
   const ds = await getPrisma().nhatKy.findMany({
-    where: { doiTuong: "album", doiTuongId: galleryId },
+    /*
+      Bỏ "Đọc lại album từ Drive" (anh yêu cầu 15/10/2026).
+      refreshGalleryAction không ghi nữa, và 435 dòng cũ đã xoá khỏi bảng cùng
+      ngày — nên lúc này bộ lọc KHÔNG bỏ dòng nào.
+
+      Vẫn giữ vì `npm run db:restore` phục hồi một bản sao lưu trước 15/10 là
+      435 dòng đó quay lại, mà khung này chỉ lấy 30 dòng gần nhất: có album
+      từng có 47 dòng làm mới, đủ lấp kín không còn chỗ cho việc nào khác.
+    */
+    where: { doiTuong: "album", doiTuongId: galleryId, hanhDong: { not: "lam-moi-album" } },
     orderBy: { luc: "desc" },
     take: 30,
     select: { hanhDong: true, nguoiTen: true, luc: true, chiTiet: true },

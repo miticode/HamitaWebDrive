@@ -11,6 +11,7 @@ export type {
   Gallery,
   GoiMuc,
   KhuGioiThieu,
+  LoaiBaoXong,
   MucXong,
   Selection,
   SelectionList,
@@ -62,6 +63,8 @@ export const setFeatured: Store["setFeatured"] = (id, featured) =>
 export const setKhuGioiThieu: Store["setKhuGioiThieu"] = (id, khu) =>
   store.setKhuGioiThieu(id, khu);
 
+export const setChoTai: Store["setChoTai"] = (id, choTai) =>
+  store.setChoTai(id, choTai);
 export const setGoiAnh: Store["setGoiAnh"] = (id, so, gia) =>
   store.setGoiAnh(id, so, gia);
 export const setExpiry: Store["setExpiry"] = (id, expiresAt) =>
@@ -73,8 +76,8 @@ export const ghiLuotTai: Store["ghiLuotTai"] = (id, soTam) =>
 export const setSelectionsDone: Store["setSelectionsDone"] = (id, xong) =>
   store.setSelectionsDone(id, xong);
 
-export const setMucXong: Store["setMucXong"] = (id, albumId, ten, xong) =>
-  store.setMucXong(id, albumId, ten, xong);
+export const setMucXong: Store["setMucXong"] = (id, albumId, ten, bao) =>
+  store.setMucXong(id, albumId, ten, bao);
 
 export const getMucXong: Store["getMucXong"] = (id) => store.getMucXong(id);
 

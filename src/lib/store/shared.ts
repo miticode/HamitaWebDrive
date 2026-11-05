@@ -114,6 +114,14 @@ export type GoiMuc = {
   soAnh: number;
 };
 
+/**
+ * Khach bao gi ve mot thu muc.
+ *
+ * "xong"    — duyet xong, Hamita dem di in.
+ * "can-sua" — xem roi nhung muon Media chinh lai (anh yeu cau 08/10/2026).
+ */
+export type LoaiBaoXong = "xong" | "can-sua";
+
 export type MucXong = {
   galleryId: string;
   /** Chuoi rong = anh nam ngay thu muc goc. */
@@ -121,6 +129,18 @@ export type MucXong = {
   tenMuc: string;
   /** Luc bao, dang ISO. */
   xongLuc: string;
+  loai: LoaiBaoXong;
+  /**
+   * Ngay khach can lay hinh, dang "yyyy-mm-dd" — null la khong co han.
+   *
+   * Chi thu muc file goc hinh cong / album moi duoc hoi (xem `laMucHoiHanLay`),
+   * va khach van duoc bam "chua biet", nen null la chuyen binh thuong chu
+   * khong phai thieu du lieu.
+   *
+   * Dang NGAY TRAN chu khong phai ISO day du: khach hen ngay, khong hen gio.
+   * De nguyen ISO thi may khach o mui gio khac doc ra lech mot ngay.
+   */
+  hanLay: string | null;
 };
 
 export type CreateGalleryInput = {
@@ -214,6 +234,17 @@ export type Store = {
   setKhuGioiThieu(galleryId: string, khu: KhuGioiThieu): Promise<void>;
 
   /**
+   * Bat/tat quyen tai anh cua mot album.
+   *
+   * Them 02/10/2026. Truoc do co nay chi dat duoc MOT LAN luc tao link, roi
+   * khong co duong nao doi — anh bao "nut bat cho phep tai anh o dau" va cau
+   * tra loi dung la: khong co. Nha khach nao luc tao quen tich o do thi vinh
+   * vien khong tai duoc anh, tru khi tao lai link moi (ma lam vay la link cu
+   * da gui khach chet theo).
+   */
+  setChoTai(galleryId: string, choTai: boolean): Promise<void>;
+
+  /**
    * Dat so anh trong goi va gia moi tam vuot goi.
    * soAnhTrongGoi = null nghia la khong noi toi goi o trang khach.
    */
@@ -242,11 +273,24 @@ export type Store = {
    * Khach bao da chon xong cho MOT thu muc con (hoac bo bao de chon them).
    * Tinh rieng tung thu muc — xem model MucXong trong schema.
    */
+  /**
+   * `loai` null nghia la GO trang thai — khach bam "chon them", hoac studio
+   * bam "da sua xong" o trang quan ly.
+   *
+   * Thay cho tham so `xong: boolean` cu (doi 08/10/2026): tu khi co hai loai
+   * bao thi mot gia tri dung/sai khong du dien dat, ma them mot tham so thu
+   * hai canh no thi co ngay goi nham thu tu.
+   */
+  /**
+   * `hanLay` ("yyyy-mm-dd" hoac null) di CHUNG MOT GOI voi `loai` chu khong
+   * dung lam tham so thu nam: ca hai deu la `string | null`, de canh nhau la
+   * co ngay goi nham thu tu ma TypeScript khong kip keu.
+   */
   setMucXong(
     galleryId: string,
     albumId: string,
     tenMuc: string,
-    xong: boolean
+    bao: { loai: LoaiBaoXong | null; hanLay?: string | null }
   ): Promise<void>;
 
   /** Cac thu muc khach da bao xong cua mot album. */

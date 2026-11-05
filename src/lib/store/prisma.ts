@@ -8,6 +8,7 @@ import {
   type CreateGalleryInput,
   type Gallery,
   type GoiMuc,
+  type LoaiBaoXong,
   type MucXong,
   type KhuGioiThieu,
   type Selection,
@@ -16,7 +17,7 @@ import {
   type Store,
   type ToggleSelectionInput,
 } from "./shared";
-import { hanMacDinh } from "@/lib/constants";
+import { hanMacDinh, MUI_GIO } from "@/lib/constants";
 import { xoaMocCuaAlbum } from "@/lib/moc";
 
 /** Kho du lieu tren Postgres (Neon) — dung khi da dat DATABASE_URL. */
@@ -89,13 +90,42 @@ type SelectionRow = {
   createdAt: Date;
 };
 
+/*
+  Han lay hinh la mot NGAY, khong phai mot khoanh khac.
+
+  Doi qua lai bang gio studio chu khong bang gio may chu (nguyen tac 35):
+  Vercel chay gio UTC, ma 00:00 ngay 20 gio Viet Nam la 17:00 ngay 19 UTC —
+  de may chu tu doi thi han khach hen bi lui mot ngay.
+
+  Viet Nam khong co gio mua he nen mui +07:00 ghim cung duoc, khong phai tra
+  bang nao.
+*/
+function ngayTran(d: Date): string {
+  // "sv-SE" tra ve dung dang "2026-11-20" — khong phai chon ngon ngu Thuy
+  // Dien cho vui, do la cach ngan nhat lay ISO theo mot mui gio chi dinh.
+  return d.toLocaleDateString("sv-SE", { timeZone: MUI_GIO });
+}
+
+function tuNgayTran(ngay: string): Date {
+  return new Date(`${ngay}T00:00:00+07:00`);
+}
+
 function toMucXong(row: {
   galleryId: string;
   albumId: string;
   tenMuc: string;
   xongLuc: Date;
+  loai: string;
+  hanLay: Date | null;
 }): MucXong {
-  return { ...row, xongLuc: row.xongLuc.toISOString() };
+  return {
+    ...row,
+    xongLuc: row.xongLuc.toISOString(),
+    hanLay: row.hanLay ? ngayTran(row.hanLay) : null,
+    // Chu la trong database nen phai tu quy ve mot trong hai gia tri biet
+    // truoc; gia tri la thi coi nhu "xong", dung nghia cu truoc 08/10/2026.
+    loai: row.loai === "can-sua" ? "can-sua" : "xong",
+  };
 }
 
 /**
@@ -299,6 +329,13 @@ export const prismaStore: Store = {
     });
   },
 
+  async setChoTai(galleryId: string, choTai: boolean) {
+    await getPrisma().gallery.update({
+      where: { id: galleryId },
+      data: { allowDownload: choTai },
+    });
+  },
+
   async setGoiAnh(
     galleryId: string,
     soAnhTrongGoi: number | null,
@@ -365,23 +402,36 @@ export const prismaStore: Store = {
     galleryId: string,
     albumId: string,
     tenMuc: string,
-    xong: boolean
+    bao: { loai: LoaiBaoXong | null; hanLay?: string | null }
   ) {
     const prisma = getPrisma();
     const khoa = { galleryId_albumId: { galleryId, albumId } };
 
-    if (!xong) {
+    if (!bao.loai) {
       // deleteMany chu khong delete: khach bam "chon them" khi chua tung bao
       // xong thi khong co dong nao, va do khong phai loi.
       await prisma.mucXong.deleteMany({ where: { galleryId, albumId } });
       return;
     }
 
+    /*
+      Khong gui `hanLay` thi GIU NGUYEN han cu, khong xoa.
+
+      Day la canh that: khach hen ngay 20, hom sau mo lai bam "can chinh lai"
+      roi bam "da ok" lan nua — hai cu bam do khong hoi ngay, ma ghi de null
+      vao thi Media mat han luc nao khong biet. Muon xoa han thi truyen thang
+      `hanLay: null`.
+    */
+    const han =
+      bao.hanLay === undefined ? {} : { hanLay: bao.hanLay ? tuNgayTran(bao.hanLay) : null };
+
     await prisma.mucXong.upsert({
       where: khoa,
-      create: { galleryId, albumId, tenMuc },
+      create: { galleryId, albumId, tenMuc, loai: bao.loai, ...han },
       // Bao lai thi cap nhat gio, va cap nhat luon ten neu thu muc da doi ten.
-      update: { tenMuc, xongLuc: new Date() },
+      // Doi loai ngay tai day: khach bam "can chinh lai" roi sau do bam "da ok"
+      // thi dong cu chuyen loai chu khong sinh dong thu hai.
+      update: { tenMuc, loai: bao.loai, xongLuc: new Date(), ...han },
     });
   },
 

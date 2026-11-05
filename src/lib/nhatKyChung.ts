@@ -78,6 +78,8 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "tao-album": "Tạo album ảnh",
   "xoa-album": "Xoá album ảnh",
   "sua-album": "Sửa album ảnh",
+  // Khong con ghi moi tu 15/10/2026 (xem refreshGalleryAction) — giu chu de
+  // nhung dong CU trong so nhat ky he thong van doc duoc ra tieng Viet.
   "lam-moi-album": "Đọc lại album từ Drive",
   "gui-thong-bao": "Gửi thông báo cho khách",
 };

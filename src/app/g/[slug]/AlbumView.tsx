@@ -1,6 +1,6 @@
 import type { Album } from "@/lib/drive";
-import { STUDIO_NAME, laMucHoanThien } from "@/lib/constants";
-import type { Gallery, SelectionList } from "@/lib/store";
+import { STUDIO_NAME, laMucHoanThien, laMucHoiHanLay } from "@/lib/constants";
+import type { Gallery, LoaiBaoXong, SelectionList } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { GalleryHeader } from "./GalleryHeader";
 import { LoiChuc } from "@/components/LoiChuc";
@@ -9,7 +9,9 @@ import { PhotoGrid } from "./PhotoGrid";
 import { HuongDanChon } from "./HuongDanChon";
 import { TuLamMoi } from "./TuLamMoi";
 import { CodeDialog } from "./CodeDialog";
+import { HoiNgayLay } from "./HoiNgayLay";
 import { ChonThuMuc } from "./ChonThuMuc";
+import { NutChiaSe } from "./NutChiaSe";
 import { XacNhanXong } from "./XacNhanXong";
 import { SelectionProvider } from "./Selection";
 import { HopHoiDap } from "./HopHoiDap";
@@ -29,8 +31,11 @@ export function AlbumView({
   backHref,
   unlocked,
   mucXongLuc,
+  mucXongLoai,
+  mucXongHanLay,
   daTungChon,
   dsMuc,
+  laChiaSe = false,
 }: {
   slug: string;
   gallery: Gallery;
@@ -48,10 +53,21 @@ export function AlbumView({
   unlocked: boolean;
   /** Khách đã báo chọn xong THƯ MỤC NÀY lúc nào — null nếu chưa báo. */
   mucXongLuc: string | null;
+  /** Ngày khách đã hẹn lấy hình ("yyyy-mm-dd") — null nếu chưa hẹn. */
+  mucXongHanLay: string | null;
+  /** Khách báo LOẠI gì — "xong" hay "can-sua". null nếu chưa báo. */
+  mucXongLoai: LoaiBaoXong | null;
   /** Khách đã chọn tấm nào trong album này chưa — quyết định hướng dẫn mở hay thu. */
   daTungChon: boolean;
   /** Mọi thư mục của album — để nhảy thẳng giữa chúng. Rỗng khi ở trang bìa. */
   dsMuc: { id: string; ten: string; soAnh: number }[];
+  /**
+   * Trang đang mở bằng LINK CHIA SẺ mà khách gửi cho người thân.
+   *
+   * Lúc đó giấu hết đường sang thư mục khác — xem nguyên tắc 63. Mặc định
+   * false để mọi chỗ gọi cũ chạy y như trước.
+   */
+  laChiaSe?: boolean;
 }) {
   const photos = album.photos.map((p) => ({
     id: p.id,
@@ -70,6 +86,13 @@ export function AlbumView({
   */
   const hoanThien = laMucHoanThien(album.name);
 
+  /*
+    Thư mục file gốc hình cổng / album thì hỏi thêm NGÀY CẦN LẤY HÌNH lúc khách
+    bấm báo xong (anh yêu cầu 05/11/2026). Tính một lần ở đây rồi truyền xuống,
+    cùng lý do với `hoanThien` ngay trên.
+  */
+  const hoiHanLay = laMucHoiHanLay(album.name);
+
   return (
     <SelectionProvider
       slug={slug}
@@ -79,6 +102,9 @@ export function AlbumView({
       anhTrongMuc={photos}
       mucDangXem={{ id: album.id, ten: album.name }}
       mucXongLuc={mucXongLuc}
+      mucXongLoai={mucXongLoai}
+      mucXongHanLay={mucXongHanLay}
+      hoiHanLay={hoiHanLay}
     >
       {/*
         Cũng cần ở đây, không chỉ trang bìa: thông báo "có ảnh mới" dẫn khách
@@ -86,9 +112,14 @@ export function AlbumView({
       */}
       <TuLamMoi />
 
+      {/*
+        Link chia sẻ thì BỎ đường quay lại — đó là cửa đầu tiên dẫn người thân
+        sang trang bìa rồi sang mọi thư mục khác của nhà khách (anh phát hiện
+        08/10/2026). Vẫn truyền backLabel để tên nhà khách hiện dạng chữ.
+      */}
       <GalleryHeader
         title={backHref ? album.name : galleryTitle}
-        backHref={backHref}
+        backHref={laChiaSe ? null : backHref}
         backLabel={galleryTitle}
         total={photos.length}
         hoanThien={hoanThien}
@@ -109,7 +140,31 @@ export function AlbumView({
           <h1 className="rule mt-5 font-display text-3xl leading-tight font-light sm:text-5xl">
             {backHref ? album.name : galleryTitle}
           </h1>
-          <p className="eyebrow mt-5">{photos.length} tấm ảnh</p>
+          {/*
+            Dòng số ảnh và nút gửi link đứng CÙNG MỘT HÀNG, không xếp chồng.
+
+            Xếp chồng thì riêng nút ngốn thêm 107px và đẩy tấm ảnh đầu tiên
+            xuống 874px trên màn 375px — quá màn hình 812px, phá mốc của
+            nguyên tắc 30. Cùng hàng thì nút gần như không tốn thêm chiều cao,
+            mà vẫn nằm đúng chỗ khách đang nhìn.
+
+            Màn hẹp vẫn cho xuống dòng (`flex-wrap`): tên thư mục dài cộng
+            nút thì hai thứ chen nhau không đủ chỗ.
+          */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-3">
+            <p className="eyebrow">{photos.length} tấm ảnh</p>
+            {/*
+            Trang đang MỞ BẰNG link chia sẻ thì không hiện nút chia sẻ nữa:
+            người thân không phải chủ nhà, và một nút mời họ phát tán tiếp bộ
+            ảnh cưới của nhà khác là thứ studio không muốn mời.
+          */}
+            {!laChiaSe && (
+              <NutChiaSe
+                tenKhach={galleryTitle}
+                tenMuc={backHref ? album.name : galleryTitle}
+              />
+            )}
+          </div>
 
           {/* Chi hien o trang goc cua album. Vao tung thu muc con roi ma van
               lap lai loi chuc thi thanh ra sao rong. */}
@@ -118,6 +173,7 @@ export function AlbumView({
               <LoiChuc noiDung={gallery.message} />
             </div>
           )}
+
         </div>
 
         {/*
@@ -126,7 +182,12 @@ export function AlbumView({
           chuyện "chọn ảnh thế nào". Gộp hai thứ vào một khối thì khách phải
           đọc qua hướng dẫn mới thấy đường sang thư mục khác.
         */}
-        <ChonThuMuc slug={slug} dsMuc={dsMuc} mucDangMo={album.id} />
+        {/*
+          Cửa thứ hai: hàng thư mục liệt kê thẳng tên mọi thư mục còn lại
+          ("file gốc nhà trai", "file hoàn thiện HC"). Link chia sẻ thì truyền
+          danh sách rỗng — ChonThuMuc tự ẩn khi dưới hai mục.
+        */}
+        <ChonThuMuc slug={slug} dsMuc={laChiaSe ? [] : dsMuc} mucDangMo={album.id} />
 
         {/*
           Ba bước hướng dẫn đặt ngay đây — trong thư mục con, sát trên lưới
@@ -156,6 +217,7 @@ export function AlbumView({
       </main>
 
       <CodeDialog />
+      <HoiNgayLay tenMuc={album.name} />
 
       <footer className="border-t border-line py-12 text-center">
         <Logo size="sm" className="mx-auto opacity-60" />

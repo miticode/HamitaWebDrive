@@ -151,10 +151,11 @@ model Gallery {
   /// rieng cho tung album.
   soAnhTrongGoi Int?
 
-  /// Gia moi tam vuot goi, tinh bang dong. Anh chot 27/09/2026: 10.000d, va
-  /// bo cau "da gom chinh sua va in" khoi moi cho khach doc.
+  /// Gia moi tam vuot goi, tinh bang dong. Anh chot 01/10/2026: 15.000d, va
+  /// cau "bao gom ca chinh sua va in" QUAY LAI moi cho khach doc — dao nguoc
+  /// dung quyet dinh 27/09/2026 (ha xuong 10.000d, bo han cum do).
   /// Chi co y nghia khi soAnhTrongGoi co gia tri.
-  giaAnhThem Int @default(10000)
+  giaAnhThem Int @default(15000)
 
   /// Hop dong cua nha khach nay (dot 2b, 16/09/2026) — nhan vien tu gan o
   /// trang album. AppSheet khong biet gi ve album nen day la du lieu CUA WEB:
@@ -220,6 +221,27 @@ model MucXong {
   albumId   String
   tenMuc    String
   xongLuc   DateTime @default(now())
+  /// Khach bao gi: "xong" = duyet xong, cho in; "can-sua" = xem roi nhung
+  /// muon Media chinh lai (anh yeu cau 08/10/2026).
+  ///
+  /// Mot thu muc chi mang MOT trang thai — khoa khong trung (galleryId,
+  /// albumId) van giu nguyen. Khach bam nut khac thi dong cu doi loai, khong
+  /// sinh dong thu hai, nen khong bao gio co canh vua "xong" vua "can sua".
+  ///
+  /// Mac dinh "xong" de moi dong da co truoc 08/10/2026 giu dung y nghia cu.
+  loai      String   @default("xong")
+
+  /// NGAY KHACH CAN LAY HINH, chi hoi o thu muc file goc hinh cong / album
+  /// (anh yeu cau 05/11/2026) — xem `laMucHoiHanLay` trong constants.ts.
+  ///
+  /// null co HAI nghia khac nhau, va deu hop le:
+  ///   - thu muc khong thuoc dien hoi ngay (file goc nha gai, hoan thien...)
+  ///   - khach duoc hoi nhung bam "chua biet, de Hamita chu dong"
+  /// Media doc nhan tren the album: co ngay thi hien han, khong thi im.
+  ///
+  /// Luu dang DateTime nhung CHI DUNG PHAN NGAY (dat 00:00 gio studio). Khach
+  /// hen "ngay 20" chu khong hen "10 gio sang ngay 20".
+  hanLay    DateTime?
 
   gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
 

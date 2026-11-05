@@ -135,7 +135,53 @@ export async function docThongBao(): Promise<ThongBao[]> {
       );
     }
 
-    const xongCuaNo = mucXong.filter((m) => m.galleryId === g.id);
+    const moiBao = mucXong.filter((m) => m.galleryId === g.id);
+
+    /*
+      TACH HAI LOAI BAO (anh yeu cau 08/10/2026).
+
+      Tu khi thu muc anh da chinh co them nut "Can chinh lai", bang MucXong
+      chua hai thu khac han nhau: "xong" la viec da xong, "can-sua" la viec
+      VUA CHUYEN SANG TAY MEDIA. Gop chung thi thong bao se bao "khach da chon
+      xong" cho mot nha dang cho sua lai — studio doc xong dem di in.
+    */
+    const canSua = moiBao.filter((m) => m.loai === "can-sua");
+    const xongCuaNo = moiBao.filter((m) => m.loai !== "can-sua");
+
+    if (canSua.length > 0) {
+      /*
+        2a. Khach nho chinh lai — viec cua MEDIA.
+
+        Day la ly do ca muc nay ra doi: truoc 08/10/2026 khach khong co duong
+        nao bao "em muon sua", nen Media khong biet luc nao bat tay vao lam,
+        con khach thi tuong da bao roi. Hai ben cung doi nhau.
+
+        Luon la muc GAP: co nguoi dang doi, va cho cang lau thi cang ky.
+
+        TEN THU MUC nam trong chi tiet chu khong chi dem so: Media mo Drive
+        phai biet vao thu muc nao, ma mot nha co the co "file hoan thien HC"
+        lan "file hoan thien AB".
+      */
+      ra.push({
+        /*
+          SO THU MUC trong id, cung le voi hai muc duoi: khach nho sua them
+          mot thu muc nua thi id doi, dau tich "da doc" cu khong con khop va
+          thong bao hien lai.
+        */
+        id: `sua-${g.id}-${canSua.length}`,
+        mucDo: "gap",
+        tieuDe:
+          canSua.length > 1
+            ? `Khách nhờ chỉnh lại ${canSua.length} thư mục`
+            : "Khách nhờ chỉnh lại",
+        chiTiet: `${canSua
+          .map((m) => `“${m.tenMuc}”`)
+          .join(", ")} — mở album đọc lời dặn của khách rồi giao Media sửa. Sửa xong nhớ bấm “Đã sửa xong” để gỡ nhãn này.`,
+        slug: g.slug,
+        tenAlbum: ten,
+      });
+    }
+
     if (xongCuaNo.length > 0) {
       /*
         2. Khach da bao chon xong — toi luot studio lam.

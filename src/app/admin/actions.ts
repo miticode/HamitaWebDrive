@@ -21,6 +21,8 @@ import {
   setAccess,
   setBiaMuc,
   setClientName,
+  setChoTai,
+  setMucXong,
   setGoiAnh,
   setGoiMuc,
   setCover,
@@ -175,7 +177,20 @@ export async function refreshGalleryAction(formData: FormData) {
   // Doc lai so lieu tu Drive roi dung san anh cua nhung folder vua them.
   after(() => syncAndWarm(galleryId, folderId).catch(() => {}));
 
-  await ghiViecAlbum("lam-moi-album", galleryId);
+  /*
+    KHONG ghi nhat ky (anh yeu cau 15/10/2026).
+
+    "Lam moi" la thao tac nhan vien bam lien tuc trong luc doi Drive len anh —
+    mot lan up anh co the bam nam bay cai trong vai phut. Ghi het vao nhat ky
+    thi khung "Studio da lam" (chi lay 30 dong gan nhat) toan mot cau "Doc lai
+    album tu Drive", day chim nhung viec that su can truy: ai tao album, ai
+    xoa, ai bam gui thong bao cho khach.
+
+    Bo ghi cung bot mot luot GHI database moi lan bam — nguyen tac 53, Neon
+    tinh tien theo thoi gian thuc.
+
+    Nhung dong CU van nam trong bang NhatKy; docViecStudio() loc chung ra.
+  */
 
   revalidatePath("/admin");
 }
@@ -306,6 +321,68 @@ export async function setMessageAction(
   await setMessage(galleryId, noiDung || null);
   await ghiViecAlbum("sua-album", galleryId, { doi: "lời nhắn", coNoiDung: noiDung.length > 0 });
   revalidatePath("/admin");
+  return {};
+}
+
+/**
+ * Studio bao "Media da sua xong" — go nhan "khach can chinh lai" cua mot thu muc.
+ *
+ * Anh chot 08/10/2026: studio tu bam dep chu khong doi khach bam. Ly do chon
+ * duong nay: Media sua xong la up anh moi len Drive ngay luc do, nen ho dang o
+ * truoc may va dep duoc lien — con cho khach vao bam "da ok" thi co nha quen,
+ * va cai nhan vang nam lai mai tren the.
+ *
+ * XOA HAN DONG, khong doi ve "xong": khach chua duyet ban moi thi khong duoc
+ * thay mat ho noi la da duyet. Sau khi go, thu muc tro ve trang thai chua bao
+ * gi — khach mo lai se thay loi moi duyet nhu lan dau, dung thuc te.
+ *
+ * Quyen `quyenAlbum()` nhu moi viec thuong ngay cua album: ca tiem lam album
+ * (nguyen tac 51), va bam nham thi chi mat mot nhan, khach bao lai duoc.
+ */
+export async function goCanSuaAction(
+  galleryId: string,
+  albumId: string,
+  tenMuc: string,
+): Promise<{ error?: string }> {
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
+
+  await setMucXong(galleryId, albumId, tenMuc, { loai: null });
+  await ghiViecAlbum("sua-album", galleryId, {
+    doi: "gỡ nhãn khách cần chỉnh lại",
+    thuMuc: tenMuc,
+  });
+  revalidatePath("/admin");
+  return {};
+}
+
+/**
+ * Bat/tat quyen tai anh cua mot album.
+ *
+ * Them 02/10/2026 theo yeu cau cua anh. Truoc do co nay chi dat duoc mot lan
+ * luc tao link (o tich trong khung "Tao link moi") roi khong con duong nao
+ * doi — nha nao luc tao quen tich thi khach vinh vien khong tai duoc anh.
+ *
+ * Quyen: quyenAlbum() nhu moi cai dat khac cua album, KHONG phai
+ * quyenAlbumNguyHiem(). Bat nham thi tat lai duoc ngay, khac han voi xoa album
+ * hay ngat ket noi Drive — nhung thu khong lui lai duoc moi can quan ly.
+ *
+ * Phai revalidate CA duong trang khach: nut tai anh, dong dem nguoc va nut
+ * "Tai ca thu muc" deu doc co nay, nen tat o day ma trang khach con giu ban
+ * dung san thi khach van thay nut tai trong vai phut (nguyen tac 58).
+ */
+export async function setChoTaiAction(
+  galleryId: string,
+  choTai: boolean,
+): Promise<{ error?: string }> {
+  if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
+
+  await setChoTai(galleryId, choTai);
+  await ghiViecAlbum("sua-album", galleryId, {
+    doi: "cho khách tải ảnh",
+    choTai,
+  });
+  revalidatePath("/admin");
+  revalidatePath("/", "layout");
   return {};
 }
 

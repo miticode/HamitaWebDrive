@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { BiaMuc, Gallery, GoiMuc, ListCount, MucXong } from "@/lib/store";
-import { MOC_DEM_LUOT_TAI, MOC_GHI_LAN_BAO, MUI_GIO } from "@/lib/constants";
+import {
+  MOC_DEM_LUOT_TAI,
+  MOC_GHI_LAN_BAO,
+  chuConLai,
+  lucGon,
+  ngayVietTat,
+  soNgayToiHan,
+} from "@/lib/constants";
 import { refreshGalleryAction } from "./actions";
 import { CaiDatDialog } from "./CaiDatDialog";
 import { LogKhach } from "./LogKhach";
@@ -13,6 +20,7 @@ import { TenAlbum } from "./TenAlbum";
 import { MenuThe, MucMenuLink } from "./MenuThe";
 import { NutLamMoi } from "./NutLamMoi";
 import { NutGuiThongBao } from "./NutGuiThongBao";
+import { NutDaSuaXong } from "./NutDaSuaXong";
 import { XoaAlbumDialog } from "./XoaAlbumDialog";
 import { duongDanAnh } from "@/lib/anhXem";
 
@@ -58,27 +66,6 @@ function Stat({
   );
 }
 
-/**
- * "7/9 17:40" — theo giờ studio, không theo giờ máy đang mở trang (nguyên tắc 35).
- *
- * Ghép từ `formatToParts` chứ không dùng thẳng chuỗi `format()` trả về: bản
- * tiếng Việt xếp giờ lên TRƯỚC ngày ("17:40 7/9"), đọc ngược với cách người ta
- * nói. Ghép tay thì thứ tự do mình quyết, mà múi giờ vẫn do Intl lo.
- */
-function lucGon(iso: string): string {
-  const phan = new Intl.DateTimeFormat("vi-VN", {
-    timeZone: MUI_GIO,
-    day: "numeric",
-    month: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(new Date(iso));
-
-  const lay = (loai: string) => phan.find((p) => p.type === loai)?.value ?? "";
-
-  return `${lay("day")}/${lay("month")} ${lay("hour")}:${lay("minute")}`;
-}
 
 /**
  * Dòng "đã gửi thông báo chưa" — nay là một nhãn nhỏ nằm trên ảnh bìa.
@@ -280,30 +267,88 @@ export function GalleryCard({
         */}
         {mucXong.length > 0 && (
           <div className="absolute right-2 bottom-2 left-2 flex flex-wrap items-center gap-1.5">
-            {mucXong.map((m) => (
-              <span
-                key={m.albumId}
-                title={`Khách báo xong thư mục "${m.tenMuc}" lúc ${new Date(
-                  m.xongLuc,
-                ).toLocaleString("vi-VN", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  day: "2-digit",
-                  month: "2-digit",
-                })}`}
-                className="flex max-w-full items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur"
-              >
+            {mucXong.map((m) => {
+              /*
+                HAI LOẠI BÁO, hai màu, hai câu (anh yêu cầu 08/10/2026).
+
+                "can-sua" = khách xem ảnh đã chỉnh rồi nhờ Media sửa lại. Đây
+                là VIỆC ĐANG CHỜ chứ không phải việc đã xong, nên nhãn phải
+                khác hẳn — để chung chấm xanh "Đã chọn xong" thì studio liếc
+                qua thẻ sẽ tưởng nhà này xong rồi và đem đi in luôn.
+
+                Nền nhãn đậm hơn hẳn cho loại cần sửa: nó là thứ duy nhất trên
+                thẻ nói rằng còn người đang đợi mình.
+              */
+              const canSua = m.loai === "can-sua";
+
+              /*
+                HAN LAY HINH, chi thu muc file goc hinh cong / album moi co
+                (anh yeu cau 05/11/2026). Day la thu Media can liec thay ngay
+                tu luoi the, khong phai mo album ra moi biet.
+
+                Han da QUA ma khach van dang doi thi doi mau do — nhin mot cai
+                la biet nha nao tre. Dem theo NGAY, khong theo gio: han "ngay
+                20" van con hieu luc het ngay 20.
+              */
+              const han = m.hanLay;
+              const treHan = han !== null && soNgayToiHan(han) < 0;
+
+              return (
                 <span
-                  aria-hidden
-                  className="size-1.5 shrink-0 rounded-full bg-emerald-400"
-                />
-                <span className="truncate">
-                  {gallery.albumCount > 1
-                    ? `Xong · ${m.tenMuc}`
-                    : "Đã chọn xong"}
+                  key={m.albumId}
+                  title={`${
+                    canSua
+                      ? `Khách nhờ chỉnh lại thư mục "${m.tenMuc}"`
+                      : `Khách báo xong thư mục "${m.tenMuc}"`
+                  } lúc ${new Date(m.xongLuc).toLocaleString("vi-VN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    day: "2-digit",
+                    month: "2-digit",
+                  })}${
+                    han
+                      ? ` · khách cần lấy hình ngày ${ngayVietTat(han)}${
+                          treHan ? " (đã quá hạn)" : ""
+                        }`
+                      : ""
+                  }`}
+                  className={`flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium backdrop-blur ${
+                    treHan
+                      ? "bg-red-600/90 text-white"
+                      : canSua
+                        ? "bg-amber-500/90 text-white"
+                        : "bg-black/60 text-white"
+                  }`}
+                >
+                  <span
+                    aria-hidden
+                    className={`size-1.5 shrink-0 rounded-full ${
+                      canSua ? "bg-white" : "bg-emerald-400"
+                    }`}
+                  />
+                  <span className="truncate">
+                    {canSua
+                      ? gallery.albumCount > 1
+                        ? `Cần chỉnh lại · ${m.tenMuc}`
+                        : "Khách cần chỉnh lại"
+                      : gallery.albumCount > 1
+                        ? `Xong · ${m.tenMuc}`
+                        : "Đã chọn xong"}
+                  </span>
+                  {/*
+                    Han viet dang "còn 5 ngày" chu khong phai ngay thang: tren
+                    luoi the, cau studio tu hoi la "con kip khong", ma doc
+                    "20/11" thi van phai tu nham tinh. Ngay cu the van con
+                    trong chu thich khi re chuot.
+                  */}
+                  {han !== null && (
+                    <span className="shrink-0 border-l border-white/30 pl-1.5 tabular-nums">
+                      {chuConLai(han)}
+                    </span>
+                  )}
                 </span>
-              </span>
-            ))}
+              );
+            })}
           </div>
         )}
       </Link>
@@ -385,6 +430,27 @@ export function GalleryCard({
               <MucMenuLink href={`/admin/${gallery.slug}`}>
                 Ảnh khách chọn
               </MucMenuLink>
+
+              {/*
+                Thư mục nào khách đang nhờ chỉnh lại thì có một mục gỡ nhãn
+                ngay đây (anh chốt 08/10/2026: studio tự bấm dẹp).
+
+                Đặt NGAY SAU "Ảnh khách chọn" vì hai việc đi liền nhau: Media
+                mở album đọc lời dặn, sửa, up ảnh mới, rồi quay ra dẹp nhãn.
+                Để tận cuối bảng thì phải lướt qua cả cụm chép link và gửi
+                thông báo mới tới.
+              */}
+              {mucXong
+                .filter((m) => m.loai === "can-sua")
+                .map((m) => (
+                  <NutDaSuaXong
+                    key={m.albumId}
+                    galleryId={gallery.id}
+                    albumId={m.albumId}
+                    tenMuc={m.tenMuc}
+                    nhieuThuMuc={gallery.albumCount > 1}
+                  />
+                ))}
 
               <form action={refreshGalleryAction}>
                 <input
@@ -517,6 +583,7 @@ export function GalleryCard({
           createdAt={gallery.createdAt}
           expiresAt={gallery.expiresAt}
           driveFolderId={gallery.driveFolderId}
+          choTai={gallery.allowDownload}
           soAnhTrongGoi={gallery.soAnhTrongGoi}
           giaAnhThem={gallery.giaAnhThem}
           goiMuc={goiMuc}

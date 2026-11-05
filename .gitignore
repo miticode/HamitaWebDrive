@@ -54,9 +54,12 @@ next-env.d.ts
 # Ban PDF dung tu docs/huong-dan-admin.html — dung lai bang: npm run pdf:huong-dan
 docs/*.pdf
 
-# Ban dung cho Cloudflare (dang thu)
-.open-next
+# San pham dung Cloudflare va bi mat chay o may
+.open-next/
 .dev.vars
 
 # Trang thai chay thu cuc bo cua wrangler
-.wrangler
+.wrangler/
+
+# Ban do tri thuc do graphify dung (chi de tro ly doc, dung lai duoc tu ma nguon)
+graphify-out/

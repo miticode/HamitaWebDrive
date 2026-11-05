@@ -8,6 +8,7 @@ import {
   type CreateGalleryInput,
   type Gallery,
   type GoiMuc,
+  type LoaiBaoXong,
   type MucXong,
   type KhuGioiThieu,
   type Selection,
@@ -291,6 +292,16 @@ export const jsonStore: Store = {
     });
   },
 
+  setChoTai(galleryId: string, choTai: boolean) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const g = db.galleries.find((x) => x.id === galleryId);
+      if (!g) return;
+      g.allowDownload = choTai;
+      await writeToDisk(db);
+    });
+  },
+
   setGoiAnh(galleryId: string, soAnhTrongGoi: number | null, giaAnhThem: number) {
     return withLock(async () => {
       const db = await readFromDisk();
@@ -347,16 +358,35 @@ export const jsonStore: Store = {
     });
   },
 
-  setMucXong(galleryId: string, albumId: string, tenMuc: string, xong: boolean) {
+  setMucXong(
+    galleryId: string,
+    albumId: string,
+    tenMuc: string,
+    bao: { loai: LoaiBaoXong | null; hanLay?: string | null },
+  ) {
     return withLock(async () => {
       const db = await readFromDisk();
       const ds = db.mucXong ?? [];
+      const cu = ds.find((m) => m.galleryId === galleryId && m.albumId === albumId);
       const conLai = ds.filter(
         (m) => !(m.galleryId === galleryId && m.albumId === albumId)
       );
 
-      db.mucXong = xong
-        ? [...conLai, { galleryId, albumId, tenMuc, xongLuc: new Date().toISOString() }]
+      // Khong gui `hanLay` thi giu nguyen han cu — xem chu thich o ban Prisma.
+      const hanLay = bao.hanLay === undefined ? (cu?.hanLay ?? null) : bao.hanLay;
+
+      db.mucXong = bao.loai
+        ? [
+            ...conLai,
+            {
+              galleryId,
+              albumId,
+              tenMuc,
+              loai: bao.loai,
+              hanLay,
+              xongLuc: new Date().toISOString(),
+            },
+          ]
         : conLai;
 
       await writeToDisk(db);

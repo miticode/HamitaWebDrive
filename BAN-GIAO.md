@@ -88,7 +88,7 @@ nếu máy không ghi thẳng được xuống ổ đĩa và thư mục nặng h
 ## 4. Những quyết định quan trọng và lý do
 
 Phần này quan trọng nhất — đừng sửa những chỗ này mà không đọc lý do. Đánh số
-đầy đủ (14 mục) nằm trong `CLAUDE.md`, đây chỉ tóm lược những mục lớn nhất:
+đầy đủ (14 mục) nằm trong `docs/NGUYEN-TAC.md`, đây chỉ tóm lược những mục lớn nhất:
 
 - **Ảnh đi qua proxy riêng** (`/api/img`), không dùng link Drive trực tiếp —
   `thumbnailLink` hết hạn sau vài giờ và bị chặn khi đông người xem.
@@ -127,7 +127,7 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 
 Đợt này xoay quanh **khách dùng điện thoại**: tải ảnh về máy phải thật sự lưu
 được, và khách phải tự trả lời được thắc mắc mà không cần nhắn sale. Kèm theo là
-một đợt dọn rác toàn hệ thống. Chi tiết từng quyết định nằm trong `CLAUDE.md`
+một đợt dọn rác toàn hệ thống. Chi tiết từng quyết định nằm trong `docs/NGUYEN-TAC.md`
 (nguyên tắc 44–49) — dưới đây là bản đồ.
 
 ### Điện thoại tải ảnh: viết lại toàn bộ (08–09/09)
@@ -1203,7 +1203,7 @@ thẳng hay không.
 ## 6b. Đợt trước (03–07/09/2026)
 
 Đợt này chủ yếu là **sửa lỗi tìm ra bằng đo đạc** và **thêm công cụ quan sát cho
-studio**. Chi tiết từng quyết định nằm trong `CLAUDE.md` — dưới đây chỉ là bản
+studio**. Chi tiết từng quyết định nằm trong `docs/NGUYEN-TAC.md` — dưới đây chỉ là bản
 đồ để biết chỗ nào đã đụng tới.
 
 ### Ba lỗi thật ảnh hưởng khách, tìm ra khi rà soát (03/09)
@@ -1498,7 +1498,7 @@ loại trừ nhau — ô vuông thì tích được hai cái cùng lúc rồi kh
 album hiện ở đâu. Trong database gộp thành **một cột chữ** `khuGioiThieu`; hai
 cột cũ `laBaby`/`laPhimTruong` giữ lại nhưng không còn dùng.
 
-Chi tiết kỹ thuật và lý do chọn khung ảnh từng khu: `CLAUDE.md` nguyên tắc 24.
+Chi tiết kỹ thuật và lý do chọn khung ảnh từng khu: `docs/NGUYEN-TAC.md` nguyên tắc 24.
 
 ### Vá lỗ hổng mất lựa chọn khi hai máy cùng chọn (26/08)
 
@@ -1523,7 +1523,7 @@ Vá ở ba lớp: máy khách gửi thẳng ý định (`muon: true/false`) thay
 lật ngược; máy khách lấy kết quả máy chủ trả về làm chuẩn; và danh sách được
 hỏi lại mỗi 15 giây khi tab đang mở, cộng một lần ngay khi khách quay lại tab.
 
-**Đã cân nhắc WebSocket và loại** — chi tiết trong `CLAUDE.md` nguyên tắc 23.
+**Đã cân nhắc WebSocket và loại** — chi tiết trong `docs/NGUYEN-TAC.md` nguyên tắc 23.
 Tóm tắt: Vercel có hỗ trợ gốc từ 22/06/2026, nhưng gói Hobby giới hạn 300 giây
 cứng, và mỗi kết nối ghim vào một máy chủ nên vợ chồng rơi vào hai máy khác
 nhau là tin không sang được nhau (phải thêm Redis). Hỏi lại mỗi 15 giây chỉ tốn
