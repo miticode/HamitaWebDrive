@@ -25,11 +25,11 @@ Ba tệp nữa, đọc khi cần — **đừng nạp sẵn cả ba**:
 
 ## CÓ SẴN BẢN ĐỒ CẢ HỆ THỐNG — DÙNG NÓ TRƯỚC KHI ĐỌC CODE
 
-Dựng ngày 09/10/2026 bằng `graphify`. Nằm ở `graphify-out/` (**không** commit, đã
-cho vào `.gitignore` — nó dựng lại được từ chính mã nguồn).
+Dựng lại ngày 05/11/2026 bằng `graphify` (lần đầu 09/10). Nằm ở `graphify-out/`
+(**không** commit, đã cho vào `.gitignore` — nó dựng lại được từ chính mã nguồn).
 
-**1.680 node · 4.818 cạnh · 87 cụm** — gồm 230 tệp mã (đọc bằng AST, chính xác)
-và 7 tài liệu (CLAUDE.md, BAN-GIAO.md, README, hướng dẫn admin…).
+**1.698 node · 4.671 cạnh · 100 cụm** — gồm 231 tệp mã (đọc bằng AST, chính xác),
+8 tài liệu và 15 ảnh tài sản giao diện.
 
 Mục đích: **đỡ phải grep cả kho để tìm một hàm**. Hỏi bản đồ trước, mở tệp sau.
 
@@ -72,10 +72,16 @@ graphify . --update      # chỉ trích lại tệp đã đổi, giữ phần c�
 - **21 cạnh cụt đầu**: chỗ tài liệu nhắc tên một tệp mà bản đồ chưa nối được
   vào node mã tương ứng. Không phải lỗi dữ liệu, chỉ là thiếu liên kết.
 
-*Số đo đáng nhớ từ lần dựng đầu:* `getPrisma()` có **151 cạnh**, bắc qua **28
-cụm** — mọi đường vào database đều chui qua một cửa đó (`src/lib/db.ts`). Ba
-trục lớn tiếp theo: `quyenAlbum()` 58, `databaseIsConfigured()` 48,
-`laQuanTri()` 46.
+*Số đo đáng nhớ (05/11/2026):* `getPrisma()` có **154 cạnh**, bắc qua **27
+cụm** — mọi đường vào database đều chui qua một cửa đó (`src/lib/db.ts`). Các
+trục lớn tiếp theo: `quyenAlbum()` 60, `databaseIsConfigured()` 48,
+`laQuanTri()` 46, `batBuocDangNhap()` 44, `layNguoiDung` 40, `ghiNhatKy()` 35.
+
+*Sức khoẻ bản đồ:* 21 cạnh cụt đầu, 35 tự nối, 90 cạnh gộp. Phần gộp vô hại —
+đó là nhiều dòng `import` giữa cùng một cặp tệp thu về một cạnh. Cạnh cụt đầu
+là chỗ tài liệu gọi tên một hàm mà **không kèm đường dẫn tệp**
+(`Selection.tsx`, `sapAnh()`, `syncAndWarm`, `GalleryCard`…); muốn nối được thì
+tài liệu phải ghi kèm đường dẫn, chứ đừng để bản đồ đoán.
 
 ---
 
