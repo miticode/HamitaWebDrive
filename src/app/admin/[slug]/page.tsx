@@ -5,11 +5,12 @@ import { quyenAlbum } from "@/lib/quyenAlbum";
 import {
   getGalleryBySlug,
   getLists,
+  getMucXong,
   getSelections,
   type Selection,
 } from "@/lib/store";
 import { maSoFile } from "@/lib/anhIn";
-import { lucGon } from "@/lib/constants";
+import { chuConLai, lucGon, ngayVietTat, soNgayToiHan } from "@/lib/constants";
 import { goiYHopDong, hopDongCuaAlbum } from "@/lib/noiAlbum";
 import { NutDoiTong } from "../NutDoiTong";
 import { ExportButton, NutChep } from "./ExportButton";
@@ -62,11 +63,24 @@ export default async function ResultsPage({ params }: Props) {
   const gallery = await getGalleryBySlug(slug);
   if (!gallery) notFound();
 
-  const [lists, selections, hopDong] = await Promise.all([
+  const [lists, selections, hopDong, dsXong] = await Promise.all([
     getLists(gallery.id),
     getSelections(gallery.id),
     hopDongCuaAlbum(gallery.id),
+    getMucXong(gallery.id),
   ]);
+
+  /*
+    Han lay hinh khach hen, tra theo TEN thu muc (anh yeu cau 05/11/2026).
+
+    Tra theo ten chu khong theo albumId vi trang nay gom anh theo ten thu muc
+    luu trong tung lua chon — khong co ma thu muc o day. Doi ten thu muc tren
+    Drive thi han roi khoi cho, nhung `setMucXong` cap nhat ten moi lan khach
+    bam nen hai ben khop lai ngay lan bao sau.
+  */
+  const hanTheoMuc = new Map(
+    dsXong.filter((m) => m.hanLay).map((m) => [m.tenMuc, m.hanLay as string])
+  );
   /*
     Chỉ đi tìm gợi ý khi CHƯA gắn hợp đồng: việc đó quét cả bảng hợp đồng để so
     tên, không có lý do làm lại mỗi lần mở một album đã gắn rồi.
@@ -212,6 +226,33 @@ export default async function ResultsPage({ params }: Props) {
                     <span className="text-xs text-fg-faint">
                       khách chọn gần nhất {lucGon(moiNhat)}
                     </span>
+
+                    {/*
+                      HAN LAY HINH khach hen (anh yeu cau 05/11/2026). Dat ngay
+                      canh ten thu muc vi day la trang Media ngoi lam viec —
+                      the album o luoi ngoai chi de liec, con cho quyet dinh
+                      lam cai nao truoc la o day.
+
+                      Tre han thi do han, khong chi doi chu: trong mot trang
+                      toan chu xam, mau la thu duy nhat ngan duoc viec luot qua.
+                    */}
+                    {(() => {
+                      const han = hanTheoMuc.get(album);
+                      if (!han) return null;
+                      const tre = soNgayToiHan(han) < 0;
+                      return (
+                        <span
+                          title={`Khách cần lấy hình ngày ${ngayVietTat(han)}`}
+                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                            tre
+                              ? "bg-red-100 text-red-800"
+                              : "bg-amber-100 text-amber-900"
+                          }`}
+                        >
+                          cần lấy {ngayVietTat(han)} · {chuConLai(han)}
+                        </span>
+                      );
+                    })()}
 
                     {/*
                       Nút chép mã số của RIÊNG thư mục này (anh yêu cầu

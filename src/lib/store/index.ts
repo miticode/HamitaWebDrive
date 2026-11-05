@@ -76,8 +76,8 @@ export const ghiLuotTai: Store["ghiLuotTai"] = (id, soTam) =>
 export const setSelectionsDone: Store["setSelectionsDone"] = (id, xong) =>
   store.setSelectionsDone(id, xong);
 
-export const setMucXong: Store["setMucXong"] = (id, albumId, ten, loai) =>
-  store.setMucXong(id, albumId, ten, loai);
+export const setMucXong: Store["setMucXong"] = (id, albumId, ten, bao) =>
+  store.setMucXong(id, albumId, ten, bao);
 
 export const getMucXong: Store["getMucXong"] = (id) => store.getMucXong(id);
 

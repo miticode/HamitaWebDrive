@@ -74,6 +74,20 @@ type Ctx = {
   /** Bao, hoac huy bao. Truyen null de go trang thai. */
   baoDaXong: (loai: LoaiBaoXong | null) => void;
 
+  /**
+   * Ngay khach hen lay hinh ("yyyy-mm-dd"), null = chua hen hoac khong hoi.
+   */
+  hanLay: string | null;
+  /** Dang mo cua so hoi ngay lay hinh. */
+  hoiNgay: boolean;
+  /** Dong cua so hoi ngay ma KHONG bao gi ca (khach bam X hoac bam ra ngoai). */
+  dongHoiNgay: () => void;
+  /**
+   * Chot ngay roi bao xong luon. `null` = khach bam "chua biet" — van bao
+   * xong, chi la khong kem han.
+   */
+  chotNgayLay: (ngay: string | null) => void;
+
   /** Da nhap dung ma chua. */
   unlocked: boolean;
   askingCode: boolean;
@@ -120,6 +134,8 @@ export function SelectionProvider({
   mucDangXem,
   mucXongLoai,
   mucXongLuc,
+  mucXongHanLay,
+  hoiHanLay,
   anhTrongMuc,
   children,
 }: {
@@ -136,6 +152,16 @@ export function SelectionProvider({
   /** Khach da bao xong THU MUC NAY luc nao — null neu chua bao. */
   mucXongLuc: string | null;
   mucXongLoai: LoaiBaoXong | null;
+  /** Ngay khach da hen lay hinh ("yyyy-mm-dd") — null neu chua hen. */
+  mucXongHanLay: string | null;
+  /**
+   * Thu muc nay co hoi NGAY CAN LAY HINH khong (anh yeu cau 05/11/2026).
+   *
+   * Tinh o may chu bang `laMucHoiHanLay` roi truyen xuong, giong cach
+   * `hoanThien` di: hai noi tu doan lay theo ten la co ngay mot noi doi luat
+   * ma noi kia khong.
+   */
+  hoiHanLay: boolean;
   /** Anh cua muc dang mo — dung de dem cho dung pham vi. */
   anhTrongMuc: { id: string }[];
   children: ReactNode;
@@ -151,6 +177,8 @@ export function SelectionProvider({
   const [unlocked, setUnlocked] = useState(unlockedBanDau);
   const [baoXongLuc, setBaoXongLuc] = useState(mucXongLuc);
   const [loaiBao, setLoaiBao] = useState<LoaiBaoXong | null>(mucXongLoai);
+  const [hanLay, setHanLay] = useState(mucXongHanLay);
+  const [hoiNgay, setHoiNgay] = useState(false);
 
   /*
     Con so tren the loc phai dem DUNG nhung tam bo loc se hien ra.
@@ -433,11 +461,16 @@ export function SelectionProvider({
   );
 
   const baoDaXongThat = useCallback(
-    (loai: LoaiBaoXong | null) => {
+    (loai: LoaiBaoXong | null, ngay?: string | null) => {
       const truoc = baoXongLuc;
       const truocLoai = loaiBao;
+      const truocHan = hanLay;
       setBaoXongLuc(loai ? new Date().toISOString() : null);
       setLoaiBao(loai);
+      // Go trang thai thi bo luon han: khach quay lai chon them nghia la lan
+      // bao truoc khong con hieu luc, de han cu nam lai la Media doc nham.
+      if (!loai) setHanLay(null);
+      else if (ngay !== undefined) setHanLay(ngay);
 
       // Kèm thư mục đang mở: trạng thái xong tính riêng cho từng thư mục.
       fetch("/api/gallery-done", {
@@ -448,6 +481,9 @@ export function SelectionProvider({
           albumId: mucDangXem.id,
           tenMuc: mucDangXem.ten,
           loai,
+          // Chi gui khi that su co y dinh dat/xoa han — khong gui thi may chu
+          // giu nguyen han cu (xem chu thich trong setMucXong).
+          ...(ngay === undefined ? {} : { hanLay: ngay }),
           /*
             Gui kem dang CU cho may chu ban truoc 08/10/2026 van hieu — ban do
             chi doc `xong`. Bo di thi trong vai phut Vercel dang doi ban moi,
@@ -463,21 +499,46 @@ export function SelectionProvider({
           setFailed(true);
           setBaoXongLuc(truoc);
           setLoaiBao(truocLoai);
+          setHanLay(truocHan);
         });
     },
-    [slug, baoXongLuc, loaiBao, mucDangXem]
+    [slug, baoXongLuc, loaiBao, hanLay, mucDangXem]
   );
 
+  /*
+    Hai cua phai qua truoc khi bao xong, theo dung thu tu nay:
+
+    1. CHUA NHAP MA — hoi ma truoc. Bao xong cung la mot phan cua viec chon.
+    2. THU MUC FILE GOC HINH CONG / ALBUM ma chua hen ngay — hoi ngay lay hinh
+       (anh yeu cau 05/11/2026). Chi chan dung nut "da chon xong"; nut "chon
+       them" (go trang thai) va "can chinh lai" di thang, khong hoi gi.
+
+    Dat cua o DAY chu khong o tung nut: co HAI noi bam bao xong — thanh tren
+    cung va khoi cuoi trang (XacNhanXong) — de moi noi tu gac mot cua la som
+    muon hai noi lech nhau.
+  */
   const baoDaXong = useCallback(
     (loai: LoaiBaoXong | null) => {
       if (!unlocked) {
-        dangCho.current = () => baoDaXongThat(loai);
+        dangCho.current = () => baoDaXong(loai);
         setAsking(true);
+        return;
+      }
+      if (loai === "xong" && hoiHanLay && !hanLay) {
+        setHoiNgay(true);
         return;
       }
       baoDaXongThat(loai);
     },
-    [unlocked, baoDaXongThat]
+    [unlocked, hoiHanLay, hanLay, baoDaXongThat]
+  );
+
+  const chotNgayLay = useCallback(
+    (ngay: string | null) => {
+      setHoiNgay(false);
+      baoDaXongThat("xong", ngay);
+    },
+    [baoDaXongThat]
   );
 
   const guiGhiChu = useCallback(
@@ -570,6 +631,10 @@ export function SelectionProvider({
       loaiBao,
       baoXongLuc,
       baoDaXong,
+      hanLay,
+      hoiNgay,
+      dongHoiNgay: () => setHoiNgay(false),
+      chotNgayLay,
     }),
     [
       lists,
@@ -586,6 +651,9 @@ export function SelectionProvider({
       baoXongLuc,
       loaiBao,
       baoDaXong,
+      hanLay,
+      hoiNgay,
+      chotNgayLay,
     ]
   );
 

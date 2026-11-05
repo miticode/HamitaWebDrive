@@ -127,6 +127,7 @@ export default async function AlbumPage({ params, searchParams }: Props) {
   const banGhiXong = dsXong.find((m) => m.albumId === wanted) ?? null;
   const mucXongLuc = banGhiXong?.xongLuc ?? null;
   const mucXongLoai = banGhiXong?.loai ?? null;
+  const mucXongHanLay = banGhiXong?.hanLay ?? null;
 
   /*
     Khach da tung chon tam nao trong album nay chua — de quyet dinh bon buoc
@@ -171,6 +172,7 @@ export default async function AlbumPage({ params, searchParams }: Props) {
       unlocked={unlocked}
       mucXongLuc={mucXongLuc}
       mucXongLoai={mucXongLoai}
+      mucXongHanLay={mucXongHanLay}
       daTungChon={daTungChon}
       laChiaSe={laChiaSe}
       dsMuc={tree.albums.map((a) => ({

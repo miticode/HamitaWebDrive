@@ -211,6 +211,18 @@ model MucXong {
   /// Mac dinh "xong" de moi dong da co truoc 08/10/2026 giu dung y nghia cu.
   loai      String   @default("xong")
 
+  /// NGAY KHACH CAN LAY HINH, chi hoi o thu muc file goc hinh cong / album
+  /// (anh yeu cau 05/11/2026) — xem `laMucHoiHanLay` trong constants.ts.
+  ///
+  /// null co HAI nghia khac nhau, va deu hop le:
+  ///   - thu muc khong thuoc dien hoi ngay (file goc nha gai, hoan thien...)
+  ///   - khach duoc hoi nhung bam "chua biet, de Hamita chu dong"
+  /// Media doc nhan tren the album: co ngay thi hien han, khong thi im.
+  ///
+  /// Luu dang DateTime nhung CHI DUNG PHAN NGAY (dat 00:00 gio studio). Khach
+  /// hen "ngay 20" chu khong hen "10 gio sang ngay 20".
+  hanLay    DateTime?
+
   gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
 
   @@unique([galleryId, albumId])

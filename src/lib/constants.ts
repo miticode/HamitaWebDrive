@@ -241,3 +241,83 @@ const DAU_HIEU_HOAN_THIEN = /(hoan thien|\bpts\b)/;
 export function laMucHoanThien(tenMuc: string): boolean {
   return DAU_HIEU_HOAN_THIEN.test(boDau(tenMuc));
 }
+
+/*
+  Dau hieu thu muc FILE GOC cua mot buoi chup truoc cuoi — hinh cong hoac
+  album. Studio dat ten bang ca chu ("hình cổng", "album") lan ma
+  ("HC", "AB", xem maAlbum.ts), nen phai nhan ca hai.
+
+  So o cuoi ma ("HC2", "album 1") la co that trong kho, dung bo sot.
+*/
+const DAU_HIEU_CHUP_TRUOC = /(hinh cong|\bcong\b|\bhc\d*\b|\balbum\d*\b|\bab\d*\b)/;
+
+/**
+ * Thu muc nay co phai FILE GOC cua hinh cong / album khong?
+ *
+ * Anh yeu cau 05/11/2026: chi RIENG nhung thu muc nay, khi khach bam bao da
+ * chon xong thi hoi them NGAY CAN LAY HINH, de Media biet han.
+ *
+ * Luat doc tren TEN THU MUC CON, khong phai ten album (anh noi ro). Mot album
+ * ma "HC" van co the chua them thu muc "file gốc nhà gái" cua ngay cuoi —
+ * doc theo ten album thi thu muc do cung bi hoi ngay, sai.
+ *
+ * Ba dieu kien, thieu mot la khong hoi:
+ *
+ * - co chu "goc" — de tru nhung thu muc khong phai anh chup ("hami6 ab 25x35
+ *   satin" la quy cach in, co chu "ab" nhung chang lien quan).
+ * - KHONG phai thu muc hoan thien — o do anh da chinh xong, khong con gi de
+ *   dat han.
+ * - co dau hieu hinh cong / album.
+ *
+ * Do tren 152 ten thu muc that dang nam trong database (05/11/2026): lot dung
+ * 20 ten, tat ca deu la file goc HC/AB; nhung "file gốc nhà gái", "file gốc
+ * ĐH", "file gốc thôi nôi", "file gốc sinh nhật"... deu nam ngoai.
+ *
+ * `boDau` cung lo luon chuyen Drive tra ten dang NFD (chu "ô" tach lam hai ky
+ * tu) — khong chuan hoa thi mot nua so ten trong kho truot het.
+ */
+export function laMucHoiHanLay(tenMuc: string): boolean {
+  const s = boDau(tenMuc);
+  return /\bgoc\b/.test(s) && !laMucHoanThien(tenMuc) && DAU_HIEU_CHUP_TRUOC.test(s);
+}
+
+/**
+ * Hom nay theo GIO STUDIO, dang "yyyy-mm-dd" (nguyen tac 35).
+ *
+ * "sv-SE" khong phai chon cho vui: do la cach ngan nhat lay dung dang ISO
+ * theo mot mui gio chi dinh, khong phai ghep tay tung phan.
+ */
+export function homNayStudio(): string {
+  return new Date().toLocaleDateString("sv-SE", { timeZone: MUI_GIO });
+}
+
+/**
+ * Con may ngay nua toi han `ngay` ("yyyy-mm-dd"). Am = da tre.
+ *
+ * Dem theo NGAY chu khong theo gio: han "ngay 20" van con hieu luc het ngay
+ * 20, khong phai het luc 0h. Ca hai moc deu quy ve 00:00 gio Viet Nam roi moi
+ * tru, nen khong bao gio dinh chuyen le nua ngay.
+ */
+export function soNgayToiHan(ngay: string): number {
+  const moc = (s: string) => new Date(`${s}T00:00:00+07:00`).getTime();
+  return Math.round((moc(ngay) - moc(homNayStudio())) / 86_400_000);
+}
+
+/** "2026-11-20" -> "20/11/2026", dung thu tu nguoi Viet doc. */
+export function ngayVietTat(ngay: string): string {
+  return ngay.split("-").reverse().join("/");
+}
+
+/**
+ * "còn 5 ngày" / "cần hôm nay" / "trễ 2 ngày" — cau studio liec mot cai la
+ * biet con kip khong.
+ *
+ * Viet thanh chu chu khong in ngay thang: tren luoi the album, cau ho tu hoi
+ * la "con kip khong", ma doc "20/11" thi van phai tu nham tinh.
+ */
+export function chuConLai(ngay: string): string {
+  const n = soNgayToiHan(ngay);
+  if (n < 0) return `trễ ${-n} ngày`;
+  if (n === 0) return "cần hôm nay";
+  return `còn ${n} ngày`;
+}

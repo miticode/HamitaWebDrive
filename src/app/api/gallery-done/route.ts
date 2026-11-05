@@ -24,6 +24,18 @@ const Body = z.object({
    * nay, luc do quay ve doc `xong`. Hai thu khac nhau nen khong duoc gop.
    */
   loai: z.enum(["xong", "can-sua"]).nullable().optional(),
+  /**
+   * Ngay khach can lay hinh, dang "yyyy-mm-dd".
+   *
+   * KHONG gui truong nay = giu nguyen han cu (may khach ban cu, hoac thu muc
+   * khong thuoc dien hoi ngay). Gui null = khach bam "chua biet", xoa han.
+   * Hai y dinh khac nhau nen khong duoc gop lam mot.
+   */
+  hanLay: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Ngay phai dang yyyy-mm-dd")
+    .nullable()
+    .optional(),
 });
 
 /**
@@ -58,6 +70,9 @@ export async function POST(req: NextRequest) {
   */
   const loai = "loai" in body ? (body.loai ?? null) : body.xong ? "xong" : null;
 
-  await setMucXong(gallery.id, body.albumId, body.tenMuc, loai);
+  await setMucXong(gallery.id, body.albumId, body.tenMuc, {
+    loai,
+    ...("hanLay" in body ? { hanLay: body.hanLay ?? null } : {}),
+  });
   return Response.json({ ok: true });
 }

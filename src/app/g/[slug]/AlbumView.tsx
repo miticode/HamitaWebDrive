@@ -1,5 +1,5 @@
 import type { Album } from "@/lib/drive";
-import { STUDIO_NAME, laMucHoanThien } from "@/lib/constants";
+import { STUDIO_NAME, laMucHoanThien, laMucHoiHanLay } from "@/lib/constants";
 import type { Gallery, LoaiBaoXong, SelectionList } from "@/lib/store";
 import { Logo } from "@/components/Logo";
 import { GalleryHeader } from "./GalleryHeader";
@@ -9,6 +9,7 @@ import { PhotoGrid } from "./PhotoGrid";
 import { HuongDanChon } from "./HuongDanChon";
 import { TuLamMoi } from "./TuLamMoi";
 import { CodeDialog } from "./CodeDialog";
+import { HoiNgayLay } from "./HoiNgayLay";
 import { ChonThuMuc } from "./ChonThuMuc";
 import { NutChiaSe } from "./NutChiaSe";
 import { XacNhanXong } from "./XacNhanXong";
@@ -31,6 +32,7 @@ export function AlbumView({
   unlocked,
   mucXongLuc,
   mucXongLoai,
+  mucXongHanLay,
   daTungChon,
   dsMuc,
   laChiaSe = false,
@@ -51,6 +53,8 @@ export function AlbumView({
   unlocked: boolean;
   /** Khách đã báo chọn xong THƯ MỤC NÀY lúc nào — null nếu chưa báo. */
   mucXongLuc: string | null;
+  /** Ngày khách đã hẹn lấy hình ("yyyy-mm-dd") — null nếu chưa hẹn. */
+  mucXongHanLay: string | null;
   /** Khách báo LOẠI gì — "xong" hay "can-sua". null nếu chưa báo. */
   mucXongLoai: LoaiBaoXong | null;
   /** Khách đã chọn tấm nào trong album này chưa — quyết định hướng dẫn mở hay thu. */
@@ -82,6 +86,13 @@ export function AlbumView({
   */
   const hoanThien = laMucHoanThien(album.name);
 
+  /*
+    Thư mục file gốc hình cổng / album thì hỏi thêm NGÀY CẦN LẤY HÌNH lúc khách
+    bấm báo xong (anh yêu cầu 05/11/2026). Tính một lần ở đây rồi truyền xuống,
+    cùng lý do với `hoanThien` ngay trên.
+  */
+  const hoiHanLay = laMucHoiHanLay(album.name);
+
   return (
     <SelectionProvider
       slug={slug}
@@ -92,6 +103,8 @@ export function AlbumView({
       mucDangXem={{ id: album.id, ten: album.name }}
       mucXongLuc={mucXongLuc}
       mucXongLoai={mucXongLoai}
+      mucXongHanLay={mucXongHanLay}
+      hoiHanLay={hoiHanLay}
     >
       {/*
         Cũng cần ở đây, không chỉ trang bìa: thông báo "có ảnh mới" dẫn khách
@@ -204,6 +217,7 @@ export function AlbumView({
       </main>
 
       <CodeDialog />
+      <HoiNgayLay tenMuc={album.name} />
 
       <footer className="border-t border-line py-12 text-center">
         <Logo size="sm" className="mx-auto opacity-60" />

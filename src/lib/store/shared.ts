@@ -130,6 +130,17 @@ export type MucXong = {
   /** Luc bao, dang ISO. */
   xongLuc: string;
   loai: LoaiBaoXong;
+  /**
+   * Ngay khach can lay hinh, dang "yyyy-mm-dd" — null la khong co han.
+   *
+   * Chi thu muc file goc hinh cong / album moi duoc hoi (xem `laMucHoiHanLay`),
+   * va khach van duoc bam "chua biet", nen null la chuyen binh thuong chu
+   * khong phai thieu du lieu.
+   *
+   * Dang NGAY TRAN chu khong phai ISO day du: khach hen ngay, khong hen gio.
+   * De nguyen ISO thi may khach o mui gio khac doc ra lech mot ngay.
+   */
+  hanLay: string | null;
 };
 
 export type CreateGalleryInput = {
@@ -270,11 +281,16 @@ export type Store = {
    * bao thi mot gia tri dung/sai khong du dien dat, ma them mot tham so thu
    * hai canh no thi co ngay goi nham thu tu.
    */
+  /**
+   * `hanLay` ("yyyy-mm-dd" hoac null) di CHUNG MOT GOI voi `loai` chu khong
+   * dung lam tham so thu nam: ca hai deu la `string | null`, de canh nhau la
+   * co ngay goi nham thu tu ma TypeScript khong kip keu.
+   */
   setMucXong(
     galleryId: string,
     albumId: string,
     tenMuc: string,
-    loai: LoaiBaoXong | null
+    bao: { loai: LoaiBaoXong | null; hanLay?: string | null }
   ): Promise<void>;
 
   /** Cac thu muc khach da bao xong cua mot album. */

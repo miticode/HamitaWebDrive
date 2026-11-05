@@ -346,7 +346,7 @@ export async function goCanSuaAction(
 ): Promise<{ error?: string }> {
   if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
 
-  await setMucXong(galleryId, albumId, tenMuc, null);
+  await setMucXong(galleryId, albumId, tenMuc, { loai: null });
   await ghiViecAlbum("sua-album", galleryId, {
     doi: "gỡ nhãn khách cần chỉnh lại",
     thuMuc: tenMuc,

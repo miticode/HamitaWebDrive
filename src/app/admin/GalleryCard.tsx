@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { BiaMuc, Gallery, GoiMuc, ListCount, MucXong } from "@/lib/store";
-import { MOC_DEM_LUOT_TAI, MOC_GHI_LAN_BAO, lucGon } from "@/lib/constants";
+import {
+  MOC_DEM_LUOT_TAI,
+  MOC_GHI_LAN_BAO,
+  chuConLai,
+  lucGon,
+  ngayVietTat,
+  soNgayToiHan,
+} from "@/lib/constants";
 import { refreshGalleryAction } from "./actions";
 import { CaiDatDialog } from "./CaiDatDialog";
 import { LogKhach } from "./LogKhach";
@@ -273,6 +280,19 @@ export function GalleryCard({
                 thẻ nói rằng còn người đang đợi mình.
               */
               const canSua = m.loai === "can-sua";
+
+              /*
+                HAN LAY HINH, chi thu muc file goc hinh cong / album moi co
+                (anh yeu cau 05/11/2026). Day la thu Media can liec thay ngay
+                tu luoi the, khong phai mo album ra moi biet.
+
+                Han da QUA ma khach van dang doi thi doi mau do — nhin mot cai
+                la biet nha nao tre. Dem theo NGAY, khong theo gio: han "ngay
+                20" van con hieu luc het ngay 20.
+              */
+              const han = m.hanLay;
+              const treHan = han !== null && soNgayToiHan(han) < 0;
+
               return (
                 <span
                   key={m.albumId}
@@ -285,9 +305,19 @@ export function GalleryCard({
                     minute: "2-digit",
                     day: "2-digit",
                     month: "2-digit",
-                  })}`}
+                  })}${
+                    han
+                      ? ` · khách cần lấy hình ngày ${ngayVietTat(han)}${
+                          treHan ? " (đã quá hạn)" : ""
+                        }`
+                      : ""
+                  }`}
                   className={`flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium backdrop-blur ${
-                    canSua ? "bg-amber-500/90 text-white" : "bg-black/60 text-white"
+                    treHan
+                      ? "bg-red-600/90 text-white"
+                      : canSua
+                        ? "bg-amber-500/90 text-white"
+                        : "bg-black/60 text-white"
                   }`}
                 >
                   <span
@@ -305,6 +335,17 @@ export function GalleryCard({
                         ? `Xong · ${m.tenMuc}`
                         : "Đã chọn xong"}
                   </span>
+                  {/*
+                    Han viet dang "còn 5 ngày" chu khong phai ngay thang: tren
+                    luoi the, cau studio tu hoi la "con kip khong", ma doc
+                    "20/11" thi van phai tu nham tinh. Ngay cu the van con
+                    trong chu thich khi re chuot.
+                  */}
+                  {han !== null && (
+                    <span className="shrink-0 border-l border-white/30 pl-1.5 tabular-nums">
+                      {chuConLai(han)}
+                    </span>
+                  )}
                 </span>
               );
             })}

@@ -362,19 +362,30 @@ export const jsonStore: Store = {
     galleryId: string,
     albumId: string,
     tenMuc: string,
-    loai: LoaiBaoXong | null,
+    bao: { loai: LoaiBaoXong | null; hanLay?: string | null },
   ) {
     return withLock(async () => {
       const db = await readFromDisk();
       const ds = db.mucXong ?? [];
+      const cu = ds.find((m) => m.galleryId === galleryId && m.albumId === albumId);
       const conLai = ds.filter(
         (m) => !(m.galleryId === galleryId && m.albumId === albumId)
       );
 
-      db.mucXong = loai
+      // Khong gui `hanLay` thi giu nguyen han cu — xem chu thich o ban Prisma.
+      const hanLay = bao.hanLay === undefined ? (cu?.hanLay ?? null) : bao.hanLay;
+
+      db.mucXong = bao.loai
         ? [
             ...conLai,
-            { galleryId, albumId, tenMuc, loai, xongLuc: new Date().toISOString() },
+            {
+              galleryId,
+              albumId,
+              tenMuc,
+              loai: bao.loai,
+              hanLay,
+              xongLuc: new Date().toISOString(),
+            },
           ]
         : conLai;
 
