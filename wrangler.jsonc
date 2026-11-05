@@ -32,6 +32,31 @@
     }
   ],
 
+  // ───────────────────────────────────────────────────────────────────────
+  // BIẾN MÔI TRƯỜNG — đối chiếu kỹ trước khi đổi DNS (đo 05/11/2026).
+  //
+  // Mã nguồn đọc 16 biến. `.dev.vars` ở máy mới có 11, nên 5 biến dưới đây
+  // CHỈ tồn tại trên Vercel và phải khai lại bằng `wrangler secret put`
+  // (hoặc trong "vars" nếu không phải bí mật):
+  //
+  //   NEXT_PUBLIC_SITE_URL        BẮT BUỘC. `siteUrl()` trong constants.ts
+  //                               ưu tiên biến này, không có thì đọc
+  //                               VERCEL_PROJECT_PRODUCTION_URL — mà trên
+  //                               Cloudflare KHÔNG có biến VERCEL_ nào, nên
+  //                               nó rơi về http://localhost:3000. Web vẫn
+  //                               chạy, không báo lỗi, chỉ là sitemap, đường
+  //                               quay về của Google và thẻ xem trước link
+  //                               đều trỏ vào localhost.
+  //   NEXT_PUBLIC_ANH_WORKER_URL  thiếu thì ảnh khách xem rơi về /api/img
+  //                               thay vì đi qua Worker — chạy được nhưng
+  //                               đốt CPU và băng thông đúng chỗ vừa cắt.
+  //   TAI_ANH_WORKER_URL          thiếu thì đường tải ảnh gốc rơi về đường cũ
+  //   TAI_ANH_KY_CHUNG            bí mật ký link tải (10 phút)
+  //   CRON_SECRET                 cron sao lưu hằng đêm xác thực bằng cái này
+  //
+  // Thiếu cái nào cũng KHÔNG sinh lỗi nào nhìn thấy được — đó là chỗ nguy.
+  // ───────────────────────────────────────────────────────────────────────
+
   // Chỗ chứa bản dựng sẵn của các trang (ISR). Trang giới thiệu và trang dịch
   // vụ dựa vào đây để không phải đọc database mỗi lượt — xem nguyên tắc 58.
   "r2_buckets": [

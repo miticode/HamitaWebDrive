@@ -12,6 +12,12 @@
 /// Lenh "npm run cf:dung" tu doi sang ban Workers roi DOI TRA LAI ban Node sau
 /// khi dung xong. Khong duoc de lai ban Workers: de lai la lan sau go
 /// "npm run dev" hay chay bat ky script nao cung do ngay.
+///
+/// CAI BAY da dinh that (05/11/2026): `prisma generate` KHONG tham so se chay
+/// CA HAI bo sinh, ma ca hai ghi vao cung mot thu muc — bo sau de len bo
+/// truoc, nen ban Workers o lai. Vi vay `postinstall` trong package.json phai
+/// ghi ro `--generator client`; de tran thi moi lan `npm install` la moi
+/// script o may do ngay voi loi WebAssembly LinkError, rat kho doan ra.
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
