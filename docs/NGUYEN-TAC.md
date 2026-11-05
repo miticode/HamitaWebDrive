@@ -2344,6 +2344,63 @@ thì có nhà quên và nhãn vàng nằm lại mãi. Nút đó **XOÁ HẲN dò
 gỡ xong thư mục về trạng thái chưa báo gì, khách mở lại thấy lời mời duyệt như
 lần đầu.
 
+### 66. Thư mục file gốc hình cổng / album hỏi NGÀY CẦN LẤY HÌNH khi khách báo xong
+
+Anh yêu cầu 05/11/2026. Trước đó Media chỉ biết "khách đã chọn xong" chứ không
+biết khách cần khi nào, nên **nhà nào cũng gấp như nhau** — mà ảnh cổng và
+album là thứ phải xong TRƯỚC ngày cưới.
+
+**Luật đọc TÊN THƯ MỤC CON, không phải tên album** (anh nói rõ khi em hỏi).
+Một album mang mã `HC` vẫn có thể chứa "file gốc nhà gái" của ngày cưới — đọc
+theo tên album thì thư mục đó cũng bị hỏi ngày, sai. `laMucHoiHanLay()` trong
+`constants.ts` bắt ba điều kiện, thiếu một là không hỏi:
+
+1. tên có chữ **"gốc"** — chặn những thứ không phải ảnh chụp ("hami6 ab 25x35
+   satin" là quy cách in, có chữ "ab" nhưng chẳng liên quan);
+2. **không** phải thư mục hoàn thiện;
+3. có dấu hiệu **hình cổng / album**: `hinh cong`, `cong`, `hc`, `album`, `ab`,
+   kèm số đuôi ("HC2", "album 1" đều có thật trong kho).
+
+Đo trên **152 tên thư mục thật** trong database (05/11/2026): lọt đúng **20
+tên**, tất cả là file gốc HC/AB; "file gốc nhà gái", "file gốc ĐH", "file gốc
+thôi nôi", "file gốc sinh nhật" đều nằm ngoài. **Đổi luật thì đo lại trên dữ
+liệu thật, đừng đoán** — `boDau()` còn lo giúp chuyện Drive trả tên dạng NFD
+(chữ "ô" tách làm hai ký tự); bỏ chuẩn hoá là một nửa số tên trong kho trượt hết.
+
+**Cửa đặt trong `baoDaXong()` của `Selection.tsx`, KHÔNG ở từng nút.** Có HAI
+nơi bấm báo xong — thanh trên cùng (`GalleryHeader`) và khối cuối trang
+(`XacNhanXong`) — để mỗi nơi tự gác một cửa là sớm muộn hai nơi lệch nhau. Thứ
+tự hai cửa: hỏi mã trước (chưa mở khoá thì chưa báo được gì), rồi mới hỏi ngày.
+Chỉ chặn đúng `loai === "xong"`; "chọn thêm nữa" và "cần chỉnh lại" đi thẳng.
+
+**KHÔNG bắt buộc.** Có nút "Chưa biết ngày, để Hamita chủ động" — vẫn báo xong,
+chỉ là không kèm hạn. Chặn lại thì khách không biết ngày sẽ kẹt ở cửa sổ, mà
+việc chính (báo cho studio biết đã chọn xong) mới là thứ không được mất.
+
+**KHÔNG chặn ngày gấp**, chỉ nhắc một dòng khi dưới 7 ngày. Studio mới là người
+quyết nhận hay không — web không thay họ từ chối khách được.
+
+`MucXong.hanLay` cho phép null, và **null mang hai nghĩa đều hợp lệ**: thư mục
+không thuộc diện hỏi, hoặc khách bấm "chưa biết". Hai quy tắc đừng đổi:
+
+- **Không gửi trường `hanLay` = giữ nguyên hạn cũ**, chỉ gửi thẳng `null` mới
+  là xoá. Cảnh có thật: khách hẹn ngày 20, hôm sau bấm "cần chỉnh lại" rồi bấm
+  "đã ok" lần nữa — hai cú bấm đó không hỏi ngày, ghi đè null vào thì Media mất
+  hạn lúc nào không biết.
+- **Gỡ trạng thái ("chọn thêm nữa") thì bỏ luôn hạn**: lần báo trước không còn
+  hiệu lực, để hạn cũ nằm lại là Media đọc nhầm.
+
+Lưu `DateTime` nhưng **chỉ dùng phần ngày**, quy về 00:00 giờ studio
+(nguyên tắc 35). Vercel chạy giờ UTC, mà 00:00 ngày 20 giờ Việt Nam là 17:00
+ngày 19 UTC — để máy chủ tự đổi thì hạn khách hẹn bị lùi một ngày.
+
+Studio thấy hạn ở **hai chỗ**, cố ý viết hai kiểu khác nhau:
+
+| Chỗ | Viết gì | Vì sao |
+|---|---|---|
+| Nhãn trên thẻ album | "còn 5 ngày" / "trễ 2 ngày", **đỏ khi trễ** | ở lưới thẻ, câu studio tự hỏi là "còn kịp không" — đọc "20/11" vẫn phải tự nhẩm |
+| Đầu mục trang "Ảnh khách chọn" | "cần lấy 20/11/2026 · còn 5 ngày" | đây là nơi Media ngồi làm, cần cả ngày cụ thể để ghi vào lịch |
+
 *Bẫy gặp khi làm:* đọc `information_schema.columns` bằng `$queryRaw` thì cột
 `column_name` mang kiểu `name` của Postgres, mà adapter Neon không giải tuần tự
 được — lỗi `UnsupportedNativeDataType`. Phải ép `column_name::text`.

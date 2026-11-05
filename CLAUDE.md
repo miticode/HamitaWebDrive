@@ -169,6 +169,7 @@ khi thật sự sửa đúng chỗ đó.
 - **63.** Link chia sẻ GIẤU hết đường sang thư mục khác — nhưng chỉ giấu, không chặn.
 - **64.** Mỗi thư mục có nút "Chép mã số" riêng; nút ở đầu trang nói rõ là CẢ ALBUM.
 - **65.** Thư mục ảnh đã chỉnh có HAI lối ra: "Đã ok" và "Cần chỉnh lại".
+- **66.** Thư mục file gốc hình cổng / album hỏi NGÀY CẦN LẤY HÌNH khi khách báo xong.
 
 ## Ranh giới khi thao tác
 
