@@ -97,7 +97,7 @@ export default async function HopDongPage({ searchParams }: Props) {
 
   return (
     <div>
-      <p className="eyebrow">Hợp đồng – Công việc</p>
+      <p className="eyebrow">Hợp đồng</p>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-3xl font-light">
           Hợp đồng <span className="text-fg-faint tabular-nums">{loc.length}</span>
@@ -198,7 +198,15 @@ export default async function HopDongPage({ searchParams }: Props) {
           </tbody>
         </table>
         {loc.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">Không có hợp đồng nào khớp bộ lọc.</p>
+          /* Trạng thái rỗng phải có LỐI RA, đừng để người mới kẹt (mục P2-3). */
+          <p className="px-4 py-8 text-center text-sm text-fg-muted">
+            Không có hợp đồng nào khớp bộ lọc.{" "}
+            {(q || tt || loai || no) && (
+              <Link href="/quan-ly/hop-dong" className="text-accent underline underline-offset-2">
+                Bỏ lọc
+              </Link>
+            )}
+          </p>
         )}
       </div>
 

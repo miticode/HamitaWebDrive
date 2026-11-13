@@ -1,7 +1,6 @@
 # Soát UI/UX phần quản lý — 13/11/2026
 
-> **Trạng thái 13/11:** **P0 và cả P1 đã làm xong và lên mạng.** Còn lại bốn
-> việc **P2** (nhất quán, đánh bóng) đang chờ anh duyệt.
+> **Trạng thái 13/11: xong cả 13 việc — P0, P1 và P2 đều đã lên mạng.**
 
 Soi toàn bộ `/quan-ly`: 18 mục menu, 20 trang, 10.819 dòng giao diện. Chạy
 `web-design-guidelines` (bộ quy tắc Vercel) và `ui-ux-pro-max`, nhưng **phần
@@ -377,34 +376,42 @@ người ta vừa gõ hôm qua. Bộ quy tắc Vercel xếp mục này mức cao
 
 ---
 
-# P2 — Nhất quán và đánh bóng
+# P2 — Nhất quán và đánh bóng  ✅ LÀM XONG 13/11
 
-## P2-1 · Chip trạng thái chỉ dùng ở Hợp đồng
+## P2-1 · Chip trạng thái chỉ dùng ở Hợp đồng  ✅
 
 `ChipTrangThai` tô màu theo nghĩa (xanh = xong, vàng = chờ khách) và chỉ dùng
 ở trang Hợp đồng. Các bảng khác — Đầu việc, Đơn từ, Sổ quỹ, Sự cố, Khách tiềm
 năng — hiện trạng thái bằng **chữ trần tô màu bằng tay**, mỗi trang một kiểu.
 
-**Sau:** một component `Chip` dùng chung, nhận `kieu: "xong" | "cho" | "treo" |
-"thuong"`. Mỗi trang vẫn tự quyết trạng thái nào thuộc kiểu nào — không đụng
-business logic.
+**Đã làm:** một component `Chip` dùng chung với bốn kiểu — `cho` (vàng, đang
+chờ ai đó), `xong` (xanh), `hong` (đỏ, bị từ chối), `thuong` (xám). Áp cho
+**sáu** bảng: Hợp đồng, Đơn từ, Sổ quỹ, Phiếu thu, Sự cố, Khách tiềm năng.
+Mỗi trang vẫn tự quyết trạng thái nào thuộc kiểu nào — `Chip` không biết gì về
+nghiệp vụ nên sửa nó không bao giờ làm lệch nghĩa của bảng nào.
+
+Riêng **Đầu việc** giữ nguyên: ở đó trạng thái là một ô `<select>` để đổi, tức
+một điều khiển chứ không phải cái nhãn — áp chip vào là lấy mất nút bấm.
 
 **Dễ hơn vì:** vàng luôn có nghĩa "đang chờ ai đó", xanh luôn là "xong". Học
 một lần, đọc được mọi bảng.
 
 ---
 
-## P2-2 · Nút "Sửa" có ba cỡ khác nhau
+## P2-2 · Nút "Sửa" có ba cỡ khác nhau  ✅
 
 `btn` ở trang hợp đồng, `btn px-3 py-1 text-xs` ở bảng khách tiềm năng, `btn
 px-3 py-1 text-xs` ở sổ sự cố, `btn` ở nội quy. Cùng một việc, ba kích thước.
 
-**Sau:** đặt hai cỡ chuẩn trong `@layer components` — `btn` (trong trang) và
-`btn-nho` (trong ô bảng) — rồi thay cho mọi chỗ gõ tay.
+**Đã làm:** dự án vốn **đã có sẵn** lớp `.btn-gon` (viết 21/09 cho thẻ album),
+và nó làm đúng việc cần: nhỏ lại trên màn hình có chuột, **tự trở lại 44px
+trên điện thoại** cho vừa ngón tay. Nên mở rộng phạm vi lớp đó thay vì đẻ thêm
+một lớp thứ hai làm cùng việc — thay đúng **13 chỗ** gõ tay `btn px-3 py-1
+text-xs`.
 
 ---
 
-## P2-3 · Trạng thái rỗng chỉ nói "không có gì", không nói làm gì tiếp
+## P2-3 · Trạng thái rỗng chỉ nói "không có gì", không nói làm gì tiếp  ✅
 
 Hiện: *"Không có hợp đồng nào khớp bộ lọc."* · *"Chưa có khách tiềm năng nào."*
 
@@ -416,15 +423,20 @@ lọc**.
 
 ---
 
-## P2-4 · Menu 18 mục, nhóm theo phòng ban chứ không theo việc
+## P2-4 · Menu 18 mục, nhóm theo phòng ban chứ không theo việc  ✅
 
 Admin thấy đủ 18 mục trong 6 nhóm. Photo thấy ít hơn, nhưng việc của họ — Lịch
 chụp, Đầu việc — nằm trong nhóm tên **"Hợp đồng – Công việc"**, cạnh mục Hợp
 đồng mà họ không mở được.
 
-**Sau (nhẹ nhất, không đổi quyền):** đưa hai mục dùng hàng ngày — **Lịch chụp**
-và **Đầu việc** — lên trên cùng cạnh Chấm công, thành nhóm không tên như Tổng
-quan và Chấm công đang có. Phần còn lại giữ nguyên thứ tự.
+**Đã làm:** **Lịch chụp** và **Đầu việc** lên trên cùng cạnh Chấm công, thành
+nhóm không tên. Quyền không đổi một chút nào.
+
+Kéo theo một việc phải sửa: nhóm cũ **"Hợp đồng – Công việc"** giờ chỉ còn mục
+Hợp đồng — một nhóm tên "… – Công việc" mà không chứa mục công việc nào chính
+là đúng loại lỗi cả đợt soát này đi sửa. Đổi tên nhóm thành **"Hợp đồng"**, và
+đổi dòng nhãn đầu ba trang cho khớp: Hợp đồng → *Hợp đồng*; Lịch chụp và Đầu
+việc → *Hằng ngày*.
 
 **Dễ hơn vì:** ba thứ một người bình thường dùng mỗi ngày nằm trong tầm mắt,
 không phải cuộn qua tên nhóm kế toán.

@@ -120,7 +120,7 @@ export default async function LichPage({ searchParams }: Props) {
 
   return (
     <div>
-      <p className="eyebrow">Hợp đồng – Công việc</p>
+      <p className="eyebrow">Hằng ngày</p>
       <h1 className="mt-2 font-display text-3xl font-light">
         Lịch chụp <span className="text-fg-faint tabular-nums">{ds.length}</span>
       </h1>
@@ -242,7 +242,16 @@ export default async function LichPage({ searchParams }: Props) {
             ))}
           </tbody>
         </table>
-        {ds.length === 0 && <p className="px-4 py-8 text-center text-sm text-fg-muted">Tháng này chưa có lịch nào.</p>}
+        {ds.length === 0 && (
+          <p className="px-4 py-8 text-center text-sm text-fg-muted">
+            Tháng này chưa có lịch nào{loai ? ` thuộc loại “${loai}”` : ""}.{" "}
+            {loai && (
+              <Link href={link({ loai: "" })} className="text-accent underline underline-offset-2">
+                Xem mọi loại
+              </Link>
+            )}
+          </p>
+        )}
       </div>
     </div>
   );

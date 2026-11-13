@@ -109,7 +109,7 @@ export function NutDongSuCo({ id }: { id: string }) {
 
   if (!mo) {
     return (
-      <button type="button" className="btn px-3 py-1 text-xs" onClick={() => setMo(true)}>
+      <button type="button" className="btn btn-gon" onClick={() => setMo(true)}>
         Đóng
       </button>
     );
@@ -129,7 +129,7 @@ export function NutDongSuCo({ id }: { id: string }) {
         <button
           type="button"
           disabled={dang}
-          className="btn px-3 py-1 text-xs disabled:opacity-50"
+          className="btn btn-gon disabled:opacity-50"
           onClick={() =>
             batDau(async () => {
               setLoi(null);
@@ -144,7 +144,7 @@ export function NutDongSuCo({ id }: { id: string }) {
         >
           Xong
         </button>
-        <button type="button" disabled={dang} onClick={() => setMo(false)} className="btn px-3 py-1 text-xs">
+        <button type="button" disabled={dang} onClick={() => setMo(false)} className="btn btn-gon">
           Thôi
         </button>
       </div>
@@ -162,7 +162,7 @@ export function NutMoLaiSuCo({ id }: { id: string }) {
       <button
         type="button"
         disabled={dang}
-        className="btn px-3 py-1 text-xs disabled:opacity-50"
+        className="btn btn-gon disabled:opacity-50"
         onClick={() =>
           batDau(async () => {
             setLoi(null);

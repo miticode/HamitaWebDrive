@@ -125,7 +125,7 @@ export function SuaTien({
 
   if (!mo) {
     return (
-      <button type="button" onClick={() => setMo(true)} className="btn px-3 py-1 text-xs">
+      <button type="button" onClick={() => setMo(true)} className="btn btn-gon">
         Sửa
       </button>
     );
@@ -153,7 +153,7 @@ export function SuaTien({
         <button
           type="button"
           disabled={dang}
-          className="btn px-3 py-1 text-xs disabled:opacity-50"
+          className="btn btn-gon disabled:opacity-50"
           onClick={() =>
             batDau(async () => {
               setLoi(null);
@@ -168,7 +168,7 @@ export function SuaTien({
         >
           Lưu
         </button>
-        <button type="button" disabled={dang} onClick={() => setMo(false)} className="btn px-3 py-1 text-xs">
+        <button type="button" disabled={dang} onClick={() => setMo(false)} className="btn btn-gon">
           Thôi
         </button>
       </div>

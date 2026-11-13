@@ -245,7 +245,7 @@ export function NutChi({
           type="button"
           disabled={dang}
           onClick={() => chay(() => duyetChiAction(id))}
-          className="btn px-3 py-1 text-xs disabled:opacity-50"
+          className="btn btn-gon disabled:opacity-50"
         >
           Duyệt
         </button>
@@ -262,7 +262,7 @@ export function NutChi({
           onClick={() => {
             if (confirm("Xoá hẳn khoản chi này?")) chay(() => xoaChiAction(id));
           }}
-          className="btn px-3 py-1 text-xs disabled:opacity-50"
+          className="btn btn-gon disabled:opacity-50"
         >
           Xoá
         </button>

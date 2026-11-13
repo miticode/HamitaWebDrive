@@ -7,6 +7,7 @@ import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { chiTheoKhoan, docSoQuy } from "@/lib/soQuy";
 import { CHO_DUYET, HINH_THUC_CHI } from "@/lib/soQuyChung";
+import { Chip } from "../Chip";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { NutChi, NutGhiChi } from "./GhiChi";
 
@@ -244,8 +245,8 @@ export default async function SoQuyPage({ searchParams }: Props) {
                   {c.taiKhoan && <span className="block text-xs text-fg-faint">{c.taiKhoan}</span>}
                 </td>
                 <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">{tien(c.soTien)}đ</td>
-                <td className={`px-4 py-2.5 whitespace-nowrap ${c.trangThai === CHO_DUYET ? "font-medium text-amber-800" : "text-fg-muted"}`}>
-                  {c.trangThai ?? "—"}
+                <td className="px-4 py-2.5 whitespace-nowrap">
+                  <Chip chu={c.trangThai} kieu={c.trangThai === CHO_DUYET ? "cho" : "xong"} />
                 </td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
                   {tenNV(bangTen, c.nguoiTaoMaNV) ?? "—"}

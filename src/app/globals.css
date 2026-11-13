@@ -217,9 +217,11 @@ body {
   }
 
   /*
-    Nút gọn — CHỈ dùng trong thẻ album ở trang quản lý và trong bảng "…" của
-    nó (anh yêu cầu 21/09/2026: "làm các nút nhỏ lại", cho thẻ album giống
-    Gump).
+    Nút gọn — nút nằm TRONG một ô bảng hoặc một thẻ, không phải nút chính của
+    trang. Ban đầu chỉ cho thẻ album ở trang quản lý (anh yêu cầu 21/09/2026:
+    "làm các nút nhỏ lại", cho thẻ album giống Gump); từ 13/11/2026 dùng chung
+    cho cả phần quản lý studio — trước đó 13 chỗ gõ tay `btn px-3 py-1 text-xs`
+    mỗi nơi một kiểu (KE-HOACH-UX.md mục P2-2).
 
     Vì sao được phép nhỏ hơn 44px của nguyên tắc nút thường: từ 640px trở lên
     là màn hình có chuột — trỏ chuột nhắm 32px thoải mái, mà đây lại là trang

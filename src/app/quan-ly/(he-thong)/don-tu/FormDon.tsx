@@ -166,7 +166,7 @@ export function NutHuyDon({ id }: { id: string }) {
             else router.refresh();
           })
         }
-        className="btn px-3 py-1 text-xs disabled:opacity-50"
+        className="btn btn-gon disabled:opacity-50"
       >
         Huỷ
       </button>
@@ -206,10 +206,10 @@ export function NutDuyetDon({ id }: { id: string }) {
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      <button type="button" disabled={dang} onClick={() => xu(true)} className="btn px-3 py-1 text-xs disabled:opacity-50">
+      <button type="button" disabled={dang} onClick={() => xu(true)} className="btn btn-gon disabled:opacity-50">
         Duyệt
       </button>
-      <button type="button" disabled={dang} onClick={() => xu(false)} className="btn px-3 py-1 text-xs disabled:opacity-50">
+      <button type="button" disabled={dang} onClick={() => xu(false)} className="btn btn-gon disabled:opacity-50">
         Không duyệt
       </button>
       {loi && <span className="block w-full text-right text-xs text-amber-800">{loi}</span>}

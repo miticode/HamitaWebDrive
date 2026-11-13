@@ -6,6 +6,7 @@ import { batBuocDangNhap, batBuocQuyen, lapHopDong, xemHopDong } from "@/lib/phi
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { DA_CHOT, KHA_NANG } from "@/lib/khachTiemNangChung";
+import { Chip } from "../Chip";
 import { NutSuaTiemNang, NutThemTiemNang } from "./FormTiemNang";
 
 export const dynamic = "force-dynamic";
@@ -56,15 +57,12 @@ export default async function KhachTiemNangPage({ searchParams }: Props) {
       bat ? "border-accent bg-accent-soft text-accent" : "border-line text-fg-muted hover:border-line-strong"
     }`;
 
-  /* Khả năng càng gần chốt càng đậm — đọc bảng là thấy ngay ai sắp thành khách thật. */
-  const mauKhaNang = (k: string) =>
-    k === DA_CHOT
-      ? "text-emerald-700"
-      : k === "Chờ chốt"
-        ? "font-medium text-accent"
-        : k === "Dò giá"
-          ? "text-fg-faint"
-          : "text-fg-muted";
+  /*
+    Khả năng chốt theo đúng nghĩa màu dùng chung (xem Chip.tsx): chốt rồi là
+    xanh, "Chờ chốt" là vàng — đó là người sale phải gọi ngay — còn bốn mức
+    đầu là trung tính, chưa đòi ai làm gì gấp.
+  */
+  const kieuKhaNang = (k: string) => (k === DA_CHOT ? "xong" : k === "Chờ chốt" ? "cho" : "thuong");
 
   const duocSua = lapHopDong(nguoi);
 
@@ -137,7 +135,9 @@ export default async function KhachTiemNangPage({ searchParams }: Props) {
                   </td>
                   <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{k.nguon ?? "—"}</td>
                   <td className="min-w-40 px-4 py-2.5">{k.nhuCau ?? "—"}</td>
-                  <td className={`px-4 py-2.5 whitespace-nowrap ${mauKhaNang(k.khaNang)}`}>{k.khaNang}</td>
+                  <td className="px-4 py-2.5 whitespace-nowrap">
+                    <Chip chu={k.khaNang} kieu={kieuKhaNang(k.khaNang)} />
+                  </td>
                   <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{k.tinhTrang ?? "—"}</td>
                   <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
                     {tenNV(bangTen, k.phuTrachMaNV) ?? "—"}
@@ -182,7 +182,7 @@ export default async function KhachTiemNangPage({ searchParams }: Props) {
               ? "Không còn khách nào đang theo."
               : loc === "da-chot"
                 ? "Chưa có khách tiềm năng nào chốt."
-                : "Chưa có khách tiềm năng nào."}
+                : "Chưa có khách tiềm năng nào. Bấm “Thêm khách tiềm năng” để ghi người đầu tiên."}
           </p>
         )}
       </div>

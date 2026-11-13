@@ -148,7 +148,20 @@ export default async function KhachHangPage({ searchParams }: Props) {
             ))}
           </tbody>
         </table>
-        {ds.length === 0 && <p className="px-4 py-8 text-center text-sm text-fg-muted">Không có khách nào khớp.</p>}
+        {ds.length === 0 && (
+          <p className="px-4 py-8 text-center text-sm text-fg-muted">
+            {q || loc ? (
+              <>
+                Không có khách nào khớp.{" "}
+                <Link href="/quan-ly/khach-hang" className="text-accent underline underline-offset-2">
+                  Bỏ lọc
+                </Link>
+              </>
+            ) : (
+              "Chưa có khách nào. Bấm “Thêm khách” để ghi nhà đầu tiên."
+            )}
+          </p>
+        )}
       </div>
 
       {ds.length > hien.length && (

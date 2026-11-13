@@ -247,7 +247,7 @@ export function NutSuaTiemNang({ khach }: { khach: TiemNang }) {
   const [mo, setMo] = useState(false);
   return (
     <>
-      <button type="button" className="btn px-3 py-1 text-xs" onClick={() => setMo(true)}>
+      <button type="button" className="btn btn-gon" onClick={() => setMo(true)}>
         Sửa
       </button>
       {mo && <Khung khach={khach} dong={() => setMo(false)} />}

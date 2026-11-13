@@ -30,6 +30,21 @@ export default async function HeThongLayout({ children }: { children: React.Reac
     // Chấm công: CẢ TIỆM, không lọc theo vai trò nào. Đây là trang nhiều người
     // dùng nhất — mỗi người bấm hai lần mỗi ngày — nên để ngay đầu danh sách.
     { nhom: null, ten: "Chấm công", href: "/quan-ly/cham-cong" },
+    /*
+      Lịch chụp và Đầu việc lên ĐẦU, cạnh Chấm công — mục P2-4.
+
+      Trước đây hai mục này nằm trong nhóm "Hợp đồng – Công việc", cạnh mục
+      Hợp đồng mà Photo và Hậu kỳ không mở được: ba thứ họ dùng mỗi ngày bị
+      tách ra, phải cuộn qua tên nhóm kế toán mới thấy. Giờ ba mục dùng hàng
+      ngày của MỌI vai trò nằm trong tầm mắt.
+
+      Hai dòng cũ trong nhóm "Hợp đồng – Công việc" bỏ đi — để lại là một mục
+      hiện hai lần trong cùng thanh bên. Nhóm đó giờ chỉ còn mục Hợp đồng nên
+      đổi tên theo: một nhóm tên "… – Công việc" mà không chứa mục công việc
+      nào là đúng loại lỗi cả đợt soát này đi sửa.
+    */
+    { nhom: null, ten: "Lịch chụp", href: "/quan-ly/lich" },
+    { nhom: null, ten: "Đầu việc", href: "/quan-ly/cong-viec" },
     // Đơn từ và lương: AI CŨNG VÀO ĐƯỢC. Hai trang tự lọc theo người đang
     // đăng nhập — người thường chỉ thấy đơn và phiếu lương của chính mình,
     // quản lý thấy cả tiệm. Giấu khỏi thanh bên là nhân viên không biết đường
@@ -38,9 +53,7 @@ export default async function HeThongLayout({ children }: { children: React.Reac
     { nhom: "Nhân sự", ten: "Lương", href: "/quan-ly/luong" },
     // Hợp đồng: quản lý + sale. Lịch và đầu việc thì cả tiệm, nhưng đầu việc
     // chỉ hiện việc của chính người đang xem (xem trang cong-viec).
-    ...(xemHopDong(nguoi) ? [{ nhom: "Hợp đồng – Công việc", ten: "Hợp đồng", href: "/quan-ly/hop-dong" }] : []),
-    { nhom: "Hợp đồng – Công việc", ten: "Lịch chụp", href: "/quan-ly/lich" },
-    { nhom: "Hợp đồng – Công việc", ten: "Đầu việc", href: "/quan-ly/cong-viec" },
+    ...(xemHopDong(nguoi) ? [{ nhom: "Hợp đồng", ten: "Hợp đồng", href: "/quan-ly/hop-dong" }] : []),
     // Khách tiềm năng: quản lý + SALE. Đứng TRƯỚC Khách hàng vì đó là chỗ một
     // nhà bắt đầu — và vì sale không mở được mục Khách hàng (chỉ quản lý), nên
     // nếu để sau thì với sale nhóm này chỉ còn một mục nằm trơ.

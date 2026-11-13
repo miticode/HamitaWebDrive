@@ -6,6 +6,7 @@ import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { DON_DA_DUYET, DON_DANG_TAO, DON_KHONG_DUYET } from "@/lib/donTuChung";
+import { Chip } from "../Chip";
 import { NutDuyetDon, NutGuiDon, NutHuyDon } from "./FormDon";
 
 export const dynamic = "force-dynamic";
@@ -52,12 +53,9 @@ export default async function DonTuPage({ searchParams }: Props) {
       bat ? "border-accent bg-accent-soft text-accent" : "border-line text-fg-muted hover:border-line-strong"
     }`;
 
-  const mauTrangThai = (t: string | null) =>
-    t === DON_DANG_TAO
-      ? "font-medium text-amber-800"
-      : t === DON_KHONG_DUYET
-        ? "text-red-700"
-        : "text-fg-muted";
+  /* Chờ duyệt là việc đang treo; không duyệt là một lời từ chối — xem Chip.tsx. */
+  const kieuDon = (t: string | null) =>
+    t === DON_DANG_TAO ? "cho" : t === DON_KHONG_DUYET ? "hong" : "xong";
 
   return (
     <div>
@@ -126,8 +124,8 @@ export default async function DonTuPage({ searchParams }: Props) {
                       <span className="mt-0.5 block text-xs text-fg-muted">Quản lý: {d.ghiChu}</span>
                     )}
                   </td>
-                  <td className={`px-4 py-2.5 whitespace-nowrap ${mauTrangThai(d.trangThai)}`}>
-                    {d.trangThai ?? "—"}
+                  <td className="px-4 py-2.5 whitespace-nowrap">
+                    <Chip chu={d.trangThai} kieu={kieuDon(d.trangThai)} />
                     {d.ngayDuyet && (
                       <span className="block text-xs text-fg-faint tabular-nums">{ngayVN(d.ngayDuyet)}</span>
                     )}

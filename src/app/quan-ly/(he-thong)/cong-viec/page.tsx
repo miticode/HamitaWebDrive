@@ -132,7 +132,7 @@ export default async function CongViecPage({ searchParams }: Props) {
 
   return (
     <div>
-      <p className="eyebrow">Hợp đồng – Công việc</p>
+      <p className="eyebrow">Hằng ngày</p>
       <h1 className="mt-2 font-display text-3xl font-light">
         Đầu việc <span className="text-fg-faint tabular-nums">{ds.length}</span>
       </h1>
@@ -222,7 +222,16 @@ export default async function CongViecPage({ searchParams }: Props) {
             })}
           </tbody>
         </table>
-        {ds.length === 0 && <p className="px-4 py-8 text-center text-sm text-fg-muted">Không có đầu việc nào khớp bộ lọc.</p>}
+        {ds.length === 0 && (
+          <p className="px-4 py-8 text-center text-sm text-fg-muted">
+            Không có đầu việc nào khớp bộ lọc.{" "}
+            {(loc || tt !== "chua-xong") && (
+              <Link href="/quan-ly/cong-viec" className="text-accent underline underline-offset-2">
+                Về việc chưa xong
+              </Link>
+            )}
+          </p>
+        )}
       </div>
 
       {ds.length > hien.length && (

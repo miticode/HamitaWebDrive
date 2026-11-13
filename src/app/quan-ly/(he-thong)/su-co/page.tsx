@@ -4,6 +4,7 @@ import { getPrisma } from "@/lib/db";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { SU_CO_DA_XONG, SU_CO_DANG_TAO } from "@/lib/suCoChung";
+import { Chip } from "../Chip";
 import { NutDongSuCo, NutGhiSuCo, NutMoLaiSuCo } from "./FormSuCo";
 
 export const dynamic = "force-dynamic";
@@ -126,12 +127,8 @@ export default async function SuCoPage({ searchParams }: Props) {
                   <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
                     {tenNV(bangTen, s.nguoiGhiMaNV) ?? "—"}
                   </td>
-                  <td
-                    className={`px-4 py-2.5 whitespace-nowrap ${
-                      xong ? "text-fg-muted" : "font-medium text-amber-800"
-                    }`}
-                  >
-                    {s.trangThai ?? SU_CO_DANG_TAO}
+                  <td className="px-4 py-2.5 whitespace-nowrap">
+                    <Chip chu={s.trangThai ?? SU_CO_DANG_TAO} kieu={xong ? "xong" : "cho"} />
                   </td>
                   {quanTri && (
                     <td className="px-4 py-2.5 text-right">
@@ -145,7 +142,9 @@ export default async function SuCoPage({ searchParams }: Props) {
         </table>
         {ds.length === 0 && (
           <p className="px-4 py-8 text-center text-sm text-fg-muted">
-            {loc === "chua-xong" ? "Không có sự cố nào đang treo." : "Chưa có sự cố nào."}
+            {loc === "chua-xong"
+              ? "Không có sự cố nào đang treo."
+              : "Chưa có sự cố nào. Bấm “Ghi sự cố” khi có gì hỏng."}
           </p>
         )}
       </div>

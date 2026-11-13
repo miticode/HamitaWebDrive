@@ -5,6 +5,7 @@ import { MUI_GIO, tien } from "@/lib/constants";
 import { batBuocDangNhap, batBuocQuyen, laQuanTri, xemTienVaKhach } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
+import { Chip } from "../Chip";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { NutPhieuThu } from "../hop-dong/[id]/NutHopDong";
 
