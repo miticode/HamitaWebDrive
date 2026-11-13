@@ -73,7 +73,7 @@ export type LuotHomNay = {
 /** Lượt chấm của chính người này trong NGÀY HÔM NAY theo giờ studio. */
 export async function luotHomNay(maNV: string, caiDat: CaiDatCham): Promise<LuotHomNay> {
   const d = await getPrisma().chamCong.findFirst({
-    where: { maNV, ngay: homNayStudio(), matBenAppSheet: null },
+    where: { maNV: { equals: maNV, mode: "insensitive" }, ngay: homNayStudio(), matBenAppSheet: null },
     orderBy: { taoLuc: "desc" },
   });
   if (!d) return null;
@@ -111,7 +111,7 @@ export async function vaoCa(
   const ngay = homNayStudio();
 
   const da = await prisma.chamCong.findFirst({
-    where: { maNV, ngay, matBenAppSheet: null },
+    where: { maNV: { equals: maNV, mode: "insensitive" }, ngay, matBenAppSheet: null },
     select: { id: true, gioVao: true },
   });
   if (da?.gioVao) return { ok: true, daCham: true };
@@ -151,7 +151,7 @@ export async function raCa(
   const ngay = homNayStudio();
 
   const d = await prisma.chamCong.findFirst({
-    where: { maNV, ngay, matBenAppSheet: null },
+    where: { maNV: { equals: maNV, mode: "insensitive" }, ngay, matBenAppSheet: null },
     select: { id: true, gioVao: true },
   });
   if (!d?.gioVao) return { loi: "Chưa bấm vào ca hôm nay nên chưa ra ca được." };
@@ -207,13 +207,35 @@ export async function bangCongThang(
     },
   });
 
+  /*
+    GỘP THEO MÃ ĐÃ HẠ CHỮ THƯỜNG.
+
+    Bên AppSheet cùng một người có thể mang hai cách viết mã: tháng 10/2026 có
+    "npk1211" 18 lượt và "Npk1211" 13 lượt — cùng một người. Gộp theo chuỗi
+    nguyên văn là tách họ làm hai dòng, mỗi dòng nửa số ngày công, và tới đợt 5
+    là tính lương sai.
+
+    Cả hệ thống đã tra mã nhân viên theo cách này rồi (`tenTheoMaNV` trong
+    hopDongMayChu.ts cũng hạ chữ thường) — đây chỉ là theo cho đúng.
+
+    Cách viết hiện ra bảng là cách viết XUẤT HIỆN NHIỀU NHẤT, để nhìn giống
+    những gì người ta quen thấy bên AppSheet.
+  */
   const theoNguoi = new Map<string, DongBangCong>();
+  const demCachViet = new Map<string, Map<string, number>>();
+
   for (const d of ds) {
-    const ma = d.maNV ?? "(không rõ)";
+    const nguyenVan = d.maNV ?? "(không rõ)";
+    const ma = nguyenVan.toLowerCase();
+
+    const cv = demCachViet.get(ma) ?? new Map<string, number>();
+    cv.set(nguyenVan, (cv.get(nguyenVan) ?? 0) + 1);
+    demCachViet.set(ma, cv);
+
     let r = theoNguoi.get(ma);
     if (!r) {
       r = {
-        maNV: ma,
+        maNV: nguyenVan,
         soLuot: 0,
         soNgayCong: 0,
         soGio: 0,
@@ -234,11 +256,15 @@ export async function bangCongThang(
     if (noi.kieu === "khong-ro") r.soLanKhongRoViTri++;
   }
 
-  return [...theoNguoi.values()]
-    .map((r) => ({
-      ...r,
-      soNgayCong: Math.round(r.soNgayCong * 100) / 100,
-      soGio: Math.round(r.soGio * 100) / 100,
-    }))
+  return [...theoNguoi.entries()]
+    .map(([ma, r]) => {
+      const cachViet = [...(demCachViet.get(ma) ?? new Map())].sort((a, b) => b[1] - a[1])[0]?.[0];
+      return {
+        ...r,
+        maNV: cachViet ?? r.maNV,
+        soNgayCong: Math.round(r.soNgayCong * 100) / 100,
+        soGio: Math.round(r.soGio * 100) / 100,
+      };
+    })
     .sort((a, b) => b.soNgayCong - a.soNgayCong);
 }
