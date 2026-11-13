@@ -159,7 +159,7 @@ không phải "dùng song song tuỳ ý".
 
 Thứ tự xếp theo **cái gì chặn đường tắt AppSheet**, không theo cái gì dễ làm.
 
-### Đợt 3 — Sổ quỹ đủ hai chiều · ~1 tuần
+### ✅ Đợt 3 — Sổ quỹ đủ hai chiều · XONG 13/11/2026
 
 Web có Thu mà không có Chi nên không ra được số dư. Xong đợt này là phần tiền
 của tiệm sống được hoàn toàn trên web.
@@ -167,8 +167,15 @@ của tiệm sống được hoàn toàn trên web.
 - Bảng `ChiTieu` (1.397 dòng) — loại chi, tài khoản, người nhận, duyệt
 - Trang **Sổ quỹ**: thu − chi theo kỳ, theo tài khoản, số dư
 - Ảnh chứng từ (theo quyết định 3a)
-- `KyBaoCao` (27 dòng) — mốc chốt sổ
-- Script chép 1.397 dòng Chi
+- ~~Script chép 1.397 dòng Chi~~ → làm thẳng trong lịch chép đêm (mục 7 của
+  `dongBoAppSheet.ts`), khỏi script riêng
+
+**Đã đối chiếu sau lượt chép đầu tiên:** 1.397 dòng, tổng **6.419.308.436đ** —
+khớp tuyệt đối với bên AppSheet, 0 dòng lệch. Lượt chép đó cũng kéo luôn 53
+ngày bị bỏ: thêm 132 khách, 162 hợp đồng, 331 phiếu thu, 634 đầu việc.
+
+**Còn nợ ở đợt này:** `KyBaoCao` (27 dòng, mốc chốt sổ) chưa làm — sổ quỹ hiện
+cộng theo tháng dương lịch, chưa theo kỳ của tiệm.
 
 ### Đợt 4 — Chấm công · ~1,5 tuần
 
