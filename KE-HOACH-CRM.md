@@ -267,6 +267,34 @@ lấy mức của kỳ gần nhất). Và hai người ăn lương theo sản ph
 LÃNH ĐẠO) và `lhmt2410` (Makeup) — **chưa bao giờ chấm công**, lương tháng
 luôn 0; máy chỉ tạo dòng cho họ khi tháng đó có đầu việc hoặc đánh giá.
 
+### 🔸 Chạy thử với tiệm — bắt đầu 13/11/2026
+
+Anh chốt: cho tiệm dùng thử **chấm công** và **đơn từ** vài ngày trước khi đi
+tiếp. Đúng chỗ lần chuyển trước thất bại — không phải thiếu tính năng mà là
+không ai đổi thói quen.
+
+**Hàng rào đã dựng trước:** một người một ngày chỉ đếm một lần
+(`motDongMoiNgay`). Ai chấm cả hai nơi cùng ngày thì ngày đó vẫn chỉ tính một
+công, giữ bản của AppSheet. Không có hàng rào này là ngày công nhân đôi và
+lương trả dư mà không ai nhìn ra.
+
+**Trạng thái tài khoản (đo 13/11):** 16 người đang làm, **13 đã từng đăng
+nhập**. Ba chỗ hổng phải vá trước khi báo cả tiệm:
+
+| Người | Thiếu gì |
+|---|---|
+| Lê Thị Hoàng Yến | chưa cấp mật khẩu |
+| Mỹ Tiên | chưa cấp mật khẩu |
+| Nguyễn Tấn Đạt | **thiếu mã nhân viên** → không chấm công được |
+
+Còn `Lmt2906` chấm công đều đặn nhưng không có trong bảng Nhân viên — chưa rõ
+là ai.
+
+**Trong lúc thử, AppSheet vẫn là bản gốc.** Web hỏng thì chấm bên đó, không
+mất gì.
+
+---
+
 ### Đợt 6 — Phần nhỏ còn lại · ~3–4 buổi
 
 - **Thêm/sửa khách hàng độc lập** (vá lỗ hiện tại)
