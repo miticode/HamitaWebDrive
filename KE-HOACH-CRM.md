@@ -205,9 +205,17 @@ tuyệt đối với AppSheet.
 **Phân bố vị trí sau khi khai đủ hai toạ độ:** tại tiệm 59,9% (Wedding House
 39,3% + Hami Baby 20,6%), ngoài tiệm 34,7%, không rõ vị trí 5,5%.
 
-**Còn nợ ở đợt này:** ảnh chấm công cũ (675 tấm) nằm trong thư mục
-`Chấm công_Images` của người bán, chưa bao giờ được chia sẻ — chép sang không
-được, chỉ giữ lại đường dẫn.
+**Ảnh chấm công cũ: KHÔNG lấy.** 675 tấm nằm trong thư mục `Chấm công_Images`
+của người bán, chưa bao giờ được chia sẻ. Anh chốt 13/11/2026: *"ảnh chấm công
+sẽ là ảnh mới hoàn toàn"* — nên **không phải đi xin người bán nữa**, chỉ giữ
+lại đường dẫn cũ cho đủ dữ liệu.
+
+**Giờ ra (anh yêu cầu 13/11/2026):** web đối chiếu giờ ra với giờ kết thúc và
+đếm số giờ còn thiếu so với một ngày đầy đủ (8 giờ, suy từ 08:30 → 18:00 trừ
+1,5 giờ nghỉ). Đo trên dữ liệu thật: **về sớm gần như bằng 0** (0 lượt tháng
+10, 1 lượt tháng 11) — 5.823/6.110 lượt ra ca trong khung 18h, **0 lượt trước
+18h**. Nhưng vẫn thiếu 100 giờ tháng 10 và 77 giờ tháng 11, tức **giờ thiếu
+đến từ VÀO TRỄ chứ không phải về sớm**, khớp với con số 35% lượt trễ giờ.
 
 ### Đợt 5 — Đơn từ và lương · ~1,5 tuần
 
