@@ -33,6 +33,16 @@ function lucVN(d: Date | null): string {
  * `taoLuc` của chúng là lúc web chép về, không phải lúc sự cố xảy ra, và hiện
  * ra là nói sai.
  */
+/*
+  "Chưa xong" phải NHẬN CẢ dòng trạng thái trống. 8/21 dòng chép từ AppSheet
+  không có trạng thái (bên đó chỉ 13/22 dòng có), và trong Postgres
+  `NULL != 'Đã xong'` không phải đúng — viết `NOT: { trangThai: "Đã xong" }`
+  là 8 dòng đó rơi khỏi CẢ HAI bộ lọc, đo được: 11 + 2 ≠ 21.
+*/
+const CHUA_XONG: Prisma.SuCoWhereInput = {
+  OR: [{ trangThai: null }, { trangThai: { not: SU_CO_DA_XONG } }],
+};
+
 export default async function SuCoPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
   const quanTri = laQuanTri(nguoi);
@@ -41,11 +51,7 @@ export default async function SuCoPage({ searchParams }: Props) {
 
   const where: Prisma.SuCoWhereInput = {
     matBenAppSheet: null,
-    ...(loc === "chua-xong"
-      ? { NOT: { trangThai: SU_CO_DA_XONG } }
-      : loc === "da-xong"
-        ? { trangThai: SU_CO_DA_XONG }
-        : {}),
+    ...(loc === "chua-xong" ? CHUA_XONG : loc === "da-xong" ? { trangThai: SU_CO_DA_XONG } : {}),
   };
 
   const prisma = getPrisma();
@@ -55,7 +61,7 @@ export default async function SuCoPage({ searchParams }: Props) {
       orderBy: [{ xongLuc: { sort: "desc", nulls: "first" } }, { taoLuc: "desc" }],
       take: 300,
     }),
-    prisma.suCo.count({ where: { matBenAppSheet: null, NOT: { trangThai: SU_CO_DA_XONG } } }),
+    prisma.suCo.count({ where: { matBenAppSheet: null, ...CHUA_XONG } }),
     tenTheoMaNV(),
   ]);
 

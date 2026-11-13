@@ -325,6 +325,26 @@ không lập nổi một hợp đồng nào. `kiemHopDongMoi` nhận danh sách 
 số; phía máy chủ truyền bảng thật vào, nên studio thêm một bước mới là web
 nhận ngay thay vì từ chối.
 
+**Chép xong 13/11, đối chiếu khớp tuyệt đối:** khách tiềm năng 35/35 (bảy danh
+mục khớp từng mục: nguồn, nhu cầu, khả năng, tình trạng, loại cskh, phụ trách,
+địa chỉ; bốn phép đếm cột cũng khớp), bước hợp đồng 18/18, tài liệu 7/7, sự cố
+21 + 1 dòng thiếu STT bị bỏ = 22.
+
+**Bảng 18 bước bên AppSheet khớp y hệt `CAC_BUOC` em viết hồi 21/09** — thiếu 0,
+lạ 0, và **0 hợp đồng** nào mang bước ngoài bảng. Thêm được một thứ code chưa
+có: **trách nhiệm** từng bước (Sale 7 bước, Nhiếp ảnh 4, còn 7 bước để trống).
+
+**Lỗi em để lọt rồi tự tìm ra:** trang Sổ sự cố lọc "chưa xong" bằng
+`NOT: { trangThai: "Đã xong" }` — trong Postgres `NULL != 'Đã xong'` không phải
+đúng, nên **8/21 dòng không có trạng thái rơi khỏi CẢ HAI bộ lọc**: 11 + 2 ≠ 21.
+Đúng cái bẫy đã tránh được ở cột `khaNang` (để NOT NULL) nhưng lại quên ở đây.
+Sửa thành `OR: [{ trangThai: null }, { không phải "Đã xong" }]`, đo lại 19 + 2 = 21.
+
+**Bảng CRM bên AppSheet đã bỏ hoang:** ngày hẹn gọi lại mới nhất là **10/04/2026**
+— bảy tháng không ai đụng. Nhưng hồi còn chạy thì nó chạy tốt: **16/17** người
+"Đã chốt" có số điện thoại giờ là khách hàng thật trong bảng Khách hàng. 13/15
+người đang theo đều đã quá hạn gọi lại, và 4 người không có số lẫn địa chỉ.
+
 **Hai bảng chép về nhưng dữ liệu kém — nói thẳng:**
 
 - `TaiLieu` 7 dòng **đều là video YouTube dạy dùng chính app AppSheet** — thứ
