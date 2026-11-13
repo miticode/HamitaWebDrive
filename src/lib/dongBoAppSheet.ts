@@ -47,6 +47,11 @@ export type KetQuaDongBo = {
     danhGia: SoDongBo;
     kyLuong: SoDongBo;
     luongNV: SoDongBo;
+    /* Bon bang nho con lai — dot 6 (13/11/2026). */
+    tiemNang: SoDongBo;
+    buoc: SoDongBo;
+    taiLieu: SoDongBo;
+    suCo: SoDongBo;
   };
   giay: number;
 };
@@ -161,7 +166,7 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     return {
       khongDoi: true,
       dichVuThem: 0,
-      bang: { khachHang: KHONG, hopDong: KHONG, chiTiet: KHONG, phieuThu: KHONG, lich: KHONG, congViec: KHONG, chi: KHONG, chamCong: KHONG, donTu: KHONG, danhGia: KHONG, kyLuong: KHONG, luongNV: KHONG },
+      bang: { khachHang: KHONG, hopDong: KHONG, chiTiet: KHONG, phieuThu: KHONG, lich: KHONG, congViec: KHONG, chi: KHONG, chamCong: KHONG, donTu: KHONG, danhGia: KHONG, kyLuong: KHONG, luongNV: KHONG, tiemNang: KHONG, buoc: KHONG, taiLieu: KHONG, suCo: KHONG },
       giay: Math.round((Date.now() - batDau) / 1000),
     };
   }
@@ -606,10 +611,153 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     bay,
   );
 
+  /* 13–16. Bon bang nho con lai (them 13/11/2026 — dot 6). */
+
+  /* 13. Khach tiem nang — bang "CRM". Khoa la cot "CRM", mot timestamp. */
+  const nguonTN = bang("CRM").flatMap((d) => {
+    const g = giaTri(d["CRM"]);
+    const m = g instanceof Date && !isNaN(g.getTime()) ? g.toISOString() : ma(d["CRM"]);
+    const ten = chu(d["Người liên hệ"]);
+    if (!m || !ten) return [];
+    const sdt = chu(d["Phone"]);
+    return [{
+      ma: m,
+      data: {
+        ngay: ngay(d["Ngày"]),
+        tenNguoi: ten,
+        soDienThoai: sdt ? chuanSoDienThoai(sdt) || sdt : null,
+        nguon: chu(d["Nguồn"]),
+        nhuCau: chu(d["Nhu cầu"]),
+        diaChi: chu(d["Địa chỉ"]),
+        phuTrachMaNV: chu(d["Người phụ trách"]),
+        /* Cot nay 35/35 dong co that; `?? ...` chi la luoi do neu AppSheet them dong rong. */
+        khaNang: chu(d["Khả năng"]) ?? "Tiềm năng",
+        tinhTrang: chu(d["Tình trạng"]),
+        ghiChu: chu(d["Ghi chú"]),
+        loaiCskh: chu(d["Loại cskh"]),
+        lichSuCskh: chu(d["Lịch sử cskh"]),
+        ngayLienHeLai: ngay(d["Ngày cần liên hệ lại"]),
+        nguoiTaoMaNV: chu(d["Người tạo"]),
+        taoLuc: luc(d["Ngày tạo"]),
+      },
+    }];
+  });
+  const tiemNang = await chepBang(
+    prisma.khachTiemNang as unknown as UyQuyen, "maAppSheet", nguonTN,
+    (await prisma.khachTiemNang.findMany({ select: { id: true, maAppSheet: true, bamAppSheet: true, matBenAppSheet: true } }))
+      .map((c) => ({ ...c, ma: c.maAppSheet })),
+    bay,
+  );
+
+  /*
+    14. Muoi tam buoc hop dong — bang "Trạng thái".
+
+    KHONG dung `chepBang`: bang nay khong co dau van tay, va cung khong duoc
+    phep danh dau "mat ben AppSheet" roi an di. Mot buoc bi an la 2.541 hop
+    dong mat ten trang thai. Chi THEM buoc moi va SUA mo ta; buoc bien mat ben
+    AppSheet thi de yen tren web.
+  */
+  const buocCo = new Map(
+    (await prisma.buocHopDong.findMany({ select: { id: true, ten: true, truoc: true, sau: true, trachNhiem: true, moTa: true, thuTu: true } }))
+      .map((b) => [b.ten, b]),
+  );
+  let buocThem = 0;
+  let buocSua = 0;
+  let buocBoQua = 0;
+  for (const d of bang("Trạng thái")) {
+    const ten = ma(d["Trạng thái"]);
+    if (!ten) continue;
+    const so = Number(/^\s*(\d+)/.exec(ten)?.[1]);
+    const data = {
+      /* Buoc khong mo dau bang so thi xep cuoi, khong tron vao giua. */
+      thuTu: Number.isFinite(so) ? so : 999,
+      truoc: ma(d["Trạng thái trước"]),
+      sau: ma(d["Trạng thái sau"]),
+      trachNhiem: chu(d["Trách nhiệm"]),
+      moTa: chu(d["Mô tả"]),
+    };
+    const cu = buocCo.get(ten);
+    if (!cu) {
+      await prisma.buocHopDong.create({ data: { ten, ...data } });
+      buocThem++;
+    } else if (
+      cu.thuTu !== data.thuTu || cu.truoc !== data.truoc || cu.sau !== data.sau ||
+      cu.trachNhiem !== data.trachNhiem || cu.moTa !== data.moTa
+    ) {
+      await prisma.buocHopDong.update({ where: { id: cu.id }, data });
+      buocSua++;
+    } else buocBoQua++;
+  }
+  const buoc: SoDongBo = { them: buocThem, sua: buocSua, mat: 0, boQua: buocBoQua };
+
+  /* 15. Tai lieu — khoa la cot "id" ben AppSheet. */
+  const nguonTL = bang("Tài liệu").flatMap((d) => {
+    const m = ma(d["id"]);
+    const ten = chu(d["Tên Tài Liệu"]);
+    if (!m || !ten) return [];
+    const lan = Number(giaTri(d["Lần Ban Hành"]));
+    return [{
+      ma: m,
+      data: {
+        maTaiLieu: ma(d["Mã Tài Liệu"]),
+        phongBan: chu(d["Phòng Ban"]),
+        loai: chu(d["Loại Tài Liệu"]),
+        ten,
+        lanBanHanh: Number.isFinite(lan) && lan > 0 ? Math.round(lan) : 1,
+        ngayBanHanh: ngay(d["Ngày Ban Hành"]),
+        anhAppSheet: chu(d["Hình Ảnh"]),
+        link: chu(d["Link"]),
+        phanPhoi: chu(d["Phân Phối"]),
+        ghiChu: chu(d["Ghi chú"]),
+        tinhTrang: chu(d["Tình Trạng"]),
+        ngayCapNhat: ngay(d["Ngày Cập Nhật"]),
+        nguoiCapNhatMaNV: chu(d["Người Cập Nhật"]),
+      },
+    }];
+  });
+  const taiLieu = await chepBang(
+    prisma.taiLieu as unknown as UyQuyen, "maAppSheet", nguonTL,
+    (await prisma.taiLieu.findMany({ select: { id: true, maAppSheet: true, bamAppSheet: true, matBenAppSheet: true } }))
+      .map((c) => ({ ...c, ma: c.maAppSheet })),
+    bay,
+  );
+
+  /*
+    16. So su co — bang "Log".
+
+    Khoa la cot "STT"; 1/22 dong khong co STT nen bi bo, dem vao `boQua`. Ba
+    cot thoi gian ben AppSheet rong het, nen `taoLuc` cua dong chep la luc CHEP
+    chu khong phai luc su co xay ra — dung tin no voi dong mang `bamAppSheet`.
+  */
+  let suCoBoQua = 0;
+  const nguonSC = bang("Log").flatMap((d) => {
+    const m = ma(d["STT"]);
+    if (!m) {
+      suCoBoQua++;
+      return [];
+    }
+    return [{
+      ma: m,
+      data: {
+        vanDe: chu(d["Vấn đề"]),
+        thongTin: chu(d["Thông tin"]),
+        trangThai: chu(d["Trạng thái"]),
+        xuLy: chu(d["Xử lý"]),
+      },
+    }];
+  });
+  const suCo = await chepBang(
+    prisma.suCo as unknown as UyQuyen, "maAppSheet", nguonSC,
+    (await prisma.suCo.findMany({ select: { id: true, maAppSheet: true, bamAppSheet: true, matBenAppSheet: true } }))
+      .map((c) => ({ ...c, ma: c.maAppSheet })),
+    bay,
+    suCoBoQua,
+  );
+
   const kq: KetQuaDongBo = {
     khongDoi: false,
     dichVuThem: dvMoi.length,
-    bang: { khachHang: kh, hopDong: hd, chiTiet: ct, phieuThu: thu, lich, congViec, chi, chamCong, donTu, danhGia, kyLuong, luongNV },
+    bang: { khachHang: kh, hopDong: hd, chiTiet: ct, phieuThu: thu, lich, congViec, chi, chamCong, donTu, danhGia, kyLuong, luongNV, tiemNang, buoc, taiLieu, suCo },
     giay: Math.round((Date.now() - batDau) / 1000),
   };
 
@@ -631,6 +779,10 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     danhGia: "đánh giá",
     kyLuong: "kỳ lương",
     luongNV: "dòng lương",
+    tiemNang: "khách tiềm năng",
+    buoc: "bước hợp đồng",
+    taiLieu: "tài liệu",
+    suCo: "sự cố",
   } as const;
   for (const [k, s] of Object.entries(kq.bang) as [keyof typeof CHU, SoDongBo][]) {
     if (s.them) so[`${CHU[k]} thêm`] = s.them;

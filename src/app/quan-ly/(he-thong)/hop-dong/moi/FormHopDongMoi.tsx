@@ -35,12 +35,18 @@ export function FormHopDongMoi({
   homNay,
   laQuanLy,
   tenNguoiLap,
+  cacBuoc = CAC_BUOC,
   onThoi,
   onXong,
 }: {
   dichVu: DichVuGon[];
   giaHangMuc: GiaGon[];
   homNay: string;
+  /**
+   * Mười tám bước, đọc từ bảng `BuocHopDong` (đợt 6). Mặc định là bảng cứng
+   * `CAC_BUOC` — ô chọn không được phép rỗng dù bảng kia chưa chép.
+   */
+  cacBuoc?: readonly string[];
   /** Quản lý lập phiếu thu thì ghi thẳng "đã thu"; sale thì phiếu nằm chờ duyệt. */
   laQuanLy: boolean;
   tenNguoiLap: string;
@@ -322,7 +328,7 @@ export function FormHopDongMoi({
           </O>
           <O nhan="Trạng thái">
             <select value={trangThai} onChange={(e) => setTtTuChon(e.target.value)} className="input">
-              {(moHetBuoc ? CAC_BUOC : BUOC_MOI_LAP).map((b) => (
+              {(moHetBuoc ? cacBuoc : BUOC_MOI_LAP).map((b) => (
                 <option key={b} value={b}>
                   {b}
                 </option>

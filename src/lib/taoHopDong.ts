@@ -1,6 +1,7 @@
 import { Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/db";
 import { MUI_GIO } from "@/lib/constants";
+import { docCacBuoc } from "@/lib/buocHopDong";
 import {
   kiemHopDongMoi,
   ngayVN,
@@ -252,7 +253,8 @@ export async function lapHopDongMoi(
   du: DuLieuHopDongMoi,
   nguoi: NguoiLap,
 ): Promise<{ loi: string } | { id: string; maHD: string }> {
-  const kq = kiemHopDongMoi(du);
+  /* Bước hợp đồng đọc từ database (đợt 6) — studio thêm bước mới thì web nhận ngay. */
+  const kq = kiemHopDongMoi(du, await docCacBuoc());
   if ("loi" in kq) return kq;
 
   const luc = new Date();

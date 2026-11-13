@@ -15,10 +15,23 @@ export default async function NoiQuyPage() {
   const nguoi = await batBuocDangNhap();
   const quanTri = laQuanTri(nguoi);
 
-  const ds = await getPrisma().noiQuy.findMany({
-    where: quanTri ? {} : { dangApDung: true },
-    orderBy: [{ dangApDung: "desc" }, { thuTu: "asc" }],
-  });
+  const prisma = getPrisma();
+  const [ds, taiLieu] = await Promise.all([
+    prisma.noiQuy.findMany({
+      where: quanTri ? {} : { dangApDung: true },
+      orderBy: [{ dangApDung: "desc" }, { thuTu: "asc" }],
+    }),
+    /*
+      Tài liệu nội bộ — bảng "Tài liệu" bên AppSheet (7 dòng), chép về ở đợt 6.
+      Đặt ở ĐÂY chứ không dựng trang riêng: 7 dòng không đủ một trang, mà người
+      vào đọc nội quy cũng chính là người cần mấy tài liệu này.
+    */
+    prisma.taiLieu.findMany({
+      where: { matBenAppSheet: null },
+      orderBy: [{ maTaiLieu: "asc" }],
+      select: { id: true, maTaiLieu: true, ten: true, loai: true, link: true, tinhTrang: true },
+    }),
+  ]);
 
   return (
     <div className="max-w-3xl">
@@ -47,6 +60,45 @@ export default async function NoiQuyPage() {
           ))}
           {ds.length === 0 && <li className="px-4 py-8 text-center text-fg-muted">Chưa có nội quy nào.</li>}
         </ul>
+      )}
+
+      {taiLieu.length > 0 && (
+        <section className="mt-10">
+          <h2 className="font-display text-xl font-light">Tài liệu nội bộ</h2>
+          <ul className="mt-4 divide-y divide-line rounded-md border border-line bg-bg-raised text-sm">
+            {taiLieu.map((t) => (
+              <li key={t.id} className="px-4 py-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <span className="min-w-0">
+                    {t.link ? (
+                      <a
+                        href={t.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-accent"
+                      >
+                        {t.ten}
+                      </a>
+                    ) : (
+                      t.ten
+                    )}
+                  </span>
+                  <span className="shrink-0 text-xs text-fg-faint tabular-nums">{t.maTaiLieu ?? ""}</span>
+                </div>
+                {t.loai && <p className="mt-0.5 text-xs text-fg-faint">{t.loai}</p>}
+              </li>
+            ))}
+          </ul>
+          {/*
+            Bảy tài liệu này đều là video dạy dùng CHÍNH app AppSheet. Nói thẳng
+            ra đây, để không ai mở lên rồi tưởng đó là hướng dẫn dùng web.
+          */}
+          <p className="mt-2 text-xs leading-relaxed text-fg-faint">
+            Chép từ AppSheet. Bảy mục này hướng dẫn dùng <span className="text-fg-muted">app
+            AppSheet cũ</span>, không phải trang web này — hướng dẫn dùng web nằm ở trang Quản lý
+            album ảnh.
+          </p>
+        </section>
       )}
     </div>
   );

@@ -24,10 +24,13 @@ export function FormSuaHopDong({
   maHD,
   dichVu,
   banDau,
+  cacBuoc = CAC_BUOC,
 }: {
   id: string;
   maHD: string;
   dichVu: DichVuGon[];
+  /** Mười tám bước đọc từ bảng `BuocHopDong` (đợt 6); mặc định là bảng cứng. */
+  cacBuoc?: readonly string[];
   banDau: {
     tenKhach: string;
     loaiDV: string;
@@ -121,9 +124,9 @@ export function FormSuaHopDong({
           <O nhan="Ngày đặt">
             <input type="date" value={ngayDat} onChange={(e) => setNgayDat(e.target.value)} className="input" />
           </O>
-          <O nhan="Trạng thái" chu="Đủ 18 bước như bên AppSheet.">
+          <O nhan="Trạng thái" chu={`Đủ ${cacBuoc.length} bước như bên AppSheet.`}>
             <select value={trangThai} onChange={(e) => setTrangThai(e.target.value)} className="input">
-              {CAC_BUOC.map((b) => (
+              {cacBuoc.map((b) => (
                 <option key={b} value={b}>
                   {b}
                 </option>

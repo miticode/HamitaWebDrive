@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { MUI_GIO } from "@/lib/constants";
 import { batBuocDangNhap, batBuocQuyen, lapHopDong } from "@/lib/phienNhanVien";
+import { docCacBuoc } from "@/lib/buocHopDong";
 import { FormHopDongMoi } from "./FormHopDongMoi";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +35,7 @@ export default async function LapHopDongPage() {
   batBuocQuyen(lapHopDong(nguoi));
 
   const prisma = getPrisma();
-  const [dichVu, giaHangMuc] = await Promise.all([
+  const [dichVu, giaHangMuc, cacBuoc] = await Promise.all([
     prisma.dichVu.findMany({
       where: { dangDung: true },
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
@@ -44,6 +45,7 @@ export default async function LapHopDongPage() {
       orderBy: { taoLuc: "asc" },
       select: { dichVuId: true, hangMuc: true, donGia: true },
     }),
+    docCacBuoc(),
   ]);
 
   return (
@@ -63,6 +65,7 @@ export default async function LapHopDongPage() {
         homNay={homNay()}
         laQuanLy={nguoi.vaiTro === "quan-tri"}
         tenNguoiLap={nguoi.ten}
+        cacBuoc={cacBuoc}
       />
     </div>
   );

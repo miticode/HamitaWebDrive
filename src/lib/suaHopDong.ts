@@ -1,4 +1,5 @@
 import { getPrisma } from "@/lib/db";
+import { docCacBuoc } from "@/lib/buocHopDong";
 import {
   kiemPhieuThu,
   kiemSuaHopDong,
@@ -80,7 +81,7 @@ export async function suaHopDong(
   du: DuLieuSuaHopDong,
   nguoi: NguoiLap,
 ): Promise<{ loi: string } | { ok: true }> {
-  const kq = kiemSuaHopDong(du);
+  const kq = kiemSuaHopDong(du, await docCacBuoc());
   if ("loi" in kq) return kq;
 
   const prisma = getPrisma();

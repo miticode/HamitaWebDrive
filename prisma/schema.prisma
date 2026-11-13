@@ -221,7 +221,7 @@ model MucXong {
   ///
   /// Luu dang DateTime nhung CHI DUNG PHAN NGAY (dat 00:00 gio studio). Khach
   /// hen "ngay 20" chu khong hen "10 gio sang ngay 20".
-  hanLay    DateTime?
+  hanLay DateTime?
 
   gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
 
@@ -432,8 +432,8 @@ model NhanVien {
   /// Nhan vien tu viet o "Tai khoan cua toi" (anh yeu cau 25/09/2026).
   gioiThieu     String?
 
-  taoLuc      DateTime  @default(now())
-  capNhatLuc  DateTime  @updatedAt
+  taoLuc     DateTime @default(now())
+  capNhatLuc DateTime @updatedAt
 
   phien PhienDangNhap[]
   anh   AnhNhanVien?
@@ -1126,4 +1126,137 @@ model AnhGioiThieu {
 
   @@unique([muc, galleryId, albumId])
   @@index([muc])
+}
+
+/// KHACH TIEM NANG — bang "CRM" ben AppSheet (35 dong, do 13/11/2026).
+///
+/// Nguoi moi hoi gia, chua thanh hop dong. Khac KhachHang o cho do: KhachHang
+/// la nha DA co ma khach (= so dien thoai) va thuong da co hop dong; day la
+/// danh sach sale con dang theo duoi, 7/35 dong chua co ca so dien thoai.
+///
+/// Khoa `maAppSheet` lay cot "CRM" — mot timestamp, 35/35 rieng.
+model KhachTiemNang {
+  id             String    @id @default(cuid())
+  maAppSheet     String?   @unique
+  /// Ngay ghi nhan moi quan tam (cot "Ngày").
+  ngay           String?
+  tenNguoi       String
+  soDienThoai    String?
+  /// "Facebook" | "Giới thiệu" | "Zalo" | "Page Hamita" — xem NGUON_KHACH.
+  nguon          String?
+  /// Khach muon chup gi: "Chụp hình cưới", "ảnh cổng"…
+  nhuCau         String?
+  diaChi         String?
+  /// Ma nhan vien dang theo khach nay (NhanVien.maNV). Chuoi chu, khong khoa
+  /// ngoai — cung ly do voi ChamCong: 2/7 ma ben AppSheet khong co trong bang
+  /// Nhan vien, khoa ngoai la mat luon dong do.
+  phuTrachMaNV   String?
+  /// Kha nang chot: "Tiềm năng" | "Dò giá" | "Tư vấn lần 1"… — xem KHA_NANG.
+  ///
+  /// BAT BUOC co (35/35 dong ben AppSheet deu co). De nullable la bo loc
+  /// "dang theo" dung `not: "Đã chốt"` se danh roi dong NULL — trong Postgres
+  /// `NULL != 'x'` khong phai dung, nen khach thieu muc nay bien mat khoi CA
+  /// HAI bo loc ma khong ai nhin ra.
+  khaNang        String    @default("Tiềm năng")
+  /// Viec dang lam voi khach: "Tư vấn" | "Báo giá" | "Chốt deal"… — xem TINH_TRANG.
+  tinhTrang      String?
+  ghiChu         String?
+  /// "Zalo" | "Phone" — nhan vien lien lac bang duong nao.
+  loaiCskh       String?
+  /// Nhat ky goi dien / nhan tin, moi lan them mot dong.
+  lichSuCskh     String?
+  /// Ngay hen goi lai. Thu dang gia nhat cua ca bang nay.
+  ngayLienHeLai  String?
+  nguoiTaoMaNV   String?
+  taoLuc         DateTime  @default(now())
+  suaLuc         DateTime  @updatedAt
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  @@index([ngayLienHeLai])
+  @@index([khaNang])
+}
+
+/// MUOI TAM BUOC CUA HOP DONG — bang "Trạng thái" ben AppSheet (18 dong).
+///
+/// Truoc 13/11/2026 danh sach nay nam CUNG trong `src/lib/hopDongChung.ts`
+/// (CAC_BUOC). Doi ten mot buoc la phai sua code va deploy lai, trong khi
+/// studio co the muon doi chu. Dua vao database de sua duoc tren web.
+///
+/// CODE VAN GIU CAC_BUOC lam ban du phong: bang nay rong (chua chep) thi form
+/// hop dong khong duoc phep tro nen trong tron.
+model BuocHopDong {
+  id         String   @id @default(cuid())
+  /// Ten buoc, dung nguyen chu ben AppSheet — 2.541 hop dong dang mang chuoi nay.
+  ten        String   @unique
+  /// So thu tu doc tu dau ten ("5. Đang Retouch" → 5). Khong doc duoc thi 999.
+  thuTu      Int      @default(999)
+  /// Buoc lien truoc, theo cot "Trạng thái trước". 11/18 dong co.
+  truoc      String?
+  /// Buoc lien sau, theo cot "Trạng thái sau".
+  sau        String?
+  /// "Sale" | "Nhiếp ảnh" — ai lo buoc nay.
+  trachNhiem String?
+  moTa       String?
+  taoLuc     DateTime @default(now())
+
+  @@index([thuTu])
+}
+
+/// TAI LIEU — bang "Tài liệu" ben AppSheet (7 dong).
+///
+/// Bay dong deu la video YouTube huong dan dung CHINH APP APPSHEET. Chep sang
+/// day de khong bo sot bang nao, nhung xem KE-HOACH-CRM.md doi 6: chung se
+/// thanh vo nghia ngay chuyen han, va cho cua tai lieu huong dan web la
+/// `docs/huong-dan-admin.html`.
+model TaiLieu {
+  id               String    @id @default(cuid())
+  maAppSheet       String?   @unique
+  /// "HDSD0101"…
+  maTaiLieu        String?
+  phongBan         String?
+  loai             String?
+  ten              String
+  lanBanHanh       Int       @default(1)
+  ngayBanHanh      String?
+  /// Anh bia, dia chi tren Drive cua AppSheet.
+  anhAppSheet      String?
+  /// Dia chi video hoac tep.
+  link             String?
+  phanPhoi         String?
+  ghiChu           String?
+  /// "Hiện hành" | da thay the.
+  tinhTrang        String?
+  ngayCapNhat      String?
+  nguoiCapNhatMaNV String?
+  taoLuc           DateTime  @default(now())
+  bamAppSheet      String?
+  matBenAppSheet   DateTime?
+}
+
+/// SO SU CO — bang "Log" ben AppSheet (22 dong).
+///
+/// Ba cot "Xử lý", "Thời gian tạo", "Thời gian xử lý" RONG HOAN TOAN ca 22
+/// dong, va chi 13/22 co noi van de gi. Nghia la khong dong nao biet minh xay
+/// ra luc nao. Chep de giu lai, nhung so nay chi thuc su song khi ghi tren web
+/// — luc do `taoLuc` va `xongLuc` moi co that.
+model SuCo {
+  id             String    @id @default(cuid())
+  maAppSheet     String?   @unique
+  /// Chuyen gi xay ra.
+  vanDe          String?
+  /// Chi tiet them.
+  thongTin       String?
+  /// "Đang tạo" | "Đã xong".
+  trangThai      String?
+  /// Da lam gi de xu ly.
+  xuLy           String?
+  /// Ma nhan vien ghi so.
+  nguoiGhiMaNV   String?
+  taoLuc         DateTime  @default(now())
+  xongLuc        DateTime?
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  @@index([trangThai])
 }

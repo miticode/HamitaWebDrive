@@ -222,7 +222,17 @@ const soNguyen = (n: unknown, max: number) => {
  * dòng nào), còn lại = tổng − đã thu. Form hiện số nào thì hiện, con số ghi vào
  * database vẫn là con số máy chủ tự cộng.
  */
-export function kiemHopDongMoi(du: DuLieuHopDongMoi): { loi: string } | HopDongSach {
+export function kiemHopDongMoi(
+  du: DuLieuHopDongMoi,
+  /**
+   * Danh sách bước ĐƯỢC PHÉP, mặc định là bảng cứng `CAC_BUOC`.
+   *
+   * Từ đợt 6 (13/11/2026) bảng bước nằm trong database và sửa được, nên phía
+   * máy chủ truyền danh sách thật vào đây. Để mặc định cứng thì studio thêm
+   * một bước mới trên database là web từ chối ngay hợp đồng mang bước đó.
+   */
+  cacBuoc: readonly string[] = CAC_BUOC,
+): { loi: string } | HopDongSach {
   const tenKhach = gon(du.tenKhach);
   if (!tenKhach) return { loi: "Thiếu tên khách ghi trên hợp đồng." };
   if (tenKhach.length > 120) return { loi: "Tên khách dài quá, tối đa 120 ký tự." };
@@ -243,7 +253,7 @@ export function kiemHopDongMoi(du: DuLieuHopDongMoi): { loi: string } | HopDongS
   if (!NGAY_RE.test(ngayDat)) return { loi: "Ngày đặt chưa đúng." };
 
   const trangThai = gon(du.trangThai);
-  if (!(CAC_BUOC as readonly string[]).includes(trangThai)) return { loi: "Trạng thái không có trong bảng." };
+  if (!cacBuoc.includes(trangThai)) return { loi: "Trạng thái không có trong bảng." };
 
   const khuyenMai = soNguyen(du.khuyenMai, 999_999_999);
   if (khuyenMai === null) return { loi: "Khuyến mãi chưa đúng." };
@@ -394,16 +404,22 @@ export type SuaHopDongSach = {
  * "còn lại" do phiếu thu quyết định nên máy chủ cộng lại sau khi ghi
  * (xem `tinhLaiTien` trong suaHopDong.ts).
  */
-export function kiemSuaHopDong(du: DuLieuSuaHopDong): { loi: string } | SuaHopDongSach {
-  const kq = kiemHopDongMoi({
-    ...du,
-    // Ba trường dưới chỉ để mượn lại phép kiểm; phần sửa không dùng tới chúng.
-    khachHangId: "giu-nguyen",
-    khachMoi: null,
-    thu: [],
-    lich: [],
-    viec: [],
-  });
+export function kiemSuaHopDong(
+  du: DuLieuSuaHopDong,
+  cacBuoc: readonly string[] = CAC_BUOC,
+): { loi: string } | SuaHopDongSach {
+  const kq = kiemHopDongMoi(
+    {
+      ...du,
+      // Ba trường dưới chỉ để mượn lại phép kiểm; phần sửa không dùng tới chúng.
+      khachHangId: "giu-nguyen",
+      khachMoi: null,
+      thu: [],
+      lich: [],
+      viec: [],
+    },
+    cacBuoc,
+  );
   if ("loi" in kq) return kq;
 
   return {

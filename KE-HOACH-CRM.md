@@ -295,12 +295,47 @@ mất gì.
 
 ---
 
-### Đợt 6 — Phần nhỏ còn lại · ~3–4 buổi
+### ✅ Đợt 6 — Phần nhỏ còn lại · LÀM XONG 13/11/2026
 
-- **Thêm/sửa khách hàng độc lập** (vá lỗ hiện tại)
-- `KhachTiemNang` (35) — nguồn khách, khả năng chốt, ngày hẹn gọi lại
-- `TaiLieu` (7), `SoSuCo` (22)
-- Bảng 18 trạng thái đưa vào database thay vì để cứng trong code
+**Bốn mục trong kế hoạch, làm cả bốn:**
+
+| Mục | Làm gì |
+|---|---|
+| Thêm/sửa khách hàng độc lập | nút ở trang Khách hàng và trong hồ sơ từng nhà |
+| `KhachTiemNang` (35) | trang mới `/quan-ly/khach-tiem-nang`, quản lý + sale |
+| 18 trạng thái vào database | bảng `BuocHopDong`, hai form đọc từ đó |
+| `TaiLieu` (7) · `SuCo` (22) | tài liệu nằm cuối trang Nội quy; sổ sự cố thành trang riêng |
+
+**Lỗ đã vá:** tới hôm nay khách chỉ sinh ra được KÈM MỘT HỢP ĐỒNG
+(`src/lib/taoHopDong.ts`). Sale gõ nhầm một chữ số điện thoại là nhà đó mang số
+sai vĩnh viễn — mã khách CHÍNH LÀ số điện thoại và không có đường sửa nào.
+Giờ sửa được, và đổi số thì mã đổi theo; riêng **24/2.125 nhà** mang mã kiểu
+khác số điện thoại thì để yên, đổi mã của họ là cắt đứt đường ghép với hợp
+đồng bên AppSheet.
+
+**Khách tiềm năng khác khách hàng ở một chỗ quan trọng:** số điện thoại ở đây
+**không** phải mã, nên không bắt buộc — 7/35 dòng bên AppSheet chưa có số
+(khách nhắn qua Facebook). Bắt buộc là tự chặn đúng những người sale cần ghi
+lại nhất. Nhật ký chăm sóc chỉ **nối thêm**, không cho sửa: cho sửa là mời
+người ta xoá mất một lần gọi điện của đồng nghiệp.
+
+**Bảng 18 bước:** `CAC_BUOC` trong code **không bị xoá**, vẫn là lưới đỡ —
+bảng chưa chép thì ô chọn trạng thái không được phép trống trơn, vì lúc đó
+không lập nổi một hợp đồng nào. `kiemHopDongMoi` nhận danh sách bước làm tham
+số; phía máy chủ truyền bảng thật vào, nên studio thêm một bước mới là web
+nhận ngay thay vì từ chối.
+
+**Hai bảng chép về nhưng dữ liệu kém — nói thẳng:**
+
+- `TaiLieu` 7 dòng **đều là video YouTube dạy dùng chính app AppSheet** — thứ
+  sắp bỏ. Chép để không mất, nhưng không dựng trang riêng cho 7 dòng sẽ vô
+  nghĩa sau ngày chuyển; đặt cuối trang Nội quy kèm một câu nói rõ chúng hướng
+  dẫn app cũ, không phải web.
+- `SuCo` 22 dòng: ba cột "Xử lý", "Thời gian tạo", "Thời gian xử lý" **rỗng cả
+  22 dòng**, chỉ 13/22 có nói vấn đề gì. Không dòng nào biết mình xảy ra lúc
+  nào. Nên cột "Lúc" của dòng chép ghi *từ AppSheet* chứ không hiện `taoLuc` —
+  `taoLuc` của chúng là lúc web chép về, hiện ra là nói sai. Sổ chỉ bắt đầu có
+  ích từ dòng ghi trên web: **cả tiệm ghi được**, chỉ quản lý đóng.
 
 ### Đợt 7 — Chuyển hẳn · 1 ngày + 2 tuần theo dõi
 

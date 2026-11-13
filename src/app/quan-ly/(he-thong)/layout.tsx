@@ -41,6 +41,12 @@ export default async function HeThongLayout({ children }: { children: React.Reac
     ...(xemHopDong(nguoi) ? [{ nhom: "Hợp đồng – Công việc", ten: "Hợp đồng", href: "/quan-ly/hop-dong" }] : []),
     { nhom: "Hợp đồng – Công việc", ten: "Lịch chụp", href: "/quan-ly/lich" },
     { nhom: "Hợp đồng – Công việc", ten: "Đầu việc", href: "/quan-ly/cong-viec" },
+    // Khách tiềm năng: quản lý + SALE. Đứng TRƯỚC Khách hàng vì đó là chỗ một
+    // nhà bắt đầu — và vì sale không mở được mục Khách hàng (chỉ quản lý), nên
+    // nếu để sau thì với sale nhóm này chỉ còn một mục nằm trơ.
+    ...(xemHopDong(nguoi)
+      ? [{ nhom: "Tư vấn – CSKH", ten: "Khách tiềm năng", href: "/quan-ly/khach-tiem-nang" }]
+      : []),
     ...(xemTienVaKhach(nguoi)
       ? [
           { nhom: "Tư vấn – CSKH", ten: "Khách hàng", href: "/quan-ly/khach-hang" },
@@ -56,6 +62,10 @@ export default async function HeThongLayout({ children }: { children: React.Reac
     { nhom: "Thông tin studio", ten: "Dịch vụ & trang phục", href: "/quan-ly/dich-vu" },
     // Có số tài khoản ngân hàng — chỉ quản lý (AppSheet cũ cũng chỉ Admin xem).
     ...(quanTri ? [{ nhom: "Thông tin studio", ten: "Thông tin studio", href: "/quan-ly/thong-tin" }] : []),
+    // Sổ sự cố: CẢ TIỆM. Người thấy máy hỏng là người đang đứng ở đó, không
+    // phải quản lý — giấu mục này là sổ trống rỗng y như bên AppSheet. Chỉ
+    // việc ĐÓNG sự cố mới là của quản lý, chặn trong server action.
+    { nhom: "Hệ thống", ten: "Sổ sự cố", href: "/quan-ly/su-co" },
     ...(quanTri
       ? [
           { nhom: "Hệ thống", ten: "Nhật ký thao tác", href: "/quan-ly/nhat-ky" },

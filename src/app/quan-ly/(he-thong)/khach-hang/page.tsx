@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { tien } from "@/lib/constants";
-import { batBuocDangNhap, batBuocQuyen, laQuanTri, xemTienVaKhach } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, batBuocQuyen, lapHopDong, laQuanTri, xemTienVaKhach } from "@/lib/phienNhanVien";
 import { boDau } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
 import { BangDongBo } from "../hop-dong/BangDongBo";
+import { NutThemKhach } from "./FormKhach";
 
 export const dynamic = "force-dynamic";
 
@@ -74,10 +75,15 @@ export default async function KhachHangPage({ searchParams }: Props) {
 
   return (
     <div>
-      <p className="eyebrow">Tư vấn – Chăm sóc khách hàng</p>
-      <h1 className="mt-2 font-display text-3xl font-light">
-        Khách hàng <span className="text-fg-faint tabular-nums">{ds.length}</span>
-      </h1>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow">Tư vấn – Chăm sóc khách hàng</p>
+          <h1 className="mt-2 font-display text-3xl font-light">
+            Khách hàng <span className="text-fg-faint tabular-nums">{ds.length}</span>
+          </h1>
+        </div>
+        {lapHopDong(nguoi) && <NutThemKhach />}
+      </div>
       <BangDongBo quanTri={laQuanTri(nguoi)} />
 
       <div className="mt-5 flex flex-wrap items-center gap-2">

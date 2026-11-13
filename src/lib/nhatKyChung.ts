@@ -28,6 +28,13 @@ export type HanhDong =
   | "dong-bo-appsheet"
   | "dang-xuat-moi-may"
   | "gan-hop-dong"
+  /* Khách hàng độc lập với hợp đồng — đợt 6 (13/11/2026). */
+  | "them-khach"
+  | "sua-khach"
+  | "them-khach-tiem-nang"
+  | "sua-khach-tiem-nang"
+  | "ghi-su-co"
+  | "dong-su-co"
   | "lap-hop-dong"
   | "sua-hop-dong"
   | "xoa-hop-dong"
@@ -79,6 +86,12 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "dong-bo-appsheet": "Đồng bộ từ AppSheet",
   "dang-xuat-moi-may": "Đăng xuất mọi máy",
   "gan-hop-dong": "Gắn album vào hợp đồng",
+  "them-khach": "Thêm khách hàng",
+  "sua-khach": "Sửa khách hàng",
+  "them-khach-tiem-nang": "Thêm khách tiềm năng",
+  "sua-khach-tiem-nang": "Sửa khách tiềm năng",
+  "ghi-su-co": "Ghi sự cố",
+  "dong-su-co": "Đóng sự cố",
   "lap-hop-dong": "Lập hợp đồng",
   "sua-hop-dong": "Sửa hợp đồng",
   "xoa-hop-dong": "Xoá hợp đồng",

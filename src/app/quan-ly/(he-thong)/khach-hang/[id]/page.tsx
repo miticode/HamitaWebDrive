@@ -2,10 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { tien } from "@/lib/constants";
-import { batBuocDangNhap, batBuocQuyen, xemTienVaKhach } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, batBuocQuyen, lapHopDong, xemTienVaKhach } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { ChipTrangThai } from "../../hop-dong/ChipTrangThai";
+import { NutSuaKhach } from "../FormKhach";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +14,9 @@ type Props = { params: Promise<{ id: string }> };
 
 /** Một khách: thông tin liên hệ và mọi hợp đồng của họ. */
 export default async function ChiTietKhachPage({ params }: Props) {
+  const nguoi = await batBuocDangNhap();
   // Tiền và số điện thoại của khách: chỉ quản lý (anh chốt 21/09/2026).
-  batBuocQuyen(xemTienVaKhach(await batBuocDangNhap()));
+  batBuocQuyen(xemTienVaKhach(nguoi));
   const { id } = await params;
   const [kh, bangTen] = await Promise.all([
     getPrisma().khachHang.findUnique({
@@ -37,7 +39,23 @@ export default async function ChiTietKhachPage({ params }: Props) {
   return (
     <div className="max-w-4xl">
       <Link href="/quan-ly/khach-hang" className="eyebrow transition hover:text-accent">← Khách hàng</Link>
-      <h1 className="mt-3 font-display text-3xl font-light text-balance">{kh.ten}</h1>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <h1 className="mt-3 font-display text-3xl font-light text-balance">{kh.ten}</h1>
+        {lapHopDong(nguoi) && (
+          <div className="mt-3">
+            <NutSuaKhach
+              khach={{
+                id: kh.id,
+                ten: kh.ten,
+                soDienThoai: kh.soDienThoai,
+                tinh: kh.tinh,
+                ghiChu: kh.ghiChu,
+              }}
+              chepTuAppSheet={!!kh.bamAppSheet}
+            />
+          </div>
+        )}
+      </div>
       <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-fg-muted">
         {kh.soDienThoai && (
           <a href={`tel:${kh.soDienThoai}`} className="tabular-nums hover:text-accent">{kh.soDienThoai}</a>
