@@ -84,7 +84,19 @@ export type LuotHomNay = {
 /** Lượt chấm của chính người này trong NGÀY HÔM NAY theo giờ studio. */
 export async function luotHomNay(maNV: string, caiDat: CaiDatCham): Promise<LuotHomNay> {
   const d = await getPrisma().chamCong.findFirst({
-    where: { maNV: { equals: maNV, mode: "insensitive" }, ngay: homNayStudio(), matBenAppSheet: null },
+    /*
+      CHỈ dòng lập trên web (`bamAppSheet: null`).
+
+      Trong lúc chạy song song, cùng một ngày có thể có hai dòng: một chép từ
+      AppSheet, một người bấm trên web. Màn của nhân viên phải hiện ĐÚNG lượt
+      họ vừa bấm trên web, không phải bản chép về lúc 2 giờ sáng.
+    */
+    where: {
+      maNV: { equals: maNV, mode: "insensitive" },
+      ngay: homNayStudio(),
+      matBenAppSheet: null,
+      bamAppSheet: null,
+    },
     orderBy: { taoLuc: "desc" },
   });
   if (!d) return null;
@@ -124,7 +136,8 @@ export async function vaoCa(
   const ngay = homNayStudio();
 
   const da = await prisma.chamCong.findFirst({
-    where: { maNV: { equals: maNV, mode: "insensitive" }, ngay, matBenAppSheet: null },
+    /* Chỉ dòng web — không bao giờ sửa vào bản chép từ AppSheet. */
+    where: { maNV: { equals: maNV, mode: "insensitive" }, ngay, matBenAppSheet: null, bamAppSheet: null },
     select: { id: true, gioVao: true },
   });
   if (da?.gioVao) return { ok: true, daCham: true };
@@ -164,7 +177,7 @@ export async function raCa(
   const ngay = homNayStudio();
 
   const d = await prisma.chamCong.findFirst({
-    where: { maNV: { equals: maNV, mode: "insensitive" }, ngay, matBenAppSheet: null },
+    where: { maNV: { equals: maNV, mode: "insensitive" }, ngay, matBenAppSheet: null, bamAppSheet: null },
     select: { id: true, gioVao: true },
   });
   if (!d?.gioVao) return { loi: "Chưa bấm vào ca hôm nay nên chưa ra ca được." };
@@ -182,6 +195,35 @@ export async function raCa(
     },
   });
   return { ok: true };
+}
+
+/**
+ * MỘT NGƯỜI MỘT NGÀY CHỈ ĐẾM MỘT LẦN.
+ *
+ * Trong lúc chạy song song (anh cho tiệm dùng thử 13/11/2026), ai chấm cả bên
+ * AppSheet lẫn trên web trong cùng một ngày sẽ sinh RA HAI DÒNG cho cùng một
+ * buổi — một chép về lúc 2 giờ sáng, một do họ bấm. Cộng cả hai là **ngày công
+ * nhân đôi, và lương trả dư**.
+ *
+ * Giữ dòng nào: ưu tiên bản CHÉP TỪ APPSHEET, vì tới ngày chuyển hẳn AppSheet
+ * vẫn là bản gốc — con số bảng lương xưa nay vẫn lấy từ đó. Hết giai đoạn
+ * song song thì không còn dòng AppSheet mới nào nữa nên luật này tự hết tác
+ * dụng, không phải gỡ.
+ *
+ * Đo lúc viết: 6.114 dòng ứng với đúng 6.114 cặp (người, ngày) — chưa trùng
+ * dòng nào, vì chưa ai chấm trên web. Đây là hàng rào dựng trước.
+ */
+export function motDongMoiNgay<T extends { maNV: string | null; ngay: string | null; bamAppSheet?: string | null }>(
+  ds: T[],
+): T[] {
+  const giu = new Map<string, T>();
+  for (const d of ds) {
+    const k = `${(d.maNV ?? "").toLowerCase()}|${d.ngay ?? ""}`;
+    const da = giu.get(k);
+    if (!da) giu.set(k, d);
+    else if (!da.bamAppSheet && d.bamAppSheet) giu.set(k, d);
+  }
+  return [...giu.values()];
 }
 
 export type DongBangCong = {
@@ -211,18 +253,22 @@ export async function bangCongThang(
   thang: string,
   caiDat: CaiDatCham,
 ): Promise<DongBangCong[]> {
-  const ds = await getPrisma().chamCong.findMany({
-    where: { ngay: { startsWith: thang }, matBenAppSheet: null },
-    select: {
-      maNV: true,
-      soGio: true,
-      soNgayCong: true,
-      trangThaiVao: true,
-      viTri: true,
-      gioVao: true,
-      gioRa: true,
-    },
-  });
+  const ds = motDongMoiNgay(
+    await getPrisma().chamCong.findMany({
+      where: { ngay: { startsWith: thang }, matBenAppSheet: null },
+      select: {
+        maNV: true,
+        ngay: true,
+        bamAppSheet: true,
+        soGio: true,
+        soNgayCong: true,
+        trangThaiVao: true,
+        viTri: true,
+        gioVao: true,
+        gioRa: true,
+      },
+    }),
+  );
 
   /*
     GỘP THEO MÃ ĐÃ HẠ CHỮ THƯỜNG.

@@ -1,4 +1,5 @@
 import { getPrisma } from "@/lib/db";
+import { motDongMoiNgay } from "@/lib/chamCong";
 
 /**
  * TÍNH LƯƠNG — thêm 13/11/2026 (`KE-HOACH-CRM.md` đợt 5).
@@ -68,9 +69,14 @@ export async function tinhThuKyLuong(nam: number, thang: number): Promise<DongLu
 
   const [tt, cham, viec, danhGia, nhanVien, luongCu] = await Promise.all([
     prisma.thongTinStudio.findFirst({ select: { ngayCongThang: true } }),
+    /*
+      Lọc trùng ở bước dưới, không ở đây: một người một ngày chỉ được tính một
+      lần, nếu không thì ai chấm cả hai nơi trong lúc chạy song song sẽ được
+      trả lương gấp đôi ngày đó. Xem `motDongMoiNgay`.
+    */
     prisma.chamCong.findMany({
       where: { ngay: { startsWith: thangChuoi }, matBenAppSheet: null },
-      select: { maNV: true, phongBan: true, soNgayCong: true, soGio: true },
+      select: { maNV: true, ngay: true, bamAppSheet: true, phongBan: true, soNgayCong: true, soGio: true },
     }),
     prisma.congViec.findMany({
       where: { ngayHoanThanh: { startsWith: thangChuoi }, matBenAppSheet: null },
@@ -121,7 +127,7 @@ export async function tinhThuKyLuong(nam: number, thang: number): Promise<DongLu
     return g;
   };
 
-  for (const c of cham) {
+  for (const c of motDongMoiNgay(cham)) {
     const k = khoa(c.maNV);
     if (!k) continue;
     const g = lay(k);
