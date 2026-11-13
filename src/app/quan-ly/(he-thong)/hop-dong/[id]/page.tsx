@@ -281,6 +281,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           banDau={hd.lich.map((l) => ({
             id: l.id,
             ngay: l.ngay ?? "",
+            gio: l.gio ?? "",
             loai: l.loai ?? "Ngày chụp",
             ghiChu: l.ghiChu ?? "",
             trangThai: l.trangThai ?? "Chưa làm",

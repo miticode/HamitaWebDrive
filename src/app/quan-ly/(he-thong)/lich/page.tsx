@@ -71,6 +71,7 @@ export default async function LichPage({ searchParams }: Props) {
       select: {
         id: true,
         ngay: true,
+        gio: true,
         loai: true,
         trangThai: true,
         ghiChu: true,
@@ -155,6 +156,7 @@ export default async function LichPage({ searchParams }: Props) {
                 <ul className="mt-1 space-y-1">
                   {cua.slice(0, 3).map((l) => (
                     <li key={l.id} className="truncate text-[11px] leading-tight">
+                      {l.gio && <span className="mr-1 font-medium tabular-nums">{l.gio}</span>}
                       {l.hopDong ? (
                         moHopDong ? (
                           <Link href={`/quan-ly/hop-dong/${l.hopDong.id}`} className="hover:text-accent" title={`${l.loai ?? ""} · ${l.hopDong.tenKhach}`}>
@@ -183,6 +185,7 @@ export default async function LichPage({ searchParams }: Props) {
           <thead>
             <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
               <th className="px-4 py-2.5 font-medium">Ngày</th>
+              <th className="px-4 py-2.5 font-medium">Giờ</th>
               <th className="px-4 py-2.5 font-medium">Loại</th>
               <th className="px-4 py-2.5 font-medium">Khách</th>
               <th className="px-4 py-2.5 font-medium">Trạng thái</th>
@@ -192,6 +195,9 @@ export default async function LichPage({ searchParams }: Props) {
             {ds.map((l) => (
               <tr key={l.id} className={`align-top transition hover:bg-bg-soft ${l.ngay === nay ? "bg-accent-soft/40" : ""}`}>
                 <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{ngayVN(l.ngay)}</td>
+                <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">
+                  {l.gio ? <span className="font-medium">{l.gio}</span> : <span className="text-fg-faint">—</span>}
+                </td>
                 <td className="px-4 py-2.5 whitespace-nowrap">{l.loai ?? "—"}</td>
                 <td className="min-w-40 px-4 py-2.5">
                   {l.hopDong ? (

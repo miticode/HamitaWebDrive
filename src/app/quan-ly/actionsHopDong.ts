@@ -238,6 +238,8 @@ export type DongLichSua = {
   /** Có id là dòng cũ, không có là dòng vừa thêm. */
   id?: string;
   ngay: string;
+  /** "HH:MM" hoặc rỗng. Giờ hẹn có mặt — xem chú thích ở model `LichChup`. */
+  gio: string;
   loai: string;
   ghiChu: string;
   trangThai: string;
@@ -270,9 +272,13 @@ export async function luuLichAction(
     const ngay = String(d.ngay ?? "").trim();
     if (!ngay) continue;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay)) return { loi: `Ngày của dòng ${i + 1} chưa đúng.` };
+    /* Giờ KHÔNG bắt buộc — 1.454 buổi cũ đều không có giờ, bắt buộc là chặn mọi lần sửa. */
+    const gio = String(d.gio ?? "").trim();
+    if (gio && !/^([01]\d|2[0-3]):[0-5]\d$/.test(gio)) return { loi: `Giờ của dòng ${i + 1} chưa đúng.` };
     sach.push({
       id: d.id,
       ngay,
+      gio,
       loai: String(d.loai ?? "").trim() || "Ngày chụp",
       ghiChu: String(d.ghiChu ?? "").trim(),
       trangThai: String(d.trangThai ?? "").trim() || "Chưa làm",
@@ -291,6 +297,7 @@ export async function luuLichAction(
     for (const d of sach) {
       const data = {
         ngay: d.ngay,
+        gio: d.gio || null,
         loai: d.loai,
         ghiChu: d.ghiChu || null,
         trangThai: d.trangThai,

@@ -25,10 +25,20 @@ export function FormSuaHopDong({
   dichVu,
   banDau,
   cacBuoc = CAC_BUOC,
+  chepTuAppSheet = false,
 }: {
   id: string;
   maHD: string;
   dichVu: DichVuGon[];
+  /**
+   * Hợp đồng này có dấu vân tay AppSheet không (đợt soát UX, mục P0-1).
+   *
+   * Câu cảnh báo ghi đè trước đây nằm ở dải báo đầu BẢY trang danh sách — chỗ
+   * người ta chỉ đang xem, nên không ai đọc, và nó còn nói sai một ngày trời
+   * sau khi lịch đêm bị bỏ. Chuyển về đây: đúng lúc sắp sửa thật, đúng những
+   * hợp đồng thật sự có thể bị đè.
+   */
+  chepTuAppSheet?: boolean;
   /** Mười tám bước đọc từ bảng `BuocHopDong` (đợt 6); mặc định là bảng cứng. */
   cacBuoc?: readonly string[];
   banDau: {
@@ -106,6 +116,13 @@ export function FormSuaHopDong({
         luu();
       }}
     >
+      {chepTuAppSheet && (
+        <p className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">
+          Hợp đồng này <b>chép từ AppSheet</b>. Sửa ở đây giữ được — trừ khi bên AppSheet cũng sửa
+          đúng hợp đồng này, rồi có người bấm “Đồng bộ ngay”: lúc đó bản bên kia thắng.
+        </p>
+      )}
+
       <Khung ten="Hợp đồng" chu={maHD}>
         <div className="grid gap-3 sm:grid-cols-2">
           <O nhan="Tên ghi trên hợp đồng">

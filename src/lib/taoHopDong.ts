@@ -199,6 +199,7 @@ async function ghiHopDong(sach: HopDongSach, nguoi: NguoiLap, luc: Date, so: num
         data: sach.lich.map((l) => ({
           hopDongId: hd.id,
           ngay: l.ngay,
+          gio: l.gio || null,
           loai: l.loai,
           ghiChu: l.ghiChu || null,
           trangThai: "Chưa làm",

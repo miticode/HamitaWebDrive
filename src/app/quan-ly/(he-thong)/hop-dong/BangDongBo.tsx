@@ -11,38 +11,42 @@ const NGAY_GIO = new Intl.DateTimeFormat("vi-VN", {
 });
 
 /**
- * Dải báo ở đầu ba trang Hợp đồng, Khách hàng, Phiếu thu: dữ liệu cũ từ đâu
- * ra, và hợp đồng mới lập ở đâu.
+ * Dải báo ở đầu bảy trang chép từ AppSheet: dữ liệu cũ từ đâu ra, chép lần
+ * cuối lúc nào, và nút chép lại.
  *
- * Viết lại 21/09/2026 khi anh chuyển việc lập hợp đồng về web. Lời cũ ghi
- * "tiệm vẫn làm hợp đồng bên AppSheet, thấy sai thì sửa bên đó" — để nguyên
- * thì nay thành một câu chỉ sai đường.
+ * ━━ Viết lại 13/11/2026 (KE-HOACH-UX.md mục P0-1) ━━
  *
- * Bỏ luôn vạch cảnh báo "quá 36 giờ chưa chép": lịch chép tự động đã tắt hẳn
- * nên vạch đó sẽ vàng mãi mãi, mà vàng mãi thì không ai đọc nữa — đúng kiểu
- * cảnh báo tự làm hỏng chính mình.
+ * Bản cũ là năm dòng chữ, và câu cuối của nó NÓI SAI: "sửa trên web, đêm đó
+ * bản bên kia chép sang là mất" — trong khi lịch chạy đêm đã bỏ hẳn cùng ngày.
+ * Nhân viên đọc xong sẽ không dám sửa hợp đồng cũ trên web, đúng thứ vừa mở ra
+ * cho họ làm.
  *
- * Viết lại lần nữa 13/11/2026: anh cho BẬT LẠI lịch chép đêm cho tới ngày
- * chuyển hẳn sang web (xem KE-HOACH-CRM.md). Lời cũ ghi "lịch chép đã tắt" —
- * để nguyên là dải báo nói sai với cả tiệm.
+ * Hai thứ đã đổi:
  *
- * Câu quan trọng nhất trong dải này giờ là câu CẢNH BÁO GHI ĐÈ. Lịch chép chỉ
- * đụng vào dòng mang dấu vân tay AppSheet (`bamAppSheet`), nên hợp đồng lập
- * trên web KHÔNG bao giờ bị đụng. Nhưng hợp đồng CŨ chép từ AppSheet mà sửa
- * trên web thì đêm nào bên AppSheet cũng đổi dòng đó là bị đè mất — người sửa
- * không hề biết. Phải nói thẳng ra chứ đừng để họ tự phát hiện.
+ * 1. Còn MỘT dòng — chép từ đâu, lần cuối lúc nào, nút chép lại. Dải này nằm
+ *    trên bảy trang; năm dòng chữ lặp lại bảy chỗ thì sau hai ngày không ai
+ *    đọc nữa, và lúc đó nó có nói đúng cũng vô ích.
+ *
+ * 2. Câu cảnh báo GHI ĐÈ dọn khỏi đây, chuyển vào form sửa hợp đồng — nơi
+ *    người ta sắp sửa thật, và chỉ với hợp đồng mang dấu vân tay AppSheet.
+ *    Cảnh báo đứng cạnh việc nguy hiểm thì người ta đọc; đứng ở đầu một danh
+ *    sách chỉ để xem thì không.
  */
 export async function BangDongBo({ quanTri }: { quanTri: boolean }) {
   const moc = await docMoc("dongBoAppSheet");
   return (
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md border border-line bg-bg-soft px-4 py-3 text-sm text-fg-muted">
-      <span className="max-w-2xl leading-relaxed">
-        Hợp đồng, phiếu thu, lịch và đầu việc cũ là bản chép của AppSheet —{" "}
-        {moc ? `chép lần cuối ${NGAY_GIO.format(moc)}` : "chưa chép lần nào"}. Chép lại bằng nút{" "}
-        <b className="text-fg">Đồng bộ ngay</b> — không còn lịch tự động. Hợp đồng mới cứ lập thẳng trên web bằng nút{" "}
-        <b className="text-fg">Lập hợp đồng</b> — những hợp đồng đó không bao giờ bị lịch chép đụng vào.{" "}
-        <b className="text-fg">Nhưng hợp đồng cũ thì sửa bên AppSheet</b>: sửa trên web, đêm đó bản bên kia
-        chép sang là mất.
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md border border-line bg-bg-soft px-4 py-2.5 text-sm text-fg-muted">
+      <span className="leading-relaxed">
+        Dữ liệu cũ chép từ AppSheet
+        {moc ? (
+          <>
+            {" "}
+            <span aria-hidden>·</span> lần cuối{" "}
+            <span className="tabular-nums text-fg">{NGAY_GIO.format(moc)}</span>
+          </>
+        ) : (
+          <> <span aria-hidden>·</span> chưa chép lần nào</>
+        )}
       </span>
       {quanTri && <NutDongBo />}
     </div>

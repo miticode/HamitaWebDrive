@@ -531,7 +531,7 @@ export function FormHopDongMoi({
             onClick={() =>
               setLich((ds) => [
                 ...ds,
-                ...ngayChupChuaCoLich.map((ngay) => ({ ngay, loai: LOAI_LICH[0], ghiChu: "", hienThi: "" })),
+                ...ngayChupChuaCoLich.map((ngay) => ({ ngay, gio: "", loai: LOAI_LICH[0], ghiChu: "", hienThi: "" })),
               ])
             }
           >
@@ -541,13 +541,21 @@ export function FormHopDongMoi({
 
         <div className="grid gap-3">
           {lich.map((l, i) => (
-            <div key={i} className="grid gap-3 sm:grid-cols-[10rem_12rem_1fr_auto]">
+            <div key={i} className="grid gap-3 sm:grid-cols-[9rem_6rem_11rem_1fr_auto]">
               <O nhan="Ngày">
                 <input
                   type="date"
                   value={l.ngay}
                   onChange={(e) => setLich((ds) => ds.map((x, j) => (i === j ? { ...x, ngay: e.target.value } : x)))}
                   className="input"
+                />
+              </O>
+              <O nhan="Giờ">
+                <input
+                  type="time"
+                  value={l.gio}
+                  onChange={(e) => setLich((ds) => ds.map((x, j) => (i === j ? { ...x, gio: e.target.value } : x)))}
+                  className="input tabular-nums"
                 />
               </O>
               <O nhan="Loại">
@@ -582,7 +590,7 @@ export function FormHopDongMoi({
         <button
           type="button"
           className="btn mt-3"
-          onClick={() => setLich((ds) => [...ds, { ngay: "", loai: LOAI_LICH[0], ghiChu: "", hienThi: "" }])}
+          onClick={() => setLich((ds) => [...ds, { ngay: "", gio: "", loai: LOAI_LICH[0], ghiChu: "", hienThi: "" }])}
         >
           Thêm dòng lịch
         </button>

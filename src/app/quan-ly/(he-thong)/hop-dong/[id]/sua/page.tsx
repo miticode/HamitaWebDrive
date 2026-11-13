@@ -73,6 +73,7 @@ export default async function SuaHopDongPage({ params }: Props) {
           })),
         }}
         cacBuoc={cacBuoc}
+        chepTuAppSheet={!!hd.bamAppSheet}
       />
     </div>
   );

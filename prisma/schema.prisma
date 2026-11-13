@@ -1014,6 +1014,15 @@ model LichChup {
   hopDongId      String?
   /// "YYYY-MM-DD" — ngay khong gio, luu dang chu cho khoi lech mui gio.
   ngay           String?
+  /// "HH:MM" gio Viet Nam, hoac null. Them 13/11/2026 (KE-HOACH-UX.md P1-4).
+  ///
+  /// AppSheet KHONG co cho nao luu gio chup: do 1.454 buoi, chi 26 buoi (1,8%)
+  /// co thu trong nhu gio, va deu nam lan trong ghi chu. Nen cot nay bat dau
+  /// tu con so khong — no chi co ich neu sale chiu dien tu nay tro di.
+  ///
+  /// Luu dang CHU chu khong phai DateTime, cung ly do voi `ngay`: mot gio hen
+  /// "07:30" la 07:30 gio Viet Nam, khong phai mot thoi diem UTC phai doi.
+  gio            String?
   loai           String?
   ghiChu         String?
   /// "Hoàn thành" | "Đang làm" | "Chưa làm"

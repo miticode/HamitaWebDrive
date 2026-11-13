@@ -56,6 +56,7 @@ export function KhoiLich({
         {dong.map((d) => (
           <li key={d.id} className="rounded-md border border-line bg-bg-raised px-3.5 py-2">
             <span className="tabular-nums">{d.ngay}</span>
+            {d.gio && <span className="ml-2 font-medium tabular-nums">{d.gio}</span>}
             <span className="mx-2 text-fg-muted">{d.loai}</span>
             <span className="text-xs text-fg-faint">{d.trangThai}</span>
             {d.ghiChu && <span className="block text-xs text-fg-muted">{d.ghiChu}</span>}
@@ -68,7 +69,7 @@ export function KhoiLich({
   return (
     <div className="mt-2 grid gap-3">
       {dong.map((d, i) => (
-        <div key={d.id ?? `moi-${i}`} className="grid gap-2 rounded-md border border-line bg-bg-raised p-3 sm:grid-cols-[10rem_11rem_10rem_1fr_auto]">
+        <div key={d.id ?? `moi-${i}`} className="grid gap-2 rounded-md border border-line bg-bg-raised p-3 sm:grid-cols-[9rem_6rem_10rem_9rem_1fr_auto]">
           <label className="block">
             <span className="eyebrow block">Ngày</span>
             <input
@@ -76,6 +77,19 @@ export function KhoiLich({
               value={d.ngay}
               onChange={(e) => doi(i, { ngay: e.target.value })}
               className="input mt-1.5"
+            />
+          </label>
+          {/*
+            Giờ đứng NGAY SAU ngày, vì hai thứ đó đi liền nhau trong đầu người
+            nhập. Để trống được: 1.454 buổi cũ không buổi nào có giờ.
+          */}
+          <label className="block">
+            <span className="eyebrow block">Giờ</span>
+            <input
+              type="time"
+              value={d.gio}
+              onChange={(e) => doi(i, { gio: e.target.value })}
+              className="input mt-1.5 tabular-nums"
             />
           </label>
           <label className="block">
@@ -125,7 +139,7 @@ export function KhoiLich({
           type="button"
           className="btn"
           onClick={() =>
-            setDong((ds) => [...ds, { ngay: "", loai: LOAI_LICH[0], ghiChu: "", trangThai: "Chưa làm" }])
+            setDong((ds) => [...ds, { ngay: "", gio: "", loai: LOAI_LICH[0], ghiChu: "", trangThai: "Chưa làm" }])
           }
         >
           Thêm buổi

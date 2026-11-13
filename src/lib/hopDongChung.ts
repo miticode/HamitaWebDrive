@@ -149,6 +149,8 @@ export type DongThuMoi = {
 
 export type DongLichMoi = {
   ngay: string;
+  /** "HH:MM" hoặc rỗng — giờ hẹn có mặt. Xem chú thích ở model `LichChup`. */
+  gio: string;
   loai: string;
   ghiChu: string;
   /** Dòng chữ vẽ lên lịch; để trống thì máy chủ tự ghép từ tên khách và ngày. */
@@ -206,6 +208,7 @@ export type HopDongSach = {
 };
 
 const NGAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+const GIO_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 const gon = (s: unknown) => String(s ?? "").trim().replace(/[ \t]+/g, " ");
 const soNguyen = (n: unknown, max: number) => {
   const x = Math.round(Number(n));
@@ -315,7 +318,10 @@ export function kiemHopDongMoi(
     // Dòng lịch bỏ trống ngày thì coi như không thêm.
     if (!ngay) continue;
     if (!NGAY_RE.test(ngay)) return { loi: `Ngày của dòng lịch ${i + 1} chưa đúng.` };
-    lich.push({ ngay, loai: gon(l.loai) || "Ngày chụp", ghiChu: gon(l.ghiChu), hienThi: gon(l.hienThi) });
+    /* Giờ KHÔNG bắt buộc — xem chú thích ở model `LichChup`. */
+    const gio = gon(l.gio);
+    if (gio && !GIO_RE.test(gio)) return { loi: `Giờ của dòng lịch ${i + 1} chưa đúng.` };
+    lich.push({ ngay, gio, loai: gon(l.loai) || "Ngày chụp", ghiChu: gon(l.ghiChu), hienThi: gon(l.hienThi) });
   }
 
   const viec: (DongViecMoi & { thanhTien: number })[] = [];
