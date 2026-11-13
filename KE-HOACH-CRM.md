@@ -217,15 +217,55 @@ lại đường dẫn cũ cho đủ dữ liệu.
 18h**. Nhưng vẫn thiếu 100 giờ tháng 10 và 77 giờ tháng 11, tức **giờ thiếu
 đến từ VÀO TRỄ chứ không phải về sớm**, khớp với con số 35% lượt trễ giờ.
 
-### Đợt 5 — Đơn từ và lương · ~1,5 tuần
+### ✅ Đợt 5 — Đơn từ và lương · XONG 13/11/2026
 
 Làm sau chấm công vì lương ăn số từ bảng công.
 
 - `DonTu` (456) — nghỉ phép, tạm ứng; gửi → duyệt → ghi vào lương
 - `DanhGia` (444) — thưởng/phạt, nối với bảng Nội quy đã có
-- `Luong` (30) + `LuongNhanVien` (341) — tính từ công + thưởng/phạt + tạm ứng
+- `KyLuong` (30) + `LuongNhanVien` (341) — **web tự tính**, không nhập tay
 - Phiếu lương từng người xem được trên điện thoại
-- Script chép cả bốn bảng
+- ~~Script chép cả bốn bảng~~ → làm thẳng trong lịch chép đêm (mục 9–12)
+
+**Công thức đo ngược từ 341 dòng thật, không đoán chỗ nào:**
+
+```
+Lương tháng = Lương cứng ÷ ngày công tháng × Số ngày làm việc   lệch ≤ 10đ
+Tổng lương  = Lương tháng + Lương SP + Thưởng − Phạt            341/341
+Thực lãnh   = Tổng lương − Tạm ứng                              341/341
+Còn lại     = Thực lãnh − Đã thanh toán                         341/341
+```
+
+**Nguồn từng con số — cũng đo ngược:**
+
+```
+Số ngày làm việc ← tổng ngày công bảng ChamCong theo (maNV, tháng)   227/227
+Lương SP         ← tổng thanhTien bảng CongViec theo ngayHoanThanh   260/261
+Thưởng / Phạt    ← tổng bảng DanhGia theo (maNV, kỳ)                 231/231
+```
+
+**Kiểm bằng cách cho máy tính lại cả 30 kỳ rồi so với lương tiệm đã trả thật:**
+
+- **301/326 dòng khớp hoàn toàn (92,3%)**
+- **18/30 kỳ khớp tuyệt đối — không kỳ nào từ 04/2026 trở lại đây bị lệch**
+- Tổng chênh 15.535.064đ, trong đó **15.214.999đ (98%) giải thích được bằng
+  lương cứng đã thay đổi theo thời gian** — máy chỉ biết mức hiện tại, không
+  biết mức của năm 2024. Còn 320.065đ rải trên 12 kỳ cũ.
+- 15 dòng máy không tạo ra được đều mang **tổng 0đ** — dòng rỗng, không mất
+  đồng nào.
+
+Đây chính là lý do kỳ chép từ AppSheet mang `daChot: true`: **không bao giờ
+tính lại lương đã trả.** Máy chỉ tính kỳ đang mở, và với kỳ đang mở thì nó
+đúng tuyệt đối.
+
+**Tạm ứng KHÔNG tự tính được và không được bịa:** bên AppSheet 13/341 dòng có
+tạm ứng, mà bảng Yêu cầu chỉ có 5 đơn xin ứng lương — hai con số không khớp
+nên không có đường nối nào đáng tin. Quản lý nhập tay; tính lại kỳ không xoá nó.
+
+**Còn nợ ở đợt này:** chưa ai khai lương cứng trong mục Nhân viên (máy đang
+lấy mức của kỳ gần nhất). Và hai người ăn lương theo sản phẩm — `lhtt27` (BAN
+LÃNH ĐẠO) và `lhmt2410` (Makeup) — **chưa bao giờ chấm công**, lương tháng
+luôn 0; máy chỉ tạo dòng cho họ khi tháng đó có đầu việc hoặc đánh giá.
 
 ### Đợt 6 — Phần nhỏ còn lại · ~3–4 buổi
 
