@@ -277,6 +277,22 @@ export async function disconnectDriveAction() {
   revalidatePath("/admin");
 }
 
+/**
+ * Ngat ket noi KHO ANH CRM (tai khoan Drive thu hai).
+ *
+ * Khong dung chung ham voi `disconnectDriveAction`: ngat nham ket noi goc la
+ * moi album dang chay ngung hien anh ngay. Hai nut rieng, hai ham rieng, khong
+ * co tham so nao de bam nham.
+ *
+ * Cung khong can xoa bo nho dem `tree:`/`subs:` — kho anh khong dinh gi toi
+ * cay thu muc Drive cua album khach.
+ */
+export async function disconnectKhoAction() {
+  if (!(await quyenAlbumNguyHiem())) return;
+  await disconnect("kho");
+  revalidatePath("/admin");
+}
+
 /** Dat anh bia cho album. fileId rong = tro lai tu dong lay tam dau tien. */
 export async function setCoverAction(galleryId: string, fileId: string | null) {
   if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };

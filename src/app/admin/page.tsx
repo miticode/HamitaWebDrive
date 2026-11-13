@@ -24,6 +24,7 @@ import { logoutAction } from "./actions";
 import { NutSaoLuu } from "./NutSaoLuu";
 import { KhoAnh } from "./KhoAnh";
 import { DriveConnection } from "./DriveConnection";
+import { KhoAnhCrm } from "./KhoAnhCrm";
 import { AlbumList } from "./AlbumList";
 import { NutTaoLink } from "./NutTaoLink";
 import { ChiManLon, ChiManNho } from "./TheoManHinh";
@@ -116,6 +117,8 @@ export default async function AdminPage() {
   ]);
 
   const driveAccount = await getConnectedAccount().catch(() => null);
+  /* Tai khoan Drive thu hai, chi chua tep CRM — xem KhoAnhCrm.tsx. */
+  const khoAccount = await getConnectedAccount("kho").catch(() => null);
   let serviceAccount: string | null = null;
   try {
     serviceAccount = serviceAccountEmail();
@@ -257,12 +260,13 @@ export default async function AdminPage() {
       <ChiManNho>
       {quanLy && (
         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
-          <div className="min-w-0 flex-1">
+          <div className="grid min-w-0 flex-1 gap-2">
             <DriveConnection
               account={driveAccount}
               oauthConfigured={oauthIsConfigured()}
               serviceAccount={serviceAccount}
             />
+            <KhoAnhCrm account={khoAccount} oauthConfigured={oauthIsConfigured()} />
           </div>
           <NutSaoLuu soNgayTruoc={saoLuuCachDay} tuDongCachDay={saoLuuTuDongCachDay} />
         </div>
@@ -340,6 +344,7 @@ export default async function AdminPage() {
                           oauthConfigured={oauthIsConfigured()}
                           serviceAccount={serviceAccount}
                         />
+                        <KhoAnhCrm account={khoAccount} oauthConfigured={oauthIsConfigured()} />
                         <NutSaoLuu soNgayTruoc={saoLuuCachDay} tuDongCachDay={saoLuuTuDongCachDay} />
                       </div>
                     )}

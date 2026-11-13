@@ -24,8 +24,36 @@ const SCOPE = "https://www.googleapis.com/auth/drive.readonly";
 /** Chi de ghi tep sao luu vao Drive — xem chu thich dau tep. */
 const QUYEN_GHI_SAO_LUU = "https://www.googleapis.com/auth/drive.file";
 
-/** Chi giu mot ket noi duy nhat — day la tai khoan cua studio, khong phai cua khach. */
-const ROW_ID = "default";
+/**
+ * HAI ket noi Google, khong phai mot (them 13/11/2026).
+ *
+ *   "default"  hamita.studio@gmail.com — doc anh cuoi tren Drive, doc file
+ *              AppSheet, ghi ban sao luu dem. Ket noi goc, khong dong vao.
+ *
+ *   "kho"      hamitaweddinghouse@gmail.com (o 5 TB) — CHI de chua tep CRM do
+ *              chinh web sinh ra: anh cham cong, chung tu thu chi.
+ *
+ * Vi sao phai la HAI TAI KHOAN chu khong phai mot thu muc chia se: tren Google
+ * Drive, TEP THUOC VE NGUOI TAI LEN chu khong thuoc ve chu thu muc. Chia se mot
+ * thu muc cua o 5 TB roi ghi vao do thi dung luong van tru vao o cua tai khoan
+ * dang ghi — ma hamita.studio da dung 1.880/2.048 GB (do 13/11/2026), chi con
+ * 167 GB. Chi "Shared Drive" moi tinh nguoc lai, nhung cai do phai mua Google
+ * Workspace, Gmail thuong khong co.
+ *
+ * Quyen xin cung khac nhau, co y:
+ *   default  drive.readonly + drive.file  — phai doc duoc anh cuoi
+ *   kho      CHI drive.file               — chi ghi duoc, va chi dung nhung tep
+ *                                           do chinh web tao ra. Ket noi nay
+ *                                           khong he nhin thay phan con lai cua
+ *                                           Drive do.
+ */
+export type KetNoi = "default" | "kho";
+
+/** Nhan tieng Viet, dung o trang quan tri va trong loi bao loi. */
+export const TEN_KET_NOI: Record<KetNoi, string> = {
+  default: "Drive ảnh cưới",
+  kho: "Kho ảnh CRM",
+};
 
 export function oauthIsConfigured(): boolean {
   return Boolean(
@@ -49,11 +77,20 @@ function createClient(): OAuth2Client {
   return new OAuth2Client({ clientId, clientSecret, redirectUri: redirectUri() });
 }
 
+const QUYEN_EMAIL = "https://www.googleapis.com/auth/userinfo.email";
+
+/** Quyen xin cho tung ket noi — xem chu thich o `KetNoi` vi sao khac nhau. */
+function quyenCua(ket: KetNoi): string[] {
+  return ket === "kho"
+    ? [QUYEN_GHI_SAO_LUU, QUYEN_EMAIL]
+    : [SCOPE, QUYEN_GHI_SAO_LUU, QUYEN_EMAIL];
+}
+
 /** Địa chỉ đưa người dùng sang Google để bấm đồng ý. */
-export function consentUrl(state: string): string {
+export function consentUrl(state: string, ket: KetNoi = "default"): string {
   return createClient().generateAuthUrl({
     access_type: "offline",
-    scope: [SCOPE, QUYEN_GHI_SAO_LUU, "https://www.googleapis.com/auth/userinfo.email"],
+    scope: quyenCua(ket),
     // Bắt Google phát lại refresh token; nếu không, lần đồng ý thứ hai trở đi
     // Google chỉ trả access token và mình không có gì để lưu.
     prompt: "consent",
@@ -64,14 +101,19 @@ export function consentUrl(state: string): string {
 
 export type ConnectedAccount = { email: string; connectedAt: Date };
 
-export async function getConnectedAccount(): Promise<ConnectedAccount | null> {
+export async function getConnectedAccount(
+  ket: KetNoi = "default",
+): Promise<ConnectedAccount | null> {
   if (!databaseIsConfigured()) return null;
-  const row = await getPrisma().googleAccount.findUnique({ where: { id: ROW_ID } });
+  const row = await getPrisma().googleAccount.findUnique({ where: { id: ket } });
   return row ? { email: row.email, connectedAt: row.connectedAt } : null;
 }
 
 /** Đổi mã Google trả về lấy refresh token rồi lưu lại. */
-export async function saveConnection(code: string): Promise<ConnectedAccount> {
+export async function saveConnection(
+  code: string,
+  ket: KetNoi = "default",
+): Promise<ConnectedAccount> {
   const client = createClient();
   const { tokens } = await client.getToken(code);
 
@@ -87,9 +129,12 @@ export async function saveConnection(code: string): Promise<ConnectedAccount> {
     chua duoc khai bao o Data Access, hoac nguoi dung khong tich o cho phep.
     Luu mot ket noi nhu vay vao database se lam hong ca nhung album dang chay.
   */
-  if (!tokens.scope?.includes(SCOPE)) {
+  const quyenBatBuoc = ket === "kho" ? QUYEN_GHI_SAO_LUU : SCOPE;
+  if (!tokens.scope?.includes(quyenBatBuoc)) {
     throw new Error(
-      "Kết nối chưa có quyền đọc Drive nên chưa được lưu. Trong màn hình đồng ý của Google, nhớ tích ô “Xem và tải xuống tất cả tệp Google Drive của bạn” rồi bấm Tiếp tục."
+      ket === "kho"
+        ? "Kết nối chưa có quyền tạo tệp nên chưa được lưu. Trong màn hình đồng ý của Google, nhớ tích ô cho phép tạo và sửa tệp rồi bấm Tiếp tục."
+        : "Kết nối chưa có quyền đọc Drive nên chưa được lưu. Trong màn hình đồng ý của Google, nhớ tích ô “Xem và tải xuống tất cả tệp Google Drive của bạn” rồi bấm Tiếp tục."
     );
   }
 
@@ -109,20 +154,20 @@ export async function saveConnection(code: string): Promise<ConnectedAccount> {
     connectedAt: new Date(),
   };
   await getPrisma().googleAccount.upsert({
-    where: { id: ROW_ID },
-    create: { id: ROW_ID, ...data },
+    where: { id: ket },
+    create: { id: ket, ...data },
     update: data,
   });
   // Ket noi moi thi phieu cu trong bo nho khong con dung nua.
-  xoaTokenTrongBoNho();
+  xoaTokenTrongBoNho(ket);
 
   return { email, connectedAt: data.connectedAt };
 }
 
-export async function disconnect(): Promise<void> {
+export async function disconnect(ket: KetNoi = "default"): Promise<void> {
   if (!databaseIsConfigured()) return;
-  xoaTokenTrongBoNho();
-  await getPrisma().googleAccount.deleteMany({ where: { id: ROW_ID } });
+  xoaTokenTrongBoNho(ket);
+  await getPrisma().googleAccount.deleteMany({ where: { id: ket } });
 }
 
 /**
@@ -143,23 +188,26 @@ export async function disconnect(): Promise<void> {
  * lai — va trong khoang do neu phieu da chet thi Drive tra loi, code tu quay
  * ve service account nhu cu.
  */
-let tokenCache: { token: string; hetHan: number } | null = null;
+const tokenCache = new Map<KetNoi, { token: string; hetHan: number }>();
 const HAN_TOKEN = 50 * 60_000;
 
-function xoaTokenTrongBoNho() {
-  tokenCache = null;
+/** Khong truyen gi = xoa ca hai ket noi. */
+function xoaTokenTrongBoNho(ket?: KetNoi) {
+  if (ket) tokenCache.delete(ket);
+  else tokenCache.clear();
 }
 
 /**
  * Access token cua tai khoan da ket noi, hoac null neu chua ket noi.
  * google-auth-library tu goi Google lay token moi khi cai cu het han.
  */
-export async function getUserAccessToken(): Promise<string | null> {
+export async function getUserAccessToken(ket: KetNoi = "default"): Promise<string | null> {
   if (!oauthIsConfigured() || !databaseIsConfigured()) return null;
 
-  if (tokenCache && tokenCache.hetHan > Date.now()) return tokenCache.token;
+  const sanCo = tokenCache.get(ket);
+  if (sanCo && sanCo.hetHan > Date.now()) return sanCo.token;
 
-  const row = await getPrisma().googleAccount.findUnique({ where: { id: ROW_ID } });
+  const row = await getPrisma().googleAccount.findUnique({ where: { id: ket } });
   if (!row) return null;
 
   const refreshToken = giaiMa(row.refreshToken);
@@ -176,7 +224,7 @@ export async function getUserAccessToken(): Promise<string | null> {
   if (!daMaHoa(row.refreshToken) && coKhoaMaHoa()) {
     getPrisma()
       .googleAccount.update({
-        where: { id: ROW_ID },
+        where: { id: ket },
         data: { refreshToken: maHoa(refreshToken) },
       })
       .catch(() => {});
@@ -186,6 +234,6 @@ export async function getUserAccessToken(): Promise<string | null> {
   client.setCredentials({ refresh_token: refreshToken });
 
   const { token } = await client.getAccessToken();
-  if (token) tokenCache = { token, hetHan: Date.now() + HAN_TOKEN };
+  if (token) tokenCache.set(ket, { token, hetHan: Date.now() + HAN_TOKEN });
   return token ?? null;
 }

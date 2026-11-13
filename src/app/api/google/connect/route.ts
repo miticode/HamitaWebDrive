@@ -1,11 +1,21 @@
 import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
-import { consentUrl, oauthIsConfigured } from "@/lib/googleAuth";
+import { NextRequest } from "next/server";
+import { consentUrl, oauthIsConfigured, type KetNoi } from "@/lib/googleAuth";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+/**
+ * `?ket=kho` de noi tai khoan Drive thu hai (kho anh CRM); khong truyen gi thi
+ * van la ket noi goc nhu truoc.
+ *
+ * Dia chi quay ve cua Google (`/api/google/callback`) phai khop TUNG KY TU voi
+ * cai khai trong Google Cloud Console, nen khong duoc them tham so vao do. Vi
+ * vay ket noi nao duoc giau trong chuoi `state` — thu Google tra lai nguyen
+ * van — chu khong nam tren dia chi.
+ */
+export async function GET(req: NextRequest) {
   if (!(await quyenAlbumNguyHiem())) {
     return Response.json({ error: "Chưa đăng nhập quản trị." }, { status: 403 });
   }
@@ -16,8 +26,10 @@ export async function GET() {
     );
   }
 
+  const ket: KetNoi = req.nextUrl.searchParams.get("ket") === "kho" ? "kho" : "default";
+
   // Chuoi ngau nhien de luc Google tra ve, minh biet chac la dung yeu cau minh gui di.
-  const state = randomBytes(16).toString("hex");
+  const state = `${ket}:${randomBytes(16).toString("hex")}`;
   (await cookies()).set("google_oauth_state", state, {
     httpOnly: true,
     sameSite: "lax",
@@ -26,5 +38,5 @@ export async function GET() {
     path: "/",
   });
 
-  return Response.redirect(consentUrl(state), 302);
+  return Response.redirect(consentUrl(state, ket), 302);
 }

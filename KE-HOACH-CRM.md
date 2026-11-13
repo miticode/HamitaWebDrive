@@ -94,19 +94,45 @@ sổ quỹ"** — phần bán hàng đã xong rồi.
 
 ## 3. Ba việc phải quyết TRƯỚC khi viết dòng code nào
 
-### 3a. Ảnh và tệp đính kèm lưu ở đâu — chặn đường nếu không quyết
+### 3a. Ảnh và tệp đính kèm lưu ở đâu — ✅ ĐÃ CHỐT 13/11/2026, ĐÃ LÀM XONG
 
-Hiện ảnh nhân viên lưu thẳng trong Postgres (`AnhNhanVien.duLieu Bytes`). Cách
-đó chạy được với 25 cái avatar, nhưng **không chạy với chấm công**:
+**Anh chốt: Google Drive của `hamitaweddinghouse@gmail.com` (ổ 5 TB).**
 
-> 6.114 lượt chấm công, mỗi lượt một ảnh. Cỡ 200 KB một tấm là **1,2 GB**.
-> Gói Neon miễn phí cho **0,5 GB**. Chưa kể chứng từ Thu và Chi.
+Không để trong Postgres được: 6.114 lượt chấm công, mỗi lượt một ảnh, cỡ
+200 KB một tấm là **1,2 GB**, mà gói Neon miễn phí chỉ cho **0,5 GB**.
 
-| Cách | Ưu | Nhược |
+**Cái bẫy đã tránh được.** Chỉ chia sẻ một thư mục của ổ 5 TB là *không* đủ:
+trên Google Drive, **tệp thuộc về người tải lên chứ không thuộc về chủ thư
+mục**. Web đang đăng nhập Google bằng `hamita.studio@gmail.com`, nên ghi vào
+thư mục chia sẻ thì dung lượng vẫn trừ vào ổ của tài khoản đó — mà đo
+13/11/2026 ổ đó **đã dùng 1.880/2.048 GB, chỉ còn 167 GB**. Chỉ "Shared Drive"
+mới tính ngược lại, nhưng cái đó phải mua Google Workspace.
+
+**Cách đã làm:** nối **thêm** một tài khoản Google thứ hai, chỉ dùng để ghi tệp
+CRM. Kết nối gốc giữ nguyên để đọc ảnh cưới.
+
+| | Kết nối gốc | Kho ảnh CRM (mới) |
 |---|---|---|
-| **Google Drive** (khuyên) | đã có sẵn phiếu và thư mục studio; cùng cách ảnh cưới đang chạy; **0 đồng** | phải viết lớp tải lên, hỏi Drive chậm hơn |
-| Cloudflare R2 | nhanh, rẻ | phải bật R2 — xem `KE-HOACH-CHI-PHI.md` |
-| Postgres Bytes | dễ nhất | **vỡ gói Neon trong vài tháng** |
+| Khoá trong `GoogleAccount` | `default` | `kho` |
+| Tài khoản | `hamita.studio@gmail.com` | `hamitaweddinghouse@gmail.com` |
+| Quyền xin | `drive.readonly` + `drive.file` | **chỉ `drive.file`** |
+| Dùng để | đọc ảnh cưới, đọc AppSheet, ghi sao lưu | ảnh chấm công, chứng từ thu chi |
+
+Kết nối kho xin **ít quyền hơn hẳn**: `drive.file` chỉ cho đụng vào những tệp
+do chính web tạo ra, nên nó không nhìn thấy phần còn lại của ổ 5 TB.
+
+**Mã đã viết:** `src/lib/googleAuth.ts` (kiểu `KetNoi`),
+`src/lib/khoAnh.ts` (ghi/đọc/xoá tệp), `src/app/admin/KhoAnhCrm.tsx` (nút nối
+trên trang quản lý album).
+
+**Việc của anh:** vào trang quản lý album, bấm **"Nối kho ảnh"**, chọn
+`hamitaweddinghouse@gmail.com`. Nhớ chọn đúng tài khoản — đừng chọn
+`hamita.studio`.
+
+> **Lưu ý riêng — ổ 2 TB sắp đầy.** Ảnh CRM *không* phải thứ làm đầy ổ: 25 nhân
+> viên × 2 lần/ngày × 200 KB ≈ **3,6 GB/năm**, với 167 GB trống thì chạy được
+> 40 năm. Thứ đang làm đầy 2 TB là **ảnh cưới**. Đó là việc riêng, to hơn
+> chuyện CRM, và nên tính sớm.
 
 ### 3b. Lấy lại quyền sở hữu dữ liệu — làm NGAY, không đợi
 
@@ -199,8 +225,14 @@ Web đang lệch 53 ngày. Hai cách:
   người lập hợp đồng trên web, nếu không đêm đó bản AppSheet cũ đè lên.
 - **Chép tay** bằng nút "Đồng bộ ngay" mỗi khi cần nhìn số mới.
 
-Em khuyên **bật lại lịch**: đằng nào tới đợt 7 cũng xoá, mà trong lúc làm thì
-cần dữ liệu thật và mới để đối chiếu.
+**✅ ĐÃ CHỐT VÀ ĐÃ LÀM 13/11/2026:** anh cho bật lại lịch. `vercel.json` đã
+thêm `/api/cron/dong-bo` lúc 19:30 UTC (2 giờ 30 sáng giờ Việt Nam), đúng mốc
+cũ — trước bản sao lưu 3 giờ để bản sao lưu đêm đó có dữ liệu mới.
+
+Dải báo trên trang Hợp đồng đã viết lại cho đúng. Câu quan trọng nhất trong đó
+giờ là **cảnh báo ghi đè**: lịch chép chỉ đụng vào dòng mang dấu vân tay
+AppSheet, nên hợp đồng **lập trên web** không bao giờ bị đụng — nhưng hợp đồng
+**cũ** mà sửa trên web thì đêm nào bên AppSheet đổi dòng đó là bị đè mất.
 
 ---
 
@@ -229,11 +261,26 @@ thì không đáng kể — **cứ làm CRM trước, chuyện nền tảng tín
 
 ---
 
-## 8. Việc của anh — ba câu trả lời
+## 8. Việc của anh
 
-1. **Ảnh chấm công và chứng từ lưu ở đâu?** (em khuyên: Drive)
-2. **Ngày chuyển hẳn là ngày nào?** (khoảng 5–6 tuần nữa nếu bắt đầu ngay)
-3. **Có bật lại lịch chép đêm từ giờ tới lúc đó không?** (em khuyên: có)
+### Đã chốt 13/11/2026
 
-Và một việc làm được ngay trong 2 phút: **tạo bản sao file AppSheet vào Drive
-Hamita** — bản của tiệm đang cũ hai tháng.
+- ✅ Ảnh lưu trên Drive `hamitaweddinghouse@gmail.com` (mục 3a) — **đã làm xong**
+- ✅ Bật lại lịch chép đêm (mục 5) — **đã làm xong**
+
+### Còn chờ
+
+- ⬜ **Bấm "Nối kho ảnh"** trên trang quản lý album, chọn
+  `hamitaweddinghouse@gmail.com`. Chưa nối thì đợt 3 không ghi được chứng từ.
+- ⬜ **Ngày chuyển hẳn là ngày nào?** Khoảng 5–6 tuần nữa nếu bắt đầu ngay.
+- ⬜ **Tạo bản sao file AppSheet vào Drive Hamita** (mục 3b) — 2 phút, bản của
+  tiệm đang cũ hai tháng.
+- ⬜ **"File Google Sheet riêng" anh nhắc tới là ý nào?** Em còn chưa rõ:
+  1. Bản sao an toàn của file AppSheet, anh tự tạo định kỳ → chính là mục 3b,
+     không cần viết mã gì.
+  2. Web đọc từ bản sao đó thay vì file gốc → **không chạy được**: app AppSheet
+     chỉ ghi vào file của người bán, bản sao sẽ đứng yên và lịch chép đêm sẽ
+     chép đi chép lại dữ liệu chết.
+  3. Một file Sheet mới, web **tự ghi dữ liệu CRM ra đó** để tiệm luôn có bản
+     mở được bằng Excel, nằm trong Drive của chính mình → làm được, là tính
+     năng mới.

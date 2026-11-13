@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
-import { saveConnection } from "@/lib/googleAuth";
+import { saveConnection, type KetNoi } from "@/lib/googleAuth";
 
 export const runtime = "nodejs";
 
@@ -31,11 +31,18 @@ export async function GET(req: NextRequest) {
   }
   if (!code) return backToAdmin(req, { drive: "loi", chitiet: "Google không trả về mã." });
 
+  /*
+    Ket noi nao duoc giau o dau chuoi `state` (xem /api/google/connect). Doc tu
+    chuoi DA DOI CHIEU voi cookie o tren, khong doc tu tham so tren dia chi —
+    nguoi la sua dia chi thi khong doi duoc chuoi trong cookie.
+  */
+  const ket: KetNoi = expected.startsWith("kho:") ? "kho" : "default";
+
   try {
-    const account = await saveConnection(code);
-    return backToAdmin(req, { drive: "ok", email: account.email });
+    const account = await saveConnection(code, ket);
+    return backToAdmin(req, { drive: "ok", email: account.email, ket });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return backToAdmin(req, { drive: "loi", chitiet: message.slice(0, 200) });
+    return backToAdmin(req, { drive: "loi", chitiet: message.slice(0, 200), ket });
   }
 }
