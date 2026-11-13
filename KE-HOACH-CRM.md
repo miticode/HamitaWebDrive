@@ -177,7 +177,7 @@ ngày bị bỏ: thêm 132 khách, 162 hợp đồng, 331 phiếu thu, 634 đầ
 **Còn nợ ở đợt này:** `KyBaoCao` (27 dòng, mốc chốt sổ) chưa làm — sổ quỹ hiện
 cộng theo tháng dương lịch, chưa theo kỳ của tiệm.
 
-### Đợt 4 — Chấm công · ~1,5 tuần
+### ✅ Đợt 4 — Chấm công · XONG 13/11/2026
 
 Phần nặng nhất và nhiều người dùng nhất: **mỗi nhân viên bấm hai lần mỗi ngày.**
 Đây cũng là thứ quyết định tiệm có thật sự chuyển hay không — ngày nào cả tiệm
@@ -186,10 +186,28 @@ còn mở AppSheet để chấm công thì ngày đó họ còn ở bên kia.
 - Bảng `ChamCong` (6.114 dòng)
 - Màn chấm công trên **điện thoại**: vào ca / ra ca, chụp ảnh, lấy toạ độ
 - Kiểm toạ độ so với vị trí tiệm — `ThongTinStudio` đã có sẵn toạ độ
-- **Hai cơ sở**: Wedding House (377) và Hami Baby (337). `BAN-GIAO.md` ghi hiện
-  mới có một điểm — phải hỏi nhân viên có chấm ở cả hai không
+- **Hai cơ sở**: ~~phải hỏi nhân viên có chấm ở cả hai không~~ → **đo ra, không
+  cần hỏi**: gom cụm 6.114 toạ độ ra một cụm 1.248 lượt cách Wedding House
+  411m, đó là Hami Baby. Đã thêm ô toạ độ thứ hai vào Thông tin studio.
 - Bảng công theo tháng cho quản lý
-- Script chép 6.114 dòng
+- ~~Script chép 6.114 dòng~~ → làm thẳng trong lịch chép đêm (mục 8)
+
+**Đã đối chiếu:** 6.114 dòng, **46.185,3 giờ**, **5.741,8 ngày công** — khớp
+tuyệt đối với AppSheet.
+
+**Ba quyết định bị dữ liệu thật bẻ lại:**
+
+1. `maNV` **không** là khoá ngoại — 28/46 mã đã nghỉ việc, chiếm 51% số dòng.
+2. **Không chặn theo vị trí** — 34,7% lượt chấm cách tiệm hơn 200m (giữa
+   4,3 km) vì đi chụp ngoài. Chặn là từ chối 1 trong 3 lần chấm thật.
+3. **Không ghi nhật ký** mỗi lượt chấm — 1.500 dòng/tháng sẽ làm ngập nhật ký.
+
+**Phân bố vị trí sau khi khai đủ hai toạ độ:** tại tiệm 59,9% (Wedding House
+39,3% + Hami Baby 20,6%), ngoài tiệm 34,7%, không rõ vị trí 5,5%.
+
+**Còn nợ ở đợt này:** ảnh chấm công cũ (675 tấm) nằm trong thư mục
+`Chấm công_Images` của người bán, chưa bao giờ được chia sẻ — chép sang không
+được, chỉ giữ lại đường dẫn.
 
 ### Đợt 5 — Đơn từ và lương · ~1,5 tuần
 
