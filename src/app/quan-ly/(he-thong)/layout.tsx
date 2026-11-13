@@ -27,6 +27,9 @@ export default async function HeThongLayout({ children }: { children: React.Reac
   */
   const menu: MucMenu[] = [
     { nhom: null, ten: "Tổng quan", href: "/quan-ly" },
+    // Chấm công: CẢ TIỆM, không lọc theo vai trò nào. Đây là trang nhiều người
+    // dùng nhất — mỗi người bấm hai lần mỗi ngày — nên để ngay đầu danh sách.
+    { nhom: null, ten: "Chấm công", href: "/quan-ly/cham-cong" },
     // Hợp đồng: quản lý + sale. Lịch và đầu việc thì cả tiệm, nhưng đầu việc
     // chỉ hiện việc của chính người đang xem (xem trang cong-viec).
     ...(xemHopDong(nguoi) ? [{ nhom: "Hợp đồng – Công việc", ten: "Hợp đồng", href: "/quan-ly/hop-dong" }] : []),

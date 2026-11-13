@@ -23,6 +23,7 @@ export type DuLieuThongTin = {
   gioNghiGiuaBuoi: string;
   ngayCongThang: string;
   toaDo: string;
+  toaDo2: string;
 };
 
 const CHU_THONG_TIN: Record<keyof DuLieuThongTin, string> = {
@@ -33,7 +34,8 @@ const CHU_THONG_TIN: Record<keyof DuLieuThongTin, string> = {
   gioKetThuc: "giờ kết thúc",
   gioNghiGiuaBuoi: "giờ nghỉ giữa buổi",
   ngayCongThang: "ngày công / tháng",
-  toaDo: "toạ độ",
+  toaDo: "toạ độ Wedding House",
+  toaDo2: "toạ độ Hami Baby",
 };
 
 export async function suaThongTinStudioAction(du: DuLieuThongTin): Promise<{ loi?: string }> {
@@ -59,7 +61,16 @@ export async function suaThongTinStudioAction(du: DuLieuThongTin): Promise<{ loi
   }
   const toaDo = rong(du.toaDo) ? null : chuanToaDo(du.toaDo);
   if (!rong(du.toaDo) && !toaDo) {
-    return { loi: "Toạ độ chưa đúng — dạng “vĩ độ, kinh độ”, ví dụ 10.437096, 106.476095." };
+    return { loi: "Toạ độ Wedding House chưa đúng — dạng “vĩ độ, kinh độ”, ví dụ 10.437096, 106.476095." };
+  }
+  /*
+    Toạ độ cơ sở thứ hai (Hami Baby, 337 Đỗ Tường Tự) — thêm 13/11/2026 cho
+    chấm công. Không phải đoán là tiệm có hai nơi: gom cụm 6.114 lượt chấm bên
+    AppSheet ra một cụm 1.248 lượt cách Wedding House 411m.
+  */
+  const toaDo2 = rong(du.toaDo2) ? null : chuanToaDo(du.toaDo2);
+  if (!rong(du.toaDo2) && !toaDo2) {
+    return { loi: "Toạ độ Hami Baby chưa đúng — dạng “vĩ độ, kinh độ”, ví dụ 10.438454, 106.472579." };
   }
   for (const k of ["nguoiDaiDien", "soTaiKhoan1", "soTaiKhoan2"] as const) {
     if (du[k].length > 200) return { loi: `Ô ${CHU_THONG_TIN[k]} dài quá.` };
@@ -74,6 +85,7 @@ export async function suaThongTinStudioAction(du: DuLieuThongTin): Promise<{ loi
     gioNghiGiuaBuoi: nghi,
     ngayCongThang: ngayCong,
     toaDo,
+    toaDo2,
   };
 
   const prisma = getPrisma();

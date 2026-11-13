@@ -58,6 +58,7 @@ export default async function ThongTinPage() {
               gioNghiGiuaBuoi: tt?.gioNghiGiuaBuoi?.toString() ?? "",
               ngayCongThang: tt?.ngayCongThang?.toString() ?? "",
               toaDo: tt?.toaDo ?? "",
+              toaDo2: tt?.toaDo2 ?? "",
             }}
           />
         </div>

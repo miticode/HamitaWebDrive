@@ -33,6 +33,7 @@ export function FormThongTin({ banDau }: { banDau: DuLieuThongTin }) {
 
   const o = "grid gap-1 text-xs text-fg-muted";
   const toaDoDung = du.toaDo.trim() ? chuanToaDo(du.toaDo) : null;
+  const toaDo2Dung = du.toaDo2.trim() ? chuanToaDo(du.toaDo2) : null;
 
   return (
     <div className="grid gap-4">
@@ -71,16 +72,34 @@ export function FormThongTin({ banDau }: { banDau: DuLieuThongTin }) {
         </label>
       </div>
 
-      <label className={o}>
-        Toạ độ studio (vĩ độ, kinh độ)
-        <input id="tt-toa-do" className="input" placeholder="10.437096, 106.476095" value={du.toaDo} onChange={(e) => doi("toaDo", e.target.value)} />
-        {/* Mở bản đồ ngay để quản lý tự nhìn thấy toạ độ có đúng là tiệm không. */}
-        {toaDoDung && (
-          <a href={linkBanDo(toaDoDung)} target="_blank" rel="noreferrer" className="justify-self-start underline underline-offset-2 hover:text-accent">
-            Xem vị trí trên bản đồ ↗
-          </a>
-        )}
-      </label>
+      {/*
+        HAI toạ độ, vì tiệm có hai cơ sở (thêm 13/11/2026 cho chấm công).
+        Không phải đoán: gom cụm 6.114 lượt chấm bên AppSheet ra một cụm 1.248
+        lượt cách Wedding House 411m — đó là Hami Baby. Chỉ khai một toạ độ thì
+        mọi lượt chấm ở cơ sở kia đều bị bảng công gọi là "ngoài tiệm".
+      */}
+      <div className="grid gap-5 sm:grid-cols-2">
+        <label className={o}>
+          Toạ độ Wedding House — 377 (vĩ độ, kinh độ)
+          <input id="tt-toa-do" className="input" placeholder="10.437096, 106.476095" value={du.toaDo} onChange={(e) => doi("toaDo", e.target.value)} />
+          {/* Mở bản đồ ngay để quản lý tự nhìn thấy toạ độ có đúng là tiệm không. */}
+          {toaDoDung && (
+            <a href={linkBanDo(toaDoDung)} target="_blank" rel="noreferrer" className="justify-self-start underline underline-offset-2 hover:text-accent">
+              Xem vị trí trên bản đồ ↗
+            </a>
+          )}
+        </label>
+
+        <label className={o}>
+          Toạ độ Hami Baby — 337 (vĩ độ, kinh độ)
+          <input id="tt-toa-do-2" className="input" placeholder="10.438454, 106.472579" value={du.toaDo2} onChange={(e) => doi("toaDo2", e.target.value)} />
+          {toaDo2Dung && (
+            <a href={linkBanDo(toaDo2Dung)} target="_blank" rel="noreferrer" className="justify-self-start underline underline-offset-2 hover:text-accent">
+              Xem vị trí trên bản đồ ↗
+            </a>
+          )}
+        </label>
+      </div>
 
       {loi && <p className="text-sm text-red-700">{loi}</p>}
       {daLuu && !coDoi && <p className="text-sm text-emerald-700">Đã lưu.</p>}

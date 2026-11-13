@@ -509,7 +509,80 @@ model ThongTinStudio {
   ngayCongThang   Int?
   /// "vi do, kinh do" cua studio — de kiem nhan vien cham cong dung cho (dot 4).
   toaDo           String?
+  /// Toa do CO SO THU HAI — Hami Baby, 337 Do Tuong Tu (them 13/11/2026).
+  ///
+  /// Khong phai doan: gom cum 6.114 luot cham cong ben AppSheet ra mot cum
+  /// 1.248 luot cach Wedding House 411m. Tiem that su co nguoi cham o ca hai
+  /// noi, nen mot toa do la khong du de goi ten cho cham.
+  toaDo2          String?
   capNhatLuc      DateTime @updatedAt
+}
+
+/// CHAM CONG — them 13/11/2026 (KE-HOACH-CRM.md dot 4).
+///
+/// Chep tu trang "Chấm công" ben AppSheet: 6.114 dong, 14/08/2023 → nay.
+/// Day la bang NHIEU NGUOI DUNG NHAT: moi nhan vien bam hai lan moi ngay.
+///
+/// BON DIEU DO DUOC O DU LIEU THAT, quyet dinh cach dung bang nay:
+///
+///  1. `maNV` KHONG phai khoa ngoai sang NhanVien. Trong 6.114 dong co 46 ma
+///     nhan vien, ma bang NhanVien chi con 27 — 28 ma da nghi viec, chiem
+///     3.131 dong (51%). Dung khoa ngoai la mat nua lich su cham cong.
+///     (Cau hoi nay treo tu 15/09/2026, nay do xong.)
+///
+///  2. KHONG CHAN THEO VI TRI. 39,6% luot cham cach tiem hon 500m, co cum xa
+///     4–5 km — do la nhung buoi chup ngoai, phim truong. Chan theo toa do la
+///     tu choi 4 trong 10 lan cham that. Toa do o day de GOI TEN cho cham
+///     ("tai Wedding House", "ngoai tiem, cach 4,6 km"), khong de tu choi ai.
+///
+///  3. 334 luot co toa do "0,0" — may khong lay duoc vi tri. Bat buoc phai co
+///     vi tri la nhung nguoi do khong cham cong duoc. Cho cham, ghi ro la
+///     khong co vi tri, de quan ly tu nhin.
+///
+///  4. Anh chi co o 675/6.114 dong (11%), va duong dan tro vao thu muc
+///     "Chấm công_Images" trong Drive cua NGUOI BAN — thu muc do chua bao gio
+///     duoc chia se cho tiem. Nen anh cu KHONG chep sang duoc, chi giu lai
+///     duong dan. Anh moi chup tren web nam o kho Drive 5 TB (`anhKho`).
+model ChamCong {
+  id             String    @id @default(cuid())
+  /// Cot "ID Chấm công" ben AppSheet.
+  maAppSheet     String?   @unique
+  /// Ma nhan vien dang CHUOI, khong phai quan he — xem diem 1 o tren.
+  maNV           String?
+  /// Chep lai luc cham, vi nhan vien co the doi phong ban. Khong tra nguoc
+  /// bang NhanVien: bang cong thang 3 phai ghi dung phong ban hoi thang 3.
+  phongBan       String?
+  /// "yyyy-mm-dd" theo gio studio (nguyen tac 35).
+  ngay           String?
+  gioVao         DateTime?
+  gioRa          DateTime?
+  /// So gio lam va so ngay cong. Dong chep tu AppSheet thi lay y nguyen so ben
+  /// do de doi chieu o dot 7; dong cham tren web thi web tu tinh.
+  soGio          Float?
+  soNgayCong     Float?
+  /// "Đi làm" | "Nghỉ làm"
+  trangThai      String?
+  /// "Đúng giờ" | "Trễ giờ". Ben AppSheet 2.114/5.993 luot la tre (35%).
+  trangThaiVao   String?
+  /// Nguyen van "vi do, kinh do" nhu ben AppSheet, vi du "10.437091, 106.476072".
+  ///
+  /// Giu mot chuoi chu khong tach hai cot so: chep sang phai giong het ben do
+  /// de doi chieu o dot 7. Mot thang chi vai tram dong nen tinh khoang cach
+  /// bang JavaScript luc doc la du, khong can tinh trong SQL.
+  viTri          String?
+  ghiChu         String?
+  /// Duong dan anh ben AppSheet — thu muc khong duoc chia se, khong mo duoc.
+  anhAppSheet    String?
+  /// Ma tep anh tren kho Drive 5 TB, voi luot cham TREN WEB.
+  anhKho         String?
+  /// Cot "ID lương" ben AppSheet — dot 5 moi noi vao bang luong.
+  luongAppSheet  String?
+  taoLuc         DateTime  @default(now())
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  @@index([ngay])
+  @@index([maNV, ngay])
 }
 
 /// Noi quy studio va muc phat moi lan vi pham. Moi nguoi xem duoc, chi quan ly

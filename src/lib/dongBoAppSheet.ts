@@ -42,6 +42,7 @@ export type KetQuaDongBo = {
     lich: SoDongBo;
     congViec: SoDongBo;
     chi: SoDongBo;
+    chamCong: SoDongBo;
   };
   giay: number;
 };
@@ -156,7 +157,7 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     return {
       khongDoi: true,
       dichVuThem: 0,
-      bang: { khachHang: KHONG, hopDong: KHONG, chiTiet: KHONG, phieuThu: KHONG, lich: KHONG, congViec: KHONG, chi: KHONG },
+      bang: { khachHang: KHONG, hopDong: KHONG, chiTiet: KHONG, phieuThu: KHONG, lich: KHONG, congViec: KHONG, chi: KHONG, chamCong: KHONG },
       giay: Math.round((Date.now() - batDau) / 1000),
     };
   }
@@ -428,10 +429,52 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     bay,
   );
 
+  /*
+    8. Cham cong (them 13/11/2026).
+
+    `maNV` chep thang vao cot chuoi, KHONG tra nguoc bang NhanVien: trong 6.114
+    dong co 46 ma nhan vien ma bang NhanVien chi con 27 — 28 ma da nghi viec,
+    chiem 3.131 dong (51%). Ghep bang khoa ngoai la mat nua lich su.
+
+    Cot "Phòng ban" cung chep y nguyen chu khong tra nguoc: bang cong thang 3
+    phai ghi dung phong ban cua nguoi do HOI THANG 3, khong phai phong ban hom
+    nay.
+  */
+  const nguonCham = bang("Chấm công").flatMap((d) => {
+    const m = ma(d["ID Chấm công"]);
+    if (!m) return [];
+    return [{
+      ma: m,
+      data: {
+        maNV: ma(d["Mã NV"]),
+        phongBan: chu(d["Phòng ban"]),
+        ngay: ngay(d["Ngày"]),
+        gioVao: luc(d["Giờ vào"]),
+        gioRa: luc(d["Giờ ra"]),
+        soGio: soThuc(d["Số giờ"]),
+        soNgayCong: soThuc(d["Số ngày công"]),
+        trangThai: chu(d["Trạng thái"]),
+        trangThaiVao: chu(d["Trạng thái vào làm"]),
+        viTri: chu(d["Vị trí"]),
+        ghiChu: chu(d["Ghi chú"]),
+        anhAppSheet: chu(d["Hình ảnh"]),
+        luongAppSheet: ma(d["ID lương"]),
+      },
+    }];
+  });
+  const chamCong = await chepBang(
+    prisma.chamCong as unknown as UyQuyen,
+    "maAppSheet",
+    nguonCham,
+    (await prisma.chamCong.findMany({ select: { id: true, maAppSheet: true, bamAppSheet: true, matBenAppSheet: true } }))
+      .map((c) => ({ ...c, ma: c.maAppSheet })),
+    bay,
+  );
+
   const kq: KetQuaDongBo = {
     khongDoi: false,
     dichVuThem: dvMoi.length,
-    bang: { khachHang: kh, hopDong: hd, chiTiet: ct, phieuThu: thu, lich, congViec, chi },
+    bang: { khachHang: kh, hopDong: hd, chiTiet: ct, phieuThu: thu, lich, congViec, chi, chamCong },
     giay: Math.round((Date.now() - batDau) / 1000),
   };
 
@@ -448,6 +491,7 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     lich: "lịch",
     congViec: "đầu việc",
     chi: "khoản chi",
+    chamCong: "lượt chấm công",
   } as const;
   for (const [k, s] of Object.entries(kq.bang) as [keyof typeof CHU, SoDongBo][]) {
     if (s.them) so[`${CHU[k]} thêm`] = s.them;
