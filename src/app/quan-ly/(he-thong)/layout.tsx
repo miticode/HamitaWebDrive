@@ -36,6 +36,9 @@ export default async function HeThongLayout({ children }: { children: React.Reac
       ? [
           { nhom: "Tư vấn – CSKH", ten: "Khách hàng", href: "/quan-ly/khach-hang" },
           { nhom: "Kế toán", ten: "Phiếu thu", href: "/quan-ly/phieu-thu" },
+          // Sổ quỹ đứng SAU phiếu thu dù nó tổng quát hơn: thói quen cũ của
+          // tiệm là mở phiếu thu, đảo chỗ là mỗi lần vào lại phải tìm.
+          { nhom: "Kế toán", ten: "Sổ quỹ", href: "/quan-ly/so-quy" },
         ]
       : []),
     // Danh sách nhân viên: quản lý + sale (anh chốt 25/09/2026).

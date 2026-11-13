@@ -41,6 +41,7 @@ export type KetQuaDongBo = {
     phieuThu: SoDongBo;
     lich: SoDongBo;
     congViec: SoDongBo;
+    chi: SoDongBo;
   };
   giay: number;
 };
@@ -155,7 +156,7 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     return {
       khongDoi: true,
       dichVuThem: 0,
-      bang: { khachHang: KHONG, hopDong: KHONG, chiTiet: KHONG, phieuThu: KHONG, lich: KHONG, congViec: KHONG },
+      bang: { khachHang: KHONG, hopDong: KHONG, chiTiet: KHONG, phieuThu: KHONG, lich: KHONG, congViec: KHONG, chi: KHONG },
       giay: Math.round((Date.now() - batDau) / 1000),
     };
   }
@@ -388,10 +389,49 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     bay,
   );
 
+  /*
+    7. So chi (them 13/11/2026).
+
+    KHONG ghep voi hop dong: cot "Hợp đồng" ben AppSheet co 0/1397 dong co gia
+    tri — xem chu thich o model ChiTieu. Ten cot ben do dat nguoc nen phai doi
+    lai: "Loại chi" la HINH THUC TRA, "Tên Loại chi" moi la KHOAN CHI.
+  */
+  const nguonChi = bang("Chi").flatMap((d) => {
+    const m = ma(d["u"]);
+    if (!m) return [];
+    return [{
+      ma: m,
+      data: {
+        hinhThuc: chu(d["Loại chi"]),
+        taiKhoan: chu(d["Tài khoản"]),
+        khoanChi: chu(d["Tên Loại chi"]),
+        dienGiai: chu(d["Thông tin"]),
+        ngayChi: ngay(d["Ngày"]),
+        soTien: tien(d["Số tiền chi"]),
+        trangThai: chu(d["Trạng thái"]),
+        ghiChu: chu(d["Ghi chú"]),
+        nguoiNhan: chu(d["Người nhận"]),
+        nguoiTaoMaNV: chu(d["Người tạo"]),
+        nguoiDuyetMaNV: chu(d["Người duyệt"]),
+        luongAppSheet: ma(d["Lương nhân viên"]),
+        anhAppSheet: chu(d["Hình ảnh đính kèm"]),
+        taoLuc: luc(d["Ngày tạo"]),
+      },
+    }];
+  });
+  const chi = await chepBang(
+    prisma.chiTieu as unknown as UyQuyen,
+    "maAppSheet",
+    nguonChi,
+    (await prisma.chiTieu.findMany({ select: { id: true, maAppSheet: true, bamAppSheet: true, matBenAppSheet: true } }))
+      .map((c) => ({ ...c, ma: c.maAppSheet })),
+    bay,
+  );
+
   const kq: KetQuaDongBo = {
     khongDoi: false,
     dichVuThem: dvMoi.length,
-    bang: { khachHang: kh, hopDong: hd, chiTiet: ct, phieuThu: thu, lich, congViec },
+    bang: { khachHang: kh, hopDong: hd, chiTiet: ct, phieuThu: thu, lich, congViec, chi },
     giay: Math.round((Date.now() - batDau) / 1000),
   };
 
@@ -407,6 +447,7 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     phieuThu: "phiếu thu",
     lich: "lịch",
     congViec: "đầu việc",
+    chi: "khoản chi",
   } as const;
   for (const [k, s] of Object.entries(kq.bang) as [keyof typeof CHU, SoDongBo][]) {
     if (s.them) so[`${CHU[k]} thêm`] = s.them;

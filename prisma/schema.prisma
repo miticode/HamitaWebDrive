@@ -728,6 +728,63 @@ model PhieuThu {
   @@index([ngayThu])
 }
 
+/// So CHI — doi trong cua PhieuThu. Them 13/11/2026 (KE-HOACH-CRM.md dot 3).
+///
+/// Truoc do web co Thu ma khong co Chi nen khong ra duoc so du. Chep tu trang
+/// "Chi" ben AppSheet: 1.397 dong, tu 30/08/2023 toi 12/11/2026.
+///
+/// BA DIEU DO DUOC O DU LIEU THAT, quyet dinh cach dung bang nay:
+///
+///  1. Cot "Hợp đồng" ben AppSheet co 0/1397 dong co gia tri — so chi CHUA BAO
+///     GIO noi voi hop dong. Nen o day KHONG co `hopDongId`. Can noi thi them
+///     sau, dung dung quan he ma khong ai dung.
+///  2. Cot "Loại chi" ben AppSheet that ra la HINH THUC TRA (Tiền mặt /
+///     Chuyển Khoản), con "Tên Loại chi" moi la KHOAN CHI. Ten cot ben do dat
+///     nguoc, nen o day doi lai cho dung nghia: `hinhThuc` va `khoanChi`.
+///  3. Trang thai ben AppSheet chi co HAI gia tri — "Đã chi tiền mặt" va
+///     "Đã chi chuyển khoản". KHONG co "Chờ duyệt" nhu ben Thu. Phieu lap tren
+///     web thi co, vi tren web ai cung lap duoc con duyet la viec cua quan ly.
+///
+/// Khong chuan hoa chu hoa chu thuong khi chep ("Tech" / "tech" / "Hami Tech"
+/// la ba gia tri khac nhau ben do): chuan hoa la luc doi chieu hai ben o dot 7
+/// khong khop nua. Don dep la viec rieng, lam sau khi chuyen xong.
+model ChiTieu {
+  id             String    @id @default(cuid())
+  /// Cot "u" ben AppSheet — ten cot ben do dung la mot chu "u".
+  maAppSheet     String?   @unique
+  /// "Tiền mặt" | "Chuyển Khoản" — xem diem 2 o chu thich tren.
+  hinhThuc       String?
+  /// Tai khoan ngan hang chi ra. Trong voi chi tien mat (898/1397 dong trong).
+  taiKhoan       String?
+  /// Khoan chi: "Trả lương", "Lấy váy", "TRANG PHỤC"… 139 gia tri, chu tu do.
+  khoanChi       String?
+  /// Cot "Thông tin" — dien giai chi tiet (890/1397 dong co).
+  dienGiai       String?
+  ngayChi        String?
+  soTien         Int       @default(0)
+  /// "Đã chi tiền mặt" | "Đã chi chuyển khoản" | "Chờ duyệt" (chi tren web).
+  trangThai      String?
+  ghiChu         String?
+  nguoiNhan      String?
+  nguoiTaoMaNV   String?
+  nguoiDuyetMaNV String?
+  /// Ma dong bang "Lương nhân viên" ben AppSheet (254/1397 dong co). Giu lai de
+  /// dot 5 noi duoc so chi voi bang luong, chua dung toi o dot 3.
+  luongAppSheet  String?
+  /// Duong dan anh chung tu ben AppSheet — thu muc anh chua duoc chia se nen
+  /// chi giu chuoi, khong mo duoc. Xem chu thich tuong tu o PhieuThu.
+  anhAppSheet    String?
+  /// Ma tep anh chung tu tren kho Drive, voi phieu LAP TREN WEB. Xem
+  /// src/lib/khoAnh.ts — anh nam o o 5 TB cua hamitaweddinghouse@gmail.com.
+  anhKho         String?
+  taoLuc         DateTime  @default(now())
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  @@index([ngayChi])
+  @@index([trangThai])
+}
+
 /// Lich chup — trang "Lịch" ben AppSheet (1.312 dong, 15 loai: ngay chup, nha
 /// gai, nha trai, dinh hon, Hami Baby, chup be…).
 ///

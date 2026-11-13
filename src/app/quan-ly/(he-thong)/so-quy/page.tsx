@@ -1,0 +1,250 @@
+import Link from "next/link";
+import type { Prisma } from "@/generated/prisma/client";
+import { getPrisma } from "@/lib/db";
+import { homNayStudio, MUI_GIO, tien } from "@/lib/constants";
+import { batBuocDangNhap, batBuocQuyen, lapHopDong, laQuanTri, xemTienVaKhach } from "@/lib/phienNhanVien";
+import { ngayVN } from "@/lib/hopDongChung";
+import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
+import { chiTheoKhoan, docSoQuy } from "@/lib/soQuy";
+import { CHO_DUYET, HINH_THUC_CHI } from "@/lib/soQuyChung";
+import { BangDongBo } from "../hop-dong/BangDongBo";
+import { NutChi, NutGhiChi } from "./GhiChi";
+
+export const dynamic = "force-dynamic";
+
+type Props = { searchParams: Promise<{ thang?: string; ht?: string; tt?: string }> };
+
+/** Tháng hiện tại theo giờ studio, dạng "YYYY-MM" (nguyên tắc 35). */
+function thangNay(): string {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", { timeZone: MUI_GIO, year: "numeric", month: "2-digit" })
+      .formatToParts(new Date())
+      .map((x) => [x.type, x.value]),
+  );
+  return `${p.year}-${p.month}`;
+}
+
+function doiThang(t: string, buoc: number): string {
+  const [y, m] = t.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + buoc, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+/**
+ * SỔ QUỸ — thu trừ chi. Thêm 13/11/2026 (`KE-HOACH-CRM.md` đợt 3).
+ *
+ * Trước đó web có trang Phiếu thu mà không có sổ chi, nên không bao giờ ra
+ * được số dư — muốn biết két còn bao nhiêu vẫn phải mở AppSheet. Đó là một lý
+ * do khiến đợt chuyển hồi tháng 9 không ai dùng web.
+ *
+ * Khoản CHỜ DUYỆT vẫn được cộng vào tổng rồi tách ra một con số riêng, giống
+ * hệt cách trang Phiếu thu đang làm: để ngoài tổng thì số dư trông đẹp hơn
+ * thực tế, mà tiền đã hẹn chi thì coi như đã ra.
+ */
+export default async function SoQuyPage({ searchParams }: Props) {
+  const nguoi = await batBuocDangNhap();
+  // Toàn bộ dòng tiền của tiệm — cùng mức quyền với trang Phiếu thu.
+  batBuocQuyen(xemTienVaKhach(nguoi));
+  const quanTri = laQuanTri(nguoi);
+  const duocGhi = lapHopDong(nguoi);
+
+  const sp = await searchParams;
+  const choDuyet = sp.tt === "cho-duyet";
+  const thang = /^\d{4}-\d{2}$/.test(sp.thang ?? "") ? sp.thang! : thangNay();
+  const ht = (HINH_THUC_CHI as readonly string[]).includes(sp.ht ?? "") ? sp.ht! : "";
+
+  const where: Prisma.ChiTieuWhereInput = {
+    matBenAppSheet: null,
+    ...(choDuyet ? { trangThai: CHO_DUYET } : { ngayChi: { startsWith: thang } }),
+    ...(ht ? { hinhThuc: ht } : {}),
+  };
+
+  const prisma = getPrisma();
+  const [ds, soChoDuyet, bangTen, tongKet, theoKhoan, taiKhoanNhom] = await Promise.all([
+    prisma.chiTieu.findMany({
+      where,
+      orderBy: [{ ngayChi: { sort: "desc", nulls: "last" } }, { taoLuc: "desc" }],
+      take: 500,
+    }),
+    prisma.chiTieu.count({ where: { matBenAppSheet: null, trangThai: CHO_DUYET } }),
+    tenTheoMaNV(),
+    docSoQuy(`${thang}-01`, `${thang}-31`),
+    chiTheoKhoan(`${thang}-01`, `${thang}-31`, 8),
+    /* Tài khoản đã từng dùng — để gợi ý trong ô nhập, khỏi gõ sai số. */
+    prisma.chiTieu.groupBy({ by: ["taiKhoan"], _count: { _all: true } }),
+  ]);
+
+  const taiKhoanCu = taiKhoanNhom
+    .filter((t) => t.taiKhoan)
+    .sort((a, b) => b._count._all - a._count._all)
+    .map((t) => t.taiKhoan!)
+    .slice(0, 12);
+
+  const link = (thay: Record<string, string>) => {
+    const p = new URLSearchParams({ thang, ht, tt: choDuyet ? "cho-duyet" : "", ...thay });
+    for (const [k, v] of [...p.entries()]) if (!v) p.delete(k);
+    return `/quan-ly/so-quy?${p}`;
+  };
+  const lopChip = (bat: boolean) =>
+    `rounded-full border px-3 py-1 text-xs transition whitespace-nowrap ${
+      bat ? "border-accent bg-accent-soft text-accent" : "border-line text-fg-muted hover:border-line-strong"
+    }`;
+  const [nam, thangSo] = thang.split("-");
+  const duong = tongKet.soDu >= 0;
+  const chiNhieuNhat = theoKhoan[0]?.soTien ?? 1;
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow">Kế toán</p>
+          <h1 className="mt-2 font-display text-3xl font-light">Sổ quỹ</h1>
+        </div>
+        {duocGhi && <NutGhiChi taiKhoanCu={taiKhoanCu} homNay={homNayStudio()} />}
+      </div>
+      <BangDongBo quanTri={quanTri} />
+
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        {!choDuyet && (
+          <span className="mr-2 inline-flex items-center gap-1">
+            <Link href={link({ thang: doiThang(thang, -1) })} className="btn px-3" aria-label="Tháng trước">‹</Link>
+            <span className="min-w-32 text-center font-medium tabular-nums">Tháng {thangSo}/{nam}</span>
+            <Link href={link({ thang: doiThang(thang, 1) })} className="btn px-3" aria-label="Tháng sau">›</Link>
+          </span>
+        )}
+        <Link href={link({ ht: "" })} className={lopChip(!ht)}>Mọi hình thức</Link>
+        {HINH_THUC_CHI.map((h) => (
+          <Link key={h} href={link({ ht: h })} className={lopChip(ht === h)}>{h}</Link>
+        ))}
+        <span className="mx-1 h-4 w-px bg-line" aria-hidden />
+        <Link href={link({ tt: choDuyet ? "" : "cho-duyet" })} className={lopChip(choDuyet)}>
+          Chờ duyệt · {soChoDuyet}
+        </Link>
+      </div>
+
+      {!choDuyet && (
+        <>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-md border border-line bg-bg-raised p-4">
+              <p className="text-xs text-fg-muted">Thu trong tháng</p>
+              <p className="mt-1 font-display text-2xl tabular-nums text-emerald-700">{tien(tongKet.thu)}đ</p>
+              <p className="mt-1 text-xs text-fg-faint">{tongKet.soPhieuThu} phiếu</p>
+            </div>
+            <div className="rounded-md border border-line bg-bg-raised p-4">
+              <p className="text-xs text-fg-muted">Chi trong tháng</p>
+              <p className="mt-1 font-display text-2xl tabular-nums text-amber-800">{tien(tongKet.chi)}đ</p>
+              <p className="mt-1 text-xs text-fg-faint">{tongKet.soKhoanChi} khoản</p>
+            </div>
+            {/* Số dư là câu hỏi duy nhất ai cũng muốn biết — cho nó cái khung đậm nhất. */}
+            <div className={`rounded-md border-2 p-4 ${duong ? "border-emerald-600/40 bg-emerald-50/40" : "border-amber-600/40 bg-amber-50/40"}`}>
+              <p className="text-xs text-fg-muted">Còn lại trong tháng</p>
+              <p className={`mt-1 font-display text-2xl tabular-nums ${duong ? "text-emerald-800" : "text-amber-900"}`}>
+                {duong ? "" : "−"}{tien(Math.abs(tongKet.soDu))}đ
+              </p>
+              {(tongKet.thuChoDuyet > 0 || tongKet.chiChoDuyet > 0) && (
+                <p className="mt-1 text-xs text-fg-faint">
+                  đã tính cả{" "}
+                  {tongKet.thuChoDuyet > 0 && <>thu chờ duyệt {tien(tongKet.thuChoDuyet)}đ</>}
+                  {tongKet.thuChoDuyet > 0 && tongKet.chiChoDuyet > 0 && " · "}
+                  {tongKet.chiChoDuyet > 0 && <>chi chờ duyệt {tien(tongKet.chiChoDuyet)}đ</>}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {theoKhoan.length > 0 && (
+            <div className="mt-5 rounded-md border border-line bg-bg-raised p-4">
+              <p className="text-xs text-fg-muted">Tiền đi đâu nhiều nhất tháng này</p>
+              <div className="mt-3 grid gap-2">
+                {theoKhoan.map((k) => (
+                  <div key={k.khoanChi} className="flex items-center gap-3">
+                    <span className="w-44 shrink-0 truncate text-sm" title={k.khoanChi}>{k.khoanChi}</span>
+                    {/*
+                      Vạch dài ngắn theo tỉ lệ với khoản lớn nhất. Không dùng
+                      biểu đồ thư viện: một hàng div là đủ nói, mà không phải
+                      kéo thêm mã nào xuống máy khách.
+                    */}
+                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-bg-soft">
+                      <span
+                        className="block h-full rounded-full bg-accent/60"
+                        style={{ width: `${Math.max(2, (k.soTien / chiNhieuNhat) * 100)}%` }}
+                      />
+                    </span>
+                    <span className="w-32 shrink-0 text-right text-sm tabular-nums">{tien(k.soTien)}đ</span>
+                    <span className="w-14 shrink-0 text-right text-xs text-fg-faint tabular-nums">{k.soDong} lần</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
+              <th className="px-4 py-2.5 font-medium">Ngày</th>
+              <th className="px-4 py-2.5 font-medium">Khoản chi</th>
+              <th className="px-4 py-2.5 font-medium">Diễn giải</th>
+              <th className="px-4 py-2.5 font-medium">Hình thức</th>
+              <th className="px-4 py-2.5 text-right font-medium">Số tiền</th>
+              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
+              <th className="px-4 py-2.5 font-medium">Người ghi · duyệt</th>
+              {quanTri && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {ds.map((c) => (
+              <tr key={c.id} className="align-top transition hover:bg-bg-soft">
+                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{ngayVN(c.ngayChi)}</td>
+                <td className="min-w-40 px-4 py-2.5 font-medium">
+                  {c.khoanChi ?? <span className="font-normal text-fg-faint">(không ghi)</span>}
+                  {c.nguoiNhan && <span className="block text-xs font-normal text-fg-muted">nhận: {c.nguoiNhan}</span>}
+                </td>
+                <td className="px-4 py-2.5">
+                  {c.dienGiai ?? "—"}
+                  {c.ghiChu && <span className="block text-xs text-fg-muted">{c.ghiChu}</span>}
+                  {c.anhKho && (
+                    <a
+                      href={`/api/quan-ly/chung-tu/${c.anhKho}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-0.5 block text-xs text-accent hover:underline"
+                    >
+                      Xem chứng từ
+                    </a>
+                  )}
+                </td>
+                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
+                  {c.hinhThuc ?? "—"}
+                  {c.taiKhoan && <span className="block text-xs text-fg-faint">{c.taiKhoan}</span>}
+                </td>
+                <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">{tien(c.soTien)}đ</td>
+                <td className={`px-4 py-2.5 whitespace-nowrap ${c.trangThai === CHO_DUYET ? "font-medium text-amber-800" : "text-fg-muted"}`}>
+                  {c.trangThai ?? "—"}
+                </td>
+                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
+                  {tenNV(bangTen, c.nguoiTaoMaNV) ?? "—"}
+                  {c.nguoiDuyetMaNV && (
+                    <span className="block text-xs text-fg-faint">duyệt: {tenNV(bangTen, c.nguoiDuyetMaNV)}</span>
+                  )}
+                </td>
+                {quanTri && (
+                  <td className="px-4 py-2.5">
+                    <NutChi id={c.id} choDuyet={c.trangThai === CHO_DUYET} tuAppSheet={!!c.bamAppSheet} />
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {ds.length === 0 && (
+          <p className="px-4 py-8 text-center text-sm text-fg-muted">
+            {choDuyet ? "Không có khoản nào chờ duyệt." : "Tháng này chưa có khoản chi nào."}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}

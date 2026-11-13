@@ -34,6 +34,10 @@ export type HanhDong =
   | "them-phieu-thu"
   | "duyet-phieu-thu"
   | "xoa-phieu-thu"
+  /* Sổ chi — đối trọng của phiếu thu, thêm 13/11/2026 (KE-HOACH-CRM.md đợt 3). */
+  | "them-khoan-chi"
+  | "duyet-khoan-chi"
+  | "xoa-khoan-chi"
   | "giao-dau-viec"
   | "doi-trang-thai-viec"
   | "sua-lich-chup"
@@ -69,6 +73,9 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "lap-hop-dong": "Lập hợp đồng",
   "sua-hop-dong": "Sửa hợp đồng",
   "xoa-hop-dong": "Xoá hợp đồng",
+  "them-khoan-chi": "Ghi khoản chi",
+  "duyet-khoan-chi": "Duyệt khoản chi",
+  "xoa-khoan-chi": "Xoá khoản chi",
   "them-phieu-thu": "Thêm phiếu thu",
   "duyet-phieu-thu": "Duyệt phiếu thu",
   "xoa-phieu-thu": "Xoá phiếu thu",
