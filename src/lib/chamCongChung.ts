@@ -9,6 +9,8 @@
 export const TRANG_THAI_CONG = ["Đi làm", "Nghỉ làm"] as const;
 export const VAO_DUNG_GIO = "Đúng giờ";
 export const VAO_TRE = "Trễ giờ";
+export const RA_DU_GIO = "Đủ giờ";
+export const RA_SOM = "Về sớm";
 
 /** Trong vòng này tính là "ở tiệm". Rộng hơn sai số GPS của điện thoại. */
 export const BAN_KINH_TIEM_MET = 200;
@@ -106,6 +108,56 @@ export function xepGioVao(phutVao: number, gioBatDau: string | null): string | n
   const moc = phutTrongNgay(gioBatDau);
   if (moc === null) return null;
   return phutVao > moc ? VAO_TRE : VAO_DUNG_GIO;
+}
+
+/**
+ * Số giờ chuẩn của MỘT ngày công, suy ra từ giờ làm đã khai.
+ *
+ * Với cài đặt hiện tại của tiệm — 08:30 → 18:00, nghỉ giữa buổi 1,5 giờ — ra
+ * đúng **8 giờ**, khớp với yêu cầu của anh 13/11/2026 ("1 ngày phải làm đủ 8
+ * tiếng"). Không viết cứng số 8 vào mã: đổi giờ làm trong Thông tin studio thì
+ * con số này phải đổi theo, chứ không để hai nơi nói hai số khác nhau.
+ *
+ * Chưa khai đủ giờ làm thì trả null — lúc đó không chấm điểm ai cả, thay vì
+ * lấy một con số tự bịa ra làm chuẩn.
+ */
+export function gioChuanMotNgay(
+  gioBatDau: string | null,
+  gioKetThuc: string | null,
+  gioNghiGiuaBuoi: number | null,
+): number | null {
+  const dau = phutTrongNgay(gioBatDau);
+  const cuoi = phutTrongNgay(gioKetThuc);
+  if (dau === null || cuoi === null || cuoi <= dau) return null;
+  const gio = (cuoi - dau) / 60 - (gioNghiGiuaBuoi ?? 0);
+  return gio > 0 ? Math.round(gio * 100) / 100 : null;
+}
+
+/**
+ * Ra ca sớm hơn giờ kết thúc thì là về sớm (anh yêu cầu 13/11/2026).
+ *
+ * Bên AppSheet KHÔNG có cột này — nó chỉ xếp giờ vào. Nên đây là chỗ web chặt
+ * hơn, và vì vậy **tính lúc đọc chứ không lưu vào bảng**: lưu thì dòng chép từ
+ * AppSheet sẽ trống còn dòng chấm trên web thì có, nhìn bảng công thành hai
+ * loại dữ liệu khác nhau mà không ai hiểu vì sao.
+ *
+ * Chưa ra ca (`null`) thì KHÔNG phải "về sớm" — đó là chưa xong, hai chuyện
+ * khác hẳn nhau. Bảng công đếm riêng cột "thiếu giờ ra".
+ */
+export function xepGioRa(phutRa: number, gioKetThuc: string | null): string | null {
+  const moc = phutTrongNgay(gioKetThuc);
+  if (moc === null) return null;
+  return phutRa < moc ? RA_SOM : RA_DU_GIO;
+}
+
+/**
+ * Số giờ còn thiếu so với một ngày công đầy đủ. Làm dư thì trả 0, không trả
+ * số âm — bù giờ là việc của bảng lương ở đợt 5, không phải của chấm công.
+ */
+export function thieuGio(soGio: number | null, chuan: number | null): number {
+  if (soGio == null || chuan == null) return 0;
+  const thieu = chuan - soGio;
+  return thieu > 0 ? Math.round(thieu * 100) / 100 : 0;
 }
 
 /**

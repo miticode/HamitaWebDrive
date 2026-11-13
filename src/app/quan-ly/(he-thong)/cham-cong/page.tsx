@@ -92,12 +92,37 @@ export default async function ChamCongPage({ searchParams }: Props) {
               </p>
             </div>
             <div>
-              <p className="text-xs text-fg-muted">Số giờ</p>
-              <p className="mt-0.5 font-display text-2xl tabular-nums">
+              <p className="text-xs text-fg-muted">
+                Số giờ{caiDat.gioChuan != null && <span className="text-fg-faint"> / {caiDat.gioChuan}</span>}
+              </p>
+              {/*
+                Hiện NGAY số giờ so với chuẩn, không bắt ai tự trừ trong đầu.
+                Anh chốt 13/11/2026: một ngày phải đủ 8 tiếng — con số 8 đó suy
+                từ giờ làm đã khai (18:00 − 08:30 − 1,5 giờ nghỉ), nên đổi giờ
+                làm là nó đổi theo.
+              */}
+              <p
+                className={`mt-0.5 font-display text-2xl tabular-nums ${
+                  homNay?.conThieu ? "text-amber-800" : ""
+                }`}
+              >
                 {homNay?.soGio != null ? homNay.soGio : "—"}
               </p>
             </div>
           </div>
+
+          {homNay?.gioRa && (
+            <p className="mt-3 text-sm">
+              {homNay.conThieu > 0 ? (
+                <span className="text-amber-800">
+                  Còn thiếu {homNay.conThieu} giờ so với một ngày đầy đủ
+                  {homNay.trangThaiRa === "Về sớm" && " — ra ca sớm hơn giờ kết thúc"}.
+                </span>
+              ) : (
+                <span className="text-emerald-700">Hôm nay đã đủ giờ.</span>
+              )}
+            </p>
+          )}
 
           {homNay && (
             <p className="mt-3 text-xs text-fg-faint">{chuNoiCham(homNay.noiCham)}</p>
@@ -137,9 +162,11 @@ export default async function ChamCongPage({ searchParams }: Props) {
                   <th className="px-4 py-2.5 text-right font-medium">Ngày công</th>
                   <th className="px-4 py-2.5 text-right font-medium">Số giờ</th>
                   <th className="px-4 py-2.5 text-right font-medium">Lượt chấm</th>
-                  <th className="px-4 py-2.5 text-right font-medium">Trễ</th>
+                  <th className="px-4 py-2.5 text-right font-medium">Trễ vào</th>
+                  <th className="px-4 py-2.5 text-right font-medium">Về sớm</th>
+                  <th className="px-4 py-2.5 text-right font-medium">Thiếu giờ</th>
                   <th className="px-4 py-2.5 text-right font-medium">Ngoài tiệm</th>
-                  <th className="px-4 py-2.5 text-right font-medium">Thiếu giờ ra</th>
+                  <th className="px-4 py-2.5 text-right font-medium">Quên bấm ra</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -159,6 +186,12 @@ export default async function ChamCongPage({ searchParams }: Props) {
                     <td className={`px-4 py-2.5 text-right tabular-nums ${d.soLanTre ? "text-amber-800" : "text-fg-faint"}`}>
                       {d.soLanTre || "—"}
                     </td>
+                    <td className={`px-4 py-2.5 text-right tabular-nums ${d.soLanVeSom ? "text-amber-800" : "text-fg-faint"}`}>
+                      {d.soLanVeSom || "—"}
+                    </td>
+                    <td className={`px-4 py-2.5 text-right tabular-nums ${d.tongThieuGio ? "text-amber-800" : "text-fg-faint"}`}>
+                      {d.tongThieuGio ? `${d.tongThieuGio} giờ` : "—"}
+                    </td>
                     <td className="px-4 py-2.5 text-right tabular-nums text-fg-muted">
                       {d.soLanNgoaiTiem || "—"}
                       {d.soLanKhongRoViTri > 0 && (
@@ -177,7 +210,15 @@ export default async function ChamCongPage({ searchParams }: Props) {
             )}
           </div>
 
-          <p className="mt-2 text-xs text-fg-faint">
+          <p className="mt-2 text-xs leading-relaxed text-fg-faint">
+            Một ngày công đầy đủ là{" "}
+            <strong className="text-fg-muted">{caiDat.gioChuan ?? "—"} giờ</strong>{" "}
+            ({caiDat.gioBatDau ?? "?"} → {caiDat.gioKetThuc ?? "?"}, trừ{" "}
+            {caiDat.gioNghiGiuaBuoi ?? 0} giờ nghỉ giữa buổi) — đổi trong{" "}
+            <Link href="/quan-ly/thong-tin" className="underline">Thông tin studio</Link>.
+            {" "}&ldquo;Thiếu giờ&rdquo; chỉ cộng những buổi ĐÃ bấm ra ca; buổi quên
+            bấm nằm ở cột cuối, không tính thành giờ nợ.
+            <br />
             &ldquo;Ngoài tiệm&rdquo; chỉ là ghi nhận, không phải lỗi — phần lớn là
             những buổi chụp ngoài. Toạ độ ở đây để biết người ta ở đâu, không
             dùng để từ chối ai chấm công.

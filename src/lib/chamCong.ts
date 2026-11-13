@@ -1,11 +1,15 @@
 import { getPrisma } from "@/lib/db";
 import { homNayStudio, MUI_GIO } from "@/lib/constants";
 import {
+  gioChuanMotNgay,
+  goiTenNoiCham,
+  RA_SOM,
+  thieuGio,
   tinhNgayCong,
   tinhSoGio,
+  xepGioRa,
   xepGioVao,
   type NoiCham,
-  goiTenNoiCham,
 } from "@/lib/chamCongChung";
 
 /**
@@ -19,6 +23,8 @@ export type CaiDatCham = {
   gioBatDau: string | null;
   gioKetThuc: string | null;
   gioNghiGiuaBuoi: number | null;
+  /** Số giờ của MỘT ngày công đầy đủ, suy từ giờ làm. Hiện là 8. */
+  gioChuan: number | null;
   coSo: { ten: string; toaDo: string | null }[];
 };
 
@@ -37,6 +43,7 @@ export async function docCaiDatCham(): Promise<CaiDatCham> {
     gioBatDau: t?.gioBatDau ?? null,
     gioKetThuc: t?.gioKetThuc ?? null,
     gioNghiGiuaBuoi: t?.gioNghiGiuaBuoi ?? null,
+    gioChuan: gioChuanMotNgay(t?.gioBatDau ?? null, t?.gioKetThuc ?? null, t?.gioNghiGiuaBuoi ?? null),
     coSo: [
       { ten: "Wedding House", toaDo: t?.toaDo ?? null },
       { ten: "Hami Baby", toaDo: t?.toaDo2 ?? null },
@@ -66,6 +73,10 @@ export type LuotHomNay = {
   gioRa: Date | null;
   soGio: number | null;
   trangThaiVao: string | null;
+  /** Tính lúc đọc, không lưu — xem chú thích `xepGioRa`. */
+  trangThaiRa: string | null;
+  /** Số giờ còn thiếu so với một ngày đầy đủ. Làm dư thì 0. */
+  conThieu: number;
   viTri: string | null;
   noiCham: NoiCham;
 } | null;
@@ -84,6 +95,8 @@ export async function luotHomNay(maNV: string, caiDat: CaiDatCham): Promise<Luot
     gioRa: d.gioRa,
     soGio: d.soGio,
     trangThaiVao: d.trangThaiVao,
+    trangThaiRa: d.gioRa ? xepGioRa(phutTheoGioStudio(d.gioRa), caiDat.gioKetThuc) : null,
+    conThieu: d.gioRa ? thieuGio(d.soGio, caiDat.gioChuan) : 0,
     viTri: d.viTri,
     noiCham: goiTenNoiCham(d.viTri, caiDat.coSo),
   };
@@ -180,6 +193,10 @@ export type DongBangCong = {
   soLanNgoaiTiem: number;
   soLanKhongRoViTri: number;
   thieuGioRa: number;
+  /** Số buổi ra ca trước giờ kết thúc (anh yêu cầu 13/11/2026). */
+  soLanVeSom: number;
+  /** Tổng số giờ còn thiếu so với chuẩn, cộng cả tháng. */
+  tongThieuGio: number;
 };
 
 /**
@@ -243,6 +260,8 @@ export async function bangCongThang(
         soLanNgoaiTiem: 0,
         soLanKhongRoViTri: 0,
         thieuGioRa: 0,
+        soLanVeSom: 0,
+        tongThieuGio: 0,
       };
       theoNguoi.set(ma, r);
     }
@@ -251,6 +270,15 @@ export async function bangCongThang(
     r.soGio += d.soGio ?? 0;
     if (d.trangThaiVao === "Trễ giờ") r.soLanTre++;
     if (d.gioVao && !d.gioRa) r.thieuGioRa++;
+    /*
+      Chỉ xét về sớm / thiếu giờ khi ĐÃ CÓ giờ ra. Buổi chưa bấm ra ca thì số
+      giờ bằng 0, cộng vào "thiếu giờ" là biến một lần quên bấm thành 8 tiếng
+      nợ công — cột "thiếu giờ ra" bên cạnh đã nói đúng chuyện đó rồi.
+    */
+    if (d.gioRa) {
+      if (xepGioRa(phutTheoGioStudio(d.gioRa), caiDat.gioKetThuc) === RA_SOM) r.soLanVeSom++;
+      r.tongThieuGio += thieuGio(d.soGio, caiDat.gioChuan);
+    }
     const noi = goiTenNoiCham(d.viTri, caiDat.coSo);
     if (noi.kieu === "ngoai-tiem") r.soLanNgoaiTiem++;
     if (noi.kieu === "khong-ro") r.soLanKhongRoViTri++;
@@ -264,6 +292,7 @@ export async function bangCongThang(
         maNV: cachViet ?? r.maNV,
         soNgayCong: Math.round(r.soNgayCong * 100) / 100,
         soGio: Math.round(r.soGio * 100) / 100,
+        tongThieuGio: Math.round(r.tongThieuGio * 10) / 10,
       };
     })
     .sort((a, b) => b.soNgayCong - a.soNgayCong);
