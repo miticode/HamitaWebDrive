@@ -30,6 +30,12 @@ export default async function HeThongLayout({ children }: { children: React.Reac
     // Chấm công: CẢ TIỆM, không lọc theo vai trò nào. Đây là trang nhiều người
     // dùng nhất — mỗi người bấm hai lần mỗi ngày — nên để ngay đầu danh sách.
     { nhom: null, ten: "Chấm công", href: "/quan-ly/cham-cong" },
+    // Đơn từ và lương: AI CŨNG VÀO ĐƯỢC. Hai trang tự lọc theo người đang
+    // đăng nhập — người thường chỉ thấy đơn và phiếu lương của chính mình,
+    // quản lý thấy cả tiệm. Giấu khỏi thanh bên là nhân viên không biết đường
+    // nào mà gửi đơn hay xem lương mình.
+    { nhom: "Nhân sự", ten: "Đơn từ", href: "/quan-ly/don-tu" },
+    { nhom: "Nhân sự", ten: "Lương", href: "/quan-ly/luong" },
     // Hợp đồng: quản lý + sale. Lịch và đầu việc thì cả tiệm, nhưng đầu việc
     // chỉ hiện việc của chính người đang xem (xem trang cong-viec).
     ...(xemHopDong(nguoi) ? [{ nhom: "Hợp đồng – Công việc", ten: "Hợp đồng", href: "/quan-ly/hop-dong" }] : []),

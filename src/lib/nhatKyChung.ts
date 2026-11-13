@@ -38,6 +38,15 @@ export type HanhDong =
   | "them-khoan-chi"
   | "duyet-khoan-chi"
   | "xoa-khoan-chi"
+  /* Nhân sự — đợt 5 (13/11/2026). Chấm công CỐ Ý không ghi nhật ký: 25 người
+     × 2 lần/ngày là 1.500 dòng mỗi tháng, nhật ký sẽ ngập. */
+  | "gui-don-tu"
+  | "duyet-don-tu"
+  | "tu-choi-don-tu"
+  | "tinh-luong"
+  | "chot-ky-luong"
+  | "mo-lai-ky-luong"
+  | "sua-tien-luong"
   | "giao-dau-viec"
   | "doi-trang-thai-viec"
   | "sua-lich-chup"
@@ -73,6 +82,13 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "lap-hop-dong": "Lập hợp đồng",
   "sua-hop-dong": "Sửa hợp đồng",
   "xoa-hop-dong": "Xoá hợp đồng",
+  "gui-don-tu": "Gửi đơn từ",
+  "duyet-don-tu": "Duyệt đơn từ",
+  "tu-choi-don-tu": "Không duyệt đơn từ",
+  "tinh-luong": "Tính lương",
+  "chot-ky-luong": "Chốt kỳ lương",
+  "mo-lai-ky-luong": "Mở lại kỳ lương",
+  "sua-tien-luong": "Sửa tạm ứng / đã thanh toán",
   "them-khoan-chi": "Ghi khoản chi",
   "duyet-khoan-chi": "Duyệt khoản chi",
   "xoa-khoan-chi": "Xoá khoản chi",

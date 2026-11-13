@@ -410,6 +410,14 @@ model NhanVien {
   phongBan    String?
   chucVu      String?
   ngayVaoLam  DateTime?
+  /// Luong cung moi thang, dong. Them 13/11/2026 (dot 5).
+  ///
+  /// Dot 1 CO Y khong nhap cot nay tu AppSheet vi nhay cam. Nay bang luong can
+  /// no. CHI QUAN LY duoc doc — xem src/lib/luong.ts.
+  ///
+  /// De trong thi may tinh luong lay luong cung cua KY GAN NHAT trong bang
+  /// LuongNhanVien, nen khong phai go lai 25 nguoi moi chay duoc.
+  luongCung   Int?
   /// false = da nghi viec: khong dang nhap duoc nua, moi phien bi xoa.
   dangLam     Boolean   @default(true)
   dangNhapLuc DateTime?
@@ -583,6 +591,142 @@ model ChamCong {
 
   @@index([ngay])
   @@index([maNV, ngay])
+}
+
+/// DON TU — nghi phep, ung luong. Chep tu trang "Yêu cầu" (456 dong).
+/// Them 13/11/2026 (KE-HOACH-CRM.md dot 5).
+///
+/// Do tren du lieu that: 449/456 la "Xin nghỉ", 5 "Xin ứng lương", 2 "Nghỉ
+/// buổi chiều". Loai nghi: 332 huong luong, 119 khong huong luong. Trang thai:
+/// 445 da duyet, 6 dang tao, 5 khong duyet.
+///
+/// Cot "Tin nhắn" ben AppSheet chi co 1/456 dong — bo han, khong chep.
+model DonTu {
+  id             String    @id @default(cuid())
+  maAppSheet     String?   @unique
+  /// Nguoi gui don. Chuoi chu khong khoa ngoai, cung ly do voi ChamCong.
+  maNV           String?
+  /// "Xin nghỉ" | "Xin ứng lương" | "Nghỉ buổi chiều"
+  loaiDon        String?
+  /// "Hưởng lương" | "Không hưởng lương". Chi co nghia voi don xin nghi.
+  loaiNghi       String?
+  ngayYeuCau     String?
+  lyDo           String?
+  /// Chi don xin ung luong moi co (5/456 dong ben AppSheet).
+  soTien         Int?
+  /// "Đang tạo" | "Đã duyệt" | "Không duyệt"
+  trangThai      String?
+  nguoiDuyetMaNV String?
+  ngayDuyet      String?
+  ghiChu         String?
+  anhAppSheet    String?
+  anhKho         String?
+  taoLuc         DateTime  @default(now())
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  @@index([maNV, ngayYeuCau])
+  @@index([trangThai])
+}
+
+/// DANH GIA — thuong/phat tung nguoi. Chep tu trang "Đánh giá" (444 dong).
+///
+/// Do duoc: 420 thuong, 24 phat. Cot "Diễn giải" trong 412/444 dong; phan co
+/// chu phan lon tro toi ma noi quy ("P012 - Ko checkin-[Nội quy]").
+///
+/// NOI VAO BANG LUONG bang cap (ma nhan vien + ky luong), KHONG bang id:
+/// AppSheet co mot cot id dang bam ("f51c54c1") ma ban xuat Excel khong he co.
+/// Doi chieu 231/231 dong bang cap (maNV, ky) thi khop ca Thuong lan Phat.
+model DanhGia {
+  id             String    @id @default(cuid())
+  maAppSheet     String?   @unique
+  maNV           String?
+  ngay           String?
+  /// "Thưởng" | "Phạt"
+  loai           String?
+  dienGiai       String?
+  /// Muc tien mot lan va so lan — ben AppSheet soTien = mucTien × soLan.
+  mucTien        Int?
+  soLan          Float?
+  soTien         Int       @default(0)
+  ghiChu         String?
+  /// Ky luong "MM/YYYY", nguyen van nhu cot "Lương_id" ben AppSheet.
+  kyLuong        String?
+  taoLuc         DateTime  @default(now())
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  @@index([maNV, kyLuong])
+  @@index([ngay])
+}
+
+/// KY LUONG — mot thang luong cua ca tiem. Chep tu trang "Lương" (30 dong).
+model KyLuong {
+  id             String    @id @default(cuid())
+  /// Cot "ID" ben AppSheet, dang "06/2024".
+  maAppSheet     String?   @unique
+  nam            Int?
+  thang          Int?
+  soNV           Int?
+  luongCung      Int       @default(0)
+  luongSP        Int       @default(0)
+  thuong         Int       @default(0)
+  phat           Int       @default(0)
+  tamUng         Int       @default(0)
+  tongLuong      Int       @default(0)
+  nguoiLapMaNV   String?
+  ngayLap        String?
+  /// Chot roi thi khong tinh lai nua — xem `chotKyLuong` trong src/lib/luong.ts.
+  daChot         Boolean   @default(false)
+  taoLuc         DateTime  @default(now())
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  @@index([nam, thang])
+}
+
+/// LUONG MOT NGUOI MOT THANG. Chep tu trang "Lương nhân viên" (341 dong).
+///
+/// CONG THUC — do nguoc tu 341 dong that, khong doan:
+///   Lương tháng = Lương cứng ÷ ngày công tháng × Số ngày làm việc  (lech <= 10d)
+///   Tổng lương  = Lương tháng + Lương SP + Thưởng − Phạt           341/341
+///   Thực lãnh   = Tổng lương − Tạm ứng                             341/341
+///   Còn lại     = Thực lãnh − Đã thanh toán                        341/341
+///
+/// NGUON TUNG SO — cung do nguoc:
+///   Số ngày làm việc ← tong soNgayCong bang ChamCong theo (maNV, thang)  227/227
+///   Lương SP         ← tong thanhTien bang CongViec theo ngayHoanThanh   260/261
+///   Thưởng / Phạt    ← tong bang DanhGia theo (maNV, ky)                 231/231
+model LuongNhanVien {
+  id             String    @id @default(cuid())
+  /// Cot "lable" ben AppSheet, dang "06-2024-Phạm Thị Tiểu Mi" — 341/341 duy nhat.
+  maAppSheet     String?   @unique
+  /// Ky luong "MM/YYYY", cot "Lương ID" ben AppSheet.
+  kyLuong        String?
+  nam            Int?
+  thang          Int?
+  maNV           String?
+  /// Chep lai luc chot luong, khong tra nguoc bang NhanVien.
+  phongBan       String?
+  luongCung      Int       @default(0)
+  soNgayLam      Float     @default(0)
+  soGioLam       Float     @default(0)
+  luongThang     Int       @default(0)
+  luongSP        Int       @default(0)
+  thuong         Int       @default(0)
+  phat           Int       @default(0)
+  tongLuong      Int       @default(0)
+  tamUng         Int       @default(0)
+  thucLanh       Int       @default(0)
+  daThanhToan    Int       @default(0)
+  conLai         Int       @default(0)
+  ghiChu         String?
+  taoLuc         DateTime  @default(now())
+  bamAppSheet    String?
+  matBenAppSheet DateTime?
+
+  @@index([kyLuong])
+  @@index([maNV, kyLuong])
 }
 
 /// Noi quy studio va muc phat moi lan vi pham. Moi nguoi xem duoc, chi quan ly

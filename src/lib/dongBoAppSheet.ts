@@ -43,6 +43,10 @@ export type KetQuaDongBo = {
     congViec: SoDongBo;
     chi: SoDongBo;
     chamCong: SoDongBo;
+    donTu: SoDongBo;
+    danhGia: SoDongBo;
+    kyLuong: SoDongBo;
+    luongNV: SoDongBo;
   };
   giay: number;
 };
@@ -157,7 +161,7 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     return {
       khongDoi: true,
       dichVuThem: 0,
-      bang: { khachHang: KHONG, hopDong: KHONG, chiTiet: KHONG, phieuThu: KHONG, lich: KHONG, congViec: KHONG, chi: KHONG, chamCong: KHONG },
+      bang: { khachHang: KHONG, hopDong: KHONG, chiTiet: KHONG, phieuThu: KHONG, lich: KHONG, congViec: KHONG, chi: KHONG, chamCong: KHONG, donTu: KHONG, danhGia: KHONG, kyLuong: KHONG, luongNV: KHONG },
       giay: Math.round((Date.now() - batDau) / 1000),
     };
   }
@@ -471,10 +475,141 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     bay,
   );
 
+  /* 9–12. Bon bang NHAN SU (them 13/11/2026 — dot 5). */
+
+  /** "2024" -> 2024, go sai thi null chu khong doan. */
+  const soNguyen = (v: unknown): number | null => {
+    const x = Number(chu(v));
+    return Number.isInteger(x) ? x : null;
+  };
+
+  const nguonDon = bang("Yêu cầu").flatMap((d) => {
+    const m = ma(d["id"]);
+    if (!m) return [];
+    return [{
+      ma: m,
+      data: {
+        maNV: ma(d["Người gửi đơn"]),
+        loaiDon: chu(d["Loại đơn"]),
+        loaiNghi: chu(d["Loại nghỉ"]),
+        ngayYeuCau: ngay(d["Ngày yêu cầu"]),
+        lyDo: chu(d["Lý do"]),
+        soTien: tien(d["Số tiền"]) || null,
+        trangThai: chu(d["Trạng thái"]),
+        nguoiDuyetMaNV: ma(d["Người phê duyệt"]),
+        ngayDuyet: ngay(d["Ngày phê duyệt"]),
+        ghiChu: chu(d["Ghi chú"]),
+        anhAppSheet: chu(d["Hình ảnh"]),
+        taoLuc: luc(d["Ngày tạo"]),
+      },
+    }];
+  });
+  const donTu = await chepBang(
+    prisma.donTu as unknown as UyQuyen, "maAppSheet", nguonDon,
+    (await prisma.donTu.findMany({ select: { id: true, maAppSheet: true, bamAppSheet: true, matBenAppSheet: true } }))
+      .map((c) => ({ ...c, ma: c.maAppSheet })),
+    bay,
+  );
+
+  const nguonDG = bang("Đánh giá").flatMap((d) => {
+    const m = ma(d["id"]);
+    if (!m) return [];
+    return [{
+      ma: m,
+      data: {
+        maNV: ma(d["Mã NV"]),
+        ngay: ngay(d["Ngày"]),
+        loai: chu(d["Loại"]),
+        dienGiai: chu(d["Diễn giải"]),
+        mucTien: tien(d["Mức"]) || null,
+        soLan: soThuc(d["Số lần"]),
+        soTien: tien(d["Số tiền"]),
+        ghiChu: chu(d["Ghi chú"]),
+        kyLuong: chu(d["Lương_id"]),
+        taoLuc: luc(d["Ngày tạo"]),
+      },
+    }];
+  });
+  const danhGia = await chepBang(
+    prisma.danhGia as unknown as UyQuyen, "maAppSheet", nguonDG,
+    (await prisma.danhGia.findMany({ select: { id: true, maAppSheet: true, bamAppSheet: true, matBenAppSheet: true } }))
+      .map((c) => ({ ...c, ma: c.maAppSheet })),
+    bay,
+  );
+
+  /*
+    Ky luong chep tu AppSheet mac dinh la DA CHOT: day la nhung thang da tra
+    luong xong roi, khong phai thang dang lam do. De `daChot: false` thi may
+    tinh luong se tinh lai va ghi de con so that tiem da tra — khong bao gio
+    duoc phep.
+  */
+  const nguonKy = bang("Lương").flatMap((d) => {
+    const m = ma(d["ID"]);
+    if (!m) return [];
+    return [{
+      ma: m,
+      data: {
+        nam: soNguyen(d["Năm"]),
+        thang: soNguyen(d["Tháng"]),
+        soNV: soNguyen(d["Số NV"]),
+        luongCung: tien(d["Lương cứng"]),
+        luongSP: tien(d["Lương SP"]),
+        thuong: tien(d["Thưởng"]),
+        phat: tien(d["Phạt"]),
+        tamUng: tien(d["Tạm ứng"]),
+        tongLuong: tien(d["Tổng lương"]),
+        nguoiLapMaNV: ma(d["Người lập"]),
+        ngayLap: ngay(d["Ngày lập"]),
+        daChot: true,
+      },
+    }];
+  });
+  const kyLuong = await chepBang(
+    prisma.kyLuong as unknown as UyQuyen, "maAppSheet", nguonKy,
+    (await prisma.kyLuong.findMany({ select: { id: true, maAppSheet: true, bamAppSheet: true, matBenAppSheet: true } }))
+      .map((c) => ({ ...c, ma: c.maAppSheet })),
+    bay,
+  );
+
+  const nguonLNV = bang("Lương nhân viên").flatMap((d) => {
+    /* Khoa la cot "lable" — AppSheet khong xuat cot id that ra ban Excel. */
+    const m = ma(d["lable"]);
+    if (!m) return [];
+    return [{
+      ma: m,
+      data: {
+        kyLuong: chu(d["Lương ID"]),
+        nam: soNguyen(d["Năm"]),
+        thang: soNguyen(d["Tháng"]),
+        maNV: ma(d["Mã NV"]),
+        phongBan: chu(d["Phòng ban"]),
+        luongCung: tien(d["Lương cứng"]),
+        soNgayLam: soThuc(d["Số ngày làm việc"]),
+        soGioLam: soThuc(d["Số giờ làm việc"]),
+        luongThang: tien(d["Lương tháng"]),
+        luongSP: tien(d["Lương SP"]),
+        thuong: tien(d["Thưởng"]),
+        phat: tien(d["Phạt"]),
+        tongLuong: tien(d["Tổng lương"]),
+        tamUng: tien(d["Tạm ứng"]),
+        thucLanh: tien(d["Thực lãnh"]),
+        daThanhToan: tien(d["Đã thanh toán"]),
+        conLai: tien(d["Còn lại"]),
+        ghiChu: chu(d["Ghi chú"]),
+      },
+    }];
+  });
+  const luongNV = await chepBang(
+    prisma.luongNhanVien as unknown as UyQuyen, "maAppSheet", nguonLNV,
+    (await prisma.luongNhanVien.findMany({ select: { id: true, maAppSheet: true, bamAppSheet: true, matBenAppSheet: true } }))
+      .map((c) => ({ ...c, ma: c.maAppSheet })),
+    bay,
+  );
+
   const kq: KetQuaDongBo = {
     khongDoi: false,
     dichVuThem: dvMoi.length,
-    bang: { khachHang: kh, hopDong: hd, chiTiet: ct, phieuThu: thu, lich, congViec, chi, chamCong },
+    bang: { khachHang: kh, hopDong: hd, chiTiet: ct, phieuThu: thu, lich, congViec, chi, chamCong, donTu, danhGia, kyLuong, luongNV },
     giay: Math.round((Date.now() - batDau) / 1000),
   };
 
@@ -492,6 +627,10 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     congViec: "đầu việc",
     chi: "khoản chi",
     chamCong: "lượt chấm công",
+    donTu: "đơn từ",
+    danhGia: "đánh giá",
+    kyLuong: "kỳ lương",
+    luongNV: "dòng lương",
   } as const;
   for (const [k, s] of Object.entries(kq.bang) as [keyof typeof CHU, SoDongBo][]) {
     if (s.them) so[`${CHU[k]} thêm`] = s.them;
