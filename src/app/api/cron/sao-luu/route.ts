@@ -9,9 +9,6 @@ export const dynamic = "force-dynamic";
 /* Đọc hết mọi bảng, nén, gửi lên Drive — nặng hơn một request thường. */
 export const maxDuration = 60;
 
-/** Người lạ gọi đường này thì tối đa một lần mỗi 20 giờ. */
-const KHOANG_NGUOI_LA_MS = 20 * 60 * 60 * 1000;
-
 /**
  * Sao lưu database lên Google Drive của studio.
  *
@@ -21,12 +18,12 @@ const KHOANG_NGUOI_LA_MS = 20 * 60 * 60 * 1000;
  *   chỉ không còn ai gọi tự động nữa.
  * - Nút "Sao lưu lên Drive ngay" ở trang quản lý album (đã đăng nhập).
  *
- * Chặn người lạ thế nào: nếu đặt biến môi trường CRON_SECRET thì Vercel gửi kèm
- * mã đó, ai không có mã (và không đăng nhập quản lý) thì bị từ chối. Chưa đặt
- * thì vẫn chạy được — để anh không phải vào cài đặt Vercel mới có sao lưu —
- * nhưng người lạ gọi thì tối đa MỘT LẦN MỖI 20 GIỜ, tính cả lần hỏng. Gọi phá
- * mấy cũng chỉ ra thêm một bản sao lưu mỗi ngày, không đọc database liên tục
- * được.
+ * ━━ ĐÓNG CỬA NGƯỜI LẠ 13/11/2026 ━━
+ *
+ * Bản cũ cho người chưa đăng nhập gọi được, tối đa một lần mỗi 20 giờ, vì lịch
+ * Vercel chưa có CRON_SECRET nên cũng bị tính là người lạ. Hôm nay lịch đã bỏ
+ * hẳn, nên cửa đó chỉ còn là chỗ để phá — mỗi lượt là đọc HẾT mọi bảng, nén,
+ * rồi đẩy lên Drive. Giờ chỉ quản lý đã đăng nhập, hoặc đúng CRON_SECRET.
  */
 export async function GET(req: Request) {
   if (!databaseIsConfigured()) {
@@ -38,13 +35,7 @@ export async function GET(req: Request) {
   const dungMa = !!biMat && req.headers.get("authorization") === `Bearer ${biMat}`;
 
   if (!quanTri && !dungMa) {
-    if (biMat) return Response.json({ error: "Không có quyền" }, { status: 401 });
-
-    const lanThu = await docMoc("saoLuuTuDongThu");
-    if (lanThu && Date.now() - lanThu.getTime() < KHOANG_NGUOI_LA_MS) {
-      return Response.json({ boQua: "Đã sao lưu tự động trong 20 giờ qua." });
-    }
-    await ghiMoc("saoLuuTuDongThu", new Date());
+    return Response.json({ error: "Không có quyền" }, { status: 401 });
   }
 
   const luc = new Date();

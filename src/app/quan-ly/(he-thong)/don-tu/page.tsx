@@ -31,7 +31,18 @@ export default async function DonTuPage({ searchParams }: Props) {
   const where: Prisma.DonTuWhereInput = {
     matBenAppSheet: null,
     ...(loc === "cua-toi"
-      ? { maNV: { equals: nguoi.maNV ?? "\u0000", mode: "insensitive" } }
+      ? /*
+           Người KHÔNG có mã nhân viên thì không có đơn nào mang tên họ — chặn
+           bằng một điều kiện không bao giờ đúng.
+
+           Bản cũ lấy byte NUL làm "chuỗi không bao giờ khớp". Postgres TỪ CHỐI
+           mọi chuỗi chứa NUL ("invalid byte sequence for encoding UTF8: 0x00")
+           nên trang nổ 500 với đúng những người thiếu mã NV — lỗi sống trên bản
+           production từ đợt 5 tới khi kịch bản phân quyền bắt được.
+        */
+        nguoi.maNV
+          ? { maNV: { equals: nguoi.maNV, mode: "insensitive" } }
+          : { id: "khong-bao-gio-khop" }
       : loc === "cho-duyet"
         ? { trangThai: DON_DANG_TAO }
         : {}),

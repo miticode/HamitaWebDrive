@@ -1,5 +1,4 @@
 import { databaseIsConfigured } from "@/lib/db";
-import { docMoc, ghiMoc } from "@/lib/moc";
 import { quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
 import { dongBoAppSheet } from "@/lib/dongBoAppSheet";
 
@@ -7,16 +6,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 /* Tải cả file AppSheet (~30.000 dòng) rồi so từng dòng — lần đầu mất cả phút. */
 export const maxDuration = 300;
-
-/**
- * Người lạ gọi đường này thì tối đa một lần mỗi 50 phút.
- *
- * Vì sao không khoá chặt như đường sao lưu (20 giờ): lịch của Vercel chạy MỖI
- * GIỜ và chưa đặt CRON_SECRET, nên chính lịch đó cũng bị tính là "người lạ" —
- * khoá 20 giờ là ngày chỉ chép được một lần. Chép lại vô hại: không đổi thì
- * chỉ hỏi Drive một câu rồi thôi, mà có đổi thì đằng nào cũng phải chép.
- */
-const KHOANG_NGUOI_LA_MS = 50 * 60 * 1000;
 
 /**
  * Chép hợp đồng, khách, phiếu thu từ AppSheet sang web (src/lib/dongBoAppSheet.ts).
@@ -27,8 +16,19 @@ const KHOANG_NGUOI_LA_MS = 50 * 60 * 1000;
  * bằng nút bấm. (Lịch này vốn đã tắt từ 21/09, bật lại 13/11 rồi bỏ hẳn trong
  * cùng ngày.) Đường này giữ nguyên vì nút bấm gọi vào đây.
  *
- * Chặn người lạ: có CRON_SECRET thì bắt mã, chưa có thì tối đa một lần mỗi
- * 50 phút.
+ * ━━ ĐÓNG CỬA NGƯỜI LẠ 13/11/2026 ━━
+ *
+ * Bản cũ cho người CHƯA ĐĂNG NHẬP gọi được, tối đa một lần mỗi 50 phút. Lý do
+ * khi đó chính đáng: lịch của Vercel chạy mỗi giờ mà chưa đặt CRON_SECRET, nên
+ * chính nó cũng bị tính là người lạ — khoá chặt là lịch chết theo.
+ *
+ * Cùng ngày hôm nay hai lịch Vercel đã BỎ HẲN, nên không còn ai cần gọi mà
+ * không đăng nhập. Cửa đó giờ chỉ còn là chỗ để phá: ai biết địa chỉ cũng kích
+ * được một lượt chép đè, cứ 50 phút một lần — đúng thứ có thể đè mất hợp đồng
+ * cũ vừa sửa trên web. Kịch bản thử phân quyền 13/11 bắt được.
+ *
+ * CRON_SECRET giữ lại: ngày nào anh bật lại lịch thì khai biến đó là chạy được
+ * ngay, không phải sửa mã.
  */
 export async function GET(req: Request) {
   if (!databaseIsConfigured()) {
@@ -40,12 +40,7 @@ export async function GET(req: Request) {
   const dungMa = !!biMat && req.headers.get("authorization") === `Bearer ${biMat}`;
 
   if (!quanTri && !dungMa) {
-    if (biMat) return Response.json({ error: "Không có quyền" }, { status: 401 });
-    const lanThu = await docMoc("dongBoThu");
-    if (lanThu && Date.now() - lanThu.getTime() < KHOANG_NGUOI_LA_MS) {
-      return Response.json({ boQua: "Đã đồng bộ trong 20 giờ qua." });
-    }
-    await ghiMoc("dongBoThu", new Date());
+    return Response.json({ error: "Không có quyền" }, { status: 401 });
   }
 
   try {

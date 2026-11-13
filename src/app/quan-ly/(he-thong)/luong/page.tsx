@@ -50,7 +50,12 @@ export default async function LuongPage({ searchParams }: Props) {
         kyLuong: ky,
         matBenAppSheet: null,
         /* Người thường chỉ thấy dòng của chính mình. */
-        ...(quanTri ? {} : { maNV: { equals: nguoi.maNV ?? "\u0000", mode: "insensitive" as const } }),
+        /* Xem chú thích cùng lỗi ở `don-tu/page.tsx`: byte NUL làm Postgres nổ. */
+        ...(quanTri
+          ? {}
+          : nguoi.maNV
+            ? { maNV: { equals: nguoi.maNV, mode: "insensitive" as const } }
+            : { id: "khong-bao-gio-khop" }),
       },
       orderBy: { tongLuong: "desc" },
     }),
