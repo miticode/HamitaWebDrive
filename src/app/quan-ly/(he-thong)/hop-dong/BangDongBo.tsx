@@ -38,8 +38,8 @@ export async function BangDongBo({ quanTri }: { quanTri: boolean }) {
     <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md border border-line bg-bg-soft px-4 py-3 text-sm text-fg-muted">
       <span className="max-w-2xl leading-relaxed">
         Hợp đồng, phiếu thu, lịch và đầu việc cũ là bản chép của AppSheet —{" "}
-        {moc ? `chép lần cuối ${NGAY_GIO.format(moc)}` : "chưa chép lần nào"}. Web đang chép lại mỗi đêm
-        cho tới ngày chuyển hẳn. Hợp đồng mới cứ lập thẳng trên web bằng nút{" "}
+        {moc ? `chép lần cuối ${NGAY_GIO.format(moc)}` : "chưa chép lần nào"}. Chép lại bằng nút{" "}
+        <b className="text-fg">Đồng bộ ngay</b> — không còn lịch tự động. Hợp đồng mới cứ lập thẳng trên web bằng nút{" "}
         <b className="text-fg">Lập hợp đồng</b> — những hợp đồng đó không bao giờ bị lịch chép đụng vào.{" "}
         <b className="text-fg">Nhưng hợp đồng cũ thì sửa bên AppSheet</b>: sửa trên web, đêm đó bản bên kia
         chép sang là mất.

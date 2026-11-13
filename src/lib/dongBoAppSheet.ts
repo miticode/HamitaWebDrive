@@ -11,8 +11,8 @@ import { ghiNhatKy } from "@/lib/nhatKy";
  * Chép khách hàng, hợp đồng, chi tiết hợp đồng, phiếu thu từ AppSheet sang web.
  *
  * GIAI ĐOẠN SONG SONG (studio chốt 15/09/2026): nhân viên vẫn làm hợp đồng bên
- * AppSheet; web chỉ là bản chép để xem, tìm, xem công nợ. Chạy mỗi đêm 2 giờ
- * 30 (vercel.json → /api/cron/dong-bo), quản lý bấm "Đồng bộ ngay" cũng được.
+ * AppSheet; web chỉ là bản chép để xem, tìm, xem công nợ. Từ 13/11/2026 CHỈ
+ * chạy khi quản lý bấm "Đồng bộ ngay" — không còn lịch tự động.
  * Ngày chuyển hẳn sang web thì TẮT lịch chạy này — không thì đêm đó bản
  * AppSheet cũ đè lên những gì vừa sửa trên web.
  *

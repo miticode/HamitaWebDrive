@@ -21,10 +21,14 @@ const KHOANG_NGUOI_LA_MS = 50 * 60 * 1000;
 /**
  * Chép hợp đồng, khách, phiếu thu từ AppSheet sang web (src/lib/dongBoAppSheet.ts).
  *
- * Hai người gọi: lịch chạy của Vercel mỗi đêm 2 giờ 30 giờ Việt Nam
- * (vercel.json — trước bản sao lưu 3 giờ, để bản sao lưu đêm đó có dữ liệu
- * mới), và nút "Đồng bộ ngay" của quản lý. Chặn người lạ đúng như đường sao
- * lưu: có CRON_SECRET thì bắt mã, chưa có thì người lạ tối đa một lần mỗi 20 giờ.
+ * CHỈ MỘT NGƯỜI GỌI: nút "Đồng bộ ngay" của quản lý.
+ *
+ * Lịch chạy mỗi đêm 2 giờ 30 đã BỎ ngày 13/11/2026 — anh chốt chỉ đồng bộ
+ * bằng nút bấm. (Lịch này vốn đã tắt từ 21/09, bật lại 13/11 rồi bỏ hẳn trong
+ * cùng ngày.) Đường này giữ nguyên vì nút bấm gọi vào đây.
+ *
+ * Chặn người lạ: có CRON_SECRET thì bắt mã, chưa có thì tối đa một lần mỗi
+ * 50 phút.
  */
 export async function GET(req: Request) {
   if (!databaseIsConfigured()) {

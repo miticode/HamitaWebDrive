@@ -16,7 +16,9 @@ const KHOANG_NGUOI_LA_MS = 20 * 60 * 60 * 1000;
  * Sao lưu database lên Google Drive của studio.
  *
  * Hai người gọi:
- * - LỊCH CHẠY CỦA VERCEL, mỗi đêm 3 giờ sáng giờ Việt Nam (vercel.json).
+ * - (CŨ) lịch chạy của Vercel mỗi đêm 3 giờ sáng — ĐÃ BỎ 13/11/2026, anh chốt
+ *   chỉ sao lưu bằng nút bấm. Đường này vẫn giữ nguyên vì nút bấm gọi vào đây;
+ *   chỉ không còn ai gọi tự động nữa.
  * - Nút "Sao lưu lên Drive ngay" ở trang quản lý album (đã đăng nhập).
  *
  * Chặn người lạ thế nào: nếu đặt biến môi trường CRON_SECRET thì Vercel gửi kèm

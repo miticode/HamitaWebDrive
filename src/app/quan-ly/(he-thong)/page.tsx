@@ -76,7 +76,7 @@ export default async function TongQuanPage() {
               <Link href="/quan-ly/hop-dong" className="font-medium hover:text-accent">
                 Hợp đồng
               </Link>
-              <span className="text-right text-fg-muted">Tra hợp đồng, công nợ — chép từ AppSheet mỗi đêm</span>
+              <span className="text-right text-fg-muted">Tra hợp đồng, công nợ — chép từ AppSheet khi bấm đồng bộ</span>
             </li>
           )}
           <li className="flex items-baseline justify-between gap-4 px-4 py-3">

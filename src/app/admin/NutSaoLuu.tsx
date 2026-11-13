@@ -5,11 +5,15 @@ import { useState } from "react";
 /**
  * Sao lưu ở trang quản lý — hai đường:
  *
- * 1. "Sao lưu lên Drive ngay": chạy đúng việc mà lịch tự động làm mỗi đêm 3
- *    giờ (src/app/api/cron/sao-luu). Dùng để thử ngay sau khi kết nối lại
- *    Google, và để chắc chắn trước một thao tác lớn.
- * 2. "Tải về máy": bản JSON về thẳng máy anh, như trước.
+ * 1. "Sao lưu lên Drive ngay" (src/app/api/cron/sao-luu).
+ * 2. "Tải về máy": bản JSON về thẳng máy anh.
  *
+ * TỪ 13/11/2026 KHÔNG CÒN LỊCH TỰ ĐỘNG. Anh chốt chỉ sao lưu bằng nút bấm.
+ *
+ * Nên dòng chữ dưới nút KHÔNG còn là "lịch đêm có sống không" nữa, mà là lời
+ * nhắc: bản gần nhất cũ bao nhiêu rồi. Nhắc mạnh dần theo số ngày, vì sao lưu
+ * tay chỉ cứu được khi có người nhớ bấm — mà lúc cần tới bản sao lưu thì
+ * thường là lúc không ai kịp nhớ gì.
  * Tải về đi qua fetch + blob chứ không phải một thẻ <a> trỏ thẳng vào đường
  * API: thẻ <a> thì suốt lúc máy chủ đang đọc database không có gì nhúc nhích
  * trên màn hình — anh tưởng hỏng rồi bấm thêm mấy lần, mỗi lần lại là một
@@ -111,10 +115,14 @@ export function NutSaoLuu({
   };
 
   /*
-    Bản tự động quá hai ngày chưa có là lịch chạy đêm đang hỏng — tô cảnh báo.
-    Chưa lần nào thì cũng cảnh báo: gần như chắc chắn là chưa cấp quyền ghi.
+    Không còn lịch đêm (13/11/2026) nên mốc cảnh báo đổi hẳn: trước đây quá
+    HAI ngày là lịch hỏng; nay sao lưu bằng tay nên hai ngày là bình thường.
+
+    Ba mức, nhắc mạnh dần — ba ngày nhắc nhẹ, bảy ngày thì tô đỏ. Chưa lần nào
+    cũng tô đỏ: gần như chắc chắn là chưa cấp quyền ghi cho Drive.
   */
-  const tuDongHong = tuDong === null || tuDong >= 2;
+  const soNgayCu = tuDong ?? 999;
+  const mucNhac = tuDong === null || soNgayCu >= 7 ? "gap" : soNgayCu >= 3 ? "nhe" : "yen";
 
   return (
     <div className="grid gap-1.5">
@@ -155,9 +163,15 @@ export function NutSaoLuu({
       )}
 
       {!ketQua && !loi && (
-        <span className={`text-xs ${tuDongHong ? "text-amber-700" : "text-fg-muted"}`}>
-          Tự động mỗi đêm 3 giờ · lên Drive: {docNgay(tuDong)}
+        <span
+          className={`text-xs ${
+            mucNhac === "gap" ? "font-medium text-red-700" : mucNhac === "nhe" ? "text-amber-700" : "text-fg-muted"
+          }`}
+        >
+          Sao lưu lên Drive: {docNgay(tuDong)}
           {soNgay !== tuDong && ` · tải về máy: ${docNgay(soNgay)}`}
+          {mucNhac === "gap" && " — nên sao lưu ngay"}
+          {mucNhac === "nhe" && " — lâu rồi đấy"}
         </span>
       )}
     </div>
