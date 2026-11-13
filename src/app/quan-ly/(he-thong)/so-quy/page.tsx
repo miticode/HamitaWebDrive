@@ -74,10 +74,33 @@ export default async function SoQuyPage({ searchParams }: Props) {
     prisma.chiTieu.groupBy({ by: ["taiKhoan"], _count: { _all: true } }),
   ]);
 
-  const taiKhoanCu = taiKhoanNhom
-    .filter((t) => t.taiKhoan)
-    .sort((a, b) => b._count._all - a._count._all)
-    .map((t) => t.taiKhoan!)
+  /*
+    Gộp các cách viết chỉ khác nhau chữ hoa chữ thường, giữ lại cách viết được
+    dùng NHIỀU NHẤT.
+
+    Đo trên dữ liệu thật 13/11/2026: cột này có 8 giá trị, trong đó
+    "tech" / "Tech" / "Hami Tech" / "Hami tech" là bốn cách viết của cùng một
+    tài khoản. Gợi ý mà đưa cả bốn thì chính nó làm sổ lộn xộn thêm — đúng cái
+    nó sinh ra để ngăn.
+
+    Chỉ gộp ở Ô GỢI Ý thôi, KHÔNG sửa dữ liệu đã ghi: dọn chữ hoa chữ thường
+    trong bảng là việc của đợt 7, làm bây giờ là lúc đối chiếu hai bên không
+    khớp nữa (xem chú thích ở model ChiTieu).
+  */
+  const theoChuThuong = new Map<string, { ten: string; lan: number }>();
+  for (const t of taiKhoanNhom) {
+    if (!t.taiKhoan) continue;
+    const khoa = t.taiKhoan.toLowerCase().replace(/\s+/g, " ").trim();
+    const da = theoChuThuong.get(khoa);
+    if (!da) theoChuThuong.set(khoa, { ten: t.taiKhoan, lan: t._count._all });
+    else {
+      if (t._count._all > da.lan) da.ten = t.taiKhoan;
+      da.lan += t._count._all;
+    }
+  }
+  const taiKhoanCu = [...theoChuThuong.values()]
+    .sort((a, b) => b.lan - a.lan)
+    .map((t) => t.ten)
     .slice(0, 12);
 
   const link = (thay: Record<string, string>) => {
