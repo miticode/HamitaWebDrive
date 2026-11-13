@@ -1,7 +1,7 @@
 # Soát UI/UX phần quản lý — 13/11/2026
 
-> **Trạng thái 13/11:** anh duyệt **P0** và **P1-4 (giờ chụp)**. Cả bốn đã làm
-> xong, chờ `npm run db:push` rồi đẩy lên. P1 còn lại và P2 vẫn đang chờ anh.
+> **Trạng thái 13/11:** **P0 và cả P1 đã làm xong và lên mạng.** Còn lại bốn
+> việc **P2** (nhất quán, đánh bóng) đang chờ anh duyệt.
 
 Soi toàn bộ `/quan-ly`: 18 mục menu, 20 trang, 10.819 dòng giao diện. Chạy
 `web-design-guidelines` (bộ quy tắc Vercel) và `ui-ux-pro-max`, nhưng **phần
@@ -200,9 +200,9 @@ nào hiện cho ai vẫn theo đúng `xemHopDong` / `laQuanTri` hiện hành).
 
 ---
 
-# P1 — Bớt thao tác, bớt nhập sai
+# P1 — Bớt thao tác, bớt nhập sai  ✅ LÀM XONG 13/11
 
-## P1-1 · Ô tìm khách không có nút, phải đoán là bấm Enter
+## P1-1 · Ô tìm khách không có nút, phải đoán là bấm Enter  ✅
 
 **Hiện trạng.** `khach-hang/page.tsx:90` — `<form>` chỉ có đúng một ô nhập,
 không nút nào:
@@ -225,7 +225,7 @@ là quy tắc "nhãn nút phải nói rõ việc" trong bộ Vercel.
 
 ---
 
-## P1-2 · Trang Hợp đồng có hai kiểu lọc khác nhau, cùng một màn hình
+## P1-2 · Trang Hợp đồng có hai kiểu lọc khác nhau, cùng một màn hình  ✅
 
 **Hiện trạng.** Đếm trên 11 trang có lọc:
 
@@ -247,7 +247,7 @@ học hai cách.
 
 ---
 
-## P1-3 · Lịch hiện cùng lúc lưới tháng và bảng — cùng một dữ liệu
+## P1-3 · Lịch hiện cùng lúc lưới tháng và bảng — cùng một dữ liệu  ✅
 
 **Hiện trạng.** Trên máy tính, trang Lịch vẽ **lưới 7 cột cả tháng**, rồi ngay
 dưới vẽ tiếp **bảng danh sách cùng từng ấy buổi chụp**. Hai lần cùng một dữ
@@ -295,7 +295,7 @@ nhiều nhất.
 
 ---
 
-## P1-5 · Quy trình 18 bước không nói bước sau là gì, ai lo
+## P1-5 · Quy trình 18 bước không nói bước sau là gì, ai lo  ✅
 
 **Hiện trạng.** Hợp đồng hiện trạng thái dạng chip: `4. Đã gửi ảnh gốc, chờ
 Khách chọn`. Hết. Muốn biết bước sau là gì phải mở form sửa rồi đọc cả 18 dòng
@@ -322,12 +322,44 @@ Trên trang chi tiết hợp đồng, thêm một dòng dưới chip. Nút "Sử
 nguyên — không tự chuyển bước, vì đổi bước là đổi tiến độ cả một nhà khách.
 
 **Dễ hơn vì:** Hậu kỳ mở hợp đồng ra là biết **việc kế tiếp là của mình**, không
-phải nhớ thuộc lòng 18 bước. Sếp nhìn danh sách biết hợp đồng nào đang nằm ở
-khâu nào và đang chờ ai. Không thêm dữ liệu — chỉ hiện thứ vừa chép về.
+phải nhớ thuộc lòng 18 bước. Không thêm dữ liệu — chỉ hiện thứ vừa chép về.
+
+### ⚠ Làm xong mới lộ: cột "Trạng thái sau" bên AppSheet hỏng quá nửa
+
+Dựng xong, em render thử cả 18 bước với hợp đồng thật rồi chụp màn hình. Kết
+quả: bước 7 không có bước sau, bước 9 "Hoàn thành" **trỏ về chính nó**. Đo lại
+cả bảng:
+
+| Tình trạng cột "Trạng thái sau" | Số bước |
+|---|---|
+| thiếu hẳn (ô trống) | **7** — bước 11, 13, 14, 15, 16, 17, 18 |
+| trỏ về chính nó | 1 — bước 9 |
+| trỏ tới chuỗi không có trong bảng (gõ sai) | 2 — bước 7, 10 |
+| nhảy sai nhánh (12 trỏ về 9) | 1 |
+| **dùng được** | **7/18** |
+
+Bảy dòng dùng được đều trỏ sang bước mang **số liền sau** — tức quy tắc thật
+của bảng là "số kế tiếp", còn cột kia chỉ là bản chép tay hỏng. Nên web suy
+theo số thứ tự và dừng ở hai bước kết nhánh (9 chụp studio, 18 tiệc): đúng cho
+cả 18 bước, thay vì đúng 7 và **nói sai 4**.
+
+Riêng **trách nhiệm** vẫn lấy thẳng từ bảng — 11/18 bước có, 7 bước trống,
+không dòng nào mâu thuẫn.
 
 ---
 
-## P1-6 · Ô nhập thiếu gợi ý tự điền và loại bàn phím
+## P1-6 · Ô nhập thiếu gợi ý tự điền và loại bàn phím  ✅ (và em đã nói sai)
+
+> **Đo lại thì nhận định ban đầu của em SAI.** Quét cả 106 thẻ `<input>` trong
+> `/quan-ly`: **không ô nào thiếu `inputMode`** — một kết quả duy nhất bị bắt
+> là khớp nhầm vì chữ "diễn**gia**i". Phần bàn phím số đã đúng sẵn từ trước,
+> em đã suy từ con số "5 ô có autocomplete" mà kết luận quá tay.
+>
+> Việc thật sự còn lại là **tắt gợi ý tự điền** ở ô nhập dữ liệu của khách:
+> Chrome gợi ý tên và số điện thoại của chính nhân viên vào ô tên khách, bấm
+> nhầm một cái là sinh ra một nhà khách sai — mà số điện thoại ở đây *chính
+> là* mã khách. Đã khai `autoComplete="off"` cho form Khách hàng, form Khách
+> tiềm năng và hai ô tìm.
 
 **Hiện trạng.** Đếm trong `/quan-ly`: **21 ô có placeholder, 5 ô có
 `autocomplete`**. Ô số điện thoại phần lớn chưa khai `inputMode="tel"`, ô tiền

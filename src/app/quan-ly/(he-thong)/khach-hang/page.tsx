@@ -87,9 +87,28 @@ export default async function KhachHangPage({ searchParams }: Props) {
       <BangDongBo quanTri={laQuanTri(nguoi)} />
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
+        {/*
+          Nút Tìm nhìn thấy được — đợt soát UX, mục P1-1. Trước đây form này chỉ
+          có đúng một ô nhập và không nút nào: gõ xong không có gì xảy ra, người
+          quen máy tính bấm Enter, người quen điện thoại ngồi chờ.
+        */}
         <form action="/quan-ly/khach-hang" className="flex gap-2">
           {loc && <input type="hidden" name="loc" value={loc} />}
-          <input id="tim-khach" name="q" defaultValue={q} placeholder="Tìm tên hoặc số điện thoại" className="input w-60" />
+          <input
+            id="tim-khach"
+            name="q"
+            type="search"
+            autoComplete="off"
+            defaultValue={q}
+            placeholder="Tìm tên hoặc số điện thoại…"
+            className="input w-56"
+          />
+          <button type="submit" className="btn">Tìm</button>
+          {q && (
+            <Link href={link({ q: "" })} className="btn" aria-label="Bỏ tìm">
+              Bỏ
+            </Link>
+          )}
         </form>
         <Link href={link({ loc: "" })} className={lopChip(!loc)}>Tất cả</Link>
         <Link href={link({ loc: "no" })} className={lopChip(loc === "no")}>Còn nợ</Link>

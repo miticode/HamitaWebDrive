@@ -7,6 +7,7 @@ import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { albumCuaHopDong } from "@/lib/noiAlbum";
+import { buocTiepTheo, docBuocDayDu, laBuocXong } from "@/lib/buocHopDong";
 import { ChipTrangThai } from "../ChipTrangThai";
 import { NutPhieuThu, NutXoaHopDong, ThemPhieuThu } from "./NutHopDong";
 import { KhoiLich } from "./KhoiLich";
@@ -32,7 +33,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
   const { id } = await params;
   const prisma = getPrisma();
 
-  const [hd, bangTen, album] = await Promise.all([
+  const [hd, bangTen, album, cacBuoc] = await Promise.all([
     prisma.hopDong.findUnique({
       where: { id },
       include: {
@@ -53,8 +54,22 @@ export default async function ChiTietHopDongPage({ params }: Props) {
     }),
     tenTheoMaNV(),
     albumCuaHopDong(id),
+    docBuocDayDu(),
   ]);
   if (!hd) notFound();
+
+  /*
+    BƯỚC TIẾP THEO và AI LO — đợt soát UX, mục P1-5.
+
+    Bảng `BuocHopDong` chép về 13/11 mang sẵn bước trước, bước sau và trách
+    nhiệm (Sale 7 bước, Nhiếp ảnh 4), nhưng chưa hiện ra đâu cả. Trước đó muốn
+    biết bước sau là gì phải mở form sửa rồi đọc hết mười tám dòng trong ô chọn.
+
+    Hiện ở ĐÂY chứ không ở danh sách: danh sách đã có chip mang số bước, thêm
+    một dòng nữa cho 100 dòng bảng là làm bảng khó đọc hơn chứ không dễ hơn.
+  */
+  const buocSau = buocTiepTheo(cacBuoc, hd.trangThai);
+  const xongNhanh = laBuocXong(cacBuoc, hd.trangThai);
 
   /*
     Khách đã bấm "đã chọn xong" mà hợp đồng vẫn đứng ở bước chờ khách (4 nhánh
@@ -91,7 +106,16 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           <p className="mt-1 text-xs break-all text-fg-faint">{hd.maHD}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <ChipTrangThai trangThai={hd.trangThai} />
+          <span className="inline-flex flex-col items-start gap-0.5">
+            <ChipTrangThai trangThai={hd.trangThai} />
+            {buocSau && (
+              <span className="text-xs text-fg-faint">
+                tiếp theo <span aria-hidden>→</span> {buocSau.ten}
+                {buocSau.trachNhiem && <span className="text-fg-muted"> · {buocSau.trachNhiem}</span>}
+              </span>
+            )}
+            {xongNhanh && <span className="text-xs text-emerald-700">xong nhánh này</span>}
+          </span>
           {/*
             Sửa: quản lý + sale. Xoá: chỉ quản lý, và còn phải gõ lại mã hợp
             đồng trong hộp xác nhận. Giấu nút chỉ để đỡ bấm nhầm — chặn thật

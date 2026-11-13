@@ -25,6 +25,13 @@ function O({
       <input
         name={ten}
         defaultValue={giaTri ?? ""}
+        /*
+          Tắt gợi ý tự điền của trình duyệt. Đây là ô nhập dữ liệu của KHÁCH,
+          không phải của người đang ngồi gõ — để bật thì Chrome gợi ý tên và số
+          điện thoại của chính nhân viên, bấm nhầm một cái là sinh ra một nhà
+          khách sai. Mà số điện thoại ở đây chính là mã khách.
+        */
+        autoComplete="off"
         className="mt-1.5 min-h-11 w-full rounded-[3px] border border-line-strong bg-bg-raised px-3 text-sm"
         {...them}
       />

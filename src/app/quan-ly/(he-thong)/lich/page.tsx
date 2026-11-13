@@ -8,7 +8,7 @@ import { BangDongBo } from "../hop-dong/BangDongBo";
 
 export const dynamic = "force-dynamic";
 
-type Props = { searchParams: Promise<{ thang?: string; loai?: string }> };
+type Props = { searchParams: Promise<{ thang?: string; loai?: string; xem?: string }> };
 
 /** Tháng hiện tại theo giờ studio, dạng "YYYY-MM". */
 function thangNay(): string {
@@ -39,7 +39,7 @@ function doiThang(t: string, buoc: number): string {
 const THU = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
 /**
- * Lịch chụp — trang "Lịch" bên AppSheet, bản chép mỗi giờ (đợt 3).
+ * Lịch chụp — trang "Lịch" bên AppSheet, chép về khi quản lý bấm Đồng bộ.
  *
  * Xem theo THÁNG: studio đặt lịch cưới trước hàng tháng, nên tuần này không
  * nói được gì; mở ra là thấy cả tháng dày hay thưa.
@@ -58,6 +58,15 @@ export default async function LichPage({ searchParams }: Props) {
   const sp = await searchParams;
   const thang = /^\d{4}-\d{2}$/.test(sp.thang ?? "") ? sp.thang! : thangNay();
   const loai = sp.loai ?? "";
+  /*
+    MỘT kiểu xem tại một lúc — đợt soát UX, mục P1-3.
+
+    Trước đây máy tính vẽ lưới cả tháng rồi vẽ tiếp bảng cùng từng ấy buổi:
+    hai lần một dữ liệu, phải cuộn qua cả hai. Giờ để trống thì máy tính thấy
+    lưới, điện thoại thấy danh sách (lưới 7 cột nhét vào 375px thì mỗi ô còn
+    40px); chọn "Danh sách" thì cả hai cỡ đều là danh sách.
+  */
+  const xem = sp.xem === "ds" ? "ds" : "luoi";
 
   const where: Prisma.LichChupWhereInput = {
     matBenAppSheet: null,
@@ -99,7 +108,7 @@ export default async function LichPage({ searchParams }: Props) {
   }
 
   const link = (thay: Record<string, string>) => {
-    const p = new URLSearchParams({ thang, loai, ...thay });
+    const p = new URLSearchParams({ thang, loai, xem: xem === "ds" ? "ds" : "", ...thay });
     for (const [k, v] of [...p.entries()]) if (!v) p.delete(k);
     return `/quan-ly/lich?${p}`;
   };
@@ -125,6 +134,18 @@ export default async function LichPage({ searchParams }: Props) {
           </span>
           <Link href={link({ thang: doiThang(thang, 1) })} className="btn px-3" aria-label="Tháng sau">›</Link>
         </span>
+        {/* Về tháng này — trước đây lùi năm tháng rồi muốn quay lại phải bấm › năm lần. */}
+        {thang !== thangNay() && (
+          <Link href={link({ thang: thangNay() })} className="btn px-3">
+            Hôm nay
+          </Link>
+        )}
+        <span className="mx-1 hidden h-4 w-px bg-line md:block" aria-hidden />
+        {/* Công tắc kiểu xem: chỉ máy tính, vì điện thoại luôn là danh sách. */}
+        <span className="mr-2 hidden items-center gap-1 md:inline-flex">
+          <Link href={link({ xem: "" })} className={lopChip(xem === "luoi")}>Lưới tháng</Link>
+          <Link href={link({ xem: "ds" })} className={lopChip(xem === "ds")}>Danh sách</Link>
+        </span>
         <Link href={link({ loai: "" })} className={lopChip(!loai)}>Mọi loại</Link>
         {demLoai
           .filter((d) => d.loai)
@@ -136,8 +157,7 @@ export default async function LichPage({ searchParams }: Props) {
           ))}
       </div>
 
-      {/* Lưới tháng: chỉ máy tính. Xem chú thích đầu tệp. */}
-      <div className="mt-5 hidden md:block">
+      <div className={`mt-5 ${xem === "ds" ? "hidden" : "hidden md:block"}`}>
         <div className="grid grid-cols-7 gap-px rounded-md border border-line bg-line text-sm">
           {THU.map((t) => (
             <div key={t} className="bg-bg-soft px-2 py-1.5 text-center text-xs text-fg-muted">{t}</div>
@@ -180,7 +200,11 @@ export default async function LichPage({ searchParams }: Props) {
         </div>
       </div>
 
-      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
+      <div
+        className={`mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised ${
+          xem === "ds" ? "" : "md:hidden"
+        }`}
+      >
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">

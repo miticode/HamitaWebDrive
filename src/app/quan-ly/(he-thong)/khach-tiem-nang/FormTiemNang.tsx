@@ -126,6 +126,8 @@ function Khung({ khach, dong }: { khach: TiemNang | null; dong: () => void }) {
               required
               maxLength={120}
               autoFocus
+              /* Dữ liệu của khách, không phải của người đang gõ — xem FormKhach.tsx. */
+              autoComplete="off"
               className={O_NHAP}
             />
           </label>
@@ -135,6 +137,7 @@ function Khung({ khach, dong }: { khach: TiemNang | null; dong: () => void }) {
               name="soDienThoai"
               defaultValue={khach?.soDienThoai ?? ""}
               inputMode="tel"
+              autoComplete="off"
               className={`${O_NHAP} tabular-nums`}
             />
           </label>

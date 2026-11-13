@@ -8,6 +8,7 @@ import { BUOC_CHO_KHACH, ngayVN, tachTrangThai } from "@/lib/hopDongChung";
 import { BangDongBo } from "./BangDongBo";
 import { NutLapHopDong } from "./NutLapHopDong";
 import { ChipTrangThai } from "./ChipTrangThai";
+import { ChonLoc } from "./ChonLoc";
 
 export const dynamic = "force-dynamic";
 
@@ -116,30 +117,35 @@ export default async function HopDongPage({ searchParams }: Props) {
         <input
           id="tim-hop-dong"
           name="q"
+          type="search"
+          autoComplete="off"
           defaultValue={q}
-          placeholder="Tìm tên khách, số điện thoại, mã HĐ"
+          placeholder="Tìm tên khách, số điện thoại, mã HĐ…"
           className="input w-64"
         />
-        <select name="tt" defaultValue={tt} className="input w-auto" aria-label="Trạng thái">
-          <option value="">Mọi trạng thái</option>
-          <option value="cho-khach">Đang chờ khách chọn / duyệt ({soChoKhach})</option>
-          {dsTrangThai.map((d) =>
-            d.buoc !== null ? (
-              <option key={d.goc} value={String(d.buoc)}>
-                {d.buoc}. {d.ten} ({d.so})
-              </option>
-            ) : null,
-          )}
-        </select>
-        <select name="loai" defaultValue={loai} className="input w-auto" aria-label="Loại">
-          <option value="">Mọi loại</option>
-          {dsLoai.map((d) => (
-            <option key={d.loaiDV} value={d.loaiDV!}>
-              {d.loaiDV} ({d._count._all})
-            </option>
-          ))}
-        </select>
-        <button type="submit" className="btn">Lọc</button>
+        {/* Nút gửi form, dành cho ô gõ chữ — hai ô chọn bên dưới tự gửi khi đổi. */}
+        <button type="submit" className="btn">Tìm</button>
+        <ChonLoc
+          ten="tt"
+          nhan="Trạng thái"
+          giaTri={tt}
+          muc={[
+            { giaTri: "", chu: "Mọi trạng thái" },
+            { giaTri: "cho-khach", chu: `Đang chờ khách chọn / duyệt (${soChoKhach})` },
+            ...dsTrangThai
+              .filter((d) => d.buoc !== null)
+              .map((d) => ({ giaTri: String(d.buoc), chu: `${d.buoc}. ${d.ten} (${d.so})` })),
+          ]}
+        />
+        <ChonLoc
+          ten="loai"
+          nhan="Loại"
+          giaTri={loai}
+          muc={[
+            { giaTri: "", chu: "Mọi loại" },
+            ...dsLoai.map((d) => ({ giaTri: d.loaiDV!, chu: `${d.loaiDV} (${d._count._all})` })),
+          ]}
+        />
       </form>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
