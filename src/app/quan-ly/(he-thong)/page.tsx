@@ -9,6 +9,7 @@ import { CHO_DUYET } from "@/lib/soQuyChung";
 import { DA_CHOT } from "@/lib/khachTiemNangChung";
 import { SU_CO_DA_XONG } from "@/lib/suCoChung";
 import { docCaiDatCham, luotHomNay } from "@/lib/chamCong";
+import { khoaCuaToi } from "@/lib/hopDongMayChu";
 
 export const dynamic = "force-dynamic";
 
@@ -71,8 +72,9 @@ export default async function TongQuanPage() {
 
     Việc chưa giao vẫn đáng biết, nhưng là một câu khác, nằm riêng bên dưới.
   */
-  const viecCuaToi: Prisma.CongViecWhereInput = nguoi.maNV
-    ? { nguoiPhuTrachMaNV: { equals: nguoi.maNV, mode: "insensitive" } }
+  const khoaToi = khoaCuaToi(nguoi);
+  const viecCuaToi: Prisma.CongViecWhereInput = khoaToi
+    ? { nguoiPhuTrachMaNV: { equals: khoaToi, mode: "insensitive" } }
     : { id: "khong-bao-gio-khop" };
 
   /** Việc chưa giao cho ai — ai rảnh thì nhận. Quản lý không cần dòng này. */
@@ -185,11 +187,11 @@ export default async function TongQuanPage() {
             phu={!nguoi.maNV ? "tài khoản không gắn nhân viên" : chuaVao ? "bấm để vào ca" : undefined}
           />
           <The
-            href={`/quan-ly/cong-viec?tt=qua-han${nguoi.maNV ? `&nguoi=${encodeURIComponent(nguoi.maNV)}` : ""}`}
+            href={`/quan-ly/cong-viec?tt=qua-han${khoaToi ? `&nguoi=${encodeURIComponent(khoaToi)}` : ""}`}
             nhan="Việc quá hạn"
             chu={String(viecQuaHan)}
             muc={viecQuaHan > 0 ? "gap" : "yen"}
-            phu={nguoi.maNV ? "của anh chị" : "chưa có mã nhân viên"}
+            phu="của anh chị"
           />
           <The
             href="/quan-ly/lich"

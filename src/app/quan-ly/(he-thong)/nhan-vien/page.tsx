@@ -174,6 +174,7 @@ export default async function NhanVienPage({ searchParams }: Props) {
                     nv={{
                       id: n.id,
                       ten: n.ten,
+                      maNV: n.maNV ?? "",
                       tenDangNhap: n.tenDangNhap,
                       soDienThoai: n.soDienThoai ?? "",
                       phongBan: n.phongBan ?? "",

@@ -255,6 +255,15 @@ export async function capMatKhauAction(
 
 export type DuLieuNhanVien = {
   ten: string;
+  /**
+   * Mã nhân viên — khoá ghép với bảng công, bảng lương, đầu việc bên AppSheet.
+   *
+   * Mở cho quản lý sửa từ 14/11/2026: anh chốt học viên chưa có mã, hết học
+   * việc thì cấp mã cho lên nhân viên. Trước đó mã chỉ chép được từ AppSheet,
+   * nên việc "cho lên nhân viên" không làm nổi trên web — mà AppSheet thì sắp
+   * bỏ.
+   */
+  maNV: string;
   tenDangNhap: string;
   soDienThoai: string;
   phongBan: string;
@@ -268,10 +277,29 @@ export type DuLieuNhanVien = {
 async function kiemDuLieu(
   du: DuLieuNhanVien,
   boQuaId: string | null,
-): Promise<{ loi: string } | { sach: Omit<DuLieuNhanVien, "soDienThoai"> & { soDienThoai: string | null } }> {
+): Promise<{
+  loi: string;
+} | {
+  sach: Omit<DuLieuNhanVien, "soDienThoai" | "maNV"> & { soDienThoai: string | null; maNV: string | null };
+}> {
   const ten = du.ten.trim();
   if (!ten) return { loi: "Thiếu tên nhân viên." };
   if (ten.length > 100) return { loi: "Tên dài quá." };
+
+  /*
+    Mã nhân viên: để trống được (học viên chưa có), nhưng đã có thì phải DUY
+    NHẤT — mã là thứ bảng công và bảng lương ghép người theo, hai người cùng
+    mã là hai người thành một dòng lương.
+  */
+  const maNV = du.maNV.trim();
+  if (maNV.length > 30) return { loi: "Mã nhân viên dài quá, tối đa 30 ký tự." };
+  if (maNV) {
+    const trungMa = await getPrisma().nhanVien.findFirst({
+      where: { maNV: { equals: maNV, mode: "insensitive" }, ...(boQuaId ? { NOT: { id: boQuaId } } : {}) },
+      select: { ten: true },
+    });
+    if (trungMa) return { loi: `Mã này ${trungMa.ten} đang dùng rồi.` };
+  }
 
   const tenDangNhap = chuanTenDangNhap(du.tenDangNhap);
   const loiTen = kiemTenDangNhap(tenDangNhap);
@@ -294,6 +322,7 @@ async function kiemDuLieu(
   return {
     sach: {
       ten,
+      maNV: maNV || null,
       tenDangNhap,
       soDienThoai: soDienThoai || null,
       phongBan: du.phongBan.trim(),
@@ -340,6 +369,7 @@ export async function themNhanVienAction(
 /** Tên cột → chữ hiện trong nhật ký, cho quản lý đọc được "đổi gì". */
 const TEN_COT: Record<string, string> = {
   ten: "tên",
+  maNV: "mã nhân viên",
   tenDangNhap: "tên đăng nhập",
   soDienThoai: "số điện thoại",
   phongBan: "phòng ban",
@@ -386,6 +416,28 @@ export async function suaNhanVienAction(
   if (Object.keys(doi).length === 0) return {};
 
   await prisma.nhanVien.update({ where: { id: nhanVienId }, data: moi });
+
+  /*
+    HỌC VIÊN LÊN NHÂN VIÊN: vừa được cấp mã lần đầu thì kéo theo mọi đầu việc
+    cũ sang mã mới.
+
+    Trước khi có mã, đầu việc giao cho họ ghi TÊN ĐĂNG NHẬP vào cột người phụ
+    trách (xem `khoaNguoi` trong hopDongMayChu.ts) — mã nhân viên là thứ studio
+    cấp khi nhận chính thức, còn học viên thì chưa có (anh chốt 14/11). Không
+    có đoạn này thì đúng ngày được nhận chính thức, họ mất sạch việc đang làm
+    dở: việc vẫn nằm đó nhưng mang một khoá không còn ai khớp.
+
+    Chỉ chạy khi mã đi từ TRỐNG sang CÓ. Đổi mã này sang mã khác là chuyện
+    khác hẳn, không đụng vào ở đây.
+  */
+  if (!cu.maNV && moi.maNV) {
+    const { count } = await prisma.congViec.updateMany({
+      where: { nguoiPhuTrachMaNV: { equals: cu.tenDangNhap, mode: "insensitive" } },
+      data: { nguoiPhuTrachMaNV: moi.maNV },
+    });
+    if (count) doi["đầu việc chuyển sang mã mới"] = { truoc: cu.tenDangNhap, sau: moi.maNV };
+  }
+
   // Nghỉ việc hoặc bị hạ quyền thì văng khỏi mọi máy ngay, không đợi phiên hết hạn.
   if (!moi.dangLam || (cu.vaiTro === "quan-tri" && moi.vaiTro !== "quan-tri")) {
     await xoaMoiPhien(nhanVienId);

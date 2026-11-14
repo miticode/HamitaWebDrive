@@ -172,6 +172,8 @@ export function ThemNhanVien({ dsPhong, dsChucVu }: { dsPhong: string[]; dsChucV
           <FormNhanVien
             banDau={{
               ten: "",
+              /* Học viên mới vào chưa có mã — để trống, cấp sau khi nhận chính thức. */
+              maNV: "",
               tenDangNhap: "",
               soDienThoai: "",
               phongBan: "",
@@ -291,6 +293,24 @@ function FormNhanVien({
             ))}
           </datalist>
         </label>
+        <label className={o}>
+          Mã nhân viên
+          {/*
+            Để trống được: học viên chưa có mã (anh chốt 14/11). Cấp mã chính là
+            việc "cho lên nhân viên" — lúc đó mọi đầu việc đang ghi tên đăng
+            nhập của họ tự chuyển sang mã mới, xem `suaNhanVienAction`.
+          */}
+          <input
+            id="nv-ma"
+            className="input"
+            value={du.maNV}
+            placeholder="để trống nếu đang học việc"
+            onChange={(e) => doi("maNV", e.target.value)}
+          />
+        </label>
+        <p className="col-span-2 -mt-1 text-xs text-fg-faint">
+          Mã nhân viên là khoá ghép với bảng công, bảng lương và đầu việc. Cấp rồi thì đừng đổi.
+        </p>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <label className={o}>

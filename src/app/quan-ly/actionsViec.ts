@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getPrisma } from "@/lib/db";
 import { layNguoiDung, laQuanTri } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
+import { khoaCuaToi } from "@/lib/hopDongMayChu";
 import { MUI_GIO } from "@/lib/constants";
 import { TRANG_THAI_VIEC } from "@/lib/hopDongChung";
 
@@ -37,20 +38,26 @@ async function nguoiDangDung() {
   return nguoi && !nguoi.doiMatKhau ? nguoi : null;
 }
 
-/** Việc này người đang đăng nhập có được đụng vào không. */
+/**
+ * Việc này người đang đăng nhập có được đụng vào không.
+ *
+ * `khoa` là mã nhân viên, hoặc tên đăng nhập với người chưa có mã (học viên) —
+ * xem `khoaNguoi` trong `hopDongMayChu.ts`.
+ */
 function duocDung(
   viec: { nguoiPhuTrachMaNV: string | null },
-  maNV: string | null,
+  khoa: string | null,
   quanTri: boolean,
 ): boolean {
   if (quanTri) return true;
   if (!viec.nguoiPhuTrachMaNV) return true; // Việc chưa giao: ai rảnh thì nhận.
-  return !!maNV && viec.nguoiPhuTrachMaNV.toLowerCase() === maNV.toLowerCase();
+  return !!khoa && viec.nguoiPhuTrachMaNV.toLowerCase() === khoa.toLowerCase();
 }
 
 export async function giaoViecAction(
   id: string,
-  maNVNhan: string,
+  /** Mã nhân viên, hoặc tên đăng nhập với người chưa có mã. Rỗng = gỡ người. */
+  khoaNhan: string,
 ): Promise<{ loi: string } | { ok: true }> {
   const nguoi = await nguoiDangDung();
   if (!nguoi) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp em." };
@@ -62,18 +69,30 @@ export async function giaoViecAction(
     select: { nguoiPhuTrachMaNV: true, trangThai: true, loai: true },
   });
   if (!viec) return { loi: "Đầu việc này không còn." };
-  if (!duocDung(viec, nguoi.maNV, quanTri)) {
+  const khoaToi = khoaCuaToi(nguoi);
+  if (!duocDung(viec, khoaToi, quanTri)) {
     return { loi: "Việc này đang của người khác — nhờ quản lý chuyển giúp." };
   }
 
-  const ma = maNVNhan.trim();
+  const ma = khoaNhan.trim();
   // Người thường chỉ được nhận về mình, không được đẩy sang người khác.
-  if (!quanTri && ma && ma.toLowerCase() !== (nguoi.maNV ?? "").toLowerCase()) {
+  if (!quanTri && ma && ma.toLowerCase() !== (khoaToi ?? "").toLowerCase()) {
     return { loi: "Anh chị chỉ nhận việc về mình được thôi." };
   }
   if (!quanTri && !ma) return { loi: "Chỉ quản lý mới gỡ người khỏi việc được." };
-  if (ma && !(await prisma.nhanVien.findFirst({ where: { maNV: ma }, select: { id: true } }))) {
-    return { loi: "Không tìm thấy nhân viên mang mã này." };
+  /*
+    Nhận ra người theo MÃ hoặc TÊN ĐĂNG NHẬP — học viên chưa có mã vẫn nhận
+    được việc (anh chốt 14/11). Vẫn phải là người CÒN LÀM: giao việc cho người
+    đã nghỉ là việc treo mãi không ai làm.
+  */
+  if (
+    ma &&
+    !(await prisma.nhanVien.findFirst({
+      where: { dangLam: true, OR: [{ maNV: ma }, { tenDangNhap: ma }] },
+      select: { id: true },
+    }))
+  ) {
+    return { loi: "Không tìm thấy nhân viên đang làm nào khớp." };
   }
 
   await prisma.congViec.update({
@@ -116,7 +135,7 @@ export async function doiTrangThaiViecAction(
     select: { nguoiPhuTrachMaNV: true, loai: true, ngayHoanThanh: true },
   });
   if (!viec) return { loi: "Đầu việc này không còn." };
-  if (!duocDung(viec, nguoi.maNV, laQuanTri(nguoi))) {
+  if (!duocDung(viec, khoaCuaToi(nguoi), laQuanTri(nguoi))) {
     return { loi: "Việc này đang của người khác — nhờ quản lý đổi giúp." };
   }
 

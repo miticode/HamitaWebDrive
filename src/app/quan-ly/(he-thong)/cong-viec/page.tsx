@@ -4,7 +4,7 @@ import { getPrisma } from "@/lib/db";
 import { MUI_GIO } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
-import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
+import { khoaCuaToi, khoaNguoi, tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { NutViec } from "./NutViec";
 
@@ -52,13 +52,15 @@ export default async function CongViecPage({ searchParams }: Props) {
     Người chưa có mã nhân viên bên AppSheet (`maNV` trống) thì chỉ còn thấy
     việc chưa giao — không ghép được dòng nào với họ.
   */
+  /* Mã nhân viên, hoặc tên đăng nhập với học viên chưa có mã — xem `khoaNguoi`. */
+  const khoaToi = khoaCuaToi(nguoi);
   const chuaGiao: Prisma.CongViecWhereInput[] = [
     { nguoiPhuTrachMaNV: null },
     { nguoiPhuTrachMaNV: "" },
   ];
   const theoNguoi: Prisma.CongViecWhereInput = quanTri
     ? {}
-    : { OR: [...(nguoi.maNV ? [{ nguoiPhuTrachMaNV: nguoi.maNV }] : []), ...chuaGiao] };
+    : { OR: [...(khoaToi ? [{ nguoiPhuTrachMaNV: khoaToi }] : []), ...chuaGiao] };
   const tt = ["qua-han", "da-lam", "tat-ca"].includes(sp.tt ?? "") ? sp.tt! : "chua-xong";
   const so = Math.max(MOI_LUOT, Math.floor(Number(sp.so)) || MOI_LUOT);
   const nay = homNay();
@@ -111,13 +113,22 @@ export default async function CongViecPage({ searchParams }: Props) {
       đầu việc ghép người bằng mã bên AppSheet, người chưa có mã thì ghép
       không ra (đã ghi trong nguyên tắc 52).
     */
+    /*
+      Danh sách người để giao việc: mọi người CÒN LÀM, kể cả người chưa có mã
+      nhân viên.
+
+      Bản cũ lọc `maNV: { not: null }` vì đầu việc ghép người bằng mã bên
+      AppSheet. Từ 14/11/2026 anh chốt sếp vẫn giao được việc cho học viên, mà
+      học viên thì chưa có mã — nên khoá ghép là mã NẾU CÓ, không thì tên đăng
+      nhập (`khoaNguoi`).
+    */
     prisma.nhanVien.findMany({
-      where: { dangLam: true, maNV: { not: null } },
+      where: { dangLam: true },
       orderBy: { ten: "asc" },
-      select: { maNV: true, ten: true },
+      select: { maNV: true, tenDangNhap: true, ten: true },
     }),
   ]);
-  const nhanVien = dsNhanVien.map((n) => ({ maNV: n.maNV!, ten: n.ten }));
+  const nhanVien = dsNhanVien.map((n) => ({ maNV: khoaNguoi(n), ten: n.ten }));
   const hien = ds.slice(0, so);
 
   const link = (thay: Record<string, string>) => {
@@ -153,8 +164,8 @@ export default async function CongViecPage({ searchParams }: Props) {
         {quanTri && <span className="mx-1 h-4 w-px bg-line" aria-hidden />}
         {quanTri && <Link href={link({ nguoi: "" })} className={lopChip(!loc)}>Mọi người</Link>}
         {/* "Việc của tôi" chỉ hiện với quản lý — người khác vốn đã chỉ thấy việc mình. */}
-        {quanTri && nguoi.maNV && (
-          <Link href={link({ nguoi: nguoi.maNV })} className={lopChip(loc.toLowerCase() === nguoi.maNV.toLowerCase())}>
+        {quanTri && khoaToi && (
+          <Link href={link({ nguoi: khoaToi })} className={lopChip(loc.toLowerCase() === khoaToi.toLowerCase())}>
             Việc của tôi
           </Link>
         )}
