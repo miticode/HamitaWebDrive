@@ -174,11 +174,13 @@ export async function lapHopDongAction(
  */
 export async function taoThuMucAlbumAction(
   hopDongId: string,
+  /** Tên hiện trên album; bỏ trống thì lấy tên khách trên hợp đồng. */
+  ten?: string,
 ): Promise<{ loi: string } | { ok: true; slug: string; tenThuMuc: string }> {
   const nguoi = await nguoiDuocLap();
   if (!nguoi) return { loi: "Tài khoản này chưa được lập hợp đồng, hoặc phiên đăng nhập đã hết." };
 
-  const kq = await taoThuMucVaAlbum(hopDongId);
+  const kq = await taoThuMucVaAlbum(hopDongId, ten);
   if (!kq.ok) return { loi: kq.loi };
 
   await ghiNhatKy({

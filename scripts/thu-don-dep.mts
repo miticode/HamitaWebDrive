@@ -25,7 +25,15 @@ const xoa: [string, () => Promise<{ count: number }>][] = [
   /* Album thử: xoá SelectionList và MucXong trước (khoá ngoại Cascade lo phần Selection). */
   ["mucXong", () => p.mucXong.deleteMany({ where: { gallery: { slug: { startsWith: "zz-thu-" } } } })],
   ["selectionList", () => p.selectionList.deleteMany({ where: { gallery: { slug: { startsWith: "zz-thu-" } } } })],
-  ["gallery", () => p.gallery.deleteMany({ where: { slug: { startsWith: "zz-thu-" } } })],
+  /*
+    Loc theo CA slug LAN ten khach, khong chi slug.
+
+    Album sinh tu hop dong mang ten co MA o dau — "HC - ZZ THU NGHIEM ten
+    rieng" — nen slug cua no la "hc-zz-thu-nghiem-...", khong bat dau bang
+    "zz-thu-" nua. Do 14/11/2026: mot album thu lot lai dung vi le do, va
+    phep dem cuoi script van bao SACH.
+  */
+  ["gallery", () => p.gallery.deleteMany({ where: { OR: [{ slug: { contains: "zz-thu" } }, { clientName: { contains: DAU.tienTo } }] } })],
   ["khachTiemNang", () => p.khachTiemNang.deleteMany({ where: { tenNguoi: { contains: DAU.ten } } })],
   ["chiTieu", () => p.chiTieu.deleteMany({ where: { dienGiai: { contains: DAU.ten } } })],
   ["chamCong", () => p.chamCong.deleteMany({ where: { maNV: { equals: DAU.maNV, mode: "insensitive" } } })],
@@ -62,7 +70,9 @@ const con = {
   nhatKy: await p.nhatKy.count({ where: { nguoiTen: { contains: DAU.tienTo } } }),
   nhatKyCt: await p.nhatKy.count({ where: { chiTiet: { path: ["ten"], string_contains: DAU.tienTo } } }),
   nhanVien: await p.nhanVien.count({ where: { tenDangNhap: { startsWith: "zz-thu-" } } }),
-  gallery: await p.gallery.count({ where: { slug: { startsWith: "zz-thu-" } } }),
+  gallery: await p.gallery.count({
+    where: { OR: [{ slug: { contains: "zz-thu" } }, { clientName: { contains: DAU.tienTo } }] },
+  }),
 };
 const sot = Object.entries(con).filter(([, v]) => v > 0);
 console.log(sot.length ? `CÒN SÓT: ${sot.map(([k, v]) => `${k}=${v}`).join(", ")}` : "ĐÃ SẠCH — đo lại 13 bảng, không còn dòng thử nào.");

@@ -248,7 +248,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
                 : `Loại “${hd.loaiDV ?? "—"}” thường không giao ảnh, nên web không tự tạo thư mục.`}{" "}
               Album đã có sẵn trên Drive thì mở trang quản lý album rồi bấm “Gắn hợp đồng”.
             </p>
-            {duocSua && <NutTaoThuMuc hopDongId={hd.id} />}
+            {duocSua && <NutTaoThuMuc hopDongId={hd.id} tenKhach={hd.tenKhach} />}
           </div>
         ) : (
           <ul className="mt-3 divide-y divide-line rounded-md border border-line bg-bg-raised text-sm">

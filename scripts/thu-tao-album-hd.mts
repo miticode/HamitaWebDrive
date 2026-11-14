@@ -66,7 +66,8 @@ if ("loi" in tao) { console.log(`\nKhong lap duoc hop dong: ${tao.loi}`); proces
 console.log(`\nHop dong thu ${tao.maHD}, lap 11/2026, chup 08/03/2027\n`);
 
 const batDau = Date.now();
-const kq = await taoThuMucVaAlbum(tao.id);
+const TEN_DAT = `HIS - ${DAU.ten} dat ten`;
+const kq = await taoThuMucVaAlbum(tao.id, TEN_DAT);
 const giay = ((Date.now() - batDau) / 1000).toFixed(2);
 
 kiem("tao duoc thu muc + album", kq.ok, kq.ok ? kq.tenThuMuc : kq.loi);
@@ -79,8 +80,11 @@ if (kq.ok) {
   });
   kiem("album GAN SAN hop dong", album?.hopDongId === tao.id);
   kiem("album tro dung thu muc vua tao", album?.driveFolderId === kq.thuMucDrive);
-  kiem("chua bat quyen tai (nguyen tac 60)", album?.allowDownload === false);
+  kiem("da bat quyen tai (anh chot 14/11)", album?.allowDownload === true);
   kiem("da dat ma truy cap", !!album?.accessCode);
+  kiem("album mang TEN TU CHON, khong phai ten tren hop dong",
+    album?.clientName === TEN_DAT, album?.clientName ?? "");
+  kiem("thu muc Drive cung mang ten do", kq.tenThuMuc === TEN_DAT, kq.tenThuMuc);
 
   /* Thư mục có nằm đúng T3 của 2027 không? */
   const token = await getUserAccessToken();

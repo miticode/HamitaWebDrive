@@ -128,7 +128,20 @@ export type KetQuaTaoThuMuc =
  * hợp đồng đã có thật — người lập chỉ cần biết là album chưa tạo được và tạo
  * tay như cũ.
  */
-export async function taoThuMucVaAlbum(hopDongId: string): Promise<KetQuaTaoThuMuc> {
+export async function taoThuMucVaAlbum(
+  hopDongId: string,
+  /**
+   * Tên hiện trên album và trên thư mục Drive. Bỏ trống thì lấy tên khách ghi
+   * trên hợp đồng.
+   *
+   * Vì sao cho đặt khác (anh yêu cầu 14/11/2026): album của tiệm đặt tên kèm
+   * mã ở đầu — "HIS - Minh Ngọc & Công Khoa", "HC - Trúc Hà & Hữu Lợi" — mà
+   * mã đó nói buổi chụp nào, thứ hợp đồng không biết. Một hợp đồng CƯỚI có
+   * thể là hình cổng, là nhà trai, là album; `loaiDV` không suy ra nổi, và
+   * đoán bừa thì bộ lọc theo mã ở trang quản lý album bắt trượt.
+   */
+  tenTuChon?: string,
+): Promise<KetQuaTaoThuMuc> {
   try {
     const prisma = getPrisma();
     const hd = await prisma.hopDong.findUnique({
@@ -143,10 +156,19 @@ export async function taoThuMucVaAlbum(hopDongId: string): Promise<KetQuaTaoThuM
       },
     });
     if (!hd) return { ok: false, loi: "Hợp đồng này không còn." };
-    if (!coGiaoAnh(hd.loaiDV)) return { ok: false, loi: `Loại "${hd.loaiDV}" không giao ảnh.` };
 
-    const ten = hd.tenKhach.trim();
-    if (!ten) return { ok: false, loi: "Hợp đồng chưa có tên khách." };
+    /*
+      KHÔNG lọc loại hợp đồng ở đây, cố ý.
+
+      `coGiaoAnh` là phép lọc của việc TỰ ĐỘNG — xem `lapHopDongAction`, nó
+      hỏi trước rồi mới gọi hàm này. Nhét phép lọc vào trong đây nữa thì nút
+      "Tạo thư mục Drive & album" trên trang hợp đồng cũng bị chặn theo, mà
+      nút đó là người đang ngồi đó chủ động bấm: họ biết rõ hợp đồng này cần
+      album hơn web biết. Máy đoán giùm thì được, máy cấm thì không.
+    */
+
+    const ten = (tenTuChon ?? "").trim() || hd.tenKhach.trim();
+    if (!ten) return { ok: false, loi: "Chưa có tên để đặt cho album." };
 
     const token = await getUserAccessToken().catch(() => null);
     if (!token) return { ok: false, loi: "Chưa kết nối Google Drive, hoặc kết nối đã hỏng." };
@@ -173,14 +195,17 @@ export async function taoThuMucVaAlbum(hopDongId: string): Promise<KetQuaTaoThuM
     /*
       Album web: tạo rồi gắn hợp đồng ngay trong cùng một lượt.
 
-      `allowDownload: false` — quyền tải là thứ bật khi giao ảnh xong
-      (nguyên tắc 60), không phải thứ mở sẵn từ lúc ký hợp đồng.
+      `allowDownload: true` — anh chốt 14/11/2026 là cho tải ngay. Quyền này
+      vốn bật/tắt được bất cứ lúc nào ở cửa sổ Cài đặt (nguyên tắc 60), nên
+      mặc định bật chỉ là chọn phía đỡ phải nhớ: album chưa gửi thông báo thì
+      chưa ai có link mà tải, còn lúc giao ảnh thì khỏi phải bật thêm một
+      bước nữa.
     */
     const album = await createGallery({
       title: tao.name,
       clientName: ten,
       driveFolderId: tao.id,
-      allowDownload: false,
+      allowDownload: true,
     });
     await setAccess(album.id, MA_MAC_DINH);
     await prisma.gallery.update({ where: { id: album.id }, data: { hopDongId: hd.id } });
