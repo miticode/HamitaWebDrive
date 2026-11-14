@@ -70,6 +70,9 @@ export default async function NhanVienPage({ searchParams }: Props) {
 
   const dsPhong = [...new Set(tatCa.filter((n) => n.dangLam).map((n) => n.phongBan).filter(Boolean))] as string[];
   dsPhong.sort((a, b) => a.localeCompare(b, "vi"));
+  /* Chức vụ đang dùng thật — gộp với danh mục gợi ý trong form (mục "Học viên"). */
+  const dsChucVu = [...new Set(tatCa.filter((n) => n.dangLam).map((n) => n.chucVu).filter(Boolean))] as string[];
+  dsChucVu.sort((a, b) => a.localeCompare(b, "vi"));
 
   const link = (thay: Record<string, string>) => {
     const p = new URLSearchParams({ q, phong, tt, ...thay });
@@ -93,7 +96,7 @@ export default async function NhanVienPage({ searchParams }: Props) {
         {quanTri && (
           <div className="flex flex-wrap items-center gap-2">
             <NutDangXuatMoiMay soChuaCoMatKhau={tatCa.filter((n) => n.dangLam && !n.matKhau).length} />
-            <ThemNhanVien dsPhong={dsPhong} />
+            <ThemNhanVien dsPhong={dsPhong} dsChucVu={dsChucVu} />
           </div>
         )}
       </div>
@@ -183,6 +186,7 @@ export default async function NhanVienPage({ searchParams }: Props) {
                     }}
                     vaoGanNhat={n.dangNhapLuc ? NGAY_GIO.format(n.dangNhapLuc) : null}
                     dsPhong={dsPhong}
+                    dsChucVu={dsChucVu}
                     laChinhMinh={nguoi.id === n.id}
                     truocNutSua={
                       <NutHienTrang

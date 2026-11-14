@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, type ReactNode } from "react";
+import { CHUC_VU_GOI_Y } from "@/lib/nhanVienChung";
 import { useRouter } from "next/navigation";
 import {
   capMatKhauAction,
@@ -23,12 +24,14 @@ export function HangNhanVien({
   nv,
   vaoGanNhat,
   dsPhong,
+  dsChucVu,
   laChinhMinh,
   truocNutSua,
 }: {
   nv: NhanVienHang;
   vaoGanNhat: string | null;
   dsPhong: string[];
+  dsChucVu: string[];
   laChinhMinh: boolean;
   /** Công tắc "hiện trên trang giới thiệu" — trang cha dựng, hàng chỉ đặt chỗ. */
   truocNutSua?: ReactNode;
@@ -140,6 +143,7 @@ export function HangNhanVien({
             <FormNhanVien
               banDau={nv}
               dsPhong={dsPhong}
+              dsChucVu={dsChucVu}
               laChinhMinh={laChinhMinh}
               onLuu={(du) => suaNhanVienAction(nv.id, du)}
               onXong={() => {
@@ -155,7 +159,7 @@ export function HangNhanVien({
 }
 
 /** Nút "Thêm nhân viên" ở đầu trang — cho người mới vào làm sau khi đã rời AppSheet. */
-export function ThemNhanVien({ dsPhong }: { dsPhong: string[] }) {
+export function ThemNhanVien({ dsPhong, dsChucVu }: { dsPhong: string[]; dsChucVu: string[] }) {
   const router = useRouter();
   const [mo, setMo] = useState(false);
   return (
@@ -177,6 +181,7 @@ export function ThemNhanVien({ dsPhong }: { dsPhong: string[] }) {
               dangLam: true,
             }}
             dsPhong={dsPhong}
+            dsChucVu={dsChucVu}
             laChinhMinh={false}
             onLuu={themNhanVienAction}
             onXong={() => {
@@ -193,12 +198,14 @@ export function ThemNhanVien({ dsPhong }: { dsPhong: string[] }) {
 function FormNhanVien({
   banDau,
   dsPhong,
+  dsChucVu,
   laChinhMinh,
   onLuu,
   onXong,
 }: {
   banDau: DuLieuNhanVien;
   dsPhong: string[];
+  dsChucVu: string[];
   laChinhMinh: boolean;
   onLuu: (du: DuLieuNhanVien) => Promise<{ loi?: string }>;
   onXong: () => void;
@@ -270,7 +277,19 @@ function FormNhanVien({
         </label>
         <label className={o}>
           Chức vụ
-          <input id="nv-chuc-vu" className="input" value={du.chucVu} onChange={(e) => doi("chucVu", e.target.value)} />
+          {/* Gợi ý sẵn nhưng vẫn gõ tay được — cùng nếp ô Phòng ban ngay bên cạnh. */}
+          <input
+            id="nv-chuc-vu"
+            className="input"
+            list="ds-chuc-vu"
+            value={du.chucVu}
+            onChange={(e) => doi("chucVu", e.target.value)}
+          />
+          <datalist id="ds-chuc-vu">
+            {[...new Set([...dsChucVu, ...CHUC_VU_GOI_Y])].map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
         </label>
       </div>
       <div className="grid grid-cols-2 gap-3">

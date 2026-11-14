@@ -56,6 +56,20 @@ export function kiemTenDangNhap(ten: string): string | null {
  * Bên AppSheet cũ chỉ ghi Admin/User cho từng người; vai trò Sale mặc định
  * gán cho phòng Tư Vấn, quản lý đổi lại được ở mục Nhân viên.
  */
+/**
+ * CHỨC VỤ gợi ý sẵn khi thêm hoặc sửa nhân viên — thêm 14/11/2026.
+ *
+ * Ô chức vụ vẫn là ô gõ tự do (studio có thể có chức vụ mới bất cứ lúc nào);
+ * đây chỉ là danh sách gợi ý để chữ không mỗi người gõ một kiểu. Bảng hiện có
+ * đúng hai chuỗi: "NHÂN VIÊN" (13 người) và "Studio" (3), giữ nguyên chữ hoa
+ * thường như đang lưu để không tách một nhóm thành hai.
+ *
+ * "Học viên" thêm theo yêu cầu của anh 14/11: người mới vào tiệm chưa có mã
+ * nhân viên, và trước đó không có cách nào phân biệt họ trong dữ liệu — chỉ
+ * suy ra bằng việc thiếu mã, mà thiếu mã còn có thể vì quên điền.
+ */
+export const CHUC_VU_GOI_Y = ["NHÂN VIÊN", "Studio", "Học viên"] as const;
+
 export const VAI_TRO = ["quan-tri", "sale", "nhan-vien"] as const;
 export type VaiTro = (typeof VAI_TRO)[number];
 
