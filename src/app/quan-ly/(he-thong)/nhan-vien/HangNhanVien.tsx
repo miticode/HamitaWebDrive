@@ -18,7 +18,7 @@ type NhanVienHang = DuLieuNhanVien & {
 
 /**
  * Bốn ô cuối của một hàng nhân viên — chỉ quản lý thấy: tên đăng nhập, tình
- * trạng tài khoản, lần vào gần nhất, và hai nút cấp mật khẩu / sửa.
+ * trạng tài khoản, lần vào gần nhất, và các nút cấp mật khẩu / cho nghỉ / sửa.
  */
 export function HangNhanVien({
   nv,
@@ -42,6 +42,7 @@ export function HangNhanVien({
   const [loi, setLoi] = useState<string | null>(null);
   const [dangSua, setDangSua] = useState(false);
   const [daChep, setDaChep] = useState(false);
+  const [dangDoiLam, startDoiLam] = useTransition();
 
   const cap = () => {
     const cauHoi = nv.coMatKhau
@@ -90,6 +91,44 @@ export function HangNhanVien({
               className="text-accent underline underline-offset-2 hover:opacity-80"
             >
               {dangCap ? "Đang cấp…" : nv.coMatKhau ? "Cấp lại mật khẩu" : "Cấp mật khẩu"}
+            </button>
+          )}
+          {/*
+            CHO NGHỈ / NHẬN LẠI ngay tại hàng — anh báo 14/11/2026: "không có
+            phần chuyển trạng thái sang đã nghỉ".
+
+            Việc này VẪN LÀM ĐƯỢC từ trước, nhưng nằm ở ô tích cuối form Sửa
+            mang tên "Đang làm ở tiệm" — ai đi tìm chữ "nghỉ việc" thì không
+            thấy, mà cột Tài khoản hiện sẵn chữ "Đã nghỉ" lại không bấm được.
+            Chức năng có mà không ai tìm ra thì coi như không có.
+
+            Dùng lại đúng `suaNhanVienAction`, không mở đường mới vào database:
+            nhật ký, việc văng khỏi mọi máy, và phép chặn tự cho mình nghỉ đều
+            giữ nguyên.
+          */}
+          {!laChinhMinh && (
+            <button
+              type="button"
+              disabled={dangDoiLam}
+              onClick={() =>
+                startDoiLam(async () => {
+                  setLoi(null);
+                  const hoi = nv.dangLam
+                    ? `Cho ${nv.ten} nghỉ việc?
+
+Tài khoản sẽ không đăng nhập được nữa và văng khỏi mọi máy ngay. Hợp đồng, chấm công, lương cũ vẫn giữ nguyên — nhận lại lúc nào cũng được.`
+                    : `Nhận ${nv.ten} làm lại?
+
+Tài khoản đăng nhập lại được ngay.`;
+                  if (!confirm(hoi)) return;
+                  const kq = await suaNhanVienAction(nv.id, { ...nv, dangLam: !nv.dangLam });
+                  if (kq.loi) setLoi(kq.loi);
+                  else router.refresh();
+                })
+              }
+              className="text-fg-muted underline underline-offset-2 hover:text-accent disabled:opacity-50"
+            >
+              {dangDoiLam ? "Đang lưu…" : nv.dangLam ? "Cho nghỉ" : "Nhận lại"}
             </button>
           )}
           <button

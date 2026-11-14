@@ -7,6 +7,14 @@
  */
 export const DAU = {
   ten: "ZZ THU NGHIEM",
+  /**
+   * Tiền tố CHUNG cho mọi thứ do kịch bản thử sinh ra, kể cả tài khoản thử
+   * trong `thu-tai-khoan.mts` (tên "ZZ THU quản lý", "ZZ THU học viên"…).
+   *
+   * Thiếu nó thì mỗi script dọn theo một dấu riêng: 14/11 hai dòng nhật ký
+   * mang tên "ZZ THU quản lý" lọt lại, vì script dọn chỉ tìm "ZZ THU NGHIEM".
+   */
+  tienTo: "ZZ THU",
   sdt: "0900000001",
   sdt2: "0900000002",
   sdt3: "0900000003",

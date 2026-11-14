@@ -29,7 +29,11 @@ const xoa: [string, () => Promise<{ count: number }>][] = [
   ["suCo", () => p.suCo.deleteMany({ where: { vanDe: { contains: DAU.ten } } })],
   ["luongNhanVien", () => p.luongNhanVien.deleteMany({ where: { kyLuong: DAU.kyLuong } })],
   ["kyLuong", () => p.kyLuong.deleteMany({ where: { maAppSheet: DAU.kyLuong } })],
-  ["nhatKy", () => p.nhatKy.deleteMany({ where: { nguoiTen: { contains: DAU.ten } } })],
+  /* Nhật ký: lọc theo TIỀN TỐ chung, và theo cả tên trong `chiTiet` — dòng do
+     tài khoản thử ghi mang tên "ZZ THU quản lý", không phải "ZZ THU NGHIEM". */
+  ["nhatKy", () => p.nhatKy.deleteMany({ where: { nguoiTen: { contains: DAU.tienTo } } })],
+  ["nhatKy-ct", () => p.nhatKy.deleteMany({ where: { chiTiet: { path: ["ten"], string_contains: DAU.tienTo } } })],
+  ["nhanVien", () => p.nhanVien.deleteMany({ where: { tenDangNhap: { startsWith: "zz-thu-" } } })],
 ];
 
 let tong = 0;
@@ -51,7 +55,9 @@ const con = {
   suCo: await p.suCo.count({ where: { vanDe: { contains: DAU.ten } } }),
   kyLuong: await p.kyLuong.count({ where: { maAppSheet: DAU.kyLuong } }),
   luongNV: await p.luongNhanVien.count({ where: { kyLuong: DAU.kyLuong } }),
-  nhatKy: await p.nhatKy.count({ where: { nguoiTen: { contains: DAU.ten } } }),
+  nhatKy: await p.nhatKy.count({ where: { nguoiTen: { contains: DAU.tienTo } } }),
+  nhatKyCt: await p.nhatKy.count({ where: { chiTiet: { path: ["ten"], string_contains: DAU.tienTo } } }),
+  nhanVien: await p.nhanVien.count({ where: { tenDangNhap: { startsWith: "zz-thu-" } } }),
 };
 const sot = Object.entries(con).filter(([, v]) => v > 0);
-console.log(sot.length ? `CÒN SÓT: ${sot.map(([k, v]) => `${k}=${v}`).join(", ")}` : "ĐÃ SẠCH — đo lại 10 bảng, không còn dòng thử nào.");
+console.log(sot.length ? `CÒN SÓT: ${sot.map(([k, v]) => `${k}=${v}`).join(", ")}` : "ĐÃ SẠCH — đo lại 12 bảng, không còn dòng thử nào.");
