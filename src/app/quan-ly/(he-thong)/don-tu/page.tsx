@@ -79,8 +79,19 @@ export default async function DonTuPage({ searchParams }: Props) {
       </div>
 
       {!nguoi.maNV && (
+        /* Hai trường hợp khác nhau — xem chú thích cùng việc ở `cham-cong/page.tsx`. */
         <div className="notice mt-5 bg-accent-soft text-fg">
-          Tài khoản này không gắn với một nhân viên cụ thể nên không gửi đơn được.
+          {nguoi.id ? (
+            <>
+              Tài khoản của anh/chị <b>chưa có mã nhân viên</b> nên chưa gửi đơn được. Nhờ quản lý
+              thêm mã giúp trong mục <b>Nhân viên</b>.
+            </>
+          ) : (
+            <>
+              Đang đăng nhập bằng mật khẩu quản lý chung, không gắn với một nhân viên cụ thể nên
+              không gửi đơn được.
+            </>
+          )}
         </div>
       )}
 

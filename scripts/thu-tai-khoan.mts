@@ -25,6 +25,12 @@ const VAI = [
   { vaiTro: "quan-tri", ten: "ZZ THU quản lý" },
   { vaiTro: "sale", ten: "ZZ THU sale" },
   { vaiTro: "nhan-vien", ten: "ZZ THU nhân viên" },
+  /*
+    Người mới CHƯA CÓ MÃ NHÂN VIÊN — trạng thái bình thường của học viên mới
+    vào tiệm, không phải lỗi quên điền. Giữ một vai riêng vì đây là nhánh dễ
+    hỏng nhất: trang Đơn từ và trang Lương từng nổ 500 với đúng nhóm này.
+  */
+  { vaiTro: "nhan-vien", ten: "ZZ THU học viên", khongMa: true },
 ] as const;
 
 const viec = process.argv[2] ?? "tao";
@@ -39,7 +45,7 @@ if (viec === "xoa") {
   console.log(con === 0 ? "ĐÃ SẠCH — không còn tài khoản thử nào." : `CÒN SÓT ${con}`);
 } else {
   for (const v of VAI) {
-    const tenDangNhap = `${TIEN_TO}${v.vaiTro}`;
+    const tenDangNhap = `${TIEN_TO}${"khongMa" in v && v.khongMa ? "hoc-vien" : v.vaiTro}`;
     /* 18 byte ngẫu nhiên — không phải mật khẩu người gõ, không cần dễ đọc. */
     const matKhau = randomBytes(18).toString("base64url");
     await p.nhanVien.upsert({

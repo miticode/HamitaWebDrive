@@ -53,43 +53,38 @@ export default async function TongQuanPage() {
   const prisma = getPrisma();
 
   /*
-    Việc quá hạn CỦA CHÍNH NGƯỜI ĐANG XEM — kể cả quản lý.
+    Việc quá hạn CỦA CHÍNH NGƯỜI ĐANG XEM — đúng nghĩa "của anh chị".
 
-    Bản đầu lặp phép lọc của trang Đầu việc (quản lý thấy cả tiệm). Đo thử ra
-    169 việc quá hạn, hạn cũ nhất 23/03/2025 — đó là TỒN KHO HAI MƯƠI THÁNG
-    chép từ AppSheet, không phải việc hôm nay. Một thẻ đỏ ghi 169 ngay trang
-    đầu là loại cảnh báo tự làm hỏng chính mình: ngày nào cũng đỏ, một tuần sau
-    không ai nhìn nữa. Con số cả tiệm vẫn còn nguyên ở chip "Quá hạn" trên
-    trang Đầu việc, đúng chỗ của nó.
+    Hai lần sửa, hai lần cùng một bài học: đừng gọi việc của người khác là
+    việc của tôi.
 
-    Phép lọc dưới đây phải cho ra ĐÚNG con số người ta thấy khi bấm vào, nếu
-    không thì thẻ nói dối:
+    · Bản đầu đếm cả tiệm → ra 169, hạn cũ nhất 23/03/2025. Đó là tồn kho hai
+      mươi tháng chép từ AppSheet, không phải việc hôm nay.
+    · Bản thứ hai cộng thêm "việc chưa giao cho ai" để khớp với trang Đầu
+      việc. Đo bằng tài khoản HỌC VIÊN chưa có mã nhân viên thì thẻ ghi
+      "137 — của anh chị", trong khi bạn ấy chưa được giao việc nào: 137 đó
+      là việc chung của cả tiệm.
 
-      - quản lý  → link kèm `?nguoi=<mã>`, trang lọc theo đúng mã đó
-      - người khác → trang luôn hiện việc ghi tên họ CỘNG việc chưa giao cho
-        ai (ai rảnh thì nhận), nên ở đây cũng phải cộng y như vậy
+    Giờ thẻ chỉ đếm việc GHI TÊN MÌNH. Bấm vào trang Đầu việc có thể thấy
+    nhiều hơn (người thường luôn thấy thêm việc chưa giao) — thấy thêm thì
+    không ai hiểu nhầm, còn gọi nhầm việc người khác là việc mình thì có.
 
-    Người chưa có mã nhân viên chỉ còn thấy việc chưa giao — ghép không ra dòng
-    nào mang tên họ.
+    Việc chưa giao vẫn đáng biết, nhưng là một câu khác, nằm riêng bên dưới.
   */
-  const chuaGiao: Prisma.CongViecWhereInput[] = [
-    { nguoiPhuTrachMaNV: null },
-    { nguoiPhuTrachMaNV: "" },
-  ];
-  const cuaChinhToi: Prisma.CongViecWhereInput[] = nguoi.maNV
-    ? [{ nguoiPhuTrachMaNV: { equals: nguoi.maNV, mode: "insensitive" as const } }]
-    : [];
-  const viecCuaToi: Prisma.CongViecWhereInput = quanTri
-    ? /* Quản lý: đúng việc ghi tên mình, khớp với `?nguoi=` trên liên kết. */
-      cuaChinhToi.length
-      ? { OR: cuaChinhToi }
-      : { id: "khong-co" }
-    : { OR: [...cuaChinhToi, ...chuaGiao] };
+  const viecCuaToi: Prisma.CongViecWhereInput = nguoi.maNV
+    ? { nguoiPhuTrachMaNV: { equals: nguoi.maNV, mode: "insensitive" } }
+    : { id: "khong-bao-gio-khop" };
+
+  /** Việc chưa giao cho ai — ai rảnh thì nhận. Quản lý không cần dòng này. */
+  const viecChuaGiao: Prisma.CongViecWhereInput = {
+    OR: [{ nguoiPhuTrachMaNV: null }, { nguoiPhuTrachMaNV: "" }],
+  };
 
   const caiDat = await docCaiDatCham();
   const [
     cham,
     viecQuaHan,
+    viecChuaAiNhan,
     lichHomNay,
     suCoTreo,
     donCho,
@@ -104,6 +99,11 @@ export default async function TongQuanPage() {
     prisma.congViec.count({
       where: { matBenAppSheet: null, ...viecCuaToi, trangThai: { not: "Đã làm" }, thoiHan: { lt: homNay } },
     }),
+    quanTri
+      ? Promise.resolve(0)
+      : prisma.congViec.count({
+          where: { matBenAppSheet: null, ...viecChuaGiao, trangThai: { not: "Đã làm" } },
+        }),
     prisma.lichChup.count({ where: { matBenAppSheet: null, ngay: homNay } }),
     /*
       CHỈ sự cố ghi trên web (`bamAppSheet: null`). 19 dòng treo chép từ
@@ -189,7 +189,7 @@ export default async function TongQuanPage() {
             nhan="Việc quá hạn"
             chu={String(viecQuaHan)}
             muc={viecQuaHan > 0 ? "gap" : "yen"}
-            phu="của anh chị"
+            phu={nguoi.maNV ? "của anh chị" : "chưa có mã nhân viên"}
           />
           <The
             href="/quan-ly/lich"
@@ -198,6 +198,18 @@ export default async function TongQuanPage() {
             muc={lichHomNay > 0 ? "thuong" : "yen"}
           />
         </div>
+        {/*
+          Việc chưa ai nhận: câu RIÊNG, không trộn vào thẻ "của anh chị".
+          Đáng giá nhất với người mới — mở web lên là thấy có việc để nhận.
+        */}
+        {viecChuaAiNhan > 0 && (
+          <p className="mt-3 text-sm text-fg-muted">
+            <Link href="/quan-ly/cong-viec" className="text-accent underline underline-offset-2">
+              {viecChuaAiNhan} đầu việc
+            </Link>{" "}
+            chưa giao cho ai — ai rảnh thì nhận.
+          </p>
+        )}
         {suCoTreo > 0 && (
           <p className="mt-3 text-sm text-fg-muted">
             <Link href="/quan-ly/su-co" className="text-accent underline underline-offset-2">

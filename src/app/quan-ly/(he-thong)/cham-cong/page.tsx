@@ -61,9 +61,30 @@ export default async function ChamCongPage({ searchParams }: Props) {
 
       {/* ── Khối của chính người đang đăng nhập ──────────────────────── */}
       {!nguoi.maNV ? (
+        /*
+          HAI trường hợp khác hẳn nhau, trước đây nói chung một câu:
+
+          · `id` null — đang đăng nhập bằng mật khẩu quản lý chung, không phải
+            một người cụ thể. Câu "đăng nhập bằng tài khoản của mình" đúng.
+
+          · `id` có nhưng chưa có mã nhân viên — người thật, đã đăng nhập đúng
+            tài khoản của mình, chỉ là chưa được cấp mã. Bảo họ "đăng nhập bằng
+            tài khoản của mình" là chỉ sai đường: họ đang làm đúng việc đó rồi.
+            Người mới vào tiệm nằm cả ở nhánh này.
+        */
         <div className="notice mt-5 bg-accent-soft text-fg">
-          Tài khoản này không gắn với một nhân viên cụ thể nên không chấm công
-          được. Đăng nhập bằng tài khoản nhân viên của mình để chấm.
+          {nguoi.id ? (
+            <>
+              Tài khoản của anh/chị <b>chưa có mã nhân viên</b> nên chưa chấm công được. Nhờ quản
+              lý thêm mã giúp trong mục <b>Nhân viên</b> — thêm xong là chấm được ngay, không phải
+              đăng nhập lại.
+            </>
+          ) : (
+            <>
+              Đang đăng nhập bằng mật khẩu quản lý chung, không gắn với một nhân viên cụ thể nên
+              không chấm công được. Đăng nhập bằng tài khoản nhân viên của mình để chấm.
+            </>
+          )}
         </div>
       ) : (
         <div className="mt-5 rounded-md border border-line bg-bg-raised p-5">
