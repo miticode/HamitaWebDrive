@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { getPrisma } from "@/lib/db";
 import { boDau, homNayStudio, MUI_GIO } from "@/lib/constants";
 import { layNguoiDung, lapHopDong } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { docCacBuoc } from "@/lib/buocHopDong";
 import { demLuotDung } from "@/lib/dichVuHayDung";
+import { coGiaoAnh, taoThuMucVaAlbum } from "@/lib/thuMucHopDong";
 import { lapHopDongMoi, maNguoiLap, type NguoiLap } from "@/lib/taoHopDong";
 import { ngayVN, type DuLieuHopDongMoi, type DuLieuPhieuThu, type DuLieuSuaHopDong } from "@/lib/hopDongChung";
 import { duyetPhieuThu, suaHopDong, themPhieuThu, xoaHopDong, xoaPhieuThu } from "@/lib/suaHopDong";
@@ -126,10 +128,70 @@ export async function lapHopDongAction(
     chiTiet: { ten: `${kq.maHD} — ${du.tenKhach}`, nguoiLap: maNguoiLap(nguoi) },
   });
 
+  /*
+    THƯ MỤC DRIVE + ALBUM, CHẠY NỀN (anh chốt 14/11/2026).
+
+    Vì sao chạy nền chứ không chờ: đo thật mất 4,40 giây — ba lượt hỏi Drive
+    nối đuôi nhau (tìm thư mục năm, tìm thư mục tháng, tạo thư mục album) rồi
+    mới tới database. Bắt người lập ngồi nhìn màn hình thêm bốn giây rưỡi sau
+    khi đã bấm xong là trả giá quá đắt cho một thứ họ chưa cần ngay.
+
+    Vì sao được phép hỏng mà không sao: hợp đồng đã lưu xong trước khi tới
+    dòng này. Drive rớt mạng hay hết hạn kết nối thì hợp đồng vẫn còn nguyên,
+    chỉ là chưa có album — và trang chi tiết hợp đồng có sẵn nút "Tạo thư mục
+    Drive & album" để làm lại bằng tay. Tự động hỏng thì vẫn còn đường đi bộ.
+
+    Nhật ký ghi CẢ HAI chiều, thành công lẫn thất bại: chạy nền mà không ghi
+    lại thì không ai biết nó có chạy hay không, và lỗi sẽ im lặng nhiều tháng.
+  */
+  if (coGiaoAnh(du.loaiDV)) {
+    after(async () => {
+      const album = await taoThuMucVaAlbum(kq.id);
+      await ghiNhatKy({
+        nguoi: { id: nguoi.id || null, ten: nguoi.ten },
+        hanhDong: album.ok ? "tao-album-tu-hop-dong" : "tao-album-tu-hop-dong-loi",
+        doiTuong: "HopDong",
+        doiTuongId: kq.id,
+        chiTiet: album.ok
+          ? { maHD: kq.maHD, album: album.tenThuMuc, thuMucDrive: album.thuMucDrive }
+          : { maHD: kq.maHD, loi: album.loi },
+      }).catch(() => {});
+      if (album.ok) revalidatePath(`/quan-ly/hop-dong/${kq.id}`);
+    });
+  }
+
   revalidatePath("/quan-ly/hop-dong");
   revalidatePath("/quan-ly/lich");
   revalidatePath("/quan-ly/cong-viec");
   return kq;
+}
+
+/**
+ * Tạo thư mục Drive và album bằng tay cho một hợp đồng đã có.
+ *
+ * Đường lui của việc chạy nền ở `lapHopDongAction`, và cũng là cách dùng cho
+ * 2.400 hợp đồng lập từ trước ngày có tính năng này.
+ */
+export async function taoThuMucAlbumAction(
+  hopDongId: string,
+): Promise<{ loi: string } | { ok: true; slug: string; tenThuMuc: string }> {
+  const nguoi = await nguoiDuocLap();
+  if (!nguoi) return { loi: "Tài khoản này chưa được lập hợp đồng, hoặc phiên đăng nhập đã hết." };
+
+  const kq = await taoThuMucVaAlbum(hopDongId);
+  if (!kq.ok) return { loi: kq.loi };
+
+  await ghiNhatKy({
+    nguoi: { id: nguoi.id || null, ten: nguoi.ten },
+    hanhDong: "tao-album-tu-hop-dong",
+    doiTuong: "HopDong",
+    doiTuongId: hopDongId,
+    chiTiet: { album: kq.tenThuMuc, thuMucDrive: kq.thuMucDrive, bangTay: true },
+  });
+
+  revalidatePath(`/quan-ly/hop-dong/${hopDongId}`);
+  revalidatePath("/admin");
+  return { ok: true, slug: kq.slug, tenThuMuc: kq.tenThuMuc };
 }
 
 /* ── Sửa hợp đồng, phiếu thu (anh chốt 23/09/2026) ─────────────────────── */

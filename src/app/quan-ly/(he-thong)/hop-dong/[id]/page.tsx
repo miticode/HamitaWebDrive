@@ -7,6 +7,8 @@ import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { albumCuaHopDong } from "@/lib/noiAlbum";
+import { coGiaoAnh } from "@/lib/thuMucHopDong";
+import { NutTaoThuMuc } from "./NutTaoThuMuc";
 import { buocTiepTheo, docBuocDayDu, laBuocXong } from "@/lib/buocHopDong";
 import { ChipTrangThai } from "../ChipTrangThai";
 import { NutPhieuThu, NutXoaHopDong, ThemPhieuThu } from "./NutHopDong";
@@ -238,9 +240,16 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           </p>
         )}
         {album.length === 0 ? (
-          <p className="mt-2 text-sm text-fg-muted">
-            Chưa gắn album nào. Mở trang quản lý album của nhà khách rồi bấm “Gắn hợp đồng”.
-          </p>
+          <div className="mt-2">
+            <p className="text-sm text-fg-muted">
+              Chưa có album nào.{" "}
+              {coGiaoAnh(hd.loaiDV)
+                ? "Hợp đồng vừa lập thì web đang tự tạo thư mục — tải lại trang sau vài giây. Lâu quá thì bấm nút dưới."
+                : `Loại “${hd.loaiDV ?? "—"}” thường không giao ảnh, nên web không tự tạo thư mục.`}{" "}
+              Album đã có sẵn trên Drive thì mở trang quản lý album rồi bấm “Gắn hợp đồng”.
+            </p>
+            {duocSua && <NutTaoThuMuc hopDongId={hd.id} />}
+          </div>
         ) : (
           <ul className="mt-3 divide-y divide-line rounded-md border border-line bg-bg-raised text-sm">
             {album.map((a) => (

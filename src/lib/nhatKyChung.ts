@@ -63,6 +63,9 @@ export type HanhDong =
     Media — thì không ghi gì, nên xoá nhầm một album là không truy được ai.
   */
   | "tao-album"
+  /* Thu muc Drive + album sinh tu hop dong (anh yeu cau 14/11/2026). */
+  | "tao-album-tu-hop-dong"
+  | "tao-album-tu-hop-dong-loi"
   | "xoa-album"
   | "sua-album"
   | "lam-moi-album"
@@ -112,6 +115,8 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "doi-trang-thai-viec": "Đổi trạng thái đầu việc",
   "sua-lich-chup": "Sửa lịch chụp",
   "tao-album": "Tạo album ảnh",
+  "tao-album-tu-hop-dong": "Tạo thư mục Drive và album từ hợp đồng",
+  "tao-album-tu-hop-dong-loi": "Tạo thư mục Drive từ hợp đồng KHÔNG THÀNH",
   "xoa-album": "Xoá album ảnh",
   "sua-album": "Sửa album ảnh",
   // Khong con ghi moi tu 15/10/2026 (xem refreshGalleryAction) — giu chu de

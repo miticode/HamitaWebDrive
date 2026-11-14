@@ -66,3 +66,55 @@ const con = {
 };
 const sot = Object.entries(con).filter(([, v]) => v > 0);
 console.log(sot.length ? `CÒN SÓT: ${sot.map(([k, v]) => `${k}=${v}`).join(", ")}` : "ĐÃ SẠCH — đo lại 13 bảng, không còn dòng thử nào.");
+
+/* ── DỌN CẢ TRÊN DRIVE, không chỉ trong database (thêm 14/11/2026) ─────
+ *
+ * Từ hôm nay lập hợp đồng sẽ TẠO THƯ MỤC THẬT trên Drive của tiệm
+ * (`taoThuMucVaAlbum`). Nghĩa là một kịch bản thử để sót không còn chỉ là
+ * vài dòng database mà là thư mục nằm chình ình giữa kho ảnh cưới — chỗ
+ * người thật mở ra xem mỗi ngày. Dọn một nửa còn tệ hơn không dọn, vì lần
+ * sau nhìn database sạch là tưởng đã xong.
+ *
+ * Chỉ đụng thư mục mang đúng dấu thử và do chính web tạo (`'me' in owners`,
+ * và `drive.file` vốn chỉ cho sửa tệp web tạo ra) — không với tới được một
+ * tấm ảnh nào của khách.
+ */
+try {
+  const { getUserAccessToken } = await import("../src/lib/googleAuth");
+  const token = await getUserAccessToken().catch(() => null);
+  if (!token) {
+    console.log("Drive: chưa kết nối — bỏ qua phần dọn trên Drive.");
+  } else {
+    const q =
+      `name contains '${DAU.tienTo}' and mimeType = 'application/vnd.google-apps.folder' ` +
+      `and trashed = false and 'me' in owners`;
+    const r = await fetch(
+      `https://www.googleapis.com/drive/v3/files?${new URLSearchParams({ q, fields: "files(id,name)", pageSize: "50" })}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!r.ok) {
+      console.log(`Drive: không soát được (${r.status}).`);
+    } else {
+      const { files } = (await r.json()) as { files: { id: string; name: string }[] };
+      for (const f of files) {
+        const x = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log(`  Drive: ${x.ok ? "xoá" : `KHÔNG xoá được (${x.status})`} thư mục "${f.name}"`);
+      }
+      const lai = await fetch(
+        `https://www.googleapis.com/drive/v3/files?${new URLSearchParams({ q, fields: "files(id)", pageSize: "5" })}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const conLai = lai.ok ? ((await lai.json()) as { files: unknown[] }).files.length : -1;
+      console.log(
+        conLai === 0
+          ? "Drive: SẠCH — không còn thư mục thử nào."
+          : `Drive: CÒN ${conLai} thư mục thử.`,
+      );
+    }
+  }
+} catch (e) {
+  console.log(`Drive: lỗi khi dọn — ${e instanceof Error ? e.message : String(e)}`);
+}
