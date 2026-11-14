@@ -6,6 +6,7 @@ import { boDau, homNayStudio, MUI_GIO } from "@/lib/constants";
 import { layNguoiDung, lapHopDong } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { docCacBuoc } from "@/lib/buocHopDong";
+import { demLuotDung } from "@/lib/dichVuHayDung";
 import { lapHopDongMoi, maNguoiLap, type NguoiLap } from "@/lib/taoHopDong";
 import { ngayVN, type DuLieuHopDongMoi, type DuLieuPhieuThu, type DuLieuSuaHopDong } from "@/lib/hopDongChung";
 import { duyetPhieuThu, suaHopDong, themPhieuThu, xoaHopDong, xoaPhieuThu } from "@/lib/suaHopDong";
@@ -343,6 +344,8 @@ export type DuLieuFormHopDong = {
     donVi: string | null;
   }[];
   giaHangMuc: { dichVuId: string; hangMuc: string | null; donGia: number }[];
+  /** maDV → số lần đã dùng trong hợp đồng; xếp danh sách lúc duyệt. */
+  luotDung: Record<string, number>;
   homNay: string;
   laQuanLy: boolean;
   tenNguoiLap: string;
@@ -365,7 +368,7 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
   if (!nguoi) return { loi: "Tài khoản này chưa được lập hợp đồng, hoặc phiên đăng nhập đã hết." };
 
   const prisma = getPrisma();
-  const [dichVu, giaHangMuc, cacBuoc] = await Promise.all([
+  const [dichVu, giaHangMuc, luotDung, cacBuoc] = await Promise.all([
     prisma.dichVu.findMany({
       where: { dangDung: true },
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
@@ -375,12 +378,14 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
       orderBy: { taoLuc: "asc" },
       select: { dichVuId: true, hangMuc: true, donGia: true },
     }),
+    demLuotDung(),
     docCacBuoc(),
   ]);
 
   return {
     dichVu,
     giaHangMuc,
+    luotDung,
     cacBuoc,
     // Hôm nay theo giờ studio, không theo giờ máy khách (nguyên tắc 35).
     homNay: new Intl.DateTimeFormat("en-CA", {

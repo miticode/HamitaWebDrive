@@ -23,6 +23,7 @@ export function FormSuaHopDong({
   id,
   maHD,
   dichVu,
+  luotDung,
   banDau,
   cacBuoc = CAC_BUOC,
   chepTuAppSheet = false,
@@ -30,6 +31,9 @@ export function FormSuaHopDong({
   id: string;
   maHD: string;
   dichVu: DichVuGon[];
+  /** maDV → số lần đã dùng trong hợp đồng; để danh sách bày sẵn xếp hay-dùng-trước. */
+  luotDung?: Record<string, number>;
+
   /**
    * Hợp đồng này có dấu vân tay AppSheet không (đợt soát UX, mục P0-1).
    *
@@ -164,7 +168,7 @@ export function FormSuaHopDong({
         ten="Dịch vụ, trang phục, sản phẩm"
         chu="Bỏ một dòng thì đầu việc CHƯA AI LÀM của dòng đó cũng bỏ theo; việc đã giao hay đã xong thì giữ lại."
       >
-        <ChonDichVu dichVu={dichVu} onChon={themDong} />
+        <ChonDichVu dichVu={dichVu} luotDung={luotDung} onChon={themDong} />
 
         {dong.length === 0 ? (
           <p className="mt-3 text-sm text-fg-muted">Hợp đồng đang không còn dòng nào — thêm ít nhất một dòng mới lưu được.</p>

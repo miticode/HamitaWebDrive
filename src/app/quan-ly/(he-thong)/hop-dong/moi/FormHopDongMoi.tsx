@@ -32,6 +32,7 @@ import { ChonDichVu, Hang, Khung, O, type DichVuGon, type GiaGon } from "../Chon
 export function FormHopDongMoi({
   dichVu,
   giaHangMuc,
+  luotDung,
   homNay,
   laQuanLy,
   tenNguoiLap,
@@ -41,6 +42,8 @@ export function FormHopDongMoi({
 }: {
   dichVu: DichVuGon[];
   giaHangMuc: GiaGon[];
+  /** maDV → số lần đã dùng trong hợp đồng; để danh sách bày sẵn xếp hay-dùng-trước. */
+  luotDung?: Record<string, number>;
   homNay: string;
   /**
    * Mười tám bước, đọc từ bảng `BuocHopDong` (đợt 6). Mặc định là bảng cứng
@@ -365,7 +368,7 @@ export function FormHopDongMoi({
 
       {/* ── Dịch vụ ───────────────────────────────────────────────────── */}
       <Khung ten="Dịch vụ, trang phục, sản phẩm">
-        <ChonDichVu dichVu={dichVu} onChon={themDong} />
+        <ChonDichVu dichVu={dichVu} luotDung={luotDung} onChon={themDong} />
 
         {dong.length === 0 ? (
           <p className="mt-3 text-sm text-fg-muted">Chưa có dòng nào. Gõ mã hoặc tên dịch vụ ở ô trên để thêm.</p>

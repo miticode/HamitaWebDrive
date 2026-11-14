@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { batBuocDangNhap, batBuocQuyen, lapHopDong } from "@/lib/phienNhanVien";
 import { docCacBuoc } from "@/lib/buocHopDong";
+import { demLuotDung } from "@/lib/dichVuHayDung";
 import { FormSuaHopDong } from "./FormSuaHopDong";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export default async function SuaHopDongPage({ params }: Props) {
   const { id } = await params;
 
   const prisma = getPrisma();
-  const [hd, dichVu, cacBuoc] = await Promise.all([
+  const [hd, dichVu, luotDung, cacBuoc] = await Promise.all([
     prisma.hopDong.findUnique({
       where: { id },
       include: {
@@ -33,6 +34,7 @@ export default async function SuaHopDongPage({ params }: Props) {
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
       select: { id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true },
     }),
+    demLuotDung(),
     docCacBuoc(),
   ]);
   if (!hd) notFound();
@@ -51,6 +53,7 @@ export default async function SuaHopDongPage({ params }: Props) {
         id={hd.id}
         maHD={hd.maHD}
         dichVu={dichVu}
+        luotDung={luotDung}
         banDau={{
           tenKhach: hd.tenKhach,
           loaiDV: hd.loaiDV ?? "",

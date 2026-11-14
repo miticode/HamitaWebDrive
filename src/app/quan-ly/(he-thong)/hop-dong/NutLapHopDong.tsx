@@ -121,6 +121,7 @@ export function NutLapHopDong() {
                 <FormHopDongMoi
                   dichVu={du.dichVu}
                   giaHangMuc={du.giaHangMuc}
+                  luotDung={du.luotDung}
                   homNay={du.homNay}
                   laQuanLy={du.laQuanLy}
                   tenNguoiLap={du.tenNguoiLap}
