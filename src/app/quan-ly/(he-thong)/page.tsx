@@ -9,6 +9,7 @@ import { CHO_DUYET } from "@/lib/soQuyChung";
 import { DA_CHOT } from "@/lib/khachTiemNangChung";
 import { SU_CO_DA_XONG } from "@/lib/suCoChung";
 import { docCaiDatCham, luotHomNay } from "@/lib/chamCong";
+import { demChuaGhep } from "@/lib/ghepAlbum";
 import { khoaCuaToi } from "@/lib/hopDongMayChu";
 
 export const dynamic = "force-dynamic";
@@ -95,6 +96,7 @@ export default async function TongQuanPage() {
     chuaCoMatKhau,
     no,
     choKhach,
+    albumChuaGhep,
     denHen,
   ] = await Promise.all([
     nguoi.maNV ? luotHomNay(nguoi.maNV, caiDat) : Promise.resolve(null),
@@ -142,6 +144,11 @@ export default async function TongQuanPage() {
     coHopDong
       ? prisma.hopDong.count({ where: { matBenAppSheet: null, buoc: { in: BUOC_CHO_KHACH } } })
       : Promise.resolve(0),
+    /*
+      Album chưa gắn hợp đồng (14/11/2026). Chỉ quản lý + sale thấy: gắn album
+      là việc nối tiền và tiến độ của một nhà khách, cùng nhóm với hợp đồng.
+    */
+    coHopDong ? demChuaGhep() : Promise.resolve(0),
     coHopDong
       ? prisma.khachTiemNang.count({
           where: {
@@ -210,6 +217,18 @@ export default async function TongQuanPage() {
               {viecChuaAiNhan} đầu việc
             </Link>{" "}
             chưa giao cho ai — ai rảnh thì nhận.
+          </p>
+        )}
+        {/*
+          Album chưa gắn hợp đồng — đo 14/11: 169 album, gắn 3. Mối nối này là
+          nền của mọi thứ về tiến độ sản xuất, nên nhắc ở chỗ người ta nhìn.
+        */}
+        {albumChuaGhep > 0 && (
+          <p className="mt-3 text-sm text-fg-muted">
+            <Link href="/admin/ghep-hop-dong" className="text-accent underline underline-offset-2">
+              {albumChuaGhep} album
+            </Link>{" "}
+            chưa gắn hợp đồng — gắn rồi thì trang hợp đồng mới thấy khách chọn ảnh tới đâu.
           </p>
         )}
         {suCoTreo > 0 && (

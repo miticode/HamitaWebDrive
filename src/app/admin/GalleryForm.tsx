@@ -3,6 +3,7 @@
 import { useActionState, useRef, useState } from "react";
 import { MA_ALBUM, ganMa, laMa } from "@/lib/maAlbum";
 import { createGalleryAction, type ActionState } from "./actions";
+import { ganHopDongAction } from "./actionsHopDong";
 
 export function GalleryForm() {
   const [state, action, pending] = useActionState<ActionState, FormData>(
@@ -119,9 +120,54 @@ export function GalleryForm() {
       )}
       {state.ok && <p className="mt-4 text-sm text-emerald-700">{state.ok}</p>}
 
+      {/*
+        Hỏi gắn hợp đồng NGAY sau khi tạo — xem chú thích ở `ActionState`.
+        Một cú bấm, đúng lúc người ta còn nhớ album này của nhà nào.
+      */}
+      {state.goiYGhep && <HoiGhep goiY={state.goiYGhep} />}
+
       <button disabled={pending} className="btn-primary mt-6">
         {pending ? "Đang kiểm tra thư mục…" : "Tạo link"}
       </button>
     </form>
+  );
+}
+
+/** Một câu hỏi gọn sau khi tạo album: có phải hợp đồng này không. */
+function HoiGhep({ goiY }: { goiY: NonNullable<ActionState["goiYGhep"]> }) {
+  const [xong, setXong] = useState<"chua" | "dang" | "roi" | "loi">("chua");
+
+  if (xong === "roi") {
+    return (
+      <p className="mt-3 text-sm text-emerald-700">
+        Đã gắn album vào hợp đồng “{goiY.tenHopDong}”.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-3 rounded-[3px] border border-accent/40 bg-accent-soft/30 px-3 py-2.5 text-sm">
+      <p>
+        Album này của hợp đồng <b>{goiY.tenHopDong}</b> phải không?
+      </p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          disabled={xong === "dang"}
+          className="btn btn-gon disabled:opacity-50"
+          onClick={async () => {
+            setXong("dang");
+            const kq = await ganHopDongAction(goiY.galleryId, goiY.hopDongId);
+            setXong(kq.loi ? "loi" : "roi");
+          }}
+        >
+          {xong === "dang" ? "Đang gắn…" : "Đúng, gắn vào"}
+        </button>
+        <button type="button" className="btn btn-gon" onClick={() => setXong("roi")}>
+          Để sau
+        </button>
+      </div>
+      {xong === "loi" && <p className="mt-2 text-xs text-red-700">Chưa gắn được, thử lại ở trang album.</p>}
+    </div>
   );
 }

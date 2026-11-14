@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { ghepChacCuaAlbum } from "@/lib/ghepAlbum";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { invalidate } from "@/lib/cache";
@@ -33,7 +34,21 @@ import { guiThongBaoAnhMoi, syncAndWarm } from "@/lib/warm";
 import { ghiMoc, khoaBaoTin } from "@/lib/moc";
 import { khoaDaDoc } from "@/lib/thongBao";
 
-export type ActionState = { error?: string; ok?: string };
+export type ActionState = {
+  error?: string;
+  ok?: string;
+  /**
+   * Hợp đồng khớp rõ với album vừa tạo — hỏi ngay lúc này thay vì để tồn.
+   *
+   * Đo 14/11/2026: 123 album tạo sau ngày có tính năng gắn, đúng MỘT cái được
+   * gắn. Không phải vì khó, mà vì gắn là một việc rời: tạo xong album là người
+   * ta sang việc khác, chẳng ai quay lại mở từng album để bấm. Hỏi ngay lúc
+   * vừa tạo thì người đang còn nhớ album này của nhà nào.
+   *
+   * Chỉ gợi ý khi CHẮC (xem `ghepAlbum.ts`), và vẫn là người bấm.
+   */
+  goiYGhep?: { galleryId: string; hopDongId: string; tenHopDong: string };
+};
 
 /**
  * Đăng xuất khỏi trang quản lý album.
@@ -146,7 +161,12 @@ export async function createGalleryAction(
   await ghiViecAlbum("tao-album", gallery.id, { ten: clientName || folderName, thuMucDrive: folderId });
 
   revalidatePath("/admin");
+
+  /* Hợp đồng khớp rõ với album vừa tạo — xem chú thích ở `ActionState`. */
+  const ghep = await ghepChacCuaAlbum(clientName || folderName);
+
   return {
+    ...(ghep ? { goiYGhep: { galleryId: gallery.id, ...ghep } } : {}),
     ok: `Đã tạo gallery cho "${folderName}". Đang dựng sẵn ảnh đầu tiên…`,
   };
 }

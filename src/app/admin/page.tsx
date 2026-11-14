@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { demChuaGhep } from "@/lib/ghepAlbum";
 import { cookies } from "next/headers";
 import { adminPasswordIsSet } from "@/lib/auth";
 import { quyenAlbum, quyenAlbumNguyHiem, quyenXoaAlbum } from "@/lib/quyenAlbum";
@@ -177,6 +178,8 @@ export default async function AdminPage() {
   // Cung mot cookie voi layout — doc lai o day de nut hien dung bieu tuong ngay
   // tu luot ve dau, khong nhay tu "Nen toi" sang "Nen sang" sau khi trang chay.
   const tongToi = (await cookies()).get("admin-tong")?.value === "toi";
+  /* Album chưa gắn hợp đồng — lối vào trang ghép, xem `src/lib/ghepAlbum.ts`. */
+  const soChuaGhep = await demChuaGhep();
 
   return (
     /*
@@ -234,6 +237,15 @@ export default async function AdminPage() {
           >
             Thống kê
           </Link>
+          {/*
+            Ghép album với hợp đồng (14/11/2026). Chỉ hiện khi CÒN album chưa
+            gắn — hết rồi thì một lối vào trống là thứ gây nhiễu.
+          */}
+          {soChuaGhep > 0 && (
+            <Link href="/admin/ghep-hop-dong" className="eyebrow text-accent transition hover:opacity-80">
+              Ghép hợp đồng · {soChuaGhep}
+            </Link>
+          )}
           <NutDoiTong toiBanDau={tongToi} />
           {adminPasswordIsSet() && (
             <form action={logoutAction}>
