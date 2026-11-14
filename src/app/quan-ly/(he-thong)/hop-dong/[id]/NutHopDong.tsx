@@ -214,10 +214,14 @@ export function NutPhieuThu({ id, choDuyet }: { id: string; choDuyet: boolean })
  * lấy lại được, nên một cú bấm nhầm không được phép đủ để xoá. Cùng tinh thần
  * với hộp xoá album bên trang ảnh.
  */
+/** Bấm lần đầu rồi có bấy nhiêu giây để bấm lần hai, hết thì nút về như cũ. */
+const GIAY_CHO = 5;
+
 export function NutXoaHopDong({ id, maHD, tenKhach }: { id: string; maHD: string; tenKhach: string }) {
   const router = useRouter();
   const [mo, setMo] = useState(false);
-  const [ma, setMa] = useState("");
+  /** Đã bấm lần một; đếm ngược số giây còn lại để bấm lần hai. 0 = chưa bấm. */
+  const [conLai, setConLai] = useState(0);
   const [loi, setLoi] = useState<string | null>(null);
   const [dangXoa, start] = useTransition();
 
@@ -230,10 +234,46 @@ export function NutXoaHopDong({ id, maHD, tenKhach }: { id: string; maHD: string
     return () => window.removeEventListener("keydown", onKey);
   }, [mo, dangXoa]);
 
+  /*
+    XOÁ BẰNG HAI LẦN BẤM, không gõ lại mã nữa — anh chốt 14/11/2026.
+
+    Mã hợp đồng dài trung vị 28 ký tự ("STT_26.1100-60_TTT142_21-37"), gõ lại
+    bằng tay là một cực hình, nhất là trên điện thoại. Đo 2.405 hợp đồng:
+    gõ tên khách cũng không nhẹ hơn mấy (835 hợp đồng có tên dài hơn 25 ký
+    tự) và còn tệ hơn ở chỗ 195 tên bị nhiều hợp đồng dùng chung — một nhà
+    thường có hai hợp đồng, một chụp một tiệc, nên tên không tách được đúng
+    cái cần tách.
+
+    Đổi lại điều gì, nói thẳng: hai lần bấm chặn được BẤM VỘI, nhưng không
+    chặn được MỞ NHẦM hợp đồng rồi xoá rất dứt khoát. Nên tên khách in to
+    trong câu hỏi vẫn là chỗ dựa duy nhất — đó là lý do nó nằm ở cỡ chữ lớn
+    nhất của hộp này.
+
+    Đồng hồ đếm ngược dọn sạch khi hộp đóng hoặc khi hết giờ: để sót một
+    `setInterval` chạy ngầm là React cảnh báo cập nhật trên component đã gỡ.
+  */
+  useEffect(() => {
+    if (conLai <= 0) return;
+    const h = setTimeout(() => setConLai((c) => c - 1), 1000);
+    return () => clearTimeout(h);
+  }, [conLai]);
+
+  useEffect(() => {
+    if (!mo) setConLai(0);
+  }, [mo]);
+
   const xoa = () =>
     start(async () => {
       setLoi(null);
-      const kq = await xoaHopDongAction(id, ma);
+      /*
+        Vẫn gửi mã lên máy chủ vì `xoaHopDongAction` nhận hai tham số và kiểm
+        khớp. Phép kiểm đó GIỜ KHÔNG CÒN là rào chắn người dùng nữa — giao
+        diện tự điền — mà chỉ còn chặn trường hợp id và mã lệch nhau, tức gọi
+        nhầm hợp đồng. Rào chắn người dùng nằm ở hai lần bấm phía trên. Nói rõ
+        ra đây để sau này không ai đọc hàm máy chủ rồi tưởng người dùng vẫn
+        phải gõ gì.
+      */
+      const kq = await xoaHopDongAction(id, maHD);
       if ("loi" in kq) {
         setLoi(kq.loi);
         return;
@@ -266,32 +306,34 @@ export function NutXoaHopDong({ id, maHD, tenKhach }: { id: string; maHD: string
               hợp đồng này. Không lấy lại được.
             </p>
 
-            <label className="mt-4 block">
-              <span className="eyebrow block">Gõ lại mã hợp đồng để xác nhận</span>
-              <input
-                autoFocus
-                value={ma}
-                onChange={(e) => setMa(e.target.value)}
-                placeholder={maHD}
-                className="input mt-1.5"
-              />
-            </label>
+            <p className="mt-3 text-xs text-fg-faint tabular-nums">{maHD}</p>
 
             {loi && <p className="mt-3 text-sm text-red-700">{loi}</p>}
 
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-5 flex flex-wrap items-center gap-2">
               <button
                 type="button"
+                autoFocus
                 className="btn btn-danger"
-                disabled={dangXoa || ma.trim() !== maHD}
-                onClick={xoa}
+                disabled={dangXoa}
+                onClick={() => (conLai > 0 ? xoa() : setConLai(GIAY_CHO))}
               >
-                {dangXoa ? "Đang xoá…" : "Xoá hợp đồng"}
+                {dangXoa
+                  ? "Đang xoá…"
+                  : conLai > 0
+                    ? `Bấm lần nữa để xoá hẳn (${conLai})`
+                    : "Xoá hợp đồng"}
               </button>
               <button type="button" className="btn" onClick={() => setMo(false)} disabled={dangXoa}>
                 Thôi
               </button>
             </div>
+
+            {conLai > 0 && !dangXoa && (
+              <p className="mt-2 text-xs text-red-700">
+                Đọc lại tên phía trên cho chắc. Hết {conLai} giây nữa nút về như cũ.
+              </p>
+            )}
           </div>
         </div>
       )}
