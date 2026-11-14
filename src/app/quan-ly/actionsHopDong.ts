@@ -342,6 +342,7 @@ export type DuLieuFormHopDong = {
     nhom: string | null;
     donGia: number;
     donVi: string | null;
+    chiTiet: string | null;
   }[];
   giaHangMuc: { dichVuId: string; hangMuc: string | null; donGia: number }[];
   /** maDV → số lần đã dùng trong hợp đồng; xếp danh sách lúc duyệt. */
@@ -372,7 +373,7 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
     prisma.dichVu.findMany({
       where: { dangDung: true },
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
-      select: { id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true },
+      select: { id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true, chiTiet: true },
     }),
     prisma.giaHangMuc.findMany({
       orderBy: { taoLuc: "asc" },

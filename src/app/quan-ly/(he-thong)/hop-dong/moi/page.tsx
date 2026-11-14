@@ -40,7 +40,7 @@ export default async function LapHopDongPage() {
     prisma.dichVu.findMany({
       where: { dangDung: true },
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
-      select: { id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true },
+      select: { id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true, chiTiet: true },
     }),
     prisma.giaHangMuc.findMany({
       orderBy: { taoLuc: "asc" },

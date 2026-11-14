@@ -13,6 +13,8 @@ export type DichVuGon = {
   nhom: string | null;
   donGia: number;
   donVi: string | null;
+  /** Mô tả gói trong bảng — chảy thẳng vào ô Chi tiết của dòng hợp đồng. */
+  chiTiet: string | null;
 };
 
 export type GiaGon = { dichVuId: string; hangMuc: string | null; donGia: number };
@@ -467,7 +469,16 @@ function KhungTaoMuc({
         setLoi(kq.loi ?? "Chưa tạo được mục này.");
         return;
       }
-      onXong({ id: kq.id, maDV: maDV.trim(), ten: ten.trim(), loai, nhom: nhom.trim() || null, donGia: gia, donVi: null });
+      onXong({
+        id: kq.id,
+        maDV: maDV.trim(),
+        ten: ten.trim(),
+        loai,
+        nhom: nhom.trim() || null,
+        donGia: gia,
+        donVi: null,
+        chiTiet: null,
+      });
     });
 
   return (

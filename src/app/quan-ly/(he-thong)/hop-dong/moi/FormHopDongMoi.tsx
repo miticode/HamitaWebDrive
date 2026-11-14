@@ -196,7 +196,20 @@ export function FormHopDongMoi({
         donGia: dv?.donGia ?? 0,
         soLuong: 1,
         ngayChup: "",
-        chiTiet: "",
+        /*
+          CHI TIẾT CHẢY SẴN TỪ BẢNG — anh yêu cầu 14/11/2026.
+
+          Mô tả gói ("2 máy chụp · 1 photobook 30 trang · 50 ảnh in lụa…") là
+          thứ khách đọc để biết mình mua gì, và nó đã nằm sẵn trong bảng Dịch
+          vụ. Trước đây ô này để trắng, nên người lập phải mở trang Dịch vụ,
+          chép tay sang. Đo 7.251 dòng chi tiết cũ: 7.244 dòng CÓ chi tiết —
+          tiệm vốn luôn ghi, chỉ là web bắt gõ lại.
+
+          Vẫn sửa được sau khi điền: mỗi hợp đồng có thể bớt hoặc thêm một
+          dòng so với gói chuẩn, và bản ghi của hợp đồng phải là thứ đã thoả
+          thuận với nhà đó, không phải bản sao vĩnh viễn của bảng.
+        */
+        chiTiet: dv?.chiTiet ?? "",
         ghiChu: "",
       },
     ]);
@@ -509,8 +522,18 @@ export function FormHopDongMoi({
                 </div>
 
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {/*
+                    Ô NHIỀU DÒNG, không phải một dòng: mô tả gói dài nhất trong
+                    bảng là 478 ký tự và xuống dòng theo từng gạch đầu dòng.
+                    Nhét vào ô một dòng thì người ta chỉ thấy được bảy tám chữ.
+                  */}
                   <O nhan="Chi tiết">
-                    <input value={d.chiTiet} onChange={(e) => doiDong(i, { chiTiet: e.target.value })} className="input" />
+                    <textarea
+                      value={d.chiTiet}
+                      onChange={(e) => doiDong(i, { chiTiet: e.target.value })}
+                      rows={d.chiTiet.includes("\n") ? 5 : 2}
+                      className="input resize-y leading-relaxed"
+                    />
                   </O>
                   <O nhan="Ghi chú dòng">
                     <input value={d.ghiChu} onChange={(e) => doiDong(i, { ghiChu: e.target.value })} className="input" />
