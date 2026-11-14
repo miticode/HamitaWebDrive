@@ -61,12 +61,29 @@ export default async function CongViecPage({ searchParams }: Props) {
   const theoNguoi: Prisma.CongViecWhereInput = quanTri
     ? {}
     : { OR: [...(khoaToi ? [{ nguoiPhuTrachMaNV: khoaToi }] : []), ...chuaGiao] };
-  const tt = ["qua-han", "da-lam", "tat-ca"].includes(sp.tt ?? "") ? sp.tt! : "chua-xong";
+  const tt = ["qua-han", "sap-toi", "da-lam", "tat-ca"].includes(sp.tt ?? "") ? sp.tt! : "chua-xong";
   const so = Math.max(MOI_LUOT, Math.floor(Number(sp.so)) || MOI_LUOT);
   const nay = homNay();
 
+  /*
+    "Sắp tới" — việc có hạn trong bảy ngày tới, thêm 14/11/2026.
+
+    Vì sao cần: trang hiện tối đa 150 việc mỗi lượt, mà việc chưa xong cả tiệm
+    là 246 và 181 trong số đó mang hạn CŨ hơn hôm nay. Việc vừa sinh cho buổi
+    chụp ngày mai nằm ở vị trí thứ 182 — người mở trang không thấy nó, bị đống
+    tồn kho từ 2025 che mất.
+
+    Không tăng giới hạn 150 và không đổi thứ tự mặc định: tăng chỉ đẩy vấn đề
+    xuống sau, còn đổi thứ tự là giấu mất việc quá hạn thật. Thêm một lối lọc
+    thì người cần việc sắp tới bấm một cái là thấy.
+  */
+  const bayNgayNua = new Date(new Date(`${nay}T00:00:00+07:00`).getTime() + 7 * 86_400_000)
+    .toLocaleDateString("sv-SE", { timeZone: MUI_GIO });
+
   const theoTrangThai: Prisma.CongViecWhereInput =
-    tt === "da-lam"
+    tt === "sap-toi"
+      ? { trangThai: { not: "Đã làm" }, thoiHan: { gte: nay, lte: bayNgayNua } }
+      : tt === "da-lam"
       ? { trangThai: "Đã làm" }
       : tt === "tat-ca"
         ? {}
@@ -81,7 +98,7 @@ export default async function CongViecPage({ searchParams }: Props) {
   };
 
   const prisma = getPrisma();
-  const [ds, demNguoi, soQuaHan, bangTen, dsNhanVien] = await Promise.all([
+  const [ds, demNguoi, soQuaHan, soSapToi, bangTen, dsNhanVien] = await Promise.all([
     prisma.congViec.findMany({
       where,
       select: {
@@ -106,6 +123,16 @@ export default async function CongViecPage({ searchParams }: Props) {
       : Promise.resolve([] as { nguoiPhuTrachMaNV: string | null; _count: { _all: number } }[]),
     prisma.congViec.count({
       where: { matBenAppSheet: null, ...theoNguoi, trangThai: { not: "Đã làm" }, thoiHan: { lt: nay } },
+    }),
+    prisma.congViec.count({
+      where: {
+        matBenAppSheet: null, ...theoNguoi, trangThai: { not: "Đã làm" },
+        thoiHan: {
+          gte: nay,
+          lte: new Date(new Date(`${nay}T00:00:00+07:00`).getTime() + 7 * 86_400_000)
+            .toLocaleDateString("sv-SE", { timeZone: MUI_GIO }),
+        },
+      },
     }),
     tenTheoMaNV(),
     /*
@@ -158,6 +185,9 @@ export default async function CongViecPage({ searchParams }: Props) {
         <Link href={link({ tt: "chua-xong" })} className={lopChip(tt === "chua-xong")}>Chưa xong</Link>
         <Link href={link({ tt: "qua-han" })} className={lopChip(tt === "qua-han")}>
           Quá hạn <span className="tabular-nums opacity-70">{soQuaHan}</span>
+        </Link>
+        <Link href={link({ tt: "sap-toi" })} className={lopChip(tt === "sap-toi")}>
+          Bảy ngày tới <span className="tabular-nums opacity-70">{soSapToi}</span>
         </Link>
         <Link href={link({ tt: "da-lam" })} className={lopChip(tt === "da-lam")}>Đã làm</Link>
         <Link href={link({ tt: "tat-ca" })} className={lopChip(tt === "tat-ca")}>Tất cả</Link>

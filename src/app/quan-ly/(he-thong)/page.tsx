@@ -52,6 +52,15 @@ export default async function TongQuanPage() {
   const coTien = xemTienVaKhach(nguoi);
   const coHopDong = xemHopDong(nguoi);
   const homNay = homNayStudio();
+  /*
+    NGÀY MAI cũng phải thấy được — thử hành trình 14/11 mới lộ.
+
+    Thẻ "Lịch chụp hôm nay" chỉ đếm hôm nay, nên Photo mở web buổi tối thì
+    không biết sáng mai có buổi nào. Mà lịch chụp thì chốt từ trước hàng tháng:
+    thứ người ta cần biết lúc cuối ngày chính là NGÀY MAI.
+  */
+  const ngayMai = new Date(new Date(`${homNay}T00:00:00+07:00`).getTime() + 86_400_000)
+    .toLocaleDateString("sv-SE", { timeZone: MUI_GIO });
   const prisma = getPrisma();
 
   /*
@@ -89,6 +98,7 @@ export default async function TongQuanPage() {
     viecQuaHan,
     viecChuaAiNhan,
     lichHomNay,
+    lichNgayMai,
     suCoTreo,
     donCho,
     thuCho,
@@ -109,6 +119,7 @@ export default async function TongQuanPage() {
           where: { matBenAppSheet: null, ...viecChuaGiao, trangThai: { not: "Đã làm" } },
         }),
     prisma.lichChup.count({ where: { matBenAppSheet: null, ngay: homNay } }),
+    prisma.lichChup.count({ where: { matBenAppSheet: null, ngay: ngayMai } }),
     /*
       CHỈ sự cố ghi trên web (`bamAppSheet: null`). 19 dòng treo chép từ
       AppSheet không mang thời điểm nào — bên đó ba cột thời gian rỗng hết —
@@ -205,6 +216,7 @@ export default async function TongQuanPage() {
             nhan="Lịch chụp hôm nay"
             chu={String(lichHomNay)}
             muc={lichHomNay > 0 ? "thuong" : "yen"}
+            phu={lichNgayMai > 0 ? `mai ${lichNgayMai} buổi` : undefined}
           />
         </div>
         {/*

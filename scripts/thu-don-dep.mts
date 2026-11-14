@@ -22,6 +22,10 @@ const xoa: [string, () => Promise<{ count: number }>][] = [
   ["chiTietHD", () => p.chiTietHopDong.deleteMany({ where: { hopDong: { tenKhach: { contains: DAU.ten } } } })],
   ["hopDong", () => p.hopDong.deleteMany({ where: { tenKhach: { contains: DAU.ten } } })],
   ["khachHang", () => p.khachHang.deleteMany({ where: { OR: [{ ten: { contains: DAU.ten } }, { soDienThoai: { in: [DAU.sdt, DAU.sdt2, DAU.sdt3] } }] } })],
+  /* Album thử: xoá SelectionList và MucXong trước (khoá ngoại Cascade lo phần Selection). */
+  ["mucXong", () => p.mucXong.deleteMany({ where: { gallery: { slug: { startsWith: "zz-thu-" } } } })],
+  ["selectionList", () => p.selectionList.deleteMany({ where: { gallery: { slug: { startsWith: "zz-thu-" } } } })],
+  ["gallery", () => p.gallery.deleteMany({ where: { slug: { startsWith: "zz-thu-" } } })],
   ["khachTiemNang", () => p.khachTiemNang.deleteMany({ where: { tenNguoi: { contains: DAU.ten } } })],
   ["chiTieu", () => p.chiTieu.deleteMany({ where: { dienGiai: { contains: DAU.ten } } })],
   ["chamCong", () => p.chamCong.deleteMany({ where: { maNV: { equals: DAU.maNV, mode: "insensitive" } } })],
@@ -58,6 +62,7 @@ const con = {
   nhatKy: await p.nhatKy.count({ where: { nguoiTen: { contains: DAU.tienTo } } }),
   nhatKyCt: await p.nhatKy.count({ where: { chiTiet: { path: ["ten"], string_contains: DAU.tienTo } } }),
   nhanVien: await p.nhanVien.count({ where: { tenDangNhap: { startsWith: "zz-thu-" } } }),
+  gallery: await p.gallery.count({ where: { slug: { startsWith: "zz-thu-" } } }),
 };
 const sot = Object.entries(con).filter(([, v]) => v > 0);
-console.log(sot.length ? `CÒN SÓT: ${sot.map(([k, v]) => `${k}=${v}`).join(", ")}` : "ĐÃ SẠCH — đo lại 12 bảng, không còn dòng thử nào.");
+console.log(sot.length ? `CÒN SÓT: ${sot.map(([k, v]) => `${k}=${v}`).join(", ")}` : "ĐÃ SẠCH — đo lại 13 bảng, không còn dòng thử nào.");
