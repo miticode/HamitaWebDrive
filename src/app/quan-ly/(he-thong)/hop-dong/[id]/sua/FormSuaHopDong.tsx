@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { tien } from "@/lib/constants";
 import { docTien } from "@/lib/studioNoiBo";
@@ -73,6 +73,24 @@ export function FormSuaHopDong({
 
   const doiDong = (i: number, sua: Partial<DongDichVuMoi>) =>
     setDong((ds) => ds.map((d, j) => (i === j ? { ...d, ...sua } : d)));
+
+  /*
+    CUỘN TỚI DÒNG VỪA THÊM — anh chỉ ra 14/11/2026 ("kéo xuống dưới mới thấy
+    cái đã chọn").
+
+    Cửa sổ chọn đóng lại đã giải quyết phần lớn, nhưng hợp đồng cưới hay có
+    năm bảy dòng; dòng mới luôn nằm cuối, nên vẫn khuất dưới màn hình. Đây là
+    lần DUY NHẤT web tự cuộn giùm — và chỉ khi số dòng TĂNG, để bỏ một dòng
+    không giật người ta đi đâu cả.
+  */
+  const soDongCu = useRef(0);
+  const dongCuoi = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (dong.length > soDongCu.current) {
+      dongCuoi.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+    soDongCu.current = dong.length;
+  }, [dong.length]);
 
   const themDong = (dv: DichVuGon | null) =>
     setDong((ds) => [
@@ -175,7 +193,11 @@ export function FormSuaHopDong({
         ) : (
           <div className="mt-3 grid gap-3">
             {dong.map((d, i) => (
-              <div key={d.id ?? `moi-${i}`} className="rounded-md border border-line p-3">
+              <div
+                key={d.id ?? `moi-${i}`}
+                ref={i === dong.length - 1 ? dongCuoi : null}
+                className="rounded-md border border-line p-3"
+              >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <input

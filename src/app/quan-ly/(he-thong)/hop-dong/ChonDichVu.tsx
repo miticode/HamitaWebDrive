@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { boDau, tien } from "@/lib/constants";
 import { LOAI_DICH_VU, TEN_LOAI, laLoaiDichVu, type LoaiDichVu } from "@/lib/dichVuChung";
 import { themDichVuAction } from "../../actionsDichVu";
@@ -53,15 +53,110 @@ export function ChonDichVu({
   luotDung?: Record<string, number>;
   onChon: (dv: DichVuGon | null) => void;
 }) {
+  const [mo, setMo] = useState(false);
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setMo(true)}
+          className="btn flex-1 justify-start text-left text-fg-muted sm:flex-none sm:min-w-[22rem]"
+        >
+          + Chọn dịch vụ, trang phục, sản phẩm…
+        </button>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => onChon(null)}
+          title="Một dòng không mã, chỉ dùng cho khoản lẻ không cần lưu vào bảng"
+        >
+          Dòng gõ tay
+        </button>
+      </div>
+
+      {mo && (
+        <CuaSoChon
+          dichVu={dichVu}
+          luotDung={luotDung}
+          onDong={() => setMo(false)}
+          onChon={(dv) => {
+            onChon(dv);
+            setMo(false);
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+/**
+ * Cửa sổ chọn mục — anh yêu cầu 14/11/2026.
+ *
+ * Trước đó danh sách nằm thẳng trong form. Chọn xong nó KHÔNG TẮT, mà dòng
+ * vừa thêm lại nằm phía dưới cả danh sách dài, nên phải cuộn xuống mới thấy
+ * thứ mình vừa bấm — đúng chỗ anh chỉ ra.
+ *
+ * Cửa sổ sửa cả hai cùng lúc: danh sách chiếm chỗ riêng, bấm một cái là đóng
+ * và dòng mới hiện ngay tại chỗ nút bấm. Số lần bấm không tăng: vẫn một cái
+ * để mở, một cái để chọn.
+ *
+ * ━━ Hai cái bẫy của cửa sổ lồng trong cửa sổ ━━
+ *
+ * Form hợp đồng thường đã nằm trong cửa sổ `NutLapHopDong` (`z-[60]`), nên:
+ *
+ * 1. **Escape.** Cửa sổ ngoài nghe phím trên `document`. Nếu cửa sổ này chỉ
+ *    nghe bình thường thì một lần bấm Escape đóng cả hai — mất luôn hợp đồng
+ *    đang gõ dở. Nên ở đây nghe tại GIAI ĐOẠN CAPTURE rồi
+ *    `stopImmediatePropagation`: phím tới tay cửa sổ trong trước, và không đi
+ *    tiếp ra ngoài.
+ * 2. **Bấm ra nền.** Cửa sổ ngoài đóng khi bấm nền của nó. Nền cửa sổ này
+ *    phải chặn sự kiện lại, nếu không bấm hụt ra ngoài danh sách là mất cả
+ *    form đang gõ dở.
+ */
+function CuaSoChon({
+  dichVu,
+  luotDung,
+  onChon,
+  onDong,
+}: {
+  dichVu: DichVuGon[];
+  luotDung?: Record<string, number>;
+  onChon: (dv: DichVuGon | null) => void;
+  onDong: () => void;
+}) {
   const [q, setQ] = useState("");
   const [taoMoi, setTaoMoi] = useState(false);
   const [loai, setLoai] = useState<LoaiDichVu>("dich-vu");
   const [nhom, setNhom] = useState<string | null>(null);
   const [hien, setHien] = useState(MOI_LAN);
+  const oTim = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    oTim.current?.focus();
+    const phim = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.stopImmediatePropagation();
+      onDong();
+    };
+    document.addEventListener("keydown", phim, true);
+
+    /*
+      Khoá cuộn nền. Cửa sổ ngoài có thể đã khoá rồi — lưu lại giá trị cũ rồi
+      trả về đúng nó, chứ không trả về chuỗi rỗng, nếu không đóng cửa sổ trong
+      là nền sau lưng cuộn lại được trong khi form vẫn đang mở.
+    */
+    const cu = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", phim, true);
+      document.body.style.overflow = cu;
+    };
+  }, [onDong]);
 
   const dangTim = q.trim().length >= 2;
 
-  /** Mục của loại đang chọn, hay dùng đứng trước. Chỉ tính lại khi đổi loại. */
+  /** Mục của loại đang chọn, hay dùng đứng trước. */
   const cuaLoai = useMemo(() => {
     const d = dichVu.filter((x) => x.loai === loai);
     return d.sort(
@@ -88,7 +183,7 @@ export function ChonDichVu({
   const ketQua = useMemo(() => {
     const k = boDau(q.trim());
     if (k.length < 2) return [];
-    return dichVu.filter((d) => boDau(`${d.maDV} ${d.ten} ${d.nhom ?? ""}`).includes(k)).slice(0, 24);
+    return dichVu.filter((d) => boDau(`${d.maDV} ${d.ten} ${d.nhom ?? ""}`).includes(k)).slice(0, 40);
   }, [q, dichVu]);
 
   const doiLoai = (l: LoaiDichVu) => {
@@ -97,148 +192,164 @@ export function ChonDichVu({
     setHien(MOI_LAN);
   };
 
+  const chipNhom = (bat: boolean) =>
+    `rounded-full border px-2.5 py-0.5 text-xs transition ${
+      bat ? "border-accent bg-accent-soft text-accent" : "border-line text-fg-faint hover:border-line-strong"
+    }`;
+
   return (
-    <div>
-      <div className="flex flex-wrap gap-2">
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Gõ mã hoặc tên dịch vụ, trang phục, sản phẩm…"
-          aria-label="Tìm dịch vụ"
-          className="input flex-1"
-        />
-        {/*
-          TẠO MỤC MỚI ngay tại form hợp đồng — anh yêu cầu 14/11/2026, đối
-          chiếu với AppSheet (ô "Mã DV" bên đó có sẵn mục "Tạo mới").
-
-          Vì sao quan trọng: tiệm làm việc bằng MÃ, không phải tên tự do. Đo
-          7.251 dòng chi tiết thật thì chỉ 2 dòng không có mã. Dòng gõ tay
-          không mã thì không ghép được với bảng Dịch vụ, nên không có bảng giá
-          hạng mục và KHÔNG SINH ĐẦU VIỆC nào — hợp đồng lập xong mà không ai
-          biết phải làm gì.
-
-          Quyền khớp sẵn: `loaiDuocSua` cho quản trị và sale sửa cả ba loại,
-          mà đó cũng đúng là nhóm được lập hợp đồng.
-        */}
-        <button type="button" className="btn" onClick={() => setTaoMoi(true)}>
-          Tạo mục mới
-        </button>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => {
-            onChon(null);
-            setQ("");
-          }}
-          title="Một dòng không mã, chỉ dùng cho khoản lẻ không cần lưu vào bảng"
-        >
-          Dòng gõ tay
-        </button>
-      </div>
-
-      {taoMoi && (
-        <KhungTaoMuc
-          goiY={q.trim()}
-          onThoi={() => setTaoMoi(false)}
-          onXong={(dv) => {
-            onChon(dv);
-            setTaoMoi(false);
-            setQ("");
-          }}
-        />
-      )}
-
-      {/* ── TÌM: gõ rồi thì tìm khắp cả ba loại, chip không chặn ───────── */}
-      {dangTim && (
-        <div className="mt-2 grid gap-1.5">
-          {ketQua.map((d) => (
-            <DongMuc key={d.id} d={d} luot={luotDung?.[d.maDV] ?? 0} onChon={() => { onChon(d); setQ(""); }} />
-          ))}
-          {ketQua.length === 0 && (
-            <p className="rounded-md border border-line px-3 py-2 text-sm text-fg-muted">
-              Không có mục nào khớp “{q.trim()}”. Bấm <b className="text-fg">Tạo mục mới</b> để thêm vào
-              bảng, hoặc <b className="text-fg">Dòng gõ tay</b> cho khoản lẻ không cần lưu.
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* ── DUYỆT: ô tìm còn trống thì bày sẵn ra, khỏi phải nhớ ────────── */}
-      {!dangTim && (
-        <div className="mt-3">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {LOAI_DICH_VU.map((l) => {
-              const soMuc = dichVu.filter((d) => d.loai === l).length;
-              return (
-                <button
-                  key={l}
-                  type="button"
-                  onClick={() => doiLoai(l)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${
-                    loai === l
-                      ? "border-accent bg-accent-soft text-accent"
-                      : "border-line text-fg-muted hover:border-line-strong"
-                  }`}
-                >
-                  {TEN_LOAI[l]} <span className="tabular-nums opacity-70">{soMuc}</span>
-                </button>
-              );
-            })}
+    <div
+      className="fixed inset-0 z-[70] flex items-end justify-center bg-black/45 backdrop-blur-sm sm:items-center sm:p-6"
+      onClick={(e) => {
+        e.stopPropagation();
+        onDong();
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Chọn dịch vụ, trang phục, sản phẩm"
+        className="flex max-h-[94dvh] w-full max-w-3xl flex-col rounded-t-lg bg-bg shadow-[var(--shadow-lift)] sm:max-h-[86dvh] sm:rounded-lg"
+      >
+        {/* Đầu cửa sổ đứng yên: ô tìm và chip luôn trong tầm tay dù danh sách dài. */}
+        <div className="border-b border-line px-5 py-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="eyebrow">Thêm vào hợp đồng</p>
+              <h3 className="mt-1 font-display text-xl leading-snug font-light">
+                Dịch vụ, trang phục, sản phẩm
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={onDong}
+              aria-label="Đóng"
+              className="grid size-9 shrink-0 place-items-center rounded-full text-fg-faint transition hover:bg-bg-soft hover:text-fg"
+            >
+              ✕
+            </button>
           </div>
 
-          {/* Chip nhóm chỉ xuất hiện khi loại này thật sự chia được nhóm. */}
-          {cacNhom.length > 1 && (
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => { setNhom(null); setHien(MOI_LAN); }}
-                className={`rounded-full border px-2.5 py-0.5 text-xs transition ${
-                  nhom === null
-                    ? "border-accent bg-accent-soft text-accent"
-                    : "border-line text-fg-faint hover:border-line-strong"
-                }`}
-              >
-                Mọi nhóm
-              </button>
-              {cacNhom.map(([n, c]) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => { setNhom(n); setHien(MOI_LAN); }}
-                  className={`rounded-full border px-2.5 py-0.5 text-xs transition ${
-                    nhom === n
-                      ? "border-accent bg-accent-soft text-accent"
-                      : "border-line text-fg-faint hover:border-line-strong"
-                  }`}
-                >
-                  {n} <span className="tabular-nums opacity-70">{c}</span>
-                </button>
-              ))}
-            </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <input
+              ref={oTim}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Gõ mã hoặc tên dịch vụ, trang phục, sản phẩm…"
+              aria-label="Tìm dịch vụ"
+              autoComplete="off"
+              className="input flex-1"
+            />
+            {/*
+              TẠO MỤC MỚI ngay tại đây — anh yêu cầu 14/11/2026, đối chiếu với
+              AppSheet (ô "Mã DV" bên đó có sẵn mục "Tạo mới").
+
+              Vì sao quan trọng: tiệm làm việc bằng MÃ, không phải tên tự do.
+              Đo 7.251 dòng chi tiết thật thì chỉ 2 dòng không có mã. Dòng gõ
+              tay không mã thì không ghép được với bảng Dịch vụ, nên không có
+              bảng giá hạng mục và KHÔNG SINH ĐẦU VIỆC nào — hợp đồng lập xong
+              mà không ai biết phải làm gì.
+
+              Quyền khớp sẵn: `loaiDuocSua` cho quản trị và sale sửa cả ba
+              loại, mà đó cũng đúng là nhóm được lập hợp đồng.
+            */}
+            <button type="button" className="btn" onClick={() => setTaoMoi(true)}>
+              Tạo mục mới
+            </button>
+          </div>
+
+          {/* Chip chỉ có nghĩa khi đang DUYỆT; đang tìm thì tìm khắp cả ba loại. */}
+          {!dangTim && (
+            <>
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                {LOAI_DICH_VU.map((l) => {
+                  const soMuc = dichVu.filter((d) => d.loai === l).length;
+                  return (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => doiLoai(l)}
+                      className={`rounded-full border px-3 py-1 text-xs transition ${
+                        loai === l
+                          ? "border-accent bg-accent-soft text-accent"
+                          : "border-line text-fg-muted hover:border-line-strong"
+                      }`}
+                    >
+                      {TEN_LOAI[l]} <span className="tabular-nums opacity-70">{soMuc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {cacNhom.length > 1 && (
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => { setNhom(null); setHien(MOI_LAN); }}
+                    className={chipNhom(nhom === null)}
+                  >
+                    Mọi nhóm
+                  </button>
+                  {cacNhom.map(([n, c]) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => { setNhom(n); setHien(MOI_LAN); }}
+                      className={chipNhom(nhom === n)}
+                    >
+                      {n} <span className="tabular-nums opacity-70">{c}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
 
-          <div className="mt-2 grid gap-1.5">
-            {dangDuyet.slice(0, hien).map((d) => (
+          {taoMoi && (
+            <KhungTaoMuc
+              goiY={q.trim()}
+              onThoi={() => setTaoMoi(false)}
+              onXong={(dv) => {
+                setTaoMoi(false);
+                onChon(dv);
+              }}
+            />
+          )}
+        </div>
+
+        {/* Ruột cuộn riêng, để đầu cửa sổ không trôi đi mất. */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+          <div className="grid gap-1.5">
+            {(dangTim ? ketQua : dangDuyet.slice(0, hien)).map((d) => (
               <DongMuc key={d.id} d={d} luot={luotDung?.[d.maDV] ?? 0} onChon={() => onChon(d)} />
             ))}
           </div>
 
-          {dangDuyet.length > hien && (
+          {dangTim && ketQua.length === 0 && (
+            <p className="rounded-md border border-line px-3 py-2 text-sm text-fg-muted">
+              Không có mục nào khớp “{q.trim()}”. Bấm <b className="text-fg">Tạo mục mới</b> để thêm
+              vào bảng, hoặc đóng cửa sổ rồi chọn <b className="text-fg">Dòng gõ tay</b> cho khoản lẻ
+              không cần lưu.
+            </p>
+          )}
+
+          {!dangTim && dangDuyet.length > hien && (
             <button
               type="button"
               onClick={() => setHien((h) => h + MOI_LAN)}
-              className="mt-2 text-xs text-fg-muted underline underline-offset-2 hover:text-accent"
+              className="mt-3 text-xs text-fg-muted underline underline-offset-2 hover:text-accent"
             >
               Xem thêm {Math.min(MOI_LAN, dangDuyet.length - hien)} mục nữa
               <span className="ml-1 tabular-nums opacity-70">(còn {dangDuyet.length - hien})</span>
             </button>
           )}
 
-          {dangDuyet.length === 0 && (
-            <p className="mt-2 text-sm text-fg-muted">Nhóm này chưa có mục nào đang dùng.</p>
+          {!dangTim && dangDuyet.length === 0 && (
+            <p className="text-sm text-fg-muted">Nhóm này chưa có mục nào đang dùng.</p>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
