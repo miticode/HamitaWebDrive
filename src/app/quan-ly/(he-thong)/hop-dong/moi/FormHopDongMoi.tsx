@@ -422,29 +422,43 @@ export function FormHopDongMoi({
                       className="input font-medium"
                     />
                     {/*
-                      LOẠI DÒNG chọn được — đối chiếu form AppSheet 14/11/2026.
+                      LOẠI DÒNG — đối chiếu form AppSheet 14/11/2026.
 
                       Bên đó mỗi dòng chi tiết bắt buộc chọn một trong ba:
-                      Dịch vụ · Sản phẩm · Trang phục. Web thì lấy tự động theo
-                      dịch vụ được chọn, nên dòng GÕ TAY không có loại nào —
-                      đo được 3 dòng thật đang để trống. Loại quyết định cả
-                      nhãn ô ngày ngay bên dưới, nên để trống là mất nghĩa.
+                      Dịch vụ · Sản phẩm · Trang phục. Web lấy tự động theo mục
+                      được chọn, nên chỉ dòng GÕ TAY là không có loại nào — đo
+                      được 3 dòng thật đang để trống. Loại quyết định cả nhãn ô
+                      ngày ngay bên dưới, nên để trống là mất nghĩa.
+
+                      Nhưng chip chỉ bấm được với DÒNG GÕ TAY (anh chỉ ra cùng
+                      ngày). Dòng chọn từ bảng thì loại đã do bảng Dịch vụ &
+                      trang phục quyết định: "giày nam" là trang phục, bấm đổi
+                      thành dịch vụ ở đây chỉ làm dòng hợp đồng nói khác bảng,
+                      và kéo theo nhãn ô ngày đổi từ "Ngày thuê" sang "Ngày
+                      chụp" — sai cả nghĩa. Muốn đổi thật thì sửa ở trang Dịch
+                      vụ & trang phục, chỗ duy nhất giữ sự thật đó.
                     */}
                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                      {LOAI_DICH_VU.map((l) => (
-                        <button
-                          key={l}
-                          type="button"
-                          onClick={() => doiDong(i, { loai: l })}
-                          className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
-                            d.loai === l
-                              ? "border-accent bg-accent-soft text-accent"
-                              : "border-line text-fg-muted hover:border-line-strong"
-                          }`}
-                        >
-                          {TEN_LOAI[l]}
-                        </button>
-                      ))}
+                      {d.dichVuId && laLoaiDichVu(d.loai) ? (
+                        <span className="rounded-full border border-line px-2 py-0.5 text-[11px] text-fg-muted">
+                          {TEN_LOAI[d.loai]}
+                        </span>
+                      ) : (
+                        LOAI_DICH_VU.map((l) => (
+                          <button
+                            key={l}
+                            type="button"
+                            onClick={() => doiDong(i, { loai: l })}
+                            className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
+                              d.loai === l
+                                ? "border-accent bg-accent-soft text-accent"
+                                : "border-line text-fg-muted hover:border-line-strong"
+                            }`}
+                          >
+                            {TEN_LOAI[l]}
+                          </button>
+                        ))
+                      )}
                       <span className="text-xs text-fg-faint">{d.maDV || "gõ tay"}</span>
                     </div>
                   </div>

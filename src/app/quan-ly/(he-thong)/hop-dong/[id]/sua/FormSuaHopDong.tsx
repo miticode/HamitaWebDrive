@@ -206,22 +206,28 @@ export function FormSuaHopDong({
                       aria-label={`Tên dòng ${i + 1}`}
                       className="input font-medium"
                     />
-                    {/* Chọn loại dòng — giống hệt form lập mới, xem chú thích ở đó. */}
+                    {/* Loại dòng — giống hệt form lập mới, xem chú thích ở đó. */}
                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                      {LOAI_DICH_VU.map((l) => (
-                        <button
-                          key={l}
-                          type="button"
-                          onClick={() => doiDong(i, { loai: l })}
-                          className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
-                            d.loai === l
-                              ? "border-accent bg-accent-soft text-accent"
-                              : "border-line text-fg-muted hover:border-line-strong"
-                          }`}
-                        >
-                          {TEN_LOAI[l]}
-                        </button>
-                      ))}
+                      {d.dichVuId && laLoaiDichVu(d.loai) ? (
+                        <span className="rounded-full border border-line px-2 py-0.5 text-[11px] text-fg-muted">
+                          {TEN_LOAI[d.loai]}
+                        </span>
+                      ) : (
+                        LOAI_DICH_VU.map((l) => (
+                          <button
+                            key={l}
+                            type="button"
+                            onClick={() => doiDong(i, { loai: l })}
+                            className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
+                              d.loai === l
+                                ? "border-accent bg-accent-soft text-accent"
+                                : "border-line text-fg-muted hover:border-line-strong"
+                            }`}
+                          >
+                            {TEN_LOAI[l]}
+                          </button>
+                        ))
+                      )}
                       <span className="text-xs text-fg-faint">
                         {d.maDV || "gõ tay"}
                         {d.id ? "" : " · dòng mới"}
