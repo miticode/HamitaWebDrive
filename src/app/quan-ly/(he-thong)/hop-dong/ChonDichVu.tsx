@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { boDau, tien } from "@/lib/constants";
-import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
+import { LOAI_DICH_VU, TEN_LOAI, laLoaiDichVu, type LoaiDichVu } from "@/lib/dichVuChung";
+import { themDichVuAction } from "../../actionsDichVu";
 
 export type DichVuGon = {
   id: string;
@@ -33,6 +34,7 @@ export function ChonDichVu({
   onChon: (dv: DichVuGon | null) => void;
 }) {
   const [q, setQ] = useState("");
+  const [taoMoi, setTaoMoi] = useState(false);
 
   const ketQua = useMemo(() => {
     const k = boDau(q.trim());
@@ -50,6 +52,22 @@ export function ChonDichVu({
           aria-label="Tìm dịch vụ"
           className="input flex-1"
         />
+        {/*
+          TẠO MỤC MỚI ngay tại form hợp đồng — anh yêu cầu 14/11/2026, đối
+          chiếu với AppSheet (ô "Mã DV" bên đó có sẵn mục "Tạo mới").
+
+          Vì sao quan trọng: tiệm làm việc bằng MÃ, không phải tên tự do. Đo
+          7.251 dòng chi tiết thật thì chỉ 2 dòng không có mã. Dòng gõ tay
+          không mã thì không ghép được với bảng Dịch vụ, nên không có bảng giá
+          hạng mục và KHÔNG SINH ĐẦU VIỆC nào — hợp đồng lập xong mà không ai
+          biết phải làm gì.
+
+          Quyền khớp sẵn: `loaiDuocSua` cho quản trị và sale sửa cả ba loại,
+          mà đó cũng đúng là nhóm được lập hợp đồng.
+        */}
+        <button type="button" className="btn" onClick={() => setTaoMoi(true)}>
+          Tạo mục mới
+        </button>
         <button
           type="button"
           className="btn"
@@ -57,11 +75,23 @@ export function ChonDichVu({
             onChon(null);
             setQ("");
           }}
-          title="Thêm một dòng trống để gõ tay, dùng khi dịch vụ chưa có trong bảng"
+          title="Một dòng không mã, chỉ dùng cho khoản lẻ không cần lưu vào bảng"
         >
           Dòng gõ tay
         </button>
       </div>
+
+      {taoMoi && (
+        <KhungTaoMuc
+          goiY={q.trim()}
+          onThoi={() => setTaoMoi(false)}
+          onXong={(dv) => {
+            onChon(dv);
+            setTaoMoi(false);
+            setQ("");
+          }}
+        />
+      )}
 
       {ketQua.length > 0 && (
         <div className="mt-2 grid gap-1.5">
@@ -136,6 +166,115 @@ export function Hang({ ten, gia, dam }: { ten: string; gia: number; dam?: boolea
     <div className="flex items-center justify-between gap-3">
       <span className="text-fg-muted">{ten}</span>
       <span className={`tabular-nums ${dam ? "font-medium text-fg" : ""}`}>{tien(gia)}</span>
+    </div>
+  );
+}
+
+/**
+ * Tạo một mục mới trong bảng Dịch vụ & trang phục rồi dùng luôn cho hợp đồng
+ * đang lập.
+ *
+ * Dùng lại `themDichVuAction` chứ không mở đường ghi mới: phép kiểm quyền
+ * theo loại, phép chặn trùng mã (kể cả khác hoa thường) và dòng nhật ký đều
+ * giữ nguyên. Mục tạo ở đây hiện luôn trong trang Dịch vụ & trang phục, không
+ * phải một bảng riêng.
+ */
+function KhungTaoMuc({
+  goiY,
+  onThoi,
+  onXong,
+}: {
+  /** Chữ người đang gõ ở ô tìm — điền sẵn vào ô Tên cho đỡ gõ lại. */
+  goiY: string;
+  onThoi: () => void;
+  onXong: (dv: DichVuGon) => void;
+}) {
+  const [maDV, setMaDV] = useState("");
+  const [ten, setTen] = useState(goiY);
+  const [loai, setLoai] = useState<LoaiDichVu>("dich-vu");
+  const [nhom, setNhom] = useState("");
+  const [donGia, setDonGia] = useState("");
+  const [loi, setLoi] = useState<string | null>(null);
+  const [dang, batDau] = useTransition();
+
+  const luu = () =>
+    batDau(async () => {
+      setLoi(null);
+      const gia = Number(donGia.replace(/\D/g, "")) || 0;
+      const kq = await themDichVuAction({
+        maDV, loai, ten, nhom, chiTiet: "", donGia: String(gia), donVi: "", dangDung: true,
+      });
+      if (kq.loi || !kq.id) {
+        setLoi(kq.loi ?? "Chưa tạo được mục này.");
+        return;
+      }
+      onXong({ id: kq.id, maDV: maDV.trim(), ten: ten.trim(), loai, nhom: nhom.trim() || null, donGia: gia, donVi: null });
+    });
+
+  return (
+    <div className="mt-2 rounded-md border border-accent/40 bg-accent-soft/20 p-3">
+      <p className="eyebrow">Mục mới trong bảng Dịch vụ &amp; trang phục</p>
+
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        {LOAI_DICH_VU.map((l) => (
+          <button
+            key={l}
+            type="button"
+            onClick={() => setLoai(l)}
+            className={`rounded-full border px-2.5 py-1 text-xs transition ${
+              loai === l ? "border-accent bg-accent-soft text-accent" : "border-line text-fg-muted hover:border-line-strong"
+            }`}
+          >
+            {TEN_LOAI[l]}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-4">
+        <O nhan="Mã">
+          <input
+            value={maDV}
+            onChange={(e) => setMaDV(e.target.value)}
+            placeholder="VD: ADQ07"
+            autoComplete="off"
+            className="input"
+          />
+        </O>
+        <O nhan="Tên">
+          <input value={ten} onChange={(e) => setTen(e.target.value)} autoComplete="off" className="input" />
+        </O>
+        <O nhan="Nhóm">
+          <input
+            value={nhom}
+            onChange={(e) => setNhom(e.target.value)}
+            placeholder="Cưới, Baby, Thuê lẻ…"
+            autoComplete="off"
+            className="input"
+          />
+        </O>
+        <O nhan="Đơn giá">
+          <input
+            value={donGia ? Number(donGia.replace(/\D/g, "")).toLocaleString("vi-VN") : ""}
+            onChange={(e) => setDonGia(e.target.value)}
+            inputMode="numeric"
+            className="input tabular-nums"
+          />
+        </O>
+      </div>
+
+      <p className="mt-2 text-xs leading-relaxed text-fg-faint">
+        Mục này vào thẳng bảng Dịch vụ &amp; trang phục, lần sau gõ mã là ra. Mã đã có thì web báo
+        lại — <span className="text-fg-muted">không ghi đè mục cũ</span>.
+      </p>
+
+      {loi && <p className="mt-2 text-sm text-red-700">{loi}</p>}
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button type="button" onClick={luu} disabled={dang} className="btn-primary disabled:opacity-50">
+          {dang ? "Đang tạo…" : "Tạo và dùng cho dòng này"}
+        </button>
+        <button type="button" onClick={onThoi} disabled={dang} className="btn">Thôi</button>
+      </div>
     </div>
   );
 }
