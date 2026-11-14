@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { tien } from "@/lib/constants";
 import { docTien } from "@/lib/studioNoiBo";
-import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
+import { LOAI_DICH_VU, TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import {
   BUOC_MOI_LAP,
   CAC_BUOC,
@@ -384,10 +384,32 @@ export function FormHopDongMoi({
                       placeholder="Tên dịch vụ, trang phục hoặc sản phẩm…"
                       className="input font-medium"
                     />
-                    <p className="mt-1 text-xs text-fg-faint">
-                      {d.maDV || "gõ tay"}
-                      {d.loai && laLoaiDichVu(d.loai) ? ` · ${TEN_LOAI[d.loai]}` : ""}
-                    </p>
+                    {/*
+                      LOẠI DÒNG chọn được — đối chiếu form AppSheet 14/11/2026.
+
+                      Bên đó mỗi dòng chi tiết bắt buộc chọn một trong ba:
+                      Dịch vụ · Sản phẩm · Trang phục. Web thì lấy tự động theo
+                      dịch vụ được chọn, nên dòng GÕ TAY không có loại nào —
+                      đo được 3 dòng thật đang để trống. Loại quyết định cả
+                      nhãn ô ngày ngay bên dưới, nên để trống là mất nghĩa.
+                    */}
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {LOAI_DICH_VU.map((l) => (
+                        <button
+                          key={l}
+                          type="button"
+                          onClick={() => doiDong(i, { loai: l })}
+                          className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
+                            d.loai === l
+                              ? "border-accent bg-accent-soft text-accent"
+                              : "border-line text-fg-muted hover:border-line-strong"
+                          }`}
+                        >
+                          {TEN_LOAI[l]}
+                        </button>
+                      ))}
+                      <span className="text-xs text-fg-faint">{d.maDV || "gõ tay"}</span>
+                    </div>
                   </div>
                   <button
                     type="button"
@@ -415,7 +437,14 @@ export function FormHopDongMoi({
                       className="input tabular-nums"
                     />
                   </O>
-                  <O nhan="Ngày chụp">
+                  {/*
+                    Nhãn ô ngày ĐỔI THEO LOẠI, giống AppSheet: dịch vụ thì
+                    "Ngày chụp", trang phục thì "Ngày thuê", còn sản phẩm bên
+                    đó KHÔNG có ô ngày (đo dữ liệu thật: 6% dòng sản phẩm có
+                    ngày, so với 88% ở hai loại kia). Vẫn CÙNG MỘT CỘT
+                    `ngayChup` trong database — chỉ đổi chữ, không đổi dữ liệu.
+                  */}
+                  <O nhan={d.loai === "trang-phuc" ? "Ngày thuê" : d.loai === "san-pham" ? "Ngày giao" : "Ngày chụp"}>
                     <input
                       type="date"
                       value={d.ngayChup}

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { tien } from "@/lib/constants";
 import { docTien } from "@/lib/studioNoiBo";
-import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
+import { LOAI_DICH_VU, TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import { CAC_BUOC, LOAI_DV_HD, type DongDichVuMoi } from "@/lib/hopDongChung";
 import { suaHopDongAction } from "../../../../actionsHopDong";
 import { ChonDichVu, Hang, Khung, O, type DichVuGon } from "../../ChonDichVu";
@@ -179,11 +179,27 @@ export function FormSuaHopDong({
                       aria-label={`Tên dòng ${i + 1}`}
                       className="input font-medium"
                     />
-                    <p className="mt-1 text-xs text-fg-faint">
-                      {d.maDV || "gõ tay"}
-                      {d.loai && laLoaiDichVu(d.loai) ? ` · ${TEN_LOAI[d.loai]}` : ""}
-                      {d.id ? "" : " · dòng mới"}
-                    </p>
+                    {/* Chọn loại dòng — giống hệt form lập mới, xem chú thích ở đó. */}
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {LOAI_DICH_VU.map((l) => (
+                        <button
+                          key={l}
+                          type="button"
+                          onClick={() => doiDong(i, { loai: l })}
+                          className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
+                            d.loai === l
+                              ? "border-accent bg-accent-soft text-accent"
+                              : "border-line text-fg-muted hover:border-line-strong"
+                          }`}
+                        >
+                          {TEN_LOAI[l]}
+                        </button>
+                      ))}
+                      <span className="text-xs text-fg-faint">
+                        {d.maDV || "gõ tay"}
+                        {d.id ? "" : " · dòng mới"}
+                      </span>
+                    </div>
                   </div>
                   <button
                     type="button"
@@ -211,7 +227,8 @@ export function FormSuaHopDong({
                       className="input tabular-nums"
                     />
                   </O>
-                  <O nhan="Ngày chụp">
+                  {/* Nhãn đổi theo loại — xem chú thích ở form lập mới. */}
+                  <O nhan={d.loai === "trang-phuc" ? "Ngày thuê" : d.loai === "san-pham" ? "Ngày giao" : "Ngày chụp"}>
                     <input
                       type="date"
                       value={d.ngayChup}

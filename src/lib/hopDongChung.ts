@@ -50,6 +50,19 @@ export const LOAI_DV_HD = [
   "PreWedding",
   "Mâm quả",
   "GIA ĐÌNH",
+  /*
+    Bốn mục dưới bổ sung 14/11/2026 sau khi đối chiếu với ô "Loại DV" bên
+    AppSheet. Chín mục trên đo từ dữ liệu thật hồi 21/09, nên thiếu những loại
+    CHƯA ai dùng — và thiếu cả "DẠM NGÕ" dù đã có một hợp đồng thật mang loại
+    đó: web không lập lại được một hợp đồng như vậy.
+
+    "CƯỚI" bên AppSheet nằm trong danh sách hai lần. Đó là lỗi dữ liệu bên đó,
+    không chép sang.
+  */
+  "DẠM NGÕ",
+  "NÀNG THƠ",
+  "QUAY PHÓNG SỰ",
+  "QUAY TRUYỀN THỐNG",
 ] as const;
 
 /**
