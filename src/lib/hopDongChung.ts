@@ -390,7 +390,6 @@ export function kiemHopDongMoi(
 export type DuLieuSuaHopDong = {
   tenKhach: string;
   loaiDV: string;
-  ngayDat: string;
   diaChi: string;
   ghiChu: string;
   khuyenMai: number;
@@ -401,7 +400,6 @@ export type DuLieuSuaHopDong = {
 export type SuaHopDongSach = {
   tenKhach: string;
   loaiDV: string;
-  ngayDat: string;
   diaChi: string | null;
   ghiChu: string | null;
   trangThai: string;
@@ -430,7 +428,17 @@ export function kiemSuaHopDong(
   const kq = kiemHopDongMoi(
     {
       ...du,
-      // Ba trường dưới chỉ để mượn lại phép kiểm; phần sửa không dùng tới chúng.
+      /*
+        Bốn trường dưới chỉ để mượn lại phép kiểm; phần sửa không dùng tới chúng.
+
+        `ngayDat` nằm trong số đó từ 14/11/2026: ngày lập hợp đồng là dấu thời
+        gian do máy chủ chốt lúc lập, nên phần sửa không nhận nó từ form và
+        cũng không ghi lại cột đó (xem `suaHopDong`). Giá trị giả ở đây chỉ để
+        `NGAY_RE` có cái mà xét — nó không đi tới đâu cả, và nhờ vậy một hợp
+        đồng cũ CHƯA CÓ ngày đặt vẫn sửa được, thay vì kẹt ở lỗi "Ngày đặt
+        chưa đúng." mà không có ô nào để điền.
+      */
+      ngayDat: "2000-01-01",
       khachHangId: "giu-nguyen",
       khachMoi: null,
       thu: [],
@@ -444,7 +452,6 @@ export function kiemSuaHopDong(
   return {
     tenKhach: kq.tenKhach,
     loaiDV: kq.loaiDV,
-    ngayDat: kq.ngayDat,
     diaChi: kq.diaChi,
     ghiChu: kq.ghiChu,
     trangThai: kq.trangThai,

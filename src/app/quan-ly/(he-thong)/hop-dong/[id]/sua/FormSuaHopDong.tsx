@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { tien } from "@/lib/constants";
 import { docTien } from "@/lib/studioNoiBo";
 import { LOAI_DICH_VU, TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
-import { CAC_BUOC, LOAI_DV_HD, type DongDichVuMoi } from "@/lib/hopDongChung";
+import { CAC_BUOC, LOAI_DV_HD, ngayVN, type DongDichVuMoi } from "@/lib/hopDongChung";
 import { suaHopDongAction } from "../../../../actionsHopDong";
 import { ChonDichVu, Hang, Khung, O, type DichVuGon } from "../../ChonDichVu";
 
@@ -58,7 +58,6 @@ export function FormSuaHopDong({
 
   const [tenKhach, setTenKhach] = useState(banDau.tenKhach);
   const [loaiDV, setLoaiDV] = useState(banDau.loaiDV);
-  const [ngayDat, setNgayDat] = useState(banDau.ngayDat);
   const [diaChi, setDiaChi] = useState(banDau.diaChi);
   const [ghiChu, setGhiChu] = useState(banDau.ghiChu);
   const [khuyenMai, setKhuyenMai] = useState(banDau.khuyenMai);
@@ -93,7 +92,6 @@ export function FormSuaHopDong({
       const kq = await suaHopDongAction(id, {
         tenKhach,
         loaiDV,
-        ngayDat,
         diaChi,
         ghiChu,
         khuyenMai,
@@ -138,8 +136,11 @@ export function FormSuaHopDong({
               ))}
             </select>
           </O>
-          <O nhan="Ngày đặt">
-            <input type="date" value={ngayDat} onChange={(e) => setNgayDat(e.target.value)} className="input" />
+          <O nhan="Ngày lập hợp đồng">
+            <p className="input flex items-center bg-bg-sunken text-fg-muted tabular-nums">
+              {banDau.ngayDat ? ngayVN(banDau.ngayDat) : "—"}
+            </p>
+            <p className="mt-1 text-xs text-fg-faint">Ghi lúc lập hợp đồng, không sửa được.</p>
           </O>
           <O nhan="Trạng thái" chu={`Đủ ${cacBuoc.length} bước như bên AppSheet.`}>
             <select value={trangThai} onChange={(e) => setTrangThai(e.target.value)} className="input">

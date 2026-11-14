@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getPrisma } from "@/lib/db";
-import { boDau, MUI_GIO } from "@/lib/constants";
+import { boDau, homNayStudio, MUI_GIO } from "@/lib/constants";
 import { layNguoiDung, lapHopDong } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { docCacBuoc } from "@/lib/buocHopDong";
@@ -101,7 +101,19 @@ export async function lapHopDongAction(
     return { loi: "Tài khoản này chưa được lập hợp đồng, hoặc phiên đăng nhập đã hết." };
   }
 
-  const kq = await lapHopDongMoi(du, nguoi);
+  /*
+    NGÀY LẬP DO MÁY CHỦ CHỐT, không nhận từ form (anh chốt 14/11/2026).
+
+    Ngày đặt là thời điểm hợp đồng được lập — một dấu thời gian, không phải ô
+    người ta điền. Trước đây form cho gõ tay, nghĩa là một cú bấm lùi ngày là
+    hợp đồng đứng sai chỗ trong mọi báo cáo doanh thu theo tháng.
+
+    Ép ở ĐÂY chứ không ép trong `kiemHopDongMoi`: hàm kiểm đó được phần SỬA
+    mượn lại (`kiemSuaHopDong`), ép trong đó là mỗi lần sửa một hợp đồng cũ
+    lại kéo ngày đặt của nó về hôm nay — 2.402 hợp đồng chép từ AppSheet sẽ
+    hỏng dần theo từng lần mở ra sửa.
+  */
+  const kq = await lapHopDongMoi({ ...du, ngayDat: homNayStudio() }, nguoi);
   if ("loi" in kq) return kq;
 
   await ghiNhatKy({

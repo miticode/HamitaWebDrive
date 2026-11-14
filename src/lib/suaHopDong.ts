@@ -96,7 +96,6 @@ export async function suaHopDong(
       data: {
         tenKhach: kq.tenKhach,
         loaiDV: kq.loaiDV,
-        ngayDat: kq.ngayDat,
         diaChi: kq.diaChi,
         ghiChu: kq.ghiChu,
         trangThai: kq.trangThai,

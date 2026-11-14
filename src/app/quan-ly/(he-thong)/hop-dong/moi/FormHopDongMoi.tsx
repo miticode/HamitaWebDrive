@@ -75,7 +75,14 @@ export function FormHopDongMoi({
   // ── Hợp đồng ────────────────────────────────────────────────────────────
   const [tenKhach, setTenKhach] = useState("");
   const [loaiDV, setLoaiDV] = useState<string>(LOAI_DV_HD[1]);
-  const [ngayDat, setNgayDat] = useState(homNay);
+  /*
+    Ngày lập = hôm nay, KHÔNG sửa được (anh chốt 14/11/2026).
+
+    Đây là dấu thời gian của tờ hợp đồng, không phải ô để điền. Máy chủ chốt
+    lại lần nữa lúc lưu (`lapHopDongAction`), nên giá trị ở đây chỉ để nhìn và
+    để làm ngày mặc định cho phiếu thu đầu tiên.
+  */
+  const ngayDat = homNay;
   const [diaChi, setDiaChi] = useState("");
   const [ghiChu, setGhiChu] = useState("");
   const [khuyenMai, setKhuyenMai] = useState(0);
@@ -323,8 +330,11 @@ export function FormHopDongMoi({
               ))}
             </select>
           </O>
-          <O nhan="Ngày đặt">
-            <input type="date" value={ngayDat} onChange={(e) => setNgayDat(e.target.value)} className="input" />
+          <O nhan="Ngày lập hợp đồng">
+            <p className="input flex items-center bg-bg-sunken text-fg-muted tabular-nums">
+              {ngayVN(ngayDat)}
+            </p>
+            <p className="mt-1 text-xs text-fg-faint">Tự ghi theo hôm nay, không sửa được.</p>
           </O>
           <O nhan="Trạng thái">
             <select value={trangThai} onChange={(e) => setTtTuChon(e.target.value)} className="input">
