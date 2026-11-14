@@ -186,12 +186,13 @@ export default async function HopDongPage({ searchParams }: Props) {
                 <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{h.loaiDV}</td>
                 <td className="px-4 py-2.5"><ChipTrangThai trangThai={h.trangThai} /></td>
                 <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">{tien(h.tongTien)}đ</td>
+                {/* Số ÂM là studio THU DƯ — nói rõ, đừng để nó chìm vào màu xám. */}
                 <td
                   className={`px-4 py-2.5 text-right whitespace-nowrap tabular-nums ${
-                    h.conLai > 0 ? "font-medium text-amber-800" : "text-fg-faint"
+                    h.conLai > 0 ? "font-medium text-amber-800" : h.conLai < 0 ? "text-accent" : "text-fg-faint"
                   }`}
                 >
-                  {h.conLai !== 0 ? `${tien(h.conLai)}đ` : "—"}
+                  {h.conLai > 0 ? `${tien(h.conLai)}đ` : h.conLai < 0 ? `dư ${tien(-h.conLai)}đ` : "—"}
                 </td>
               </tr>
             ))}

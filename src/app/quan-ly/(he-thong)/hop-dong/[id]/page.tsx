@@ -188,9 +188,32 @@ export default async function ChiTietHopDongPage({ params }: Props) {
             <dd className="text-right font-medium">{tien(hd.tongTien)}đ</dd>
             <dt className="text-fg-muted">Đã thu</dt>
             <dd className="text-right">{tien(hd.daThu)}đ</dd>
-            <dt className={hd.conLai > 0 ? "font-medium text-amber-800" : "text-fg-muted"}>Còn lại</dt>
-            <dd className={`text-right ${hd.conLai > 0 ? "font-medium text-amber-800" : ""}`}>{tien(hd.conLai)}đ</dd>
+            {/*
+              BA trạng thái, không phải hai — thử trên giao diện 14/11/2026 mới
+              thấy chỗ thiếu.
+
+              Bản cũ chỉ phân biệt "còn nợ" (vàng) và "không nợ" (xám nhạt), nên
+              số ÂM — studio đã thu DƯ, tức đang nợ lại khách — rơi vào nhánh
+              xám nhạt và trông như một con số không đáng bận tâm. Đo trên dữ
+              liệu thật: 2 hợp đồng đang thu dư, tổng 60.000đ.
+            */}
+            {hd.conLai < 0 ? (
+              <>
+                <dt className="font-medium text-accent">Thu dư</dt>
+                <dd className="text-right font-medium text-accent">{tien(-hd.conLai)}đ</dd>
+              </>
+            ) : (
+              <>
+                <dt className={hd.conLai > 0 ? "font-medium text-amber-800" : "text-fg-muted"}>Còn lại</dt>
+                <dd className={`text-right ${hd.conLai > 0 ? "font-medium text-amber-800" : ""}`}>{tien(hd.conLai)}đ</dd>
+              </>
+            )}
           </dl>
+          {hd.conLai < 0 && (
+            <p className="mt-3 text-xs text-accent">
+              Khách đã trả nhiều hơn tổng hợp đồng — studio còn phải trả lại {tien(-hd.conLai)}đ.
+            </p>
+          )}
           {choDuyet.length > 0 && (
             <p className="mt-3 text-xs text-amber-800">
               Đã thu có tính {choDuyet.length} phiếu đang chờ duyệt — AppSheet cộng cả phiếu chờ duyệt.

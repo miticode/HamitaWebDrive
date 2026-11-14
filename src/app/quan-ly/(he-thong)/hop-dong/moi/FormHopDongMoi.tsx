@@ -364,9 +364,27 @@ export function FormHopDongMoi({
             {dong.map((d, i) => (
               <div key={i} className="rounded-md border border-line p-3">
                 <div className="flex flex-wrap items-start justify-between gap-2">
+                  {/*
+                    TÊN DÒNG phải SỬA ĐƯỢC — thử trên giao diện 14/11/2026 mới lộ.
+
+                    Trước đó tên chỉ là một dòng chữ tĩnh, trong khi máy chủ bắt
+                    buộc mỗi dòng phải có tên (`kiemHopDongMoi`). Nghĩa là nút
+                    "Thêm một dòng trống để gõ tay" tạo ra một dòng KHÔNG BAO
+                    GIỜ lưu được: bấm Lập hợp đồng là báo "Dòng 1 chưa có tên
+                    dịch vụ", mà không có chỗ nào gõ tên vào.
+
+                    Form SỬA hợp đồng vốn đã có ô này; chỉ form lập mới thiếu —
+                    hai form lệch nhau, và cái hỏng lại là cái dùng nhiều hơn.
+                  */}
                   <div className="min-w-0">
-                    <p className="font-medium">{d.tenDV || "(chưa có tên)"}</p>
-                    <p className="text-xs text-fg-faint">
+                    <input
+                      value={d.tenDV}
+                      onChange={(e) => doiDong(i, { tenDV: e.target.value })}
+                      aria-label={`Tên dòng ${i + 1}`}
+                      placeholder="Tên dịch vụ, trang phục hoặc sản phẩm…"
+                      className="input font-medium"
+                    />
+                    <p className="mt-1 text-xs text-fg-faint">
                       {d.maDV || "gõ tay"}
                       {d.loai && laLoaiDichVu(d.loai) ? ` · ${TEN_LOAI[d.loai]}` : ""}
                     </p>
