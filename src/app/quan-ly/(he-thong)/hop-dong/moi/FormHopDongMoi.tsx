@@ -158,7 +158,8 @@ export function FormHopDongMoi({
     đồng mới lập hay đứng bên AppSheet. Người lập chọn tay một lần thì từ đó
     web thôi đoán, không giật lại lựa chọn của họ mỗi lần thêm dòng.
   */
-  const coNgayChup = dong.some((d) => d.ngayChup);
+  /* Có ngày chụp chưa — tính cả lịch, vì gói nhiều ngày để ngày ở bên lịch. */
+  const coNgayChup = dong.some((d) => d.ngayChup) || lich.some((l) => l.ngay);
   const trangThai = ttTuChon ?? (coNgayChup ? BUOC_MOI_LAP[1] : BUOC_MOI_LAP[0]);
 
   const thanhTien = dong.reduce((s, d) => s + Math.round(d.donGia * d.soLuong), 0);
@@ -184,6 +185,33 @@ export function FormHopDongMoi({
 
   const doiDong = (i: number, sua: Partial<DongDichVuMoi>) =>
     setDong((ds) => ds.map((d, j) => (i === j ? { ...d, ...sua } : d)));
+
+  /**
+   * Đặt ngày cho buổi thứ `k` của gói nhiều ngày — gọi từ ô "Ngày chụp k"
+   * trên dòng dịch vụ.
+   *
+   * Ghi thẳng vào dòng lịch thứ `k`, vì mấy ô trên kia chính là cửa sổ nhìn
+   * vào lịch chứ không phải một bản sao. Thiếu dòng thì thêm cho đủ: người
+   * lập có thể đã bấm Bỏ một dòng rồi mới quay lên điền ngày.
+   */
+  const datNgayBuoi = (k: number, ngay: string) =>
+    setLich((ds) => {
+      const moi = [...ds];
+      while (moi.length <= k) moi.push({ ngay: "", gio: "", loai: LOAI_LICH[0], ghiChu: "", hienThi: "" });
+      moi[k] = { ...moi[k], ngay };
+      return moi;
+    });
+
+  /*
+    Dòng gửi lên máy chủ: gói nhiều ngày lấy NGÀY ĐẦU trong lịch làm `ngayChup`.
+
+    Cột `ngayChup` của dòng chi tiết chỉ chứa được một ngày, mà gói hai ngày có
+    hai buổi — buổi thứ hai sống ở bảng Lịch chụp, nơi vốn dành cho từng buổi.
+    Tính ở đây thay vì giữ thêm một state nữa: hai state cùng nói về một ngày
+    là sớm muộn cũng lệch nhau.
+  */
+  const dongDeLuu = () =>
+    dong.map((d) => (soBuoiCuaGoi(d.tenDV) >= 2 ? { ...d, ngayChup: lich[0]?.ngay ?? d.ngayChup } : d));
 
   /*
     CUỘN TỚI DÒNG VỪA THÊM — anh chỉ ra 14/11/2026 ("kéo xuống dưới mới thấy
@@ -289,7 +317,7 @@ export function FormHopDongMoi({
         ghiChu,
         khuyenMai,
         trangThai,
-        dong,
+        dong: dongDeLuu(),
         thu,
         lich,
         viec: viecGoiY
@@ -584,14 +612,40 @@ export function FormHopDongMoi({
                     ngày, so với 88% ở hai loại kia). Vẫn CÙNG MỘT CỘT
                     `ngayChup` trong database — chỉ đổi chữ, không đổi dữ liệu.
                   */}
-                  <O nhan={d.loai === "trang-phuc" ? "Ngày thuê" : d.loai === "san-pham" ? "Ngày giao" : "Ngày chụp"}>
-                    <input
-                      type="date"
-                      value={d.ngayChup}
-                      onChange={(e) => doiDong(i, { ngayChup: e.target.value })}
-                      className="input"
-                    />
-                  </O>
+                  {/*
+                    GÓI NHIỀU NGÀY: MỘT Ô NGÀY CHO MỖI BUỔI — anh yêu cầu
+                    15/11/2026 ("gói 2 ngày thì phải hiện ngày chụp 1 và ngày
+                    chụp 2 để ở dưới tự lấy ngày như ở trên").
+
+                    Mấy ô này KHÔNG giữ dữ liệu riêng: chúng đọc và ghi thẳng
+                    vào đúng dòng lịch bên dưới. Nhờ vậy sửa ở trên hay ở dưới
+                    đều là sửa một chỗ, không bao giờ có chuyện hai nơi ghi hai
+                    ngày khác nhau rồi phải chọn tin bên nào.
+
+                    `ngayChup` của dòng này gán lúc lưu, lấy ngày đầu — xem
+                    `dongDeLuu`.
+                  */}
+                  {soBuoiCuaGoi(d.tenDV) >= 2 ? (
+                    Array.from({ length: soBuoiCuaGoi(d.tenDV) }).map((_, k) => (
+                      <O key={k} nhan={`Ngày chụp ${k + 1}`}>
+                        <input
+                          type="date"
+                          value={lich[k]?.ngay ?? ""}
+                          onChange={(e) => datNgayBuoi(k, e.target.value)}
+                          className="input"
+                        />
+                      </O>
+                    ))
+                  ) : (
+                    <O nhan={d.loai === "trang-phuc" ? "Ngày thuê" : d.loai === "san-pham" ? "Ngày giao" : "Ngày chụp"}>
+                      <input
+                        type="date"
+                        value={d.ngayChup}
+                        onChange={(e) => doiDong(i, { ngayChup: e.target.value })}
+                        className="input"
+                      />
+                    </O>
+                  )}
                   <O nhan="Thành tiền">
                     <p className="input flex items-center tabular-nums">{tien(Math.round(d.donGia * d.soLuong))}</p>
                   </O>
