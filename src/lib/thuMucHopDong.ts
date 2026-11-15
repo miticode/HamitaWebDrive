@@ -3,7 +3,7 @@ import { getPrisma } from "@/lib/db";
 import { createGallery, setAccess } from "@/lib/store";
 import { MA_MAC_DINH } from "@/lib/access";
 import { MUI_GIO } from "@/lib/constants";
-import { ganMa } from "@/lib/maAlbum";
+import { ganNhieuMa } from "@/lib/maAlbum";
 import { maAlbumTheoBuoi } from "@/lib/goiNhieuNgay";
 
 /**
@@ -118,15 +118,8 @@ function namThang(ngay?: string | null): { nam: number; thang: number } {
   return { nam: Number(homNay.slice(0, 4)), thang: Number(homNay.slice(5, 7)) };
 }
 
-/** Một album đã tạo xong: album web + thư mục Drive của nó. */
-export type TaoXong = { galleryId: string; slug: string; thuMucDrive: string; tenThuMuc: string };
-
 export type KetQuaTaoThuMuc =
-  | (TaoXong & {
-      ok: true;
-      /** Mọi album đã tạo trong lượt này — gói hai ngày ra hai cái (HER và HIS). */
-      tatCa: TaoXong[];
-    })
+  | { ok: true; galleryId: string; slug: string; thuMucDrive: string; tenThuMuc: string }
   | { ok: false; loi: string };
 
 /**
@@ -191,23 +184,24 @@ export async function taoThuMucVaAlbum(
     if (!tenGoc) return { ok: false, loi: "Chưa có tên để đặt cho album." };
 
     /*
-      MẤY ALBUM, MANG MÃ GÌ — anh yêu cầu 15/11/2026.
+      MỘT ALBUM, MANG ĐỦ MÃ CỦA CÁC BUỔI — anh chốt 15/11/2026.
 
-      Gói tiệc cưới 2 ngày là hai buổi: nhà gái và nhà trai. Tiệm giao ảnh hai
-      bên riêng, mỗi bên một album mang mã riêng ("HER - …", "HIS - …"), nên
-      một hợp đồng như vậy cần HAI album chứ không phải một.
+      Gói tiệc cưới 2 ngày là hai buổi, nhà gái và nhà trai. Bản đầu em làm ra
+      HAI album riêng; anh bảo sai: ảnh của MỘT NHÀ thì nằm một chỗ, hai mã
+      chỉ nói album đó có cả phần nhà trai lẫn nhà gái. Nên ra "HIS - HER -
+      Minh Trí & Tấn Đạt", đúng nếp tiệm vốn đã đặt ("HIS - HER - Nhã hân &
+      Tân Lộc", 11/11/2026).
 
       Mã suy từ LOẠI BUỔI trong lịch chụp, không suy từ loại hợp đồng: cùng là
       hợp đồng CƯỚI mà có nhà chỉ chụp một bên. Lịch là thứ người lập vừa điền
       tay, nên nó nói đúng nhà này chụp những đâu.
 
-      Người bấm nút tạo tay mà tự đặt tên thì KHÔNG đụng vào: họ gõ sẵn mã
-      rồi, web gắn thêm mã nữa là ra "HER - HIS - Minh Trí".
+      Người bấm nút tạo tay mà tự đặt tên thì KHÔNG đụng vào: họ gõ sẵn mã rồi.
     */
     const maTuLich = tenTuChon
       ? []
       : [...new Set(hd.lich.map((l) => maAlbumTheoBuoi(l.loai)).filter((m): m is string => !!m))];
-    const tenCanTao = maTuLich.length > 0 ? maTuLich.map((ma) => ganMa(tenGoc, ma)) : [tenGoc];
+    const ten = maTuLich.length > 0 ? ganNhieuMa(tenGoc, maTuLich) : tenGoc;
 
     const token = await getUserAccessToken().catch(() => null);
     if (!token) return { ok: false, loi: "Chưa kết nối Google Drive, hoặc kết nối đã hỏng." };
@@ -217,47 +211,38 @@ export async function taoThuMucVaAlbum(
     const idNam = await timHoacTao(token, String(nam));
     const idThang = await timHoacTao(token, `T${thang}`, idNam);
 
-    const daTao: TaoXong[] = [];
-    for (const ten of tenCanTao) {
-      /*
-        Thư mục album: tạo thẳng, KHÔNG tìm trước.
+    /*
+      Thư mục album: tạo thẳng, KHÔNG tìm trước.
 
-        Hai nhà trùng tên là chuyện có thật ("Lan Hương - Linh Dương" có hai
-        hợp đồng), và mỗi hợp đồng phải có thư mục riêng của nó. Dùng lại thư
-        mục cùng tên là ảnh của hai đám trộn vào nhau — hỏng nặng hơn nhiều so
-        với việc Drive có hai thư mục trùng tên, thứ Drive vốn cho phép.
-      */
-      const tao = (await goi(token, "https://www.googleapis.com/drive/v3/files?fields=id,name", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: ten, mimeType: LOAI_THU_MUC, parents: [idThang] }),
-      })) as { id: string; name: string };
-
-      /*
-        Album web: tạo rồi gắn hợp đồng ngay trong cùng một lượt.
-
-        `allowDownload: true` — anh chốt 14/11/2026 là cho tải ngay. Quyền này
-        vốn bật/tắt được bất cứ lúc nào ở cửa sổ Cài đặt (nguyên tắc 60), nên
-        mặc định bật chỉ là chọn phía đỡ phải nhớ: album chưa gửi thông báo thì
-        chưa ai có link mà tải, còn lúc giao ảnh thì khỏi phải bật thêm bước.
-      */
-      const album = await createGallery({
-        title: tao.name,
-        clientName: ten,
-        driveFolderId: tao.id,
-        allowDownload: true,
-      });
-      await setAccess(album.id, MA_MAC_DINH);
-      await prisma.gallery.update({ where: { id: album.id }, data: { hopDongId: hd.id } });
-      daTao.push({ galleryId: album.id, slug: album.slug, thuMucDrive: tao.id, tenThuMuc: tao.name });
-    }
+      Hai nhà trùng tên là chuyện có thật ("Lan Hương - Linh Dương" có hai hợp
+      đồng), và mỗi hợp đồng phải có thư mục riêng của nó. Dùng lại thư mục
+      cùng tên là ảnh của hai đám trộn vào nhau — hỏng nặng hơn nhiều so với
+      việc Drive có hai thư mục trùng tên, thứ Drive vốn cho phép.
+    */
+    const tao = (await goi(token, "https://www.googleapis.com/drive/v3/files?fields=id,name", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: ten, mimeType: LOAI_THU_MUC, parents: [idThang] }),
+    })) as { id: string; name: string };
 
     /*
-      Trả về cái ĐẦU TIÊN ở các trường cũ, kèm cả danh sách ở `tatCa`. Giữ
-      hình dạng cũ để chỗ gọi sẵn có — nút tạo tay, nhật ký — không phải sửa
-      theo, mà chỗ nào cần biết đủ thì đọc `tatCa`.
+      Album web: tạo rồi gắn hợp đồng ngay trong cùng một lượt.
+
+      `allowDownload: true` — anh chốt 14/11/2026 là cho tải ngay. Quyền này
+      vốn bật/tắt được bất cứ lúc nào ở cửa sổ Cài đặt (nguyên tắc 60), nên
+      mặc định bật chỉ là chọn phía đỡ phải nhớ: album chưa gửi thông báo thì
+      chưa ai có link mà tải, còn lúc giao ảnh thì khỏi phải bật thêm bước.
     */
-    return { ok: true, ...daTao[0], tatCa: daTao };
+    const album = await createGallery({
+      title: tao.name,
+      clientName: ten,
+      driveFolderId: tao.id,
+      allowDownload: true,
+    });
+    await setAccess(album.id, MA_MAC_DINH);
+    await prisma.gallery.update({ where: { id: album.id }, data: { hopDongId: hd.id } });
+
+    return { ok: true, galleryId: album.id, slug: album.slug, thuMucDrive: tao.id, tenThuMuc: tao.name };
   } catch (e) {
     return { ok: false, loi: e instanceof Error ? e.message : String(e) };
   }

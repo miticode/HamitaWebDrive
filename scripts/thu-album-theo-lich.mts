@@ -1,6 +1,9 @@
 /**
- * Thử: hợp đồng có lịch nhà gái + nhà trai thì sinh ĐÚNG HAI album, mang mã
- * HER và HIS (anh yêu cầu 15/11/2026).
+ * Thử: hợp đồng có lịch nhà gái + nhà trai thì sinh ĐÚNG MỘT album, tên mang
+ * CẢ HAI mã — "HIS - HER - …" (anh chốt 15/11/2026).
+ *
+ * Bản đầu em làm ra hai album riêng, anh bảo sai: ảnh của một nhà nằm một
+ * chỗ, hai mã chỉ nói album đó có cả phần nhà trai lẫn nhà gái.
  *
  * Chạm vào Drive thật và database thật, nên DỌN SẠCH ngay cuối script và đếm
  * lại để xác nhận — không chỉ tin là đã dọn.
@@ -90,18 +93,15 @@ const hd2 = await lapThu(`${DAU.ten} hai ngay`, [
 const kq2 = await taoThuMucVaAlbum(hd2.id);
 kiem("tao duoc", kq2.ok, kq2.ok ? "" : kq2.loi);
 if (kq2.ok) {
-  kiem("ra DUNG HAI album", kq2.tatCa.length === 2, `${kq2.tatCa.length}`);
-  const ten = kq2.tatCa.map((a) => a.tenThuMuc).sort();
-  kiem("mot cai mang ma HER", ten.some((t) => t.startsWith("HER - ")), ten.join(" | "));
-  kiem("mot cai mang ma HIS", ten.some((t) => t.startsWith("HIS - ")));
-  const g = await p.gallery.findMany({ where: { hopDongId: hd2.id }, select: { hopDongId: true, allowDownload: true } });
-  kiem("ca hai album gan san hop dong", g.length === 2 && g.every((x) => x.hopDongId === hd2.id));
-  kiem("ca hai bat quyen tai", g.every((x) => x.allowDownload));
-  /* Hai thư mục phải nằm cùng một tháng, và là tháng CHỤP (T4/2027). */
-  const tm = await Promise.all(kq2.tatCa.map((a) => docDrive(token, a.thuMucDrive)));
-  const cha = [...new Set(tm.map((x) => x?.parents?.[0]))];
-  kiem("hai thu muc cung nam mot thu muc thang", cha.length === 1);
-  const thang = cha[0] ? await docDrive(token, cha[0]) : null;
+  const g = await p.gallery.findMany({ where: { hopDongId: hd2.id }, select: { hopDongId: true, allowDownload: true, clientName: true } });
+  kiem("ra DUNG MOT album, khong phai hai", g.length === 1, `${g.length}`);
+  kiem("ten mang CA HAI ma, HIS truoc HER", kq2.tenThuMuc === `HIS - HER - ${DAU.ten} hai ngay`, kq2.tenThuMuc);
+  kiem("album gan san hop dong", g[0]?.hopDongId === hd2.id);
+  kiem("bat quyen tai", g[0]?.allowDownload === true);
+  kiem("ten album web trung ten thu muc Drive", g[0]?.clientName === kq2.tenThuMuc);
+  /* Thư mục phải nằm đúng tháng CHỤP (T4/2027), không phải tháng lập (T11/2026). */
+  const tm = await docDrive(token, kq2.thuMucDrive);
+  const thang = tm?.parents?.[0] ? await docDrive(token, tm.parents[0]) : null;
   const nam = thang?.parents?.[0] ? await docDrive(token, thang.parents[0]) : null;
   kiem("dung thang CHUP, khong phai thang lap", thang?.name === "T4" && nam?.name === "2027", `${nam?.name}/${thang?.name}`);
 }
@@ -112,8 +112,9 @@ const hd1 = await lapThu(`${DAU.ten} mot ben`, [{ ngay: "2027-04-12", loai: "nh�
 const kq1 = await taoThuMucVaAlbum(hd1.id);
 kiem("tao duoc", kq1.ok, kq1.ok ? "" : kq1.loi);
 if (kq1.ok) {
-  kiem("ra DUNG MOT album", kq1.tatCa.length === 1, `${kq1.tatCa.length}`);
-  kiem("mang ma HER", kq1.tenThuMuc.startsWith("HER - "), kq1.tenThuMuc);
+  const g = await p.gallery.count({ where: { hopDongId: hd1.id } });
+  kiem("ra DUNG MOT album", g === 1, `${g}`);
+  kiem("chi mang ma HER", kq1.tenThuMuc === `HER - ${DAU.ten} mot ben`, kq1.tenThuMuc);
 }
 
 /* ── 3. Lịch loại thường → MỘT album tên trơn, không mã bịa ───────────── */
@@ -122,7 +123,8 @@ const hd0 = await lapThu(`${DAU.ten} khong ma`, [{ ngay: "2027-04-13", loai: "Ng
 const kq0 = await taoThuMucVaAlbum(hd0.id);
 kiem("tao duoc", kq0.ok, kq0.ok ? "" : kq0.loi);
 if (kq0.ok) {
-  kiem("ra DUNG MOT album", kq0.tatCa.length === 1, `${kq0.tatCa.length}`);
+  const g = await p.gallery.count({ where: { hopDongId: hd0.id } });
+  kiem("ra DUNG MOT album", g === 1, `${g}`);
   kiem("ten TRON, khong bia ma", kq0.tenThuMuc === `${DAU.ten} khong ma`, kq0.tenThuMuc);
 }
 
@@ -136,14 +138,14 @@ const TEN_TAY = `HC - ${DAU.ten} dat tay`;
 const kqT = await taoThuMucVaAlbum(hdT.id, TEN_TAY);
 kiem("tao duoc", kqT.ok, kqT.ok ? "" : kqT.loi);
 if (kqT.ok) {
-  kiem("chi MOT album, khong tu nhan doi", kqT.tatCa.length === 1, `${kqT.tatCa.length}`);
+  const g = await p.gallery.count({ where: { hopDongId: hdT.id } });
+  kiem("chi MOT album", g === 1, `${g}`);
   kiem("giu nguyen ten nguoi go, khong chong them ma", kqT.tenThuMuc === TEN_TAY, kqT.tenThuMuc);
 }
 
 /* ── Dọn sạch ─────────────────────────────────────────────────────────── */
 console.log("\nDon dep:");
-const moiKq = [kq2, kq1, kq0, kqT].filter((k): k is Extract<typeof k, { ok: true }> => k.ok);
-const moiThuMuc = moiKq.flatMap((k) => k.tatCa.map((a) => a.thuMucDrive));
+const moiThuMuc = [kq2, kq1, kq0, kqT].filter((k) => k.ok).map((k) => (k as { thuMucDrive: string }).thuMucDrive);
 let xoaDrive = 0;
 for (const id of moiThuMuc) {
   const r = await fetch(`https://www.googleapis.com/drive/v3/files/${id}`, {

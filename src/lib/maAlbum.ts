@@ -162,3 +162,30 @@ export function ghepMaVoiTenThuMuc(maDaBam: string, tenThuMuc: string): string {
   if (!ten) return ma;
   return `${ma}${NOI_MA}${ten}`;
 }
+
+/**
+ * Gắn NHIỀU mã vào đầu tên — "HIS - HER - Minh Trí & Tấn Đạt".
+ *
+ * Thêm 15/11/2026 khi anh chốt: gói cưới hai ngày ra MỘT album mang hai mã,
+ * không phải hai album. Ảnh của một nhà nằm một chỗ; hai mã chỉ nói album đó
+ * có cả phần nhà trai lẫn nhà gái.
+ *
+ * Không phải nếp mới: tiệm vốn đã đặt kiểu này — "HIS - HER - Nhã hân & Tân
+ * Lộc", tạo ngày 11/11/2026.
+ *
+ * Bộ lọc mã ở trang quản lý album tách tên thành TỪ RỜI rồi khớp theo đầu từ
+ * (xem `cac_tu` trong AlbumList.tsx), nên album hai mã tự hiện ở cả hai nút
+ * lọc — không phải sửa gì bên đó.
+ *
+ * Thứ tự theo `MA_ALBUM` chứ không theo thứ tự người gọi truyền vào: hai hợp
+ * đồng giống nhau phải ra cùng một tên, dù lịch bên nào điền trước.
+ */
+export function ganNhieuMa(ten: string, ma: readonly string[]): string {
+  /* `tenKhongMa` chứ không `boMa`: tên có sẵn hai mã thì phải bóc hết cả hai,
+     không thì gắn lại ra "HIS - HER - HER - Minh Trí". */
+  const con = tenKhongMa(ten);
+  const thuTu = MA_ALBUM.filter((m) => ma.some((x) => x.toLowerCase() === m.ma.toLowerCase())).map((m) => m.ma);
+  if (thuTu.length === 0) return con;
+  const dau = thuTu.join(NOI_MA);
+  return con ? `${dau}${NOI_MA}${con}` : `${dau}${NOI_MA}`;
+}

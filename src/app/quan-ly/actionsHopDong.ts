@@ -153,11 +153,7 @@ export async function lapHopDongAction(
         doiTuong: "HopDong",
         doiTuongId: kq.id,
         chiTiet: album.ok
-          ? {
-              maHD: kq.maHD,
-              album: album.tatCa.map((a) => a.tenThuMuc),
-              thuMucDrive: album.tatCa.map((a) => a.thuMucDrive),
-            }
+          ? { maHD: kq.maHD, album: album.tenThuMuc, thuMucDrive: album.thuMucDrive }
           : { maHD: kq.maHD, loi: album.loi },
       }).catch(() => {});
       if (album.ok) revalidatePath(`/quan-ly/hop-dong/${kq.id}`);
