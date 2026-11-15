@@ -22,7 +22,26 @@ import { coKhoaMaHoa, daMaHoa, giaiMa, maHoa } from "@/lib/maHoa";
  */
 const SCOPE = "https://www.googleapis.com/auth/drive.readonly";
 /** Chi de ghi tep sao luu vao Drive — xem chu thich dau tep. */
-const QUYEN_GHI_SAO_LUU = "https://www.googleapis.com/auth/drive.file";
+/*
+  QUYEN CUA KET NOI "kho" — noi rong 15/11/2026 theo yeu cau cua anh.
+
+  Truoc do chi xin `drive.file`: web chi dung duoc nhung tep do chinh no tao.
+  Dung cho viec cu (anh cham cong, chung tu thu chi), nhung tu nay album cua
+  mang Nha Su / Hami Baby phai nam TRONG hai thu muc CO SAN tren o 5 TB —
+  "Tiệm Ảnh Nhà Su" va "HAMI BABY".
+
+  Do 15/11: voi `drive.file`, ket noi kho tim ca ba thu muc deu ra 0 ket qua.
+  Khong phai loi tim kiem — scope do bit mat app voi moi thu no khong tao ra,
+  nen cung khong tao noi thu muc con ben trong chung.
+
+  `drive` la quyen nho nhat lam duoc viec nay: vua tim duoc thu muc co san,
+  vua ghi vao trong do. Doi lai, ket noi nay NHIN THAY CA Drive 5 TB ay — rong
+  hon han truoc, va la ly do phai hoi anh truoc khi doi.
+
+  Ket noi "default" (Drive anh cuoi) KHONG doi gi. Hai ket noi luu phieu rieng
+  theo `id` trong bang GoogleAccount, noi lai cai nay khong dung den cai kia.
+*/
+const QUYEN_GHI_SAO_LUU = "https://www.googleapis.com/auth/drive";
 
 /**
  * HAI ket noi Google, khong phai mot (them 13/11/2026).
@@ -42,10 +61,11 @@ const QUYEN_GHI_SAO_LUU = "https://www.googleapis.com/auth/drive.file";
  *
  * Quyen xin cung khac nhau, co y:
  *   default  drive.readonly + drive.file  — phai doc duoc anh cuoi
- *   kho      CHI drive.file               — chi ghi duoc, va chi dung nhung tep
- *                                           do chinh web tao ra. Ket noi nay
- *                                           khong he nhin thay phan con lai cua
- *                                           Drive do.
+ *   kho      drive (toan quyen)          — tu 15/11/2026. Truoc do chi
+ *                                           drive.file; phai noi rong de dat
+ *                                           duoc album vao hai thu muc CO SAN
+ *                                           "Tiệm Ảnh Nhà Su" va "HAMI BABY".
+ *                                           Xem chu thich o QUYEN_GHI_SAO_LUU.
  */
 export type KetNoi = "default" | "kho";
 
@@ -133,7 +153,7 @@ export async function saveConnection(
   if (!tokens.scope?.includes(quyenBatBuoc)) {
     throw new Error(
       ket === "kho"
-        ? "Kết nối chưa có quyền tạo tệp nên chưa được lưu. Trong màn hình đồng ý của Google, nhớ tích ô cho phép tạo và sửa tệp rồi bấm Tiếp tục."
+        ? "Kết nối chưa đủ quyền nên chưa được lưu. Trong màn hình đồng ý của Google, nhớ tích ô cho phép xem và quản lý tệp Drive rồi bấm Tiếp tục."
         : "Kết nối chưa có quyền đọc Drive nên chưa được lưu. Trong màn hình đồng ý của Google, nhớ tích ô “Xem và tải xuống tất cả tệp Google Drive của bạn” rồi bấm Tiếp tục."
     );
   }

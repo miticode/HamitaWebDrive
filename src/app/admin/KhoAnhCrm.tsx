@@ -12,7 +12,8 @@ import { disconnectKhoAction } from "./actions";
  * GB (đo 13/11/2026), chỉ còn 167 GB. Anh chốt 13/11/2026: nối thêm tài khoản
  * thứ hai. Xem `KE-HOACH-CRM.md` mục 3a.
  *
- * Kết nối này xin **ít quyền hơn hẳn** kết nối gốc: chỉ `drive.file`, tức chỉ
+ * Kết nối này từ 15/11/2026 xin quyền `drive` (toàn quyền trên ổ 5 TB đó), vì
+ * album mảng Nhà Su / Hami Baby phải nằm trong hai thư mục CÓ SẴN. Trước đó chỉ
  * đụng được vào những tệp do chính web tạo ra. Nó không nhìn thấy phần còn lại
  * của Drive đó — nên nối nhầm cũng không lộ gì.
  */
@@ -72,8 +73,8 @@ export function KhoAnhCrm({
             Đang chứa ở <strong>{account.email}</strong>
           </p>
           <p className="mt-0.5 text-xs text-fg-muted">
-            Từ {account.connectedAt.toLocaleDateString("vi-VN")} · chỉ chứa ảnh
-            chấm công và chứng từ, không đụng tới ảnh cưới
+            Từ {account.connectedAt.toLocaleDateString("vi-VN")} · chứa ảnh chấm
+            công, chứng từ, và album mảng Nhà Su &amp; Hami Baby
           </p>
           <p className="mt-2 text-xs text-amber-700">
             Ngắt kết nối này thì những ảnh đã lưu vẫn còn nguyên trên Drive,

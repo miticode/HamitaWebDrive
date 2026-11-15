@@ -63,6 +63,19 @@ export function NutTaoThuMuc({
         setLoi(kq.loi);
         return;
       }
+      /*
+        Tạo xong mà chưa chia sẻ được sang Drive ảnh cưới thì PHẢI nói ra:
+        album có thật, nhưng trang khách mở sẽ trắng trơn cho tới khi có người
+        vào Drive chia sẻ tay. Im lặng ở đây là giao cho khách một link hỏng.
+      */
+      if (kq.canChiaSe) {
+        setLoi(
+          `Đã tạo album, nhưng chưa chia sẻ được thư mục cho ${kq.canChiaSe}. ` +
+            "Vào Drive chia sẻ tay với quyền Người chỉnh sửa, không thì ảnh sẽ không hiện.",
+        );
+        router.refresh();
+        return;
+      }
       setMo(false);
       setDaCo(null);
       router.refresh();

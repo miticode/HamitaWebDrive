@@ -153,7 +153,14 @@ export async function lapHopDongAction(
         doiTuong: "HopDong",
         doiTuongId: kq.id,
         chiTiet: album.ok
-          ? { maHD: kq.maHD, album: album.tenAlbum, thuMuc: album.tenThuMuc, thuMucDrive: album.thuMucDrive }
+          ? {
+              maHD: kq.maHD,
+              album: album.tenAlbum,
+              thuMuc: album.tenThuMuc,
+              thuMucDrive: album.thuMucDrive,
+              o: album.ketNoi,
+              ...(album.canChiaSe ? { chuaChiaSeVoi: album.canChiaSe } : {}),
+            }
           : { maHD: kq.maHD, loi: album.loi },
       }).catch(() => {});
       if (album.ok) revalidatePath(`/quan-ly/hop-dong/${kq.id}`);
@@ -189,7 +196,12 @@ export async function taoThuMucAlbumAction(
    * phải nằm ở đây.
    */
   dongYThemNua?: boolean,
-): Promise<{ loi: string } | { daCo: string[] } | { ok: true; slug: string; tenAlbum: string }> {
+): Promise<
+  | { loi: string }
+  | { daCo: string[] }
+  /** `canChiaSe` khác null = thư mục đã tạo nhưng chưa chia sẻ được, ảnh sẽ không hiện. */
+  | { ok: true; slug: string; tenAlbum: string; canChiaSe: string | null }
+> {
   const nguoi = await nguoiDuocLap();
   if (!nguoi) return { loi: "Tài khoản này chưa được lập hợp đồng, hoặc phiên đăng nhập đã hết." };
 
@@ -215,12 +227,19 @@ export async function taoThuMucAlbumAction(
     hanhDong: "tao-album-tu-hop-dong",
     doiTuong: "HopDong",
     doiTuongId: hopDongId,
-    chiTiet: { album: kq.tenAlbum, thuMuc: kq.tenThuMuc, thuMucDrive: kq.thuMucDrive, bangTay: true },
+    chiTiet: {
+      album: kq.tenAlbum,
+      thuMuc: kq.tenThuMuc,
+      thuMucDrive: kq.thuMucDrive,
+      o: kq.ketNoi,
+      bangTay: true,
+      ...(kq.canChiaSe ? { chuaChiaSeVoi: kq.canChiaSe } : {}),
+    },
   });
 
   revalidatePath(`/quan-ly/hop-dong/${hopDongId}`);
   revalidatePath("/admin");
-  return { ok: true, slug: kq.slug, tenAlbum: kq.tenAlbum };
+  return { ok: true, slug: kq.slug, tenAlbum: kq.tenAlbum, canChiaSe: kq.canChiaSe };
 }
 
 /* ── Sửa hợp đồng, phiếu thu (anh chốt 23/09/2026) ─────────────────────── */

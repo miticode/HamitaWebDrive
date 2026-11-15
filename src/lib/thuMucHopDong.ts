@@ -1,4 +1,5 @@
-import { getUserAccessToken } from "@/lib/googleAuth";
+import { getUserAccessToken, type KetNoi } from "@/lib/googleAuth";
+import { emailChiaSe, noiChuaAlbum } from "@/lib/noiChuaAlbum";
 import { getPrisma } from "@/lib/db";
 import { createGallery, setAccess } from "@/lib/store";
 import { MA_MAC_DINH } from "@/lib/access";
@@ -85,6 +86,42 @@ async function goi(token: string, url: string, init?: RequestInit) {
  * `cha` để trống nghĩa là gốc "Drive của tôi". Lọc thêm `'me' in owners` để
  * không vớ phải một thư mục trùng tên ai đó chia sẻ vào.
  */
+/**
+ * Tìm thư mục CÓ SẴN theo tên, không tạo mới.
+ *
+ * Khác `timHoacTao` ở hai chỗ, đều cần thiết cho Drive kho:
+ *   · KHÔNG tạo nếu thiếu — "Tiệm Ảnh Nhà Su" và "HAMI BABY" là thư mục thật
+ *     của tiệm; không thấy thì phải kêu lên, chứ tạo một cái trùng tên là
+ *     tiệm có hai chỗ chứa ảnh mà chỉ web biết chỗ thứ hai.
+ *   · KHÔNG lọc `'me' in owners` — thư mục có thể do tài khoản khác lập rồi
+ *     chia sẻ sang.
+ */
+async function timThuMuc(token: string, ten: string): Promise<string | null> {
+  const q = [`name = '${ten.replace(/'/g, "\'")}'`, `mimeType = '${LOAI_THU_MUC}'`, "trashed = false"].join(" and ");
+  const tim = (await goi(
+    token,
+    `https://www.googleapis.com/drive/v3/files?${new URLSearchParams({ q, fields: "files(id)", pageSize: "1" })}`,
+  )) as { files?: { id: string }[] };
+  return tim.files?.[0]?.id ?? null;
+}
+
+/**
+ * Chia sẻ quyền sửa cho tài khoản Drive ảnh cưới.
+ *
+ * Bắt buộc với thư mục tạo ở Drive kho: album web đọc ảnh bằng kết nối
+ * "default", không chia sẻ sang thì trang khách mở ra trắng trơn.
+ *
+ * `sendNotificationEmail: false` — đây là thao tác nội bộ giữa hai tài khoản
+ * của tiệm, mỗi hợp đồng một email thông báo thì hộp thư ngập.
+ */
+async function chiaSeChoDriveChinh(token: string, thuMucId: string): Promise<void> {
+  await goi(token, `https://www.googleapis.com/drive/v3/files/${thuMucId}/permissions?sendNotificationEmail=false`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "user", role: "writer", emailAddress: emailChiaSe() }),
+  });
+}
+
 async function timHoacTao(token: string, ten: string, cha?: string): Promise<string> {
   const q = [
     `name = '${ten.replace(/'/g, "\\'")}'`,
@@ -128,6 +165,13 @@ export type KetQuaTaoThuMuc =
       tenThuMuc: string;
       /** Tên album trên web — có mã (HIS, HER…) nếu lịch suy ra được. */
       tenAlbum: string;
+      /** Ổ Drive đã tạo: "default" là ổ ảnh cưới, "kho" là ổ 5 TB. */
+      ketNoi: KetNoi;
+      /**
+       * Khác null = tạo xong nhưng CHƯA chia sẻ được sang tài khoản ảnh cưới,
+       * nên trang khách sẽ không đọc nổi ảnh cho tới khi có người chia sẻ tay.
+       */
+      canChiaSe: string | null;
     }
   | { ok: false; loi: string };
 
@@ -227,13 +271,43 @@ export async function taoThuMucVaAlbum(
     */
     const tenThuMuc = tenKhongMa(tenAlbum) || tenAlbum;
 
-    const token = await getUserAccessToken().catch(() => null);
-    if (!token) return { ok: false, loi: "Chưa kết nối Google Drive, hoặc kết nối đã hỏng." };
+    /*
+      DRIVE NÀO, THƯ MỤC NÀO — anh yêu cầu 15/11/2026. Xem `noiChuaAlbum.ts`.
 
-    /* Tháng chụp nếu có, không thì tháng lập — xem chú thích đầu tệp. */
-    const { nam, thang } = namThang(hd.lich[0]?.ngay ?? hd.ngayDat);
-    const idNam = await timHoacTao(token, String(nam));
-    const idThang = await timHoacTao(token, `T${thang}`, idNam);
+      Cưới hỏi giữ nguyên nếp cũ: Drive ảnh cưới, cây "năm / T{tháng chụp}".
+      Nhà Su và mảng bé thì sang ổ 5 TB, nằm thẳng trong thư mục có sẵn của
+      mảng đó — không dựng thêm cây năm/tháng, vì hai thư mục ấy vốn xếp phẳng.
+    */
+    const noi = noiChuaAlbum(hd.loaiDV);
+    const token = await getUserAccessToken(noi.ketNoi).catch(() => null);
+    if (!token) {
+      return {
+        ok: false,
+        loi:
+          noi.ketNoi === "kho"
+            ? "Chưa kết nối Kho ảnh CRM, hoặc kết nối đã hỏng. Vào Thông tin studio nối lại."
+            : "Chưa kết nối Google Drive, hoặc kết nối đã hỏng.",
+      };
+    }
+
+    let idThang: string;
+    if (noi.thuMucGoc) {
+      const goc = await timThuMuc(token, noi.thuMucGoc);
+      if (!goc) {
+        return {
+          ok: false,
+          loi:
+            `Không thấy thư mục “${noi.thuMucGoc}” trên Kho ảnh CRM. ` +
+            "Nếu vừa nới quyền thì vào Thông tin studio nối lại kết nối đó.",
+        };
+      }
+      idThang = goc;
+    } else {
+      /* Tháng chụp nếu có, không thì tháng lập — xem chú thích đầu tệp. */
+      const { nam, thang } = namThang(hd.lich[0]?.ngay ?? hd.ngayDat);
+      const idNam = await timHoacTao(token, String(nam));
+      idThang = await timHoacTao(token, `T${thang}`, idNam);
+    }
 
     /*
       Thư mục album: tạo thẳng, KHÔNG tìm trước.
@@ -264,6 +338,21 @@ export async function taoThuMucVaAlbum(
       driveFolderId: tao.id,
       allowDownload: true,
     });
+    /*
+      Thư mục ở Drive kho phải chia sẻ ngược cho tài khoản ảnh cưới NGAY, vì
+      album đọc ảnh bằng kết nối đó. Lỗi chia sẻ không được phép làm hỏng cả
+      việc tạo — thư mục và album đã có thật rồi; báo lại để người lập chia sẻ
+      tay còn hơn ném mất cả hai.
+    */
+    let canChiaSe: string | null = null;
+    if (noi.ketNoi === "kho") {
+      try {
+        await chiaSeChoDriveChinh(token, tao.id);
+      } catch {
+        canChiaSe = emailChiaSe();
+      }
+    }
+
     await setAccess(album.id, MA_MAC_DINH);
     await prisma.gallery.update({ where: { id: album.id }, data: { hopDongId: hd.id } });
 
@@ -274,6 +363,8 @@ export async function taoThuMucVaAlbum(
       thuMucDrive: tao.id,
       tenThuMuc: tao.name,
       tenAlbum,
+      ketNoi: noi.ketNoi,
+      canChiaSe,
     };
   } catch (e) {
     return { ok: false, loi: e instanceof Error ? e.message : String(e) };

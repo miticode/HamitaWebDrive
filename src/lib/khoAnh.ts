@@ -18,7 +18,7 @@ import { getUserAccessToken } from "@/lib/googleAuth";
  * tức một kết nối OAuth riêng. Xem `KetNoi` trong `src/lib/googleAuth.ts`.
  *
  * ── Quyền ─────────────────────────────────────────────────────────────────
- * Kết nối "kho" chỉ xin `drive.file`: web chỉ đụng được vào những tệp do chính
+ * Kết nối "kho" trước 15/11/2026 chỉ xin `drive.file`: web chỉ đụng được những tệp do chính
  * nó tạo ra, không nhìn thấy phần còn lại của Drive đó. Nhờ vậy `files.list`
  * ở đây an toàn — nó không thể trả về tệp riêng của anh.
  */
