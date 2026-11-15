@@ -282,6 +282,13 @@ export default async function ChiTietHopDongPage({ params }: Props) {
             ))}
           </ul>
         )}
+        {/*
+          Nút tạo hiện CẢ KHI đã có album — anh yêu cầu 15/11/2026. Gói cưới
+          hai ngày cần hai album (HER nhà gái, HIS nhà trai), và 2.400 hợp
+          đồng cũ có thể thiếu một bên. Bấm nhầm thì server action hỏi lại kèm
+          tên album đang có, không tạo ngay.
+        */}
+        {album.length > 0 && duocSua && <NutTaoThuMuc hopDongId={hd.id} tenKhach={hd.tenKhach} />}
       </section>
 
       <section className="mt-8">

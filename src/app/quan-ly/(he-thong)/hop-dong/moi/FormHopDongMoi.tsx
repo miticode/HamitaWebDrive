@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { tien } from "@/lib/constants";
 import { docTien } from "@/lib/studioNoiBo";
 import { LOAI_DICH_VU, TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
+import { loaiBuoiGoiY, soBuoiCuaGoi } from "@/lib/goiNhieuNgay";
 import {
   BUOC_MOI_LAP,
   CAC_BUOC,
@@ -202,7 +203,50 @@ export function FormHopDongMoi({
     soDongCu.current = dong.length;
   }, [dong.length]);
 
-  const themDong = (dv: DichVuGon | null) =>
+  /*
+    GÓI NHIỀU NGÀY TỰ SINH ĐỦ DÒNG LỊCH — anh yêu cầu 15/11/2026.
+
+    "Gói tiệc cưới 2 ngày" là hai buổi: nhà gái một buổi, nhà trai một buổi.
+    Trước đây người lập phải tự bấm "Thêm dòng lịch" hai lần rồi tự chọn loại;
+    quên thì hợp đồng chỉ có một buổi, và album trên Drive cũng chỉ ra một cái
+    thay vì HER và HIS.
+
+    KHÔNG BAO GIỜ ĐỘNG VÀO DÒNG NGƯỜI TA ĐÃ ĐIỀN. Chỉ hai việc:
+      · dòng nào còn trắng tinh thì điền giúp loại buổi,
+      · thiếu bao nhiêu dòng thì thêm bấy nhiêu.
+    Dòng đã có ngày, có ghi chú thì giữ nguyên — kể cả khi loại của nó khác
+    gợi ý, vì người lập biết nhà đó chụp gì hơn bảng giá.
+  */
+  const sinhLichChoGoi = (dv: DichVuGon) => {
+    const soBuoi = soBuoiCuaGoi(dv.ten);
+    if (soBuoi < 2) return;
+    const goiY = loaiBuoiGoiY(dv.chiTiet, soBuoi).filter(Boolean);
+    setLich((ds) => {
+      /*
+        Rót theo LOẠI CÒN THIẾU, không theo thứ tự dòng.
+
+        Nếu rót theo thứ tự thì gặp cảnh này: người lập tự thêm hai dòng trước,
+        điền ngày cho dòng đầu rồi mới chọn gói — dòng đầu giữ nguyên (đúng),
+        nhưng dòng hai nhận "nhà trai" vì nó đứng thứ hai, thành ra hợp đồng có
+        nhà trai mà không có nhà gái. Nhìn vào không hiểu vì sao.
+      */
+      const daDung = new Set(ds.map((l) => l.loai));
+      const con = goiY.filter((g) => !daDung.has(g));
+      const moi = [...ds];
+      for (let i = 0; i < moi.length && con.length > 0; i++) {
+        const l = moi[i];
+        const trangTinh = !l.ngay && !l.gio && !l.ghiChu && l.loai === LOAI_LICH[0];
+        if (trangTinh) moi[i] = { ...l, loai: con.shift()! };
+      }
+      while (moi.length < soBuoi) {
+        moi.push({ ngay: "", gio: "", loai: con.shift() ?? LOAI_LICH[0], ghiChu: "", hienThi: "" });
+      }
+      return moi;
+    });
+  };
+
+  const themDong = (dv: DichVuGon | null) => {
+    if (dv) sinhLichChoGoi(dv);
     setDong((ds) => [
       ...ds,
       {
@@ -230,6 +274,7 @@ export function FormHopDongMoi({
         ghiChu: "",
       },
     ]);
+  };
 
   const luu = () =>
     start(async () => {

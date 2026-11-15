@@ -153,7 +153,11 @@ export async function lapHopDongAction(
         doiTuong: "HopDong",
         doiTuongId: kq.id,
         chiTiet: album.ok
-          ? { maHD: kq.maHD, album: album.tenThuMuc, thuMucDrive: album.thuMucDrive }
+          ? {
+              maHD: kq.maHD,
+              album: album.tatCa.map((a) => a.tenThuMuc),
+              thuMucDrive: album.tatCa.map((a) => a.thuMucDrive),
+            }
           : { maHD: kq.maHD, loi: album.loi },
       }).catch(() => {});
       if (album.ok) revalidatePath(`/quan-ly/hop-dong/${kq.id}`);
@@ -176,9 +180,36 @@ export async function taoThuMucAlbumAction(
   hopDongId: string,
   /** Tên hiện trên album; bỏ trống thì lấy tên khách trên hợp đồng. */
   ten?: string,
-): Promise<{ loi: string } | { ok: true; slug: string; tenThuMuc: string }> {
+  /**
+   * Người bấm đã nhìn thấy album đang có và vẫn muốn tạo thêm.
+   *
+   * Thêm 15/11/2026 sau khi anh gặp hợp đồng có hai album trùng nhau. Nhật ký
+   * cho thấy web tạo một cái lúc lập (05:33:55), người lập bấm nút tạo cái nữa
+   * hai mươi giây sau (05:34:15) — vì việc tự tạo chạy nền, trang lúc đó vẫn
+   * hiện "Chưa có album nào" kèm nút bấm được ngay.
+   *
+   * Giấu nút là chưa đủ: server action là đường mạng công khai (nguyên tắc 3),
+   * và chính cuộc đua trên kia khiến nút hiện ra đúng lúc không nên hiện. Chặn
+   * phải nằm ở đây.
+   */
+  dongYThemNua?: boolean,
+): Promise<{ loi: string } | { daCo: string[] } | { ok: true; slug: string; tenThuMuc: string }> {
   const nguoi = await nguoiDuocLap();
   if (!nguoi) return { loi: "Tài khoản này chưa được lập hợp đồng, hoặc phiên đăng nhập đã hết." };
+
+  /*
+    KHÔNG chặn cứng, chỉ hỏi lại. Một hợp đồng cưới hai ngày có HAI album thật
+    — HER cho nhà gái, HIS cho nhà trai — nên "đã có album rồi" không có nghĩa
+    là sai. Thứ cần chặn là bấm vì tưởng chưa có.
+  */
+  if (!dongYThemNua) {
+    const daCo = await getPrisma().gallery.findMany({
+      where: { hopDongId },
+      select: { title: true, clientName: true },
+      orderBy: { createdAt: "asc" },
+    });
+    if (daCo.length > 0) return { daCo: daCo.map((a) => a.title || a.clientName || "(chưa đặt tên)") };
+  }
 
   const kq = await taoThuMucVaAlbum(hopDongId, ten);
   if (!kq.ok) return { loi: kq.loi };

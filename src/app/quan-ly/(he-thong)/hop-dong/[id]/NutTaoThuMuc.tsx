@@ -38,17 +38,33 @@ export function NutTaoThuMuc({
   const [mo, setMo] = useState(false);
   const [ten, setTen] = useState(tenKhach);
   const [loi, setLoi] = useState<string | null>(null);
+  /*
+    Tên những album hợp đồng này ĐÃ CÓ, do máy chủ trả về khi từ chối lần bấm
+    đầu. null = chưa hỏi gì.
+
+    Thêm 15/11/2026: anh gặp hợp đồng ra hai album trùng nhau. Nhật ký cho
+    thấy web tạo một cái lúc lập, người lập bấm nút tạo cái nữa hai mươi giây
+    sau — việc tự tạo chạy nền nên trang vẫn đang hiện "Chưa có album nào".
+    Giờ bấm lần đầu là máy chủ kể ra album đang có, muốn tạo tiếp thì bấm lại.
+  */
+  const [daCo, setDaCo] = useState<string[] | null>(null);
   const [dang, batDau] = useTransition();
 
   const tao = () =>
     batDau(async () => {
       setLoi(null);
-      const kq = await taoThuMucAlbumAction(hopDongId, ten);
+      /* Lần bấm thứ hai (đã thấy danh sách) mới gửi kèm cái gật đầu. */
+      const kq = await taoThuMucAlbumAction(hopDongId, ten, daCo !== null);
+      if ("daCo" in kq) {
+        setDaCo(kq.daCo);
+        return;
+      }
       if ("loi" in kq) {
         setLoi(kq.loi);
         return;
       }
       setMo(false);
+      setDaCo(null);
       router.refresh();
     });
 
@@ -102,6 +118,19 @@ export function NutTaoThuMuc({
         đồng này.
       </p>
 
+      {daCo && (
+        <div className="mt-2.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <p>
+            Hợp đồng này đã có {daCo.length} album rồi:{" "}
+            <b>{daCo.join(" · ")}</b>
+          </p>
+          <p className="mt-1 text-xs">
+            Gói cưới hai ngày thì hai album (HER và HIS) là đúng. Còn nếu chỉ là tạo lại vì chưa
+            thấy, thì bấm Thôi — album kia đã có sẵn rồi. Muốn tạo thêm thì bấm lần nữa.
+          </p>
+        </div>
+      )}
+
       {loi && <p className="mt-2 text-sm text-red-700">{loi}</p>}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -111,7 +140,7 @@ export function NutTaoThuMuc({
           disabled={dang || !ten.trim()}
           className="btn-primary disabled:opacity-50"
         >
-          {dang ? "Đang tạo trên Drive…" : "Tạo thư mục & album"}
+          {dang ? "Đang tạo trên Drive…" : daCo ? "Vẫn tạo thêm" : "Tạo thư mục & album"}
         </button>
         <button type="button" onClick={() => setMo(false)} disabled={dang} className="btn">
           Thôi
