@@ -95,12 +95,14 @@ kiem("tao duoc", kq2.ok, kq2.ok ? "" : kq2.loi);
 if (kq2.ok) {
   const g = await p.gallery.findMany({ where: { hopDongId: hd2.id }, select: { hopDongId: true, allowDownload: true, clientName: true } });
   kiem("ra DUNG MOT album, khong phai hai", g.length === 1, `${g.length}`);
-  kiem("ten mang CA HAI ma, HIS truoc HER", kq2.tenThuMuc === `HIS - HER - ${DAU.ten} hai ngay`, kq2.tenThuMuc);
+  kiem("ALBUM mang CA HAI ma, HIS truoc HER", kq2.tenAlbum === `HIS - HER - ${DAU.ten} hai ngay`, kq2.tenAlbum);
+  kiem("THU MUC Drive KHONG mang ma", kq2.tenThuMuc === `${DAU.ten} hai ngay`, kq2.tenThuMuc);
   kiem("album gan san hop dong", g[0]?.hopDongId === hd2.id);
   kiem("bat quyen tai", g[0]?.allowDownload === true);
-  kiem("ten album web trung ten thu muc Drive", g[0]?.clientName === kq2.tenThuMuc);
+  kiem("ten album web la ten CO MA", g[0]?.clientName === kq2.tenAlbum, g[0]?.clientName ?? "");
   /* Thư mục phải nằm đúng tháng CHỤP (T4/2027), không phải tháng lập (T11/2026). */
   const tm = await docDrive(token, kq2.thuMucDrive);
+  kiem("ten THAT tren Drive cung khong co ma", tm?.name === `${DAU.ten} hai ngay`, tm?.name ?? "");
   const thang = tm?.parents?.[0] ? await docDrive(token, tm.parents[0]) : null;
   const nam = thang?.parents?.[0] ? await docDrive(token, thang.parents[0]) : null;
   kiem("dung thang CHUP, khong phai thang lap", thang?.name === "T4" && nam?.name === "2027", `${nam?.name}/${thang?.name}`);
@@ -114,7 +116,8 @@ kiem("tao duoc", kq1.ok, kq1.ok ? "" : kq1.loi);
 if (kq1.ok) {
   const g = await p.gallery.count({ where: { hopDongId: hd1.id } });
   kiem("ra DUNG MOT album", g === 1, `${g}`);
-  kiem("chi mang ma HER", kq1.tenThuMuc === `HER - ${DAU.ten} mot ben`, kq1.tenThuMuc);
+  kiem("album chi mang ma HER", kq1.tenAlbum === `HER - ${DAU.ten} mot ben`, kq1.tenAlbum);
+  kiem("thu muc Drive van ten tron", kq1.tenThuMuc === `${DAU.ten} mot ben`, kq1.tenThuMuc);
 }
 
 /* ── 3. Lịch loại thường → MỘT album tên trơn, không mã bịa ───────────── */
@@ -125,7 +128,8 @@ kiem("tao duoc", kq0.ok, kq0.ok ? "" : kq0.loi);
 if (kq0.ok) {
   const g = await p.gallery.count({ where: { hopDongId: hd0.id } });
   kiem("ra DUNG MOT album", g === 1, `${g}`);
-  kiem("ten TRON, khong bia ma", kq0.tenThuMuc === `${DAU.ten} khong ma`, kq0.tenThuMuc);
+  kiem("album ten TRON, khong bia ma", kq0.tenAlbum === `${DAU.ten} khong ma`, kq0.tenAlbum);
+  kiem("thu muc cung ten tron", kq0.tenThuMuc === `${DAU.ten} khong ma`, kq0.tenThuMuc);
 }
 
 /* ── 4. Người tự đặt tên thì KHÔNG gắn thêm mã ────────────────────────── */
@@ -140,7 +144,8 @@ kiem("tao duoc", kqT.ok, kqT.ok ? "" : kqT.loi);
 if (kqT.ok) {
   const g = await p.gallery.count({ where: { hopDongId: hdT.id } });
   kiem("chi MOT album", g === 1, `${g}`);
-  kiem("giu nguyen ten nguoi go, khong chong them ma", kqT.tenThuMuc === TEN_TAY, kqT.tenThuMuc);
+  kiem("album giu nguyen ten nguoi go, khong chong them ma", kqT.tenAlbum === TEN_TAY, kqT.tenAlbum);
+  kiem("thu muc Drive BOC ma nguoi go ra", kqT.tenThuMuc === `${DAU.ten} dat tay`, kqT.tenThuMuc);
 }
 
 /* ── Dọn sạch ─────────────────────────────────────────────────────────── */

@@ -3,7 +3,7 @@ import { getPrisma } from "@/lib/db";
 import { createGallery, setAccess } from "@/lib/store";
 import { MA_MAC_DINH } from "@/lib/access";
 import { MUI_GIO } from "@/lib/constants";
-import { ganNhieuMa } from "@/lib/maAlbum";
+import { ganNhieuMa, tenKhongMa } from "@/lib/maAlbum";
 import { maAlbumTheoBuoi } from "@/lib/goiNhieuNgay";
 
 /**
@@ -119,7 +119,16 @@ function namThang(ngay?: string | null): { nam: number; thang: number } {
 }
 
 export type KetQuaTaoThuMuc =
-  | { ok: true; galleryId: string; slug: string; thuMucDrive: string; tenThuMuc: string }
+  | {
+      ok: true;
+      galleryId: string;
+      slug: string;
+      thuMucDrive: string;
+      /** Tên thư mục trên Drive — KHÔNG mang mã. */
+      tenThuMuc: string;
+      /** Tên album trên web — có mã (HIS, HER…) nếu lịch suy ra được. */
+      tenAlbum: string;
+    }
   | { ok: false; loi: string };
 
 /**
@@ -201,7 +210,22 @@ export async function taoThuMucVaAlbum(
     const maTuLich = tenTuChon
       ? []
       : [...new Set(hd.lich.map((l) => maAlbumTheoBuoi(l.loai)).filter((m): m is string => !!m))];
-    const ten = maTuLich.length > 0 ? ganNhieuMa(tenGoc, maTuLich) : tenGoc;
+    const tenAlbum = maTuLich.length > 0 ? ganNhieuMa(tenGoc, maTuLich) : tenGoc;
+
+    /*
+      THƯ MỤC DRIVE KHÔNG MANG MÃ — anh chốt 15/11/2026.
+
+      Mã là ký hiệu nội bộ của web, dùng để lọc ở trang quản lý album. Trên
+      Drive tiệm xếp theo tên nhà, và cả T11/2026 đang là tên trơn: "Hữu Đức &
+      Ngọc Hằng", "Khánh Huy & Mộng Chinh", "Minh Ngọc & Công Khoa". Một thư
+      mục "HIS - HER - …" nằm giữa đó là web tự bày ra một nếp thứ hai, chỉ
+      web hiểu.
+
+      Bóc mã cả khi người bấm nút TỰ GÕ tên có mã: quy tắc là của Drive, không
+      phải của người gõ — họ gõ mã để album web có mã, chứ không phải để thư
+      mục có mã.
+    */
+    const tenThuMuc = tenKhongMa(tenAlbum) || tenAlbum;
 
     const token = await getUserAccessToken().catch(() => null);
     if (!token) return { ok: false, loi: "Chưa kết nối Google Drive, hoặc kết nối đã hỏng." };
@@ -222,7 +246,7 @@ export async function taoThuMucVaAlbum(
     const tao = (await goi(token, "https://www.googleapis.com/drive/v3/files?fields=id,name", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: ten, mimeType: LOAI_THU_MUC, parents: [idThang] }),
+      body: JSON.stringify({ name: tenThuMuc, mimeType: LOAI_THU_MUC, parents: [idThang] }),
     })) as { id: string; name: string };
 
     /*
@@ -234,15 +258,23 @@ export async function taoThuMucVaAlbum(
       chưa ai có link mà tải, còn lúc giao ảnh thì khỏi phải bật thêm bước.
     */
     const album = await createGallery({
-      title: tao.name,
-      clientName: ten,
+      /* Album web mang mã, thư mục Drive thì không — xem chú thích trên. */
+      title: tenAlbum,
+      clientName: tenAlbum,
       driveFolderId: tao.id,
       allowDownload: true,
     });
     await setAccess(album.id, MA_MAC_DINH);
     await prisma.gallery.update({ where: { id: album.id }, data: { hopDongId: hd.id } });
 
-    return { ok: true, galleryId: album.id, slug: album.slug, thuMucDrive: tao.id, tenThuMuc: tao.name };
+    return {
+      ok: true,
+      galleryId: album.id,
+      slug: album.slug,
+      thuMucDrive: tao.id,
+      tenThuMuc: tao.name,
+      tenAlbum,
+    };
   } catch (e) {
     return { ok: false, loi: e instanceof Error ? e.message : String(e) };
   }
