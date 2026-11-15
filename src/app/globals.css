@@ -569,3 +569,290 @@ body {
     animation: none;
   }
 }
+
+/*
+  ═══ TỜ HỢP ĐỒNG IN RA GIẤY (/quan-ly/in-hop-dong/[id]) ═══
+
+  Anh yêu cầu 15/11/2026 — chép mẫu PDF bên AppSheet.
+
+  Viết NGOÀI @layer components cùng lý do với khối in của đơn giao in ở trên:
+  phải thắng lớp tiện ích và phải sống được cả trên màn hình lẫn trên giấy.
+
+  Tờ này CỐ Ý không dùng biến màu của giao diện quản lý. Giấy in luôn trắng,
+  mực luôn đen — kéo theo chế độ tối là tờ giấy xem trên màn hình một kiểu, in
+  ra một kiểu khác. Chữ màu duy nhất là khối tổng tiền, đúng như mẫu cũ.
+
+  Đơn vị đo bằng mm chứ không px: khổ A4 là 210mm, đặt bằng px thì tỉ lệ đúng
+  trên một màn hình và sai trên mọi màn hình khác.
+*/
+.to-hd-nen {
+  min-height: 100svh;
+  background: #e7e5e2;
+  padding: 16px 0 48px;
+}
+
+.to-hd {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 15mm 14mm;
+  background: #fff;
+  color: #000;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 11pt;
+  line-height: 1.35;
+  box-shadow: 0 2px 16px rgb(0 0 0 / 0.18);
+}
+
+.to-hd p {
+  margin: 0;
+}
+
+/* ── Đầu tờ ─────────────────────────────────────────────────────────── */
+.to-hd-dau {
+  display: flex;
+  align-items: flex-start;
+  gap: 6mm;
+}
+.to-hd-logo {
+  width: 22mm;
+  height: auto;
+  flex: none;
+}
+.to-hd-ten-ben {
+  font-size: 13pt;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.to-hd-dong-dau {
+  font-size: 10.5pt;
+}
+
+.to-hd-tieu-de {
+  margin: 9mm 0 0;
+  text-align: center;
+  font-family: inherit;
+  font-size: 14pt;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.to-hd-mo-dau {
+  margin-top: 6mm;
+  padding: 0 6mm;
+  text-align: center;
+}
+
+/* ── Bảng ───────────────────────────────────────────────────────────── */
+.to-hd-bang {
+  width: 100%;
+  margin-top: 7mm;
+  border-collapse: collapse;
+}
+.to-hd-bang td,
+.to-hd-bang th {
+  border: 1px solid #000;
+  padding: 1.6mm 2.4mm;
+  vertical-align: top;
+}
+
+.to-hd-bang-khach td {
+  width: 50%;
+}
+
+.to-hd-bang-dong thead th {
+  background: #f6d87a;
+  font-weight: 700;
+  text-align: center;
+}
+.to-hd-bang-dong .c-stt {
+  width: 10mm;
+  text-align: center;
+}
+.to-hd-bang-dong .c-sl {
+  width: 14mm;
+  text-align: center;
+}
+.to-hd-bang-dong .c-tien {
+  width: 26mm;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+  Tên dịch vụ và từng dòng chi tiết đều là <span> trong một ô. Ép thành khối ở
+  đây thay vì dùng <div>: ô này nằm trong <td>, mà chi tiết gói chép từ bảng
+  Dịch vụ có thể rỗng — <div> rỗng vẫn chiếm một dòng trắng trên giấy.
+*/
+.to-hd-ten-dv,
+.to-hd-chi-tiet {
+  display: block;
+}
+.to-hd-ten-dv {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.to-hd-chi-tiet {
+  font-size: 10pt;
+}
+
+.to-hd-trong {
+  text-align: center;
+  font-style: italic;
+}
+
+/* Khối tổng tiền — giữ màu nâu đỏ của mẫu cũ, nền vàng nhạt. */
+.to-hd-bang-dong tfoot td {
+  background: #fdf0d5;
+  color: #9a3412;
+  font-weight: 600;
+}
+.to-hd-bang-dong tfoot .to-hd-dam td {
+  font-weight: 700;
+}
+/*
+  Ba ô trống bên trái khối tổng: bỏ HẾT viền, không chỉ viền trái.
+
+  Để lại viền trên thì mỗi dòng tổng kéo theo một gạch ngang chạy suốt nửa tờ
+  giấy, nhìn như bảng bị kẻ nhầm — đã thấy rõ lúc soi bản dựng 15/11.
+*/
+.to-hd-bang-dong tfoot td[colspan] {
+  border: none;
+  background: transparent;
+}
+
+/*
+  Cột nhãn khối tổng phải đủ rộng cho "Đã thanh toán" nằm một dòng. Không đặt
+  thì nó rớt thành hai dòng, làm ô tiền bên cạnh cao gấp đôi các dòng khác.
+*/
+.to-hd-bang-dong .c-nhan {
+  width: 30mm;
+  white-space: nowrap;
+}
+
+/* ── Lưu ý và chữ ký ────────────────────────────────────────────────── */
+.to-hd-luu-y {
+  margin-top: 5mm;
+  break-inside: avoid;
+}
+.to-hd-luu-y-nhan {
+  font-weight: 600;
+}
+.to-hd-luu-y ul {
+  margin: 0;
+  padding-left: 12mm;
+  list-style: none;
+}
+.to-hd-luu-y li {
+  font-size: 10.5pt;
+}
+
+.to-hd-ky {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6mm;
+  margin-top: 16mm;
+  text-align: center;
+  break-inside: avoid;
+}
+.to-hd-ky-ten {
+  font-weight: 600;
+}
+.to-hd-ky-chu {
+  font-size: 10pt;
+}
+
+/* ── Thanh nút (không in) ───────────────────────────────────────────── */
+.to-hd-thanh {
+  width: 210mm;
+  margin: 0 auto 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.to-hd-nut {
+  border: 1px solid #b9b4ae;
+  background: #fff;
+  color: #27241f;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.to-hd-nut:hover {
+  border-color: #8a8378;
+}
+.to-hd-nut-chinh {
+  background: #27241f;
+  border-color: #27241f;
+  color: #fff;
+  font-weight: 600;
+}
+.to-hd-chu {
+  font-size: 12px;
+  color: #5f5a52;
+}
+
+/*
+  Màn hình hẹp: 210mm (794px) tràn ngang. Thu nhỏ cả tờ bằng `zoom` để giữ
+  nguyên tỉ lệ A4 — đổi `width` thay vì thu nhỏ sẽ làm bảng xuống dòng khác
+  hẳn lúc in, tức xem một kiểu mà in ra một kiểu.
+*/
+@media (max-width: 840px) {
+  .to-hd,
+  .to-hd-thanh {
+    zoom: 0.55;
+  }
+}
+/*
+  Điện thoại: 0.55 vẫn ra 437px, rộng hơn màn 375px nên cả trang cuộn ngang.
+  Đo 15/11: scrollWidth 438 / clientWidth 375. Hạ tiếp một nấc cho vừa.
+*/
+@media (max-width: 450px) {
+  .to-hd,
+  .to-hd-thanh {
+    zoom: 0.42;
+  }
+}
+
+@media print {
+  /* Lề của tờ giấy do @page lo, không phải padding — nếu không là cộng dồn. */
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm;
+  }
+
+  .to-hd-nen {
+    background: #fff;
+    padding: 0;
+    min-height: 0;
+  }
+  .to-hd {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    zoom: 1;
+  }
+
+  /*
+    Nền vàng của hàng tiêu đề và khối tổng chỉ in ra khi người dùng bật
+    "Đồ hoạ nền" trong hộp in. KHÔNG dựa vào nó: viền đen và chữ đậm đã đủ đọc
+    nếu tắt. Dòng dưới chỉ là lời đề nghị, trình duyệt có quyền bỏ qua.
+  */
+  .to-hd-bang-dong thead th,
+  .to-hd-bang-dong tfoot td {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Đừng cắt một dòng dịch vụ làm đôi qua hai trang giấy. */
+  .to-hd-bang tr {
+    break-inside: avoid;
+  }
+  .to-hd-bang thead {
+    display: table-header-group;
+  }
+}

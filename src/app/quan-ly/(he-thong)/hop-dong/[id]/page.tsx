@@ -119,10 +119,14 @@ export default async function ChiTietHopDongPage({ params }: Props) {
             {xongNhanh && <span className="text-xs text-emerald-700">xong nhánh này</span>}
           </span>
           {/*
-            Sửa: quản lý + sale. Xoá: chỉ quản lý, và còn phải gõ lại mã hợp
-            đồng trong hộp xác nhận. Giấu nút chỉ để đỡ bấm nhầm — chặn thật
-            nằm trong server action (nguyên tắc 3).
+            In: ai vào được trang này thì in được — tờ giấy không có gì mà
+            trang này chưa hiện. Sửa: quản lý + sale. Xoá: chỉ quản lý, và còn
+            phải bấm hai lần trong hộp xác nhận. Giấu nút chỉ để đỡ bấm nhầm —
+            chặn thật nằm trong server action (nguyên tắc 3).
           */}
+          <Link href={`/quan-ly/in-hop-dong/${hd.id}`} className="btn">
+            In hợp đồng
+          </Link>
           {duocSua && (
             <Link href={`/quan-ly/hop-dong/${hd.id}/sua`} className="btn">
               Sửa hợp đồng
