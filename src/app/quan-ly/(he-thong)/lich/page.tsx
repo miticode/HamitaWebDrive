@@ -4,7 +4,9 @@ import { getPrisma } from "@/lib/db";
 import { MUI_GIO } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri, xemHopDong } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
+import { LOP_NHOM, nhomCuaLoai, type BuoiLich } from "@/lib/lichChung";
 import { BangDongBo } from "../hop-dong/BangDongBo";
+import { LuoiLich } from "./LuoiLich";
 
 export const dynamic = "force-dynamic";
 
@@ -44,8 +46,11 @@ const THU = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
  * Xem theo THÁNG: studio đặt lịch cưới trước hàng tháng, nên tuần này không
  * nói được gì; mở ra là thấy cả tháng dày hay thưa.
  *
- * Trên điện thoại chỉ hiện danh sách — lưới 7 cột nhét vào màn hình 375px thì
- * mỗi ô còn 40px, đọc không ra chữ nào.
+ * Lưới chạy trên MỌI CỠ MÀN HÌNH từ 15/11/2026 (anh bảo làm giống Lark).
+ * Trước đó điện thoại chỉ có danh sách, vì lưới 7 cột nhét vào 375px thì mỗi
+ * ô còn 40px. Lý do đó vẫn đúng — nhưng Lark giải bằng cách khác: ô nhỏ chỉ
+ * để NHÌN ngày nào dày, bấm vào thì danh sách buổi hôm đó hiện ra đọc được.
+ * Xem `LuoiLich.tsx`.
  */
 export default async function LichPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
@@ -62,9 +67,9 @@ export default async function LichPage({ searchParams }: Props) {
     MỘT kiểu xem tại một lúc — đợt soát UX, mục P1-3.
 
     Trước đây máy tính vẽ lưới cả tháng rồi vẽ tiếp bảng cùng từng ấy buổi:
-    hai lần một dữ liệu, phải cuộn qua cả hai. Giờ để trống thì máy tính thấy
-    lưới, điện thoại thấy danh sách (lưới 7 cột nhét vào 375px thì mỗi ô còn
-    40px); chọn "Danh sách" thì cả hai cỡ đều là danh sách.
+    hai lần một dữ liệu, phải cuộn qua cả hai. Giờ mặc định là lưới trên mọi
+    cỡ màn hình; chọn "Danh sách" thì ra bảng, dùng khi cần soát cả tháng
+    theo hàng hoặc tìm một buổi mà không nhớ ngày.
   */
   const xem = sp.xem === "ds" ? "ds" : "luoi";
 
@@ -96,16 +101,24 @@ export default async function LichPage({ searchParams }: Props) {
   ]);
 
   const [nam, thangSo] = thang.split("-").map(Number);
-  const soNgay = new Date(Date.UTC(nam, thangSo, 0)).getUTCDate();
-  // Thứ Hai đứng đầu tuần như lịch Việt Nam: Chủ nhật (0) đẩy xuống cuối.
-  const troTruoc = (new Date(Date.UTC(nam, thangSo - 1, 1)).getUTCDay() + 6) % 7;
-  const theoNgay = new Map<string, typeof ds>();
-  for (const l of ds) {
-    if (!l.ngay) continue;
-    const co = theoNgay.get(l.ngay);
-    if (co) co.push(l);
-    else theoNgay.set(l.ngay, [l]);
-  }
+
+  /*
+    Làm phẳng trước khi gửi xuống trình duyệt: `hopDong.khachHang.soDienThoai`
+    lồng ba tầng, mà mỗi tầng là một lớp bọc nữa trong gói dữ liệu gửi kèm
+    trang. Phẳng ra thì gói nhẹ hơn và lưới không phải biết hình dạng bảng
+    trong database.
+  */
+  const buoi: BuoiLich[] = ds.map((l) => ({
+    id: l.id,
+    ngay: l.ngay,
+    gio: l.gio,
+    loai: l.loai,
+    trangThai: l.trangThai,
+    ghiChu: l.ghiChu,
+    hopDongId: l.hopDong?.id ?? null,
+    tenKhach: l.hopDong?.tenKhach ?? null,
+    soDienThoai: l.hopDong?.khachHang?.soDienThoai ?? null,
+  }));
 
   const link = (thay: Record<string, string>) => {
     const p = new URLSearchParams({ thang, loai, xem: xem === "ds" ? "ds" : "", ...thay });
@@ -140,9 +153,9 @@ export default async function LichPage({ searchParams }: Props) {
             Hôm nay
           </Link>
         )}
-        <span className="mx-1 hidden h-4 w-px bg-line md:block" aria-hidden />
-        {/* Công tắc kiểu xem: chỉ máy tính, vì điện thoại luôn là danh sách. */}
-        <span className="mr-2 hidden items-center gap-1 md:inline-flex">
+        <span className="mx-1 h-4 w-px bg-line" aria-hidden />
+        {/* Công tắc kiểu xem — từ 15/11/2026 hiện ở mọi cỡ, vì lưới chạy được cả trên điện thoại. */}
+        <span className="mr-2 inline-flex items-center gap-1">
           <Link href={link({ xem: "" })} className={lopChip(xem === "luoi")}>Lưới tháng</Link>
           <Link href={link({ xem: "ds" })} className={lopChip(xem === "ds")}>Danh sách</Link>
         </span>
@@ -157,54 +170,9 @@ export default async function LichPage({ searchParams }: Props) {
           ))}
       </div>
 
-      <div className={`mt-5 ${xem === "ds" ? "hidden" : "hidden md:block"}`}>
-        <div className="grid grid-cols-7 gap-px rounded-md border border-line bg-line text-sm">
-          {THU.map((t) => (
-            <div key={t} className="bg-bg-soft px-2 py-1.5 text-center text-xs text-fg-muted">{t}</div>
-          ))}
-          {Array.from({ length: troTruoc }).map((_, i) => (
-            <div key={`trong-${i}`} className="min-h-24 bg-bg-raised" />
-          ))}
-          {Array.from({ length: soNgay }).map((_, i) => {
-            const ngay = `${thang}-${String(i + 1).padStart(2, "0")}`;
-            const cua = theoNgay.get(ngay) ?? [];
-            return (
-              <div key={ngay} className={`min-h-24 p-1.5 ${ngay === nay ? "bg-accent-soft" : "bg-bg-raised"}`}>
-                <span className={`text-xs tabular-nums ${ngay === nay ? "font-medium text-accent" : "text-fg-faint"}`}>
-                  {i + 1}
-                </span>
-                <ul className="mt-1 space-y-1">
-                  {cua.slice(0, 3).map((l) => (
-                    <li key={l.id} className="truncate text-[11px] leading-tight">
-                      {l.gio && <span className="mr-1 font-medium tabular-nums">{l.gio}</span>}
-                      {l.hopDong ? (
-                        moHopDong ? (
-                          <Link href={`/quan-ly/hop-dong/${l.hopDong.id}`} className="hover:text-accent" title={`${l.loai ?? ""} · ${l.hopDong.tenKhach}`}>
-                            <span className="text-fg-muted">{l.loai}</span> {l.hopDong.tenKhach}
-                          </Link>
-                        ) : (
-                          <span title={`${l.loai ?? ""} · ${l.hopDong.tenKhach}`}>
-                            <span className="text-fg-muted">{l.loai}</span> {l.hopDong.tenKhach}
-                          </span>
-                        )
-                      ) : (
-                        <span className="text-fg-muted">{l.loai}</span>
-                      )}
-                    </li>
-                  ))}
-                  {cua.length > 3 && <li className="text-[11px] text-fg-faint">+{cua.length - 3} nữa</li>}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {xem === "luoi" && <LuoiLich ds={buoi} thang={thang} nay={nay} moHopDong={moHopDong} />}
 
-      <div
-        className={`mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised ${
-          xem === "ds" ? "" : "md:hidden"
-        }`}
-      >
+      <div className={`mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised ${xem === "ds" ? "" : "hidden"}`}>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
@@ -222,7 +190,13 @@ export default async function LichPage({ searchParams }: Props) {
                 <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">
                   {l.gio ? <span className="font-medium">{l.gio}</span> : <span className="text-fg-faint">—</span>}
                 </td>
-                <td className="px-4 py-2.5 whitespace-nowrap">{l.loai ?? "—"}</td>
+                {/* Chấm màu cùng bảng với lưới — học màu một lần, đọc được cả hai kiểu xem. */}
+                <td className={`px-4 py-2.5 whitespace-nowrap ${LOP_NHOM[nhomCuaLoai(l.loai)]}`}>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="cham-lich" aria-hidden />
+                    {l.loai ?? "—"}
+                  </span>
+                </td>
                 <td className="min-w-40 px-4 py-2.5">
                   {l.hopDong ? (
                     moHopDong ? (

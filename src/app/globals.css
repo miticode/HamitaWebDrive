@@ -856,3 +856,144 @@ body {
     display: table-header-group;
   }
 }
+
+/*
+  ═══ MÀU BUỔI CHỤP TRONG LỊCH (/quan-ly/lich) ═══
+
+  Anh yêu cầu 15/11/2026 — "làm giống bên Lark cho dễ dùng".
+
+  Tám nhóm màu, chia ở `src/lib/lichChung.ts`. Mỗi nhóm đặt ba biến rồi
+  `.chip-lich` dùng chung — thêm một nhóm sau này chỉ phải viết đúng một khối
+  ba dòng, không phải đụng vào chỗ vẽ chip.
+
+  KHÔNG dùng lớp tiện ích màu của Tailwind ở đây, dù phần còn lại của trang
+  quản lý có dùng. Lý do: mỗi màu Tailwind mới kéo theo một dòng chỉnh riêng
+  trong khối `[data-admin-theme="dark"]` phía trên, tám nhóm là tám lần nhớ,
+  sót một cái là một mảng chói giữa nền tối. Đặt bằng biến thì bản tối chỉ
+  cần khai lại đúng những biến đó.
+
+  Viết NGOÀI @layer components cùng lý do với các khối màu khác ở trên: phải
+  thắng lớp tiện ích chứ không nhường nó.
+*/
+.chip-lich {
+  display: block;
+  width: 100%;
+  border-radius: 3px;
+  border-left: 3px solid var(--lich-vien);
+  background: var(--lich-nen);
+  color: var(--lich-chu);
+  padding: 1px 4px;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chip-lich:hover {
+  filter: brightness(0.96);
+}
+
+/*
+  Màn hình hẹp: ô chỉ còn 48px, ở cỡ chữ 11px chip hiện được đúng hai ký tự
+  rồi "…". Hạ cỡ chữ và bớt lề trong để thêm được vài ký tự nữa — đủ phân
+  biệt "Hoài…" với "Hồng…", là thứ duy nhất ô nhỏ cần làm được. Đọc đủ thì
+  bấm vào ngày, panel bên dưới có hết.
+*/
+@media (max-width: 640px) {
+  .chip-lich {
+    padding: 0 2px;
+    border-left-width: 2px;
+    font-size: 9.5px;
+    line-height: 1.5;
+  }
+}
+
+/* Chấm màu cùng bảng, dùng ở hàng chú giải và trong bảng danh sách. */
+.cham-lich {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 2px;
+  background: var(--lich-vien);
+}
+
+.l-chup {
+  --lich-nen: #dcfce7;
+  --lich-chu: #14532d;
+  --lich-vien: #22c55e;
+}
+.l-gai {
+  --lich-nen: #fce7f3;
+  --lich-chu: #831843;
+  --lich-vien: #ec4899;
+}
+.l-trai {
+  --lich-nen: #dbeafe;
+  --lich-chu: #1e3a8a;
+  --lich-vien: #3b82f6;
+}
+.l-cuoi {
+  --lich-nen: #fee2e2;
+  --lich-chu: #7f1d1d;
+  --lich-vien: #ef4444;
+}
+.l-be {
+  --lich-nen: #fef3c7;
+  --lich-chu: #78350f;
+  --lich-vien: #f59e0b;
+}
+.l-su {
+  --lich-nen: #ccfbf1;
+  --lich-chu: #134e4a;
+  --lich-vien: #14b8a6;
+}
+.l-makeup {
+  --lich-nen: #ede9fe;
+  --lich-chu: #4c1d95;
+  --lich-vien: #8b5cf6;
+}
+.l-khac {
+  --lich-nen: #e7e5e4;
+  --lich-chu: #292524;
+  --lich-vien: #a8a29e;
+}
+
+/*
+  Bản tối: nền kéo về gần nền thẻ (#24211d) cho khỏi loé, chữ kéo lên sắc
+  sáng. Viền trái GIỮ NGUYÊN màu đặc của bản ngày — nó nhỏ, nổi tốt trên cả
+  hai nền, và là thứ duy nhất phải nhận ra ngay từ xa.
+*/
+[data-admin-theme="dark"] .l-chup {
+  --lich-nen: #14271c;
+  --lich-chu: #86efac;
+}
+[data-admin-theme="dark"] .l-gai {
+  --lich-nen: #2b1620;
+  --lich-chu: #f9a8d4;
+}
+[data-admin-theme="dark"] .l-trai {
+  --lich-nen: #16213a;
+  --lich-chu: #93c5fd;
+}
+[data-admin-theme="dark"] .l-cuoi {
+  --lich-nen: #2c1a1a;
+  --lich-chu: #fca5a5;
+}
+[data-admin-theme="dark"] .l-be {
+  --lich-nen: #2b2210;
+  --lich-chu: #fcd34d;
+}
+[data-admin-theme="dark"] .l-su {
+  --lich-nen: #11292a;
+  --lich-chu: #5eead4;
+}
+[data-admin-theme="dark"] .l-makeup {
+  --lich-nen: #211b33;
+  --lich-chu: #c4b5fd;
+}
+[data-admin-theme="dark"] .l-khac {
+  --lich-nen: #26231f;
+  --lich-chu: #d6d3d1;
+}
