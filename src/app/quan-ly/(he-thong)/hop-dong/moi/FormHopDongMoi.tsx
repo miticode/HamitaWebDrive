@@ -77,6 +77,23 @@ export function FormHopDongMoi({
 
   // ── Hợp đồng ────────────────────────────────────────────────────────────
   const [tenKhach, setTenKhach] = useState("");
+  /*
+    TÊN HỢP ĐỒNG CHÉP Y CHANG TÊN KHÁCH — anh chốt 15/11/2026.
+
+    Cờ này nhớ "người dùng đã tự gõ vào ô tên hợp đồng chưa". Chưa gõ thì ô
+    tên hợp đồng bám theo ô tên khách từng ký tự; gõ rồi thì thôi bám, vì
+    hợp đồng cưới hay ghi "Minh Trí & Thuỳ Dung" trong khi ô khách chỉ có
+    một người đứng tên.
+
+    Bẫy của bản cũ (`if (!tenKhach.trim())`): nó chép đúng MỘT lần. Gõ "M"
+    thì chép được "M", tới ký tự thứ hai `tenKhach` đã có chữ nên điều kiện
+    tắt — tên hợp đồng kẹt ở một chữ cái. Phải nhớ Ý ĐỊNH của người dùng,
+    không suy ra từ ô có rỗng hay không.
+
+    Xoá trắng ô tên hợp đồng là quay về bám tiếp — đó là cách rút lại ý định
+    mà không cần thêm nút nào.
+  */
+  const [tenTuGo, setTenTuGo] = useState(false);
   const [loaiDV, setLoaiDV] = useState<string>(LOAI_DV_HD[1]);
   /*
     Ngày lập = hôm nay, KHÔNG sửa được (anh chốt 14/11/2026).
@@ -161,7 +178,7 @@ export function FormHopDongMoi({
     setKhachCu(k);
     setKetQua(null);
     setTuKhoa("");
-    if (!tenKhach.trim()) setTenKhach(k.ten);
+    if (!tenTuGo) setTenKhach(k.ten);
   };
 
   const doiDong = (i: number, sua: Partial<DongDichVuMoi>) =>
@@ -317,7 +334,7 @@ export function FormHopDongMoi({
                   value={khachMoi.ten}
                   onChange={(e) => {
                     setKhachMoi((k) => ({ ...k, ten: e.target.value }));
-                    if (!tenKhach.trim()) setTenKhach(e.target.value);
+                    if (!tenTuGo) setTenKhach(e.target.value);
                   }}
                   className="input"
                 />
@@ -352,8 +369,22 @@ export function FormHopDongMoi({
       {/* ── Hợp đồng ──────────────────────────────────────────────────── */}
       <Khung ten="Hợp đồng">
         <div className="grid gap-3 sm:grid-cols-2">
-          <O nhan="Tên ghi trên hợp đồng" chu="Thường là tên cô dâu & chú rể.">
-            <input value={tenKhach} onChange={(e) => setTenKhach(e.target.value)} className="input" />
+          <O
+            nhan="Tên ghi trên hợp đồng"
+            chu={
+              tenTuGo
+                ? "Đang ghi riêng. Xoá trắng ô này để lấy lại tên khách."
+                : "Tự lấy theo tên khách. Sửa ở đây nếu muốn ghi khác."
+            }
+          >
+            <input
+              value={tenKhach}
+              onChange={(e) => {
+                setTenKhach(e.target.value);
+                setTenTuGo(e.target.value.trim() !== "");
+              }}
+              className="input"
+            />
           </O>
           <O nhan="Loại hợp đồng">
             <select value={loaiDV} onChange={(e) => setLoaiDV(e.target.value)} className="input">
