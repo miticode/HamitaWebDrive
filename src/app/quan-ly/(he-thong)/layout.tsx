@@ -73,6 +73,8 @@ export default async function HeThongLayout({ children }: { children: React.Reac
     ...(xemNhanVien(nguoi) ? [{ nhom: "Thông tin studio", ten: "Nhân viên", href: "/quan-ly/nhan-vien" }] : []),
     { nhom: "Thông tin studio", ten: "Nội quy", href: "/quan-ly/noi-quy" },
     { nhom: "Thông tin studio", ten: "Dịch vụ & trang phục", href: "/quan-ly/dich-vu" },
+    // Loại buổi chụp (anh yêu cầu 18/11/2026): cả tiệm xem, chỉ quản lý sửa.
+    { nhom: "Thông tin studio", ten: "Loại buổi chụp", href: "/quan-ly/loai-buoi" },
     // Có số tài khoản ngân hàng — chỉ quản lý (AppSheet cũ cũng chỉ Admin xem).
     ...(quanTri ? [{ nhom: "Thông tin studio", ten: "Thông tin studio", href: "/quan-ly/thong-tin" }] : []),
     // Sổ sự cố: CẢ TIỆM. Người thấy máy hỏng là người đang đứng ở đó, không

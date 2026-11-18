@@ -5,7 +5,7 @@ import { createGallery, setAccess } from "@/lib/store";
 import { MA_MAC_DINH } from "@/lib/access";
 import { MUI_GIO } from "@/lib/constants";
 import { ganNhieuMa, tenKhongMa } from "@/lib/maAlbum";
-import { maAlbumTheoBuoi } from "@/lib/goiNhieuNgay";
+import { docMaTheoBuoi, maTheoBuoi } from "@/lib/loaiBuoi";
 
 /**
  * LẬP HỢP ĐỒNG XONG THÌ CÓ SẴN THƯ MỤC DRIVE VÀ ALBUM — anh yêu cầu 14/11/2026.
@@ -335,6 +335,7 @@ export async function taoThuMucVaAlbum(
 
       Người bấm nút tạo tay mà tự đặt tên thì KHÔNG đụng vào: họ gõ sẵn mã rồi.
     */
+    const bangMa = await docMaTheoBuoi();
     const ma = tenTuChon
       ? []
       : maTuChon
@@ -343,8 +344,15 @@ export async function taoThuMucVaAlbum(
             ...new Set([
               /* Mã gắn sẵn trên dịch vụ: Baby, NS, AB… */
               ...hd.chiTiet.map((d) => d.dichVu?.maAlbum ?? null),
-              /* Mã suy từ loại buổi: nhà gái ra HER, nhà trai ra HIS. */
-              ...hd.lich.map((l) => maAlbumTheoBuoi(l.loai)),
+              /*
+                Mã suy từ loại buổi: nhà gái ra HER, nhà trai ra HIS.
+
+                Tra trong bảng `LoaiBuoi` (anh yêu cầu 18/11/2026) chứ không
+                tra bảng cứng nữa — người dùng tự sửa được mối nối này ở trang
+                "Loại buổi chụp". Bảng rỗng thì `docMaTheoBuoi` trả về đúng
+                bảng cứng cũ, nên hợp đồng cũ không đổi kết quả.
+              */
+              ...hd.lich.map((l) => maTheoBuoi(bangMa, l.loai)),
             ].filter((m): m is string => !!m)),
           ];
     const tenAlbum = ma.length > 0 ? ganNhieuMa(tenGoc, ma) : tenGoc;

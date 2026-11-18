@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { tien } from "@/lib/constants";
 import { docTien } from "@/lib/studioNoiBo";
 import { LOAI_DICH_VU, TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
-import { loaiBuoiGoiY, maAlbumTheoBuoi, soBuoiCuaGoi } from "@/lib/goiNhieuNgay";
+import { loaiBuoiGoiY, soBuoiCuaGoi } from "@/lib/goiNhieuNgay";
 import { MA_ALBUM, ganNhieuMa } from "@/lib/maAlbum";
 import {
   BUOC_MOI_LAP,
@@ -39,6 +39,7 @@ export function FormHopDongMoi({
   laQuanLy,
   tenNguoiLap,
   cacBuoc = CAC_BUOC,
+  loaiBuoi,
   onThoi,
   onXong,
 }: {
@@ -52,6 +53,13 @@ export function FormHopDongMoi({
    * `CAC_BUOC` — ô chọn không được phép rỗng dù bảng kia chưa chép.
    */
   cacBuoc?: readonly string[];
+  /**
+   * Loại buổi chụp, đọc từ bảng `LoaiBuoi` (anh yêu cầu 18/11/2026).
+   *
+   * Thiếu thì dùng bảng cứng `LOAI_LICH` — y như `cacBuoc`. Ô chọn không bao
+   * giờ được phép rỗng, kể cả khi chưa ai nhập gì vào bảng mới.
+   */
+  loaiBuoi?: readonly { ten: string; maAlbum: string | null }[];
   /** Quản lý lập phiếu thu thì ghi thẳng "đã thu"; sale thì phiếu nằm chờ duyệt. */
   laQuanLy: boolean;
   tenNguoiLap: string;
@@ -152,13 +160,25 @@ export function FormHopDongMoi({
     mảng rỗng — mảng rỗng là cố ý không gắn mã nào. Gộp hai cái đó lại thì
     người cố tình bỏ hết mã sẽ thấy nó tự mọc lại.
   */
+  /* Danh sách cho ô chọn, và bảng tra mã — cùng một nguồn. */
+  const dsLoai = useMemo(
+    () => (loaiBuoi && loaiBuoi.length > 0 ? loaiBuoi : LOAI_LICH.map((ten) => ({ ten, maAlbum: null }))),
+    [loaiBuoi],
+  );
+  const loaiDau = dsLoai[0]?.ten ?? LOAI_LICH[0];
+  const maTheoLoai = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const l of dsLoai) if (l.maAlbum) m.set(l.ten.trim().toLowerCase(), l.maAlbum);
+    return m;
+  }, [dsLoai]);
+
   const maGoiY = useMemo(() => {
     const tu = [
       ...dong.map((d) => dichVu.find((x) => x.id === d.dichVuId)?.maAlbum ?? null),
-      ...lich.map((l) => maAlbumTheoBuoi(l.loai)),
+      ...lich.map((l) => maTheoLoai.get((l.loai ?? "").trim().toLowerCase()) ?? null),
     ].filter((m): m is string => !!m);
     return [...new Set(tu)];
-  }, [dong, lich, dichVu]);
+  }, [dong, lich, dichVu, maTheoLoai]);
   const [maTuGo, setMaTuGo] = useState<string[] | null>(null);
   const maAlbum = maTuGo ?? maGoiY;
   const tenAlbumXem = maAlbum.length > 0 ? ganNhieuMa(tenKhach || "tên khách", maAlbum) : tenKhach || "tên khách";
@@ -226,7 +246,7 @@ export function FormHopDongMoi({
   const datNgayBuoi = (k: number, ngay: string) =>
     setLich((ds) => {
       const moi = [...ds];
-      while (moi.length <= k) moi.push({ ngay: "", gio: "", loai: LOAI_LICH[0], ghiChu: "", hienThi: "" });
+      while (moi.length <= k) moi.push({ ngay: "", gio: "", loai: loaiDau, ghiChu: "", hienThi: "" });
       moi[k] = { ...moi[k], ngay };
       return moi;
     });
@@ -292,11 +312,11 @@ export function FormHopDongMoi({
       const moi = [...ds];
       for (let i = 0; i < moi.length && con.length > 0; i++) {
         const l = moi[i];
-        const trangTinh = !l.ngay && !l.gio && !l.ghiChu && l.loai === LOAI_LICH[0];
+        const trangTinh = !l.ngay && !l.gio && !l.ghiChu && l.loai === loaiDau;
         if (trangTinh) moi[i] = { ...l, loai: con.shift()! };
       }
       while (moi.length < soBuoi) {
-        moi.push({ ngay: "", gio: "", loai: con.shift() ?? LOAI_LICH[0], ghiChu: "", hienThi: "" });
+        moi.push({ ngay: "", gio: "", loai: con.shift() ?? loaiDau, ghiChu: "", hienThi: "" });
       }
       return moi;
     });
@@ -811,7 +831,7 @@ export function FormHopDongMoi({
             onClick={() =>
               setLich((ds) => [
                 ...ds,
-                ...ngayChupChuaCoLich.map((ngay) => ({ ngay, gio: "", loai: LOAI_LICH[0], ghiChu: "", hienThi: "" })),
+                ...ngayChupChuaCoLich.map((ngay) => ({ ngay, gio: "", loai: loaiDau, ghiChu: "", hienThi: "" })),
               ])
             }
           >
@@ -844,7 +864,7 @@ export function FormHopDongMoi({
                   onChange={(e) => setLich((ds) => ds.map((x, j) => (i === j ? { ...x, loai: e.target.value } : x)))}
                   className="input"
                 >
-                  {LOAI_LICH.map((x) => (
+                  {dsLoai.map(({ ten: x }) => (
                     <option key={x} value={x}>
                       {x}
                     </option>
@@ -870,7 +890,7 @@ export function FormHopDongMoi({
         <button
           type="button"
           className="btn mt-3"
-          onClick={() => setLich((ds) => [...ds, { ngay: "", gio: "", loai: LOAI_LICH[0], ghiChu: "", hienThi: "" }])}
+          onClick={() => setLich((ds) => [...ds, { ngay: "", gio: "", loai: loaiDau, ghiChu: "", hienThi: "" }])}
         >
           Thêm dòng lịch
         </button>

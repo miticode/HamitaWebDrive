@@ -1202,6 +1202,35 @@ model KhachTiemNang {
 ///
 /// CODE VAN GIU CAC_BUOC lam ban du phong: bang nay rong (chua chep) thi form
 /// hop dong khong duoc phep tro nen trong tron.
+/// LOAI BUOI CHUP — anh yeu cau 18/11/2026, thay bang cung LOAI_LICH.
+///
+/// Truoc do 12 loai nam cung trong src/lib/hopDongChung.ts. Do 18/11: ba loai
+/// CO THAT trong du lieu ma khong co trong bang cung — "Chụp sự kiện" (4 buoi),
+/// "Chụp chịu lạy" (3), "chụp đầy tháng" (1). Lich cu mang chung nhung khong
+/// lap moi duoc, y het chuyen "DẠM NGÕ" thieu trong LOAI_DV_HD hoi 14/11.
+///
+/// `LichChup.loai` luu CHU chu khong luu id. Nen doi `ten` o day phai cap nhat
+/// luon moi dong lich mang ten cu (anh chot 18/11) — xem suaLoaiBuoiAction.
+///
+/// Bang rong thi web dung lai bang cung, y nhu BuocHopDong.
+model LoaiBuoi {
+  id         String   @id @default(cuid())
+  /// Ten hien trong o chon va luu vao LichChup.loai.
+  ten        String   @unique
+  /// Ma album suy ra tu loai nay — "nhà gái" ra HER, "Đính Hôn" ra ĐH.
+  /// null = loai nay khong suy ra ma nao (vd "Ngày chụp" chung chung).
+  maAlbum    String?
+  /// Nho dung truoc trong o chon. Cung so thi xep theo ten.
+  thuTu      Int      @default(0)
+  /// false = khong hien trong o chon nua, nhung lich cu van doc binh thuong.
+  /// Dung thay cho xoa khi loai da co lich (anh chot 18/11).
+  dangDung   Boolean  @default(true)
+  taoLuc     DateTime @default(now())
+  capNhatLuc DateTime @updatedAt
+
+  @@index([dangDung, thuTu])
+}
+
 model BuocHopDong {
   id         String   @id @default(cuid())
   /// Ten buoc, dung nguyen chu ben AppSheet — 2.541 hop dong dang mang chuoi nay.
