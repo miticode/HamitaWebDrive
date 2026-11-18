@@ -87,22 +87,52 @@ async function goi(token: string, url: string, init?: RequestInit) {
  * không vớ phải một thư mục trùng tên ai đó chia sẻ vào.
  */
 /**
- * Tìm thư mục CÓ SẴN theo tên, không tạo mới.
+ * Tìm thư mục CÓ SẴN theo tên trên ổ của chính tài khoản này.
  *
- * Khác `timHoacTao` ở hai chỗ, đều cần thiết cho Drive kho:
- *   · KHÔNG tạo nếu thiếu — "Tiệm Ảnh Nhà Su" và "HAMI BABY" là thư mục thật
- *     của tiệm; không thấy thì phải kêu lên, chứ tạo một cái trùng tên là
- *     tiệm có hai chỗ chứa ảnh mà chỉ web biết chỗ thứ hai.
- *   · KHÔNG lọc `'me' in owners` — thư mục có thể do tài khoản khác lập rồi
- *     chia sẻ sang.
+ * KHÔNG tạo nếu thiếu: "Tiệm Ảnh Nhà Su" và "HAMI BABY" là thư mục thật của
+ * tiệm; không thấy thì phải kêu lên, chứ tạo một cái trùng tên là tiệm có hai
+ * chỗ chứa ảnh mà chỉ web biết chỗ thứ hai.
+ *
+ * ━━ Vì sao PHẢI lọc `'me' in owners` ━━
+ *
+ * Đo 18/11/2026, ngay sau khi anh nới quyền: tìm "HAMI BABY" bằng kết nối kho
+ * ra BỐN kết quả —
+ *
+ *   1VOSi1…  chủ hamitaweddinghouse, ở gốc Drive      ← đúng cái cần
+ *   1QXX9a…  chủ hamita.studio, trong "Tháng 3"       ← chia sẻ sang
+ *   1xco-P…  chủ hamita.studio, trong "Tháng 2"
+ *   1XR42l…  chủ hamita.studio, trong "Tháng 1"
+ *
+ * Ba cái sau là thư mục con bên Drive ảnh cưới, được chia sẻ nên tài khoản kho
+ * cũng thấy. Không lọc thì Google trả cái nào trước là lấy cái đó — hôm ấy là
+ * cái trong "Tháng 3". Album sẽ nằm nhầm ổ, và dung lượng trừ vào ổ 2 TB vốn
+ * đã dùng 1.892/2.048 GB — đúng thứ việc chia ổ này sinh ra để tránh.
+ *
+ * Bản đầu em cố ý KHÔNG lọc, với lý do "thư mục có thể do tài khoản khác lập
+ * rồi chia sẻ sang". Lý do đó sai ở đây: ổ kho là ổ của tiệm, hai thư mục gốc
+ * ấy do chính nó sở hữu.
+ *
+ * Còn trùng nữa thì KHÔNG chọn bừa — ném lỗi, để người ta vào Drive dọn.
  */
 async function timThuMuc(token: string, ten: string): Promise<string | null> {
-  const q = [`name = '${ten.replace(/'/g, "\'")}'`, `mimeType = '${LOAI_THU_MUC}'`, "trashed = false"].join(" and ");
+  const q = [
+    `name = '${ten.replace(/'/g, "\'")}'`,
+    `mimeType = '${LOAI_THU_MUC}'`,
+    "trashed = false",
+    "'me' in owners",
+  ].join(" and ");
   const tim = (await goi(
     token,
-    `https://www.googleapis.com/drive/v3/files?${new URLSearchParams({ q, fields: "files(id)", pageSize: "1" })}`,
+    `https://www.googleapis.com/drive/v3/files?${new URLSearchParams({ q, fields: "files(id)", pageSize: "10" })}`,
   )) as { files?: { id: string }[] };
-  return tim.files?.[0]?.id ?? null;
+  const thay = tim.files ?? [];
+  if (thay.length > 1) {
+    throw new LoiDrive(
+      `Có ${thay.length} thư mục tên “${ten}” trên Kho ảnh CRM. ` +
+        "Vào Drive xoá hoặc đổi tên bớt, chỉ để lại một cái, rồi tạo album lại.",
+    );
+  }
+  return thay[0]?.id ?? null;
 }
 
 /**
