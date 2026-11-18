@@ -269,7 +269,45 @@ export function FormHopDongMoi({
     là sớm muộn cũng lệch nhau.
   */
   const dongDeLuu = () =>
-    dong.map((d) => (soBuoiCuaGoi(d.tenDV) >= 2 ? { ...d, ngayChup: lich[0]?.ngay ?? d.ngayChup } : d));
+    dong.map((d, i) =>
+      soBuoiCuaDong(d) > 0 ? { ...d, ngayChup: lich[viTriLich(i)]?.ngay ?? d.ngayChup } : d,
+    );
+
+  /*
+    MỘT DÒNG DỊCH VỤ CHIẾM MẤY DÒNG LỊCH, VÀ TỪ ĐÂU — anh chỉ ra 18/11/2026
+    ("ở trên a đã chọn ngày chụp mà ở dưới lịch chụp k tự lấy theo").
+
+    Lỗ của bản trước: ô ngày trên dòng dịch vụ chỉ nối thẳng vào lịch khi gói
+    có TỪ HAI BUỔI trở lên. Gói một buổi — kể cả gói đã gắn sẵn buổi chụp như
+    "GÓI ẢNH CỔNG BASIC1" — vẫn dùng ô ngày riêng, không dính gì tới dòng lịch
+    bên dưới. Người lập điền ngày ở trên rồi phải bấm thêm một nút nữa mới
+    thấy nó xuống lịch.
+
+    Giờ: dịch vụ nào CÓ BUỔI GẮN SẴN thì ô ngày của nó chính là ô ngày của
+    dòng lịch tương ứng, dù chỉ một buổi. Dịch vụ không gắn gì và tên cũng
+    không nói nhiều ngày thì giữ ô ngày riêng như cũ — trang phục, sản phẩm
+    không sinh buổi chụp nào.
+  */
+  /*
+    Nhãn ô ngày của buổi đơn: nói rõ nó là buổi nào.
+
+    Loại nào đã bắt đầu bằng "Ngày" thì dùng thẳng, không thì thêm chữ "Ngày"
+    phía trước — nếu không sẽ ra "NGÀY NGÀY CHỤP", đúng thứ hiện lên lúc thử
+    18/11.
+  */
+  const nhanNgay = (loai: string | undefined): string => {
+    const t = (loai ?? "").trim();
+    if (!t) return "Ngày chụp";
+    return /^ngày\s/i.test(t) ? t : `Ngày ${t}`;
+  };
+
+  const soBuoiCuaDong = (d: DongDichVuMoi): number => {
+    const gan = dichVu.find((x) => x.id === d.dichVuId)?.buoi?.length ?? 0;
+    return gan > 0 ? gan : soBuoiCuaGoi(d.tenDV) >= 2 ? soBuoiCuaGoi(d.tenDV) : 0;
+  };
+  /** Dòng lịch đầu tiên thuộc về dòng dịch vụ thứ `i`. */
+  const viTriLich = (i: number): number =>
+    dong.slice(0, i).reduce((s, d) => s + soBuoiCuaDong(d), 0);
 
   /*
     CUỘN TỚI DÒNG VỪA THÊM — anh chỉ ra 14/11/2026 ("kéo xuống dưới mới thấy
@@ -710,17 +748,26 @@ export function FormHopDongMoi({
                     `ngayChup` của dòng này gán lúc lưu, lấy ngày đầu — xem
                     `dongDeLuu`.
                   */}
-                  {soBuoiCuaGoi(d.tenDV) >= 2 ? (
-                    Array.from({ length: soBuoiCuaGoi(d.tenDV) }).map((_, k) => (
-                      <O key={k} nhan={`Ngày chụp ${k + 1}`}>
-                        <input
-                          type="date"
-                          value={lich[k]?.ngay ?? ""}
-                          onChange={(e) => datNgayBuoi(k, e.target.value)}
-                          className="input"
-                        />
-                      </O>
-                    ))
+                  {soBuoiCuaDong(d) > 0 ? (
+                    Array.from({ length: soBuoiCuaDong(d) }).map((_, k) => {
+                      /* Dòng lịch thật của buổi này, tính cả những dòng dịch vụ đứng trước. */
+                      const j = viTriLich(i) + k;
+                      return (
+                        <O
+                          key={k}
+                          nhan={
+                            soBuoiCuaDong(d) > 1 ? `Ngày chụp ${k + 1}` : nhanNgay(lich[j]?.loai)
+                          }
+                        >
+                          <input
+                            type="date"
+                            value={lich[j]?.ngay ?? ""}
+                            onChange={(e) => datNgayBuoi(j, e.target.value)}
+                            className="input"
+                          />
+                        </O>
+                      );
+                    })
                   ) : (
                     <O nhan={d.loai === "trang-phuc" ? "Ngày thuê" : d.loai === "san-pham" ? "Ngày giao" : "Ngày chụp"}>
                       <input
