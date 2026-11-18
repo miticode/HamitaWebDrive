@@ -15,6 +15,7 @@ import { ChipTrangThai } from "../ChipTrangThai";
 import { NutPhieuThu, NutXoaHopDong, ThemPhieuThu } from "./NutHopDong";
 import { KhoiLich } from "./KhoiLich";
 import { KhoiTien } from "./KhoiTien";
+import { TieuDeKhoi } from "./TieuDeKhoi";
 
 export const dynamic = "force-dynamic";
 
@@ -111,16 +112,6 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           <p className="mt-1 text-xs break-all text-fg-faint">{hd.maHD}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex flex-col items-start gap-0.5">
-            <ChipTrangThai trangThai={hd.trangThai} />
-            {buocSau && (
-              <span className="text-xs text-fg-faint">
-                tiếp theo <span aria-hidden>→</span> {buocSau.ten}
-                {buocSau.trachNhiem && <span className="text-fg-muted"> · {buocSau.trachNhiem}</span>}
-              </span>
-            )}
-            {xongNhanh && <span className="text-xs text-emerald-700">xong nhánh này</span>}
-          </span>
           {/*
             In: ai vào được trang này thì in được — tờ giấy không có gì mà
             trang này chưa hiện. Sửa: quản lý + sale. Xoá: chỉ quản lý, và còn
@@ -152,6 +143,34 @@ export default async function ChiTietHopDongPage({ params }: Props) {
             </>
           )}
         </div>
+      </div>
+
+      {/*
+        DẢI TRẠNG THÁI RIÊNG — anh yêu cầu 18/11/2026.
+
+        "Hợp đồng này đang ở bước nào, ai làm gì tiếp" là câu đầu tiên người
+        mở trang cần trả lời. Trước đó nó nép ở góc phải, chữ 12px, chen giữa
+        ba cái nút — thứ quan trọng nhất của trang lại là thứ mờ nhất.
+
+        Để ở đây, ngay dưới tên khách và chạy hết chiều ngang, vì nó nói về
+        CẢ hợp đồng chứ không thuộc khối nào.
+      */}
+      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md border border-line bg-bg-raised px-4 py-3">
+        <ChipTrangThai trangThai={hd.trangThai} />
+        {buocSau ? (
+          <span className="text-sm">
+            <span className="text-fg-muted">Tiếp theo </span>
+            <b className="font-medium">{buocSau.ten}</b>
+            {buocSau.trachNhiem && (
+              <span className="text-fg-muted"> — {buocSau.trachNhiem} lo</span>
+            )}
+          </span>
+        ) : (
+          xongNhanh && <span className="text-sm font-medium text-emerald-700">Đã xong nhánh này</span>
+        )}
+        {xongNhanh && buocSau && (
+          <span className="text-sm text-emerald-700">· đã xong nhánh này</span>
+        )}
       </div>
 
       {hd.matBenAppSheet && (
@@ -208,7 +227,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
       </div>
 
       <section className="mt-8">
-        <h2 className="eyebrow">Album ảnh ({album.length})</h2>
+        <TieuDeKhoi ten="Album ảnh" so={album.length} />
         {nhacChuyenBuoc && (
           <p className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
             Khách đã báo chọn xong ảnh ngày {NGAY.format(daChonXong!.xongLuc!)} mà hợp đồng còn ở bước{" "}
@@ -271,7 +290,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
       </section>
 
       <section className="mt-8">
-        <h2 className="eyebrow">Dịch vụ, trang phục ({hd.chiTiet.length})</h2>
+        <TieuDeKhoi ten="Dịch vụ, trang phục" so={hd.chiTiet.length} />
         <div className="mt-3 overflow-x-auto rounded-md border border-line bg-bg-raised">
           <table className="w-full text-sm">
             <thead>
@@ -320,7 +339,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
       </section>
 
       <section className="mt-8">
-        <h2 className="eyebrow">Lịch chụp ({hd.lich.length})</h2>
+        <TieuDeKhoi ten="Lịch chụp" so={hd.lich.length} />
         <KhoiLich
           loaiBuoi={loaiBuoi}
           hopDongId={hd.id}
@@ -338,7 +357,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
 
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="eyebrow">Phiếu thu ({hd.phieuThu.length})</h2>
+          <TieuDeKhoi ten="Phiếu thu" so={hd.phieuThu.length} />
           {duocSua && <ThemPhieuThu hopDongId={hd.id} homNay={homNay()} laQuanLy={quanTri} />}
         </div>
         <div className="mt-3 overflow-x-auto rounded-md border border-line bg-bg-raised">
