@@ -3,6 +3,7 @@ import { getPrisma } from "@/lib/db";
 import { tien } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { LOAI_DICH_VU, TEN_LOAI, boDau, laLoaiDichVu, loaiDuocSua, type LoaiDichVu } from "@/lib/dichVuChung";
+import { OMaAlbum } from "./OMaAlbum";
 
 export const dynamic = "force-dynamic";
 
@@ -137,6 +138,12 @@ export default async function DichVuPage({ searchParams }: Props) {
               <th className="px-4 py-2.5 font-medium">Mã</th>
               <th className="px-4 py-2.5 font-medium">Tên</th>
               <th className="px-4 py-2.5 font-medium">Nhóm</th>
+              {/*
+                Cột mã album — anh yêu cầu 18/11/2026. Để cạnh Nhóm vì hai thứ
+                hay đi cùng nhau khi nhìn: nhóm nói mục này thuộc mảng nào,
+                mã nói album của nó mang tên gì.
+              */}
+              <th className="px-4 py-2.5 font-medium">Mã album</th>
               <th className="px-4 py-2.5 text-right font-medium">Đơn giá</th>
             </tr>
           </thead>
@@ -156,18 +163,9 @@ export default async function DichVuPage({ searchParams }: Props) {
                     </Link>
                     {dong1 && <span className="mt-0.5 block max-w-md truncate text-xs text-fg-faint">{dong1}</span>}
                   </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
-                    {d.nhom ?? "—"}
-                    {/*
-                      Mã album gắn sẵn, hiện ngay cạnh nhóm — anh thêm
-                      18/11/2026. Để ở đây chứ không thêm một cột nữa: bảng
-                      này đã có bốn cột, mà mã album chỉ vài chục dòng có.
-                    */}
-                    {d.maAlbum && (
-                      <span className="ml-2 rounded-full border border-accent/40 bg-accent-soft px-2 py-0.5 text-[11px] tracking-wide text-accent">
-                        {d.maAlbum}
-                      </span>
-                    )}
+                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{d.nhom ?? "—"}</td>
+                  <td className="px-4 py-2.5 whitespace-nowrap">
+                    <OMaAlbum id={d.id} maDau={d.maAlbum ?? ""} suaDuoc={themDuoc} />
                   </td>
                   <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">
                     {tien(d.donGia)}đ
