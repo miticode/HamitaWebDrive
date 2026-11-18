@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { LOAI_LICH } from "@/lib/hopDongChung";
 import { luuLichAction, type DongLichSua } from "../../../actionsHopDong";
@@ -42,6 +42,39 @@ export function KhoiLich({
   const [dangLuu, start] = useTransition();
   const [loi, setLoi] = useState<string | null>(null);
   const [daLuu, setDaLuu] = useState(false);
+
+  /*
+    CÓ THAY ĐỔI CHƯA LƯU HAY KHÔNG — anh yêu cầu 18/11/2026.
+
+    Khối này sửa được tại chỗ nhưng phải bấm "Lưu lịch" riêng. Trước đó nút
+    lúc nào cũng sẵn sàng y như nhau, nên không có gì nói cho người sửa biết
+    họ đang có thay đổi treo lơ lửng — rời trang là mất, mà không ai báo.
+
+    So bằng JSON vì mỗi dòng chỉ có năm trường chữ và danh sách nhiều lắm
+    năm bảy dòng; so từng trường cho khéo chỉ tốn code chứ không nhanh hơn.
+
+    BỎ DÒNG TRỐNG NGÀY ra khỏi cả hai vế trước khi so. Server cũng bỏ chúng
+    lúc lưu (xem chữ nhắc cạnh nút), nên một dòng vừa thêm mà chưa điền ngày
+    KHÔNG phải "thay đổi chưa lưu" — không lọc thì bấm Thêm buổi xong là nút
+    kẹt ở trạng thái có thay đổi, bấm Lưu cũng không hết.
+  */
+  const deSo = (ds: DongLichSua[]) => JSON.stringify(ds.filter((d) => d.ngay));
+  const coDoi = deSo(dong) !== deSo(banDau);
+
+  /*
+    Nhắc trước khi đóng tab hay tải lại trang mà còn thay đổi treo.
+
+    CHỈ bắt `beforeunload` — không chặn được điều hướng trong ứng dụng, mà
+    chặn nửa vời thì còn tệ hơn: người ta tin vào lời nhắc rồi bấm sang trang
+    khác và vẫn mất. Nên phần còn lại giải bằng cách nói rõ trạng thái ngay
+    cạnh nút, xem phía dưới.
+  */
+  useEffect(() => {
+    if (!coDoi) return;
+    const nhac = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", nhac);
+    return () => window.removeEventListener("beforeunload", nhac);
+  }, [coDoi]);
 
   const doi = (i: number, sua: Partial<DongLichSua>) =>
     setDong((ds) => ds.map((d, j) => (i === j ? { ...d, ...sua } : d)));
@@ -162,10 +195,22 @@ export function KhoiLich({
         >
           Thêm buổi
         </button>
-        <button type="button" className="btn-primary px-4" onClick={luu} disabled={dangLuu}>
-          {dangLuu ? "Đang lưu…" : "Lưu lịch"}
+        {/*
+          Nút MỜ ĐI khi không có gì để lưu, và ĐỔI CHỮ khi có — người sửa
+          nhìn nút là biết mình đang ở trạng thái nào, không phải nhớ.
+        */}
+        <button
+          type="button"
+          className={coDoi ? "btn-primary px-4" : "btn px-4"}
+          onClick={luu}
+          disabled={dangLuu || !coDoi}
+        >
+          {dangLuu ? "Đang lưu…" : coDoi ? "Lưu thay đổi" : "Đã lưu"}
         </button>
         {daLuu && <span className="text-sm text-accent">Đã lưu ✓</span>}
+        {coDoi && !dangLuu && !daLuu && (
+          <span className="text-sm font-medium text-amber-800">Có thay đổi chưa lưu</span>
+        )}
         <span className="text-xs text-fg-faint">Dòng để trống ngày sẽ không được lưu.</span>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/db";
-import { tien } from "@/lib/constants";
+import { homNayStudio, tien } from "@/lib/constants";
 import { batBuocDangNhap, batBuocQuyen, laQuanTri, lapHopDong, xemHopDong } from "@/lib/phienNhanVien";
 import { boDau } from "@/lib/dichVuChung";
 import { BUOC_CHO_KHACH, ngayVN, tachTrangThai } from "@/lib/hopDongChung";
@@ -40,7 +40,7 @@ export default async function HopDongPage({ searchParams }: Props) {
   if (no) where.conLai = { gt: 0 };
 
   const prisma = getPrisma();
-  const [ds, demTrangThai, demLoai, tongNo] = await Promise.all([
+  const [ds, demTrangThai, demLoai, tongNo, lichSapToi] = await Promise.all([
     prisma.hopDong.findMany({
       where,
       select: {
@@ -62,6 +62,23 @@ export default async function HopDongPage({ searchParams }: Props) {
       where: { matBenAppSheet: null, conLai: { gt: 0 } },
       _sum: { conLai: true },
       _count: { _all: true },
+    }),
+    /*
+      BUỔI CHỤP SẮP TỚI của từng hợp đồng — anh yêu cầu 18/11/2026.
+
+      MỘT truy vấn gộp cho cả bảng, không phải đọc lịch kèm từng hợp đồng:
+      danh sách này lấy cả 2.400 hợp đồng một lượt, kèm lịch vào là 2.400 lần
+      đọc thêm. Đo 18/11: chỉ 46 hợp đồng có lịch từ hôm nay trở đi (68 buổi
+      trên tổng 1.454), nên bảng tra này nhỏ xíu.
+
+      Chỉ lấy buổi TỪ HÔM NAY TRỞ ĐI. Buổi đã qua không giúp gì cho việc
+      chuẩn bị, mà hiện ra thì cột này đầy ngày cũ của 2.400 hợp đồng xong
+      từ lâu.
+    */
+    prisma.lichChup.groupBy({
+      by: ["hopDongId"],
+      where: { matBenAppSheet: null, ngay: { gte: homNayStudio() } },
+      _min: { ngay: true },
     }),
   ]);
 
@@ -90,6 +107,20 @@ export default async function HopDongPage({ searchParams }: Props) {
     for (const [k, v] of [...p.entries()]) if (!v) p.delete(k);
     return `/quan-ly/hop-dong?${p}`;
   };
+  /*
+    Hợp đồng nào sắp chụp, và còn mấy ngày nữa.
+
+    Đếm ngày bằng cách trừ hai mốc UTC của chuỗi "YYYY-MM-DD", KHÔNG dùng
+    `new Date()` trực tiếp: giờ studio lệch UTC bảy tiếng, nên trừ theo giờ
+    máy sẽ ra lệch một ngày với mọi buổi chụp buổi sáng (nguyên tắc 35).
+  */
+  const sapChup = new Map(
+    lichSapToi.filter((x) => x.hopDongId && x._min.ngay).map((x) => [x.hopDongId!, x._min.ngay!]),
+  );
+  const nay = homNayStudio();
+  const conMayNgay = (ngay: string): number =>
+    Math.round((Date.parse(`${ngay}T00:00:00Z`) - Date.parse(`${nay}T00:00:00Z`)) / 86_400_000);
+
   const lopChip = (bat: boolean) =>
     `rounded-full border px-3 py-1 text-xs transition whitespace-nowrap ${
       bat ? "border-accent bg-accent-soft text-accent" : "border-line text-fg-muted hover:border-line-strong"
@@ -172,6 +203,11 @@ export default async function HopDongPage({ searchParams }: Props) {
               */}
               <th className="px-4 py-2.5 font-medium">Khách</th>
               <th className="px-4 py-2.5 font-medium">Ngày đặt</th>
+              {/*
+                Cột "Sắp chụp" — nhà nào sắp tới lượt, để chuẩn bị. Đặt cạnh
+                ngày đặt vì hai cột ngày đi cùng nhau thì mắt so được ngay.
+              */}
+              <th className="px-4 py-2.5 font-medium">Sắp chụp</th>
               <th className="px-4 py-2.5 font-medium">Loại</th>
               <th className="px-4 py-2.5 font-medium">Trạng thái</th>
               <th className="px-4 py-2.5 text-right font-medium">Tổng tiền</th>
@@ -190,6 +226,23 @@ export default async function HopDongPage({ searchParams }: Props) {
                   )}
                 </td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{ngayVN(h.ngayDat)}</td>
+                <td className="px-4 py-2.5 whitespace-nowrap">
+                  {(() => {
+                    const ngay = sapChup.get(h.id);
+                    if (!ngay) return <span className="text-fg-faint">—</span>;
+                    const con = conMayNgay(ngay);
+                    /* Trong tuần tới thì tô vàng: đó là việc cần lo ngay. */
+                    const gan = con <= 7;
+                    return (
+                      <span className={gan ? "text-amber-800" : "text-fg-muted"}>
+                        <span className="tabular-nums">{ngayVN(ngay)}</span>
+                        <span className="block text-xs">
+                          {con === 0 ? "hôm nay" : con === 1 ? "ngày mai" : `còn ${con} ngày`}
+                        </span>
+                      </span>
+                    );
+                  })()}
+                </td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{h.loaiDV}</td>
                 <td className="px-4 py-2.5"><ChipTrangThai trangThai={h.trangThai} /></td>
                 <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">{tien(h.tongTien)}đ</td>
