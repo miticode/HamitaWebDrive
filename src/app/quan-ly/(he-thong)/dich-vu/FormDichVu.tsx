@@ -1,5 +1,6 @@
 "use client";
 
+import { MA_ALBUM } from "@/lib/maAlbum";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { TEN_LOAI, type DuLieuDichVu, type LoaiDichVu } from "@/lib/dichVuChung";
@@ -99,6 +100,45 @@ export function FormDichVu({ che, id, banDau, dsLoai, nhomGoiY, onXong }: Props)
               <option key={n} value={n} />
             ))}
           </datalist>
+        </O>
+
+        {/*
+          MÃ ALBUM GẮN SẴN — anh yêu cầu 18/11/2026.
+
+          Lúc lập hợp đồng, web đặt tên album theo mã: "Baby - Kim Tuyền",
+          "NS - Anh Thư". Trước đây mã chỉ suy được từ loại buổi trong lịch
+          (nhà gái ra HER, nhà trai ra HIS), nên hợp đồng Baby hay Nhà Su ra
+          album tên trơn — lọc ở trang quản lý album không bao giờ ra.
+
+          Gắn ở ĐÂY chứ không đoán theo nhóm dịch vụ: nhóm là chữ tự do người
+          bán gõ ("Cưới", "Baby", "Thuê lẻ"), còn mã album là bộ cố định dùng
+          để lọc. Hai thứ trùng nhau ở vài chỗ nhưng không phải một, và đoán
+          sai thì album mang mã của mảng khác.
+
+          Bấm lại chính mã đang chọn để bỏ — không cần nút "xoá mã" riêng.
+        */}
+        <O nhan="Mã album" goiY="Album của hợp đồng dùng dịch vụ này sẽ mang mã đó ở đầu tên. Để trống nếu không cần.">
+          <div className="flex flex-wrap gap-1.5">
+            {MA_ALBUM.map((m) => {
+              const dangChon = du.maAlbum === m.ma;
+              return (
+                <button
+                  key={m.ma}
+                  type="button"
+                  onClick={() => doi("maAlbum", dangChon ? "" : m.ma)}
+                  title={m.nghia ? `${m.ma} — ${m.nghia}` : m.ma}
+                  aria-pressed={dangChon}
+                  className={`min-h-8 rounded-full border px-2.5 text-xs tracking-wide transition ${
+                    dangChon
+                      ? "border-transparent bg-fg text-bg"
+                      : "border-line-strong bg-bg-raised text-fg-muted hover:border-accent hover:text-fg"
+                  }`}
+                >
+                  {m.ma}
+                </button>
+              );
+            })}
+          </div>
         </O>
         <div className="grid grid-cols-[1fr_7rem] gap-3">
           <O nhan="Đơn giá (đ)">

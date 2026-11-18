@@ -36,7 +36,7 @@ export default async function DichVuPage({ searchParams }: Props) {
     prisma.dichVu.groupBy({ by: ["loai"], where: { dangDung: tt === "dang-dung" }, _count: { _all: true } }),
     prisma.dichVu.findMany({
       where: { loai, dangDung: tt === "dang-dung" },
-      select: { id: true, maDV: true, ten: true, nhom: true, chiTiet: true, donGia: true, donVi: true },
+      select: { id: true, maDV: true, ten: true, nhom: true, maAlbum: true, chiTiet: true, donGia: true, donVi: true },
       orderBy: [{ nhom: "asc" }, { maDV: "asc" }],
     }),
   ]);
@@ -156,7 +156,19 @@ export default async function DichVuPage({ searchParams }: Props) {
                     </Link>
                     {dong1 && <span className="mt-0.5 block max-w-md truncate text-xs text-fg-faint">{dong1}</span>}
                   </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{d.nhom ?? "—"}</td>
+                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
+                    {d.nhom ?? "—"}
+                    {/*
+                      Mã album gắn sẵn, hiện ngay cạnh nhóm — anh thêm
+                      18/11/2026. Để ở đây chứ không thêm một cột nữa: bảng
+                      này đã có bốn cột, mà mã album chỉ vài chục dòng có.
+                    */}
+                    {d.maAlbum && (
+                      <span className="ml-2 rounded-full border border-accent/40 bg-accent-soft px-2 py-0.5 text-[11px] tracking-wide text-accent">
+                        {d.maAlbum}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">
                     {tien(d.donGia)}đ
                     {d.donVi && <span className="text-fg-faint"> / {d.donVi}</span>}

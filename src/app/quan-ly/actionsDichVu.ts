@@ -18,6 +18,7 @@ const CHU: Record<Exclude<keyof DichVuSach, "maDV">, string> = {
   loai: "loại",
   ten: "tên",
   nhom: "nhóm",
+  maAlbum: "mã album",
   chiTiet: "chi tiết",
   donGia: "đơn giá",
   donVi: "đơn vị",

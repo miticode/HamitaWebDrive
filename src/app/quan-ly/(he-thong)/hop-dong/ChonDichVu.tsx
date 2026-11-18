@@ -463,7 +463,7 @@ function KhungTaoMuc({
       setLoi(null);
       const gia = Number(donGia.replace(/\D/g, "")) || 0;
       const kq = await themDichVuAction({
-        maDV, loai, ten, nhom, chiTiet: "", donGia: String(gia), donVi: "", dangDung: true,
+        maDV, loai, ten, nhom, maAlbum: "", chiTiet: "", donGia: String(gia), donVi: "", dangDung: true,
       });
       if (kq.loi || !kq.id) {
         setLoi(kq.loi ?? "Chưa tạo được mục này.");

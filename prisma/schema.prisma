@@ -767,6 +767,14 @@ model DichVu {
   /// Nhom trong loai — cot "Loại DV" ben AppSheet (Cưới, Baby, Thuê lẻ, IN ẢNH…). Chu tu do.
   nhom         String?
   chiTiet      String?
+  /// Ma album gan san cho dich vu nay — "HC", "AB", "Baby", "NS"… (xem
+  /// MA_ALBUM trong src/lib/maAlbum.ts). null = khong gan ma nao.
+  ///
+  /// Them 18/11/2026: luc tao album tu hop dong, web lay ma tu day cong voi
+  /// ma suy ra tu loai buoi trong lich (nha gai -> HER, nha trai -> HIS).
+  /// Truoc do chi co nguon thu hai, nen hop dong Baby hay Nha Su ra album
+  /// ten tron, khong loc duoc o trang quan ly album.
+  maAlbum      String?
   donGia       Int      @default(0)
   donVi        String?
   /// Duong dan anh ben AppSheet ("Dịch vụ_Images/ADQ01.Hình ảnh.083439.jpg").

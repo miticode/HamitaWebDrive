@@ -269,6 +269,19 @@ export async function taoThuMucVaAlbum(
           where: { ngay: { not: null } },
           orderBy: { ngay: "asc" },
         },
+        /*
+          Mã album gắn sẵn trên từng dịch vụ (anh yêu cầu 18/11/2026) — nguồn
+          thứ hai của mã, bên cạnh loại buổi trong lịch.
+
+          Chỉ lấy dòng còn gắn được với bảng Dịch vụ. 1.081/6.675 dòng chi tiết
+          mang mã KHÔNG còn trong bảng (đo 15/09, xem model ChiTietHopDong),
+          những dòng đó `dichVu` là null và không suy ra mã nào — đúng, vì
+          không biết chúng từng là dịch vụ gì.
+        */
+        chiTiet: {
+          where: { matBenAppSheet: null },
+          select: { dichVu: { select: { maAlbum: true } } },
+        },
       },
     });
     if (!hd) return { ok: false, loi: "Hợp đồng này không còn." };
@@ -295,16 +308,31 @@ export async function taoThuMucVaAlbum(
       Minh Trí & Tấn Đạt", đúng nếp tiệm vốn đã đặt ("HIS - HER - Nhã hân &
       Tân Lộc", 11/11/2026).
 
-      Mã suy từ LOẠI BUỔI trong lịch chụp, không suy từ loại hợp đồng: cùng là
-      hợp đồng CƯỚI mà có nhà chỉ chụp một bên. Lịch là thứ người lập vừa điền
-      tay, nên nó nói đúng nhà này chụp những đâu.
+      HAI NGUỒN MÃ, gộp lại rồi bỏ trùng:
+
+        · Mã gắn sẵn trên DỊCH VỤ (anh thêm 18/11/2026) — "BABY TIÊU CHUẨN 1"
+          gắn mã Baby, gói Nhà Su gắn NS. Không có nguồn này thì hợp đồng
+          Baby hay Nhà Su ra album tên trơn, lọc ở trang quản lý album không
+          bao giờ ra.
+        · Mã suy từ LOẠI BUỔI trong lịch — nhà gái ra HER, nhà trai ra HIS.
+
+      Không suy từ loại hợp đồng: cùng là hợp đồng CƯỚI mà có nhà chỉ chụp một
+      bên, nên lịch nói đúng hơn. Thứ tự trong tên do `ganNhieuMa` xếp theo bộ
+      mã, không theo thứ tự gộp ở đây.
 
       Người bấm nút tạo tay mà tự đặt tên thì KHÔNG đụng vào: họ gõ sẵn mã rồi.
     */
-    const maTuLich = tenTuChon
+    const ma = tenTuChon
       ? []
-      : [...new Set(hd.lich.map((l) => maAlbumTheoBuoi(l.loai)).filter((m): m is string => !!m))];
-    const tenAlbum = maTuLich.length > 0 ? ganNhieuMa(tenGoc, maTuLich) : tenGoc;
+      : [
+          ...new Set([
+            /* Mã gắn sẵn trên dịch vụ: Baby, NS, AB… */
+            ...hd.chiTiet.map((d) => d.dichVu?.maAlbum ?? null),
+            /* Mã suy từ loại buổi: nhà gái ra HER, nhà trai ra HIS. */
+            ...hd.lich.map((l) => maAlbumTheoBuoi(l.loai)),
+          ].filter((m): m is string => !!m)),
+        ];
+    const tenAlbum = ma.length > 0 ? ganNhieuMa(tenGoc, ma) : tenGoc;
 
     /*
       THƯ MỤC DRIVE KHÔNG MANG MÃ — anh chốt 15/11/2026.

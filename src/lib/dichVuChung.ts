@@ -1,3 +1,5 @@
+import { MA_ALBUM } from "@/lib/maAlbum";
+
 import { docTien } from "@/lib/studioNoiBo";
 
 /**
@@ -58,6 +60,8 @@ export type DuLieuDichVu = {
   loai: LoaiDichVu;
   ten: string;
   nhom: string;
+  /** Mã album gắn sẵn — "HC", "Baby", "NS"… Chuỗi rỗng = không gắn. */
+  maAlbum: string;
   chiTiet: string;
   donGia: string;
   donVi: string;
@@ -69,6 +73,7 @@ export type DichVuSach = {
   loai: LoaiDichVu;
   ten: string;
   nhom: string | null;
+  maAlbum: string | null;
   chiTiet: string | null;
   donGia: number;
   donVi: string | null;
@@ -90,6 +95,16 @@ export function kiemDichVu(du: DuLieuDichVu): { loi: string } | DichVuSach {
 
   const nhom = gon(du.nhom);
   if (nhom.length > 60) return { loi: "Tên nhóm dài quá." };
+
+  /*
+    Mã album phải NẰM TRONG bộ mã đã biết, không nhận chữ tự do.
+
+    Bộ mã là một nguồn duy nhất (nguyên tắc 37) và trang quản lý album lọc
+    theo đúng bộ đó. Cho gõ tự do thì sẽ có người gõ "his " hay "HER-", album
+    mang mã đó lọc mãi không ra mà nhìn thì vẫn thấy đúng.
+  */
+  const maAlbum = gon(du.maAlbum);
+  if (maAlbum && !MA_ALBUM.some((m) => m.ma === maAlbum)) return { loi: "Mã album không có trong bộ mã." };
   const donVi = gon(du.donVi);
   if (donVi.length > 30) return { loi: "Đơn vị dài quá." };
 
@@ -105,6 +120,7 @@ export function kiemDichVu(du: DuLieuDichVu): { loi: string } | DichVuSach {
     loai: du.loai,
     ten,
     nhom: nhom || null,
+    maAlbum: maAlbum || null,
     chiTiet: chiTiet || null,
     donGia,
     donVi: donVi || null,
