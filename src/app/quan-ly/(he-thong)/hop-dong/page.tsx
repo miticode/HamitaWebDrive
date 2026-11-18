@@ -163,8 +163,15 @@ export default async function HopDongPage({ searchParams }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Ngày đặt</th>
+              {/*
+                KHÁCH ĐỨNG ĐẦU, không phải ngày đặt — sửa 18/11/2026.
+
+                Người ta tìm một hợp đồng bằng TÊN KHÁCH; ngày đặt chỉ là thứ
+                tra sau khi đã thấy đúng nhà. Để ngày ở cột đầu thì mắt lướt
+                danh sách gặp một cột số trước khi gặp thứ mình cần.
+              */}
               <th className="px-4 py-2.5 font-medium">Khách</th>
+              <th className="px-4 py-2.5 font-medium">Ngày đặt</th>
               <th className="px-4 py-2.5 font-medium">Loại</th>
               <th className="px-4 py-2.5 font-medium">Trạng thái</th>
               <th className="px-4 py-2.5 text-right font-medium">Tổng tiền</th>
@@ -174,7 +181,6 @@ export default async function HopDongPage({ searchParams }: Props) {
           <tbody className="divide-y divide-line">
             {hien.map((h) => (
               <tr key={h.id} className="align-top transition hover:bg-bg-soft">
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{ngayVN(h.ngayDat)}</td>
                 <td className="min-w-48 px-4 py-2.5">
                   <Link href={`/quan-ly/hop-dong/${h.id}`} className="font-medium hover:text-accent">
                     {h.tenKhach || h.khachHang?.ten || h.maHD}
@@ -183,6 +189,7 @@ export default async function HopDongPage({ searchParams }: Props) {
                     <span className="block text-xs text-fg-faint tabular-nums">{h.khachHang.soDienThoai}</span>
                   )}
                 </td>
+                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{ngayVN(h.ngayDat)}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{h.loaiDV}</td>
                 <td className="px-4 py-2.5"><ChipTrangThai trangThai={h.trangThai} /></td>
                 <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">{tien(h.tongTien)}đ</td>

@@ -417,6 +417,14 @@ body {
 [data-admin-theme="dark"] .bg-amber-100 {
   background-color: #33280f;
 }
+/*
+  Sắc 50 là nền vàng NHẠT NHẤT, dành cho nền sáng — để nguyên trên nền tối thì
+  thành một mảng gần trắng. Bỏ sót nó tới 18/11/2026, khi khối "Khách còn nợ"
+  ở trang hợp đồng chuyển sang dùng sắc này và chói hẳn lên giữa nền tối.
+*/
+[data-admin-theme="dark"] .bg-amber-50 {
+  background-color: #2b2210;
+}
 /* Nút xoá: nền đỏ đậm vốn đã hợp nền tối, chỉ hạ bớt độ gắt. */
 [data-admin-theme="dark"] .bg-red-700 {
   background-color: #b91c1c;

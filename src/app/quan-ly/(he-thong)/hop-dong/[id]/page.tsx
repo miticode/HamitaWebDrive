@@ -14,6 +14,7 @@ import { buocTiepTheo, docBuocDayDu, laBuocXong } from "@/lib/buocHopDong";
 import { ChipTrangThai } from "../ChipTrangThai";
 import { NutPhieuThu, NutXoaHopDong, ThemPhieuThu } from "./NutHopDong";
 import { KhoiLich } from "./KhoiLich";
+import { KhoiTien } from "./KhoiTien";
 
 export const dynamic = "force-dynamic";
 
@@ -134,7 +135,22 @@ export default async function ChiTietHopDongPage({ params }: Props) {
               Sửa hợp đồng
             </Link>
           )}
-          {quanTri && <NutXoaHopDong id={hd.id} maHD={hd.maHD} tenKhach={hd.tenKhach} />}
+          {/*
+            NÚT XOÁ TÁCH KHỎI HAI NÚT KIA — sửa 18/11/2026.
+
+            Trước đó nó đứng sát "Sửa hợp đồng", cùng cỡ cùng dáng, chỉ khác
+            màu chữ. Hai nút cạnh nhau mà một cái sửa được còn một cái xoá hẳn
+            cả hợp đồng là mời người ta bấm nhầm — nhất là trên điện thoại khi
+            các nút xuống dòng và đổi chỗ cho nhau.
+
+            Hộp xác nhận hai lần bấm vẫn còn nguyên, đây chỉ là lớp đầu tiên.
+          */}
+          {quanTri && (
+            <>
+              <span className="mx-1 hidden h-5 w-px bg-line sm:block" aria-hidden />
+              <NutXoaHopDong id={hd.id} maHD={hd.maHD} tenKhach={hd.tenKhach} />
+            </>
+          )}
         </div>
       </div>
 
@@ -181,53 +197,14 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           </dl>
         </section>
 
-        <section className="rounded-md border border-line bg-bg-raised p-4">
-          <h2 className="eyebrow">Tiền</h2>
-          <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 text-sm tabular-nums">
-            <dt className="text-fg-muted">Thành tiền</dt>
-            <dd className="text-right">{tien(hd.thanhTien)}đ</dd>
-            {hd.khuyenMai !== 0 && (
-              <>
-                <dt className="text-fg-muted">Khuyến mãi</dt>
-                <dd className="text-right">−{tien(hd.khuyenMai)}đ</dd>
-              </>
-            )}
-            <dt className="font-medium">Tổng</dt>
-            <dd className="text-right font-medium">{tien(hd.tongTien)}đ</dd>
-            <dt className="text-fg-muted">Đã thu</dt>
-            <dd className="text-right">{tien(hd.daThu)}đ</dd>
-            {/*
-              BA trạng thái, không phải hai — thử trên giao diện 14/11/2026 mới
-              thấy chỗ thiếu.
-
-              Bản cũ chỉ phân biệt "còn nợ" (vàng) và "không nợ" (xám nhạt), nên
-              số ÂM — studio đã thu DƯ, tức đang nợ lại khách — rơi vào nhánh
-              xám nhạt và trông như một con số không đáng bận tâm. Đo trên dữ
-              liệu thật: 2 hợp đồng đang thu dư, tổng 60.000đ.
-            */}
-            {hd.conLai < 0 ? (
-              <>
-                <dt className="font-medium text-accent">Thu dư</dt>
-                <dd className="text-right font-medium text-accent">{tien(-hd.conLai)}đ</dd>
-              </>
-            ) : (
-              <>
-                <dt className={hd.conLai > 0 ? "font-medium text-amber-800" : "text-fg-muted"}>Còn lại</dt>
-                <dd className={`text-right ${hd.conLai > 0 ? "font-medium text-amber-800" : ""}`}>{tien(hd.conLai)}đ</dd>
-              </>
-            )}
-          </dl>
-          {hd.conLai < 0 && (
-            <p className="mt-3 text-xs text-accent">
-              Khách đã trả nhiều hơn tổng hợp đồng — studio còn phải trả lại {tien(-hd.conLai)}đ.
-            </p>
-          )}
-          {choDuyet.length > 0 && (
-            <p className="mt-3 text-xs text-amber-800">
-              Đã thu có tính {choDuyet.length} phiếu đang chờ duyệt — AppSheet cộng cả phiếu chờ duyệt.
-            </p>
-          )}
-        </section>
+        <KhoiTien
+          thanhTien={hd.thanhTien}
+          khuyenMai={hd.khuyenMai}
+          tongTien={hd.tongTien}
+          daThu={hd.daThu}
+          conLai={hd.conLai}
+          soPhieuChoDuyet={choDuyet.length}
+        />
       </div>
 
       <section className="mt-8">
