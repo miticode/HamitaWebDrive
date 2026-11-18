@@ -25,6 +25,9 @@ export type HanhDong =
   | "sua-noi-quy"
   | "them-dich-vu"
   | "sua-dich-vu"
+  | "them-danh-muc"
+  | "sua-danh-muc"
+  | "xoa-danh-muc"
   | "them-loai-buoi"
   | "sua-loai-buoi"
   | "xoa-loai-buoi"
@@ -89,6 +92,9 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "sua-noi-quy": "Sửa nội quy",
   "them-dich-vu": "Thêm dịch vụ / trang phục",
   "sua-dich-vu": "Sửa dịch vụ / trang phục",
+  "them-danh-muc": "Thêm giá trị danh mục",
+  "sua-danh-muc": "Sửa giá trị danh mục",
+  "xoa-danh-muc": "Xoá giá trị danh mục",
   "them-loai-buoi": "Thêm loại buổi chụp",
   "sua-loai-buoi": "Sửa loại buổi chụp",
   "xoa-loai-buoi": "Xoá loại buổi chụp",

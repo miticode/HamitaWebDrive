@@ -1202,6 +1202,39 @@ model KhachTiemNang {
 ///
 /// CODE VAN GIU CAC_BUOC lam ban du phong: bang nay rong (chua chep) thi form
 /// hop dong khong duoc phep tro nen trong tron.
+/// DANH MUC DUNG CHUNG — anh yeu cau 18/11/2026.
+///
+/// Mot bang cho MOI danh muc nho cua form lap hop dong, phan biet bang cot
+/// `nhom`. Lam vay thay vi moi danh muc mot bang vi chung giong het nhau:
+/// chi co ten, thu tu, bat/tat. Ba bang rieng la ba lan sua schema, ba server
+/// action gan nhu chep lai nhau.
+///
+///   "loai-hop-dong"  CUOI, HOI, Baby, NHA SU…   (13 gia tri, 2.399 hop dong)
+///   "hinh-thuc-thu"  Tien mat, Chuyen khoan      (2 gia tri, 4.282 phieu)
+///   "noi-dung-thu"   Coc, Coc lan 1, Du…         (5 GOI Y — xem duoi)
+///
+/// RIENG "noi-dung-thu" chi la GOI Y, khong phai danh sach dong: do 18/11 co
+/// 234 noi dung go tay ngoai bang (605 phieu) — "Cọc 200k", "Tt giày",
+/// "thanh toán 3 bộ vest". Khoa lai la 605 phieu kieu do khong lap lai duoc.
+///
+/// Loai buoi chup (LoaiBuoi) va buoc hop dong (BuocHopDong) KHONG nam o day:
+/// chung co cot rieng — maAlbum, truoc/sau/trachNhiem.
+model DanhMuc {
+  id         String   @id @default(cuid())
+  /// "loai-hop-dong" | "hinh-thuc-thu" | "noi-dung-thu".
+  nhom       String
+  /// Gia tri hien trong o chon, va luu thang vao cot cua hop dong / phieu thu.
+  ten        String
+  thuTu      Int      @default(0)
+  /// false = khong hien trong o chon nua, du lieu cu van doc binh thuong.
+  dangDung   Boolean  @default(true)
+  taoLuc     DateTime @default(now())
+  capNhatLuc DateTime @updatedAt
+
+  @@unique([nhom, ten])
+  @@index([nhom, dangDung, thuTu])
+}
+
 /// LOAI BUOI CHUP — anh yeu cau 18/11/2026, thay bang cung LOAI_LICH.
 ///
 /// Truoc do 12 loai nam cung trong src/lib/hopDongChung.ts. Do 18/11: ba loai

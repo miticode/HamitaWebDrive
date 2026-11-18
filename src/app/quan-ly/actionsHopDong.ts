@@ -11,6 +11,7 @@ import { demLuotDung } from "@/lib/dichVuHayDung";
 import { coGiaoAnh, taoThuMucVaAlbum } from "@/lib/thuMucHopDong";
 import { MA_ALBUM } from "@/lib/maAlbum";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
+import { docBaDanhMuc } from "@/lib/danhMuc";
 import { lapHopDongMoi, maNguoiLap, type NguoiLap } from "@/lib/taoHopDong";
 import { ngayVN, type DuLieuHopDongMoi, type DuLieuPhieuThu, type DuLieuSuaHopDong } from "@/lib/hopDongChung";
 import { duyetPhieuThu, suaHopDong, themPhieuThu, xoaHopDong, xoaPhieuThu } from "@/lib/suaHopDong";
@@ -472,6 +473,8 @@ export type DuLieuFormHopDong = {
   giaHangMuc: { dichVuId: string; hangMuc: string | null; donGia: number }[];
   /** Loại buổi chụp đang dùng, đọc từ bảng `LoaiBuoi`. */
   loaiBuoi: { ten: string; maAlbum: string | null }[];
+  /** Ba danh mục nhỏ, đọc từ bảng `DanhMuc`. */
+  danhMuc: { loaiHopDong: string[]; hinhThucThu: string[]; noiDungThu: string[] };
   /** maDV → số lần đã dùng trong hợp đồng; xếp danh sách lúc duyệt. */
   luotDung: Record<string, number>;
   homNay: string;
@@ -496,7 +499,7 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
   if (!nguoi) return { loi: "Tài khoản này chưa được lập hợp đồng, hoặc phiên đăng nhập đã hết." };
 
   const prisma = getPrisma();
-  const [dichVu, giaHangMuc, luotDung, cacBuoc, loaiBuoi] = await Promise.all([
+  const [dichVu, giaHangMuc, luotDung, cacBuoc, loaiBuoi, danhMuc] = await Promise.all([
     prisma.dichVu.findMany({
       where: { dangDung: true },
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
@@ -509,6 +512,7 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
     demLuotDung(),
     docCacBuoc(),
     docLoaiBuoi(),
+    docBaDanhMuc(),
   ]);
 
   return {
@@ -517,6 +521,7 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
     luotDung,
     cacBuoc,
     loaiBuoi,
+    danhMuc,
     // Hôm nay theo giờ studio, không theo giờ máy khách (nguyên tắc 35).
     homNay: new Intl.DateTimeFormat("en-CA", {
       timeZone: MUI_GIO,

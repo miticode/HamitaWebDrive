@@ -72,9 +72,15 @@ export default async function HeThongLayout({ children }: { children: React.Reac
     // Danh sách nhân viên: quản lý + sale (anh chốt 25/09/2026).
     ...(xemNhanVien(nguoi) ? [{ nhom: "Thông tin studio", ten: "Nhân viên", href: "/quan-ly/nhan-vien" }] : []),
     { nhom: "Thông tin studio", ten: "Nội quy", href: "/quan-ly/noi-quy" },
-    { nhom: "Thông tin studio", ten: "Dịch vụ & trang phục", href: "/quan-ly/dich-vu" },
-    // Loại buổi chụp (anh yêu cầu 18/11/2026): cả tiệm xem, chỉ quản lý sửa.
-    { nhom: "Thông tin studio", ten: "Loại buổi chụp", href: "/quan-ly/loai-buoi" },
+    /*
+      MỘT MỤC CHO MỌI DANH MỤC — anh chốt 18/11/2026 ("tất cả những mục có
+      CRUD sẽ gom chung vô 1 mục gọi là quản lý dịch vụ").
+
+      Trang này có tám tab: dịch vụ, trang phục, sản phẩm, loại buổi chụp,
+      loại hợp đồng, trạng thái hợp đồng, hình thức thu, nội dung thu. Tách
+      ra tám mục thì thanh bên đang 20 mục sẽ thành 27.
+    */
+    { nhom: "Thông tin studio", ten: "Quản lý dịch vụ", href: "/quan-ly/dich-vu" },
     // Có số tài khoản ngân hàng — chỉ quản lý (AppSheet cũ cũng chỉ Admin xem).
     ...(quanTri ? [{ nhom: "Thông tin studio", ten: "Thông tin studio", href: "/quan-ly/thong-tin" }] : []),
     // Sổ sự cố: CẢ TIỆM. Người thấy máy hỏng là người đang đứng ở đó, không

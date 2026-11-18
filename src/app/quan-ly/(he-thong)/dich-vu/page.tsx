@@ -4,10 +4,13 @@ import { tien } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { LOAI_DICH_VU, TEN_LOAI, boDau, laLoaiDichVu, loaiDuocSua, type LoaiDichVu } from "@/lib/dichVuChung";
 import { OMaAlbum } from "./OMaAlbum";
+import { TabDanhMuc, TrangDanhMuc } from "./TrangDanhMuc";
 
 export const dynamic = "force-dynamic";
 
-type Props = { searchParams: Promise<{ loai?: string; nhom?: string; q?: string; tt?: string; so?: string }> };
+type Props = {
+  searchParams: Promise<{ loai?: string; nhom?: string; q?: string; tt?: string; so?: string; dm?: string }>;
+};
 
 /*
   Mỗi lượt hiện 150 dòng. Trang phục có 887 mục, 859 cái cùng nhóm "Thuê lẻ" —
@@ -25,6 +28,17 @@ const MOI_LUOT = 150;
 export default async function DichVuPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
   const sp = await searchParams;
+
+  /*
+    MỘT TRANG CHO MỌI DANH MỤC — anh chốt 18/11/2026 ("tất cả những mục có
+    CRUD sẽ gom chung vô 1 mục gọi là quản lý dịch vụ").
+
+    `?dm=` chuyển sang bảng danh mục; không có thì vẫn là bảng dịch vụ như cũ.
+    Dùng một trang với tham số thay vì tám trang riêng: tám trang là tám lần
+    chép lại khung tiêu đề và thanh tab, mà thanh bên cũng dài thêm tám mục.
+  */
+  if (sp.dm) return <TrangDanhMuc nhom={sp.dm} nguoi={nguoi} />;
+
   const l = sp.loai ?? "";
   const loai: LoaiDichVu = laLoaiDichVu(l) ? l : "dich-vu";
   const nhom = sp.nhom ?? "";
@@ -71,7 +85,7 @@ export default async function DichVuPage({ searchParams }: Props) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">Thông tin studio</p>
-          <h1 className="mt-2 font-display text-3xl font-light">Dịch vụ &amp; trang phục</h1>
+          <h1 className="mt-2 font-display text-3xl font-light">Quản lý dịch vụ</h1>
         </div>
         {themDuoc && (
           <Link href={`/quan-ly/dich-vu/moi?loai=${loai}`} className="btn-primary">
@@ -93,6 +107,7 @@ export default async function DichVuPage({ searchParams }: Props) {
             {TEN_LOAI[x]} <span className="text-fg-faint tabular-nums">{soTheoLoai[x] ?? 0}</span>
           </Link>
         ))}
+        <TabDanhMuc dangMo={null} />
       </nav>
 
       {/* Lọc bằng đường link thường như mục Nhân viên: gửi link cho nhau cũng mở ra đúng bộ lọc. */}

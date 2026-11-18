@@ -40,6 +40,7 @@ export function FormHopDongMoi({
   tenNguoiLap,
   cacBuoc = CAC_BUOC,
   loaiBuoi,
+  danhMuc,
   onThoi,
   onXong,
 }: {
@@ -60,6 +61,11 @@ export function FormHopDongMoi({
    * giờ được phép rỗng, kể cả khi chưa ai nhập gì vào bảng mới.
    */
   loaiBuoi?: readonly { ten: string; maAlbum: string | null }[];
+  /**
+   * Ba danh mục nhỏ đọc từ bảng `DanhMuc` (anh yêu cầu 18/11/2026).
+   * Thiếu thì dùng bảng cứng — ô chọn không bao giờ được phép rỗng.
+   */
+  danhMuc?: { loaiHopDong: string[]; hinhThucThu: string[]; noiDungThu: string[] };
   /** Quản lý lập phiếu thu thì ghi thẳng "đã thu"; sale thì phiếu nằm chờ duyệt. */
   laQuanLy: boolean;
   tenNguoiLap: string;
@@ -166,6 +172,9 @@ export function FormHopDongMoi({
     [loaiBuoi],
   );
   const loaiDau = dsLoai[0]?.ten ?? LOAI_LICH[0];
+  const dsLoaiHD = danhMuc?.loaiHopDong?.length ? danhMuc.loaiHopDong : [...LOAI_DV_HD];
+  const dsHinhThuc = danhMuc?.hinhThucThu?.length ? danhMuc.hinhThucThu : [...HINH_THUC_THU];
+  const dsNoiDung = danhMuc?.noiDungThu?.length ? danhMuc.noiDungThu : [...NOI_DUNG_THU];
   const maTheoLoai = useMemo(() => {
     const m = new Map<string, string>();
     for (const l of dsLoai) if (l.maAlbum) m.set(l.ten.trim().toLowerCase(), l.maAlbum);
@@ -510,7 +519,7 @@ export function FormHopDongMoi({
           </O>
           <O nhan="Loại hợp đồng">
             <select value={loaiDV} onChange={(e) => setLoaiDV(e.target.value)} className="input">
-              {LOAI_DV_HD.map((l) => (
+              {dsLoaiHD.map((l) => (
                 <option key={l} value={l}>
                   {l}
                 </option>
@@ -769,7 +778,7 @@ export function FormHopDongMoi({
                   onChange={(e) => setThu((ds) => ds.map((x, j) => (i === j ? { ...x, hinhThuc: e.target.value } : x)))}
                   className="input"
                 >
-                  {HINH_THUC_THU.map((h) => (
+                  {dsHinhThuc.map((h) => (
                     <option key={h} value={h}>
                       {h}
                     </option>
@@ -782,7 +791,7 @@ export function FormHopDongMoi({
                   onChange={(e) => setThu((ds) => ds.map((x, j) => (i === j ? { ...x, noiDung: e.target.value } : x)))}
                   className="input"
                 >
-                  {NOI_DUNG_THU.map((n) => (
+                  {dsNoiDung.map((n) => (
                     <option key={n} value={n}>
                       {n}
                     </option>
