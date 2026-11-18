@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { tien } from "@/lib/constants";
 import { docTien } from "@/lib/studioNoiBo";
 import { LOAI_DICH_VU, TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
-import { loaiBuoiGoiY, soBuoiCuaGoi } from "@/lib/goiNhieuNgay";
+import { loaiBuoiGoiY, maAlbumTheoBuoi, soBuoiCuaGoi } from "@/lib/goiNhieuNgay";
+import { MA_ALBUM, ganNhieuMa } from "@/lib/maAlbum";
 import {
   BUOC_MOI_LAP,
   CAC_BUOC,
@@ -137,6 +138,34 @@ export function FormHopDongMoi({
     121/380 việc trùng tên hạng mục), nên web ghi tên hạng mục và để người lập
     sửa nếu muốn.
   */
+  /*
+    MÃ ALBUM — anh chốt 18/11/2026.
+
+    Web tự suy từ hai nguồn: mã gắn trên dịch vụ, và loại buổi trong lịch
+    (nhà gái ra HER, Đính Hôn ra ĐH…). Nhưng đo 325 dòng dùng mấy gói "NGÀY
+    CƯỚI/HỎI 1 NGÀY" thì chỉ 215 ca suy ra được — 34% còn lại lịch chỉ ghi
+    "Ngày chụp" chung chung, mà chính gói đó dùng cho cả cưới lẫn đám hỏi.
+
+    Nên gợi ý sẵn, rồi để người lập sửa. Họ đang ngồi với khách, họ biết.
+
+    `maTuGo === null` nghĩa là CHƯA AI ĐỤNG VÀO, cứ theo gợi ý. Khác hẳn
+    mảng rỗng — mảng rỗng là cố ý không gắn mã nào. Gộp hai cái đó lại thì
+    người cố tình bỏ hết mã sẽ thấy nó tự mọc lại.
+  */
+  const maGoiY = useMemo(() => {
+    const tu = [
+      ...dong.map((d) => dichVu.find((x) => x.id === d.dichVuId)?.maAlbum ?? null),
+      ...lich.map((l) => maAlbumTheoBuoi(l.loai)),
+    ].filter((m): m is string => !!m);
+    return [...new Set(tu)];
+  }, [dong, lich, dichVu]);
+  const [maTuGo, setMaTuGo] = useState<string[] | null>(null);
+  const maAlbum = maTuGo ?? maGoiY;
+  const tenAlbumXem = maAlbum.length > 0 ? ganNhieuMa(tenKhach || "tên khách", maAlbum) : tenKhach || "tên khách";
+
+  const doiMa = (m: string) =>
+    setMaTuGo(maAlbum.includes(m) ? maAlbum.filter((x) => x !== m) : [...maAlbum, m]);
+
   const viecGoiY = useMemo(
     () =>
       dong.flatMap((d, i) =>
@@ -323,7 +352,7 @@ export function FormHopDongMoi({
         viec: viecGoiY
           .filter((v) => !boViec.has(v.khoa))
           .map((v) => ({ dong: v.dong, loai: v.loai, donGia: v.donGia, soLuong: v.soLuong, thoiHan: v.thoiHan })),
-      });
+      }, maAlbum);
       if ("loi" in kq) {
         setLoi(kq.loi);
         return;
@@ -845,6 +874,50 @@ export function FormHopDongMoi({
         >
           Thêm dòng lịch
         </button>
+      </Khung>
+
+      {/* ── Mã album ──────────────────────────────────────────────────── */}
+      <Khung
+        ten="Mã album"
+        chu="Album trên web sẽ mang mã này ở đầu tên. Thư mục trên Drive thì không — mã chỉ để lọc ở trang quản lý album."
+      >
+        <div className="flex flex-wrap gap-1.5">
+          {MA_ALBUM.map((m) => {
+            const chon = maAlbum.includes(m.ma);
+            return (
+              <button
+                key={m.ma}
+                type="button"
+                onClick={() => doiMa(m.ma)}
+                title={m.nghia ? `${m.ma} — ${m.nghia}` : m.ma}
+                aria-pressed={chon}
+                className={`min-h-8 rounded-full border px-2.5 text-xs tracking-wide transition ${
+                  chon
+                    ? "border-transparent bg-fg text-bg"
+                    : "border-line-strong bg-bg-raised text-fg-muted hover:border-accent hover:text-fg"
+                }`}
+              >
+                {m.ma}
+              </button>
+            );
+          })}
+        </div>
+        {/*
+          Hiện luôn TÊN SẼ RA. Người lập không phải dịch "HIS + HER" trong
+          đầu thành cái tên thật, và nhìn một cái là biết mình bấm đúng chưa.
+        */}
+        <p className="mt-2 text-xs text-fg-muted">
+          Album sẽ tên: <b className="text-fg">{tenAlbumXem}</b>
+          {maTuGo === null && maGoiY.length > 0 && <span className="text-fg-faint"> · web tự đoán theo dịch vụ và lịch</span>}
+          {maTuGo !== null && (
+            <>
+              {" · "}
+              <button type="button" onClick={() => setMaTuGo(null)} className="underline underline-offset-2 hover:text-accent">
+                về như web đoán
+              </button>
+            </>
+          )}
+        </p>
       </Khung>
 
       {/* ── Đầu việc ──────────────────────────────────────────────────── */}

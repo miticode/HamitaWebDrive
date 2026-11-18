@@ -15,6 +15,8 @@ export type DichVuGon = {
   donVi: string | null;
   /** Mô tả gói trong bảng — chảy thẳng vào ô Chi tiết của dòng hợp đồng. */
   chiTiet: string | null;
+  /** Mã album gắn sẵn cho dịch vụ này — dùng để gợi ý mã cho album. */
+  maAlbum?: string | null;
 };
 
 export type GiaGon = { dichVuId: string; hangMuc: string | null; donGia: number };

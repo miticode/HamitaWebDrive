@@ -9,6 +9,7 @@ import { ghiNhatKy } from "@/lib/nhatKy";
 import { docCacBuoc } from "@/lib/buocHopDong";
 import { demLuotDung } from "@/lib/dichVuHayDung";
 import { coGiaoAnh, taoThuMucVaAlbum } from "@/lib/thuMucHopDong";
+import { MA_ALBUM } from "@/lib/maAlbum";
 import { lapHopDongMoi, maNguoiLap, type NguoiLap } from "@/lib/taoHopDong";
 import { ngayVN, type DuLieuHopDongMoi, type DuLieuPhieuThu, type DuLieuSuaHopDong } from "@/lib/hopDongChung";
 import { duyetPhieuThu, suaHopDong, themPhieuThu, xoaHopDong, xoaPhieuThu } from "@/lib/suaHopDong";
@@ -98,6 +99,16 @@ export async function timKhachAction(tuKhoa: string): Promise<KhachTim[]> {
 
 export async function lapHopDongAction(
   du: DuLieuHopDongMoi,
+  /**
+   * Mã album người lập chọn trong form, đè lên phép suy từ dịch vụ và lịch.
+   *
+   * Thêm 18/11/2026: gói "NGÀY CƯỚI/HỎI 1 NGÀY" dùng cho cả cưới lẫn hỏi nên
+   * không gắn mã cố định lên dịch vụ được, mà lịch thì 34% ca chỉ ghi "Ngày
+   * chụp" chung chung. Người đang ngồi với khách mới biết chắc.
+   *
+   * `undefined` = form không gửi gì, cứ tự suy. Mảng rỗng = cố ý không mã.
+   */
+  maAlbum?: string[],
 ): Promise<{ loi: string } | { id: string; maHD: string }> {
   const nguoi = await nguoiDuocLap();
   if (!nguoi) {
@@ -146,7 +157,9 @@ export async function lapHopDongAction(
   */
   if (coGiaoAnh(du.loaiDV)) {
     after(async () => {
-      const album = await taoThuMucVaAlbum(kq.id);
+      /* Lọc lại ở máy chủ: trình duyệt gửi gì cũng phải nằm trong bộ mã. */
+      const maSach = maAlbum?.filter((x) => MA_ALBUM.some((m) => m.ma === x));
+      const album = await taoThuMucVaAlbum(kq.id, undefined, maSach);
       await ghiNhatKy({
         nguoi: { id: nguoi.id || null, ten: nguoi.ten },
         hanhDong: album.ok ? "tao-album-tu-hop-dong" : "tao-album-tu-hop-dong-loi",
@@ -483,7 +496,7 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
     prisma.dichVu.findMany({
       where: { dangDung: true },
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
-      select: { id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true, chiTiet: true },
+      select: { id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true, chiTiet: true, maAlbum: true },
     }),
     prisma.giaHangMuc.findMany({
       orderBy: { taoLuc: "asc" },

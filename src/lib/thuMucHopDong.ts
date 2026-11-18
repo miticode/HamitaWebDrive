@@ -245,6 +245,19 @@ export async function taoThuMucVaAlbum(
    * đoán bừa thì bộ lọc theo mã ở trang quản lý album bắt trượt.
    */
   tenTuChon?: string,
+  /**
+   * Mã album do NGƯỜI LẬP chọn, đè lên mọi phép suy.
+   *
+   * Thêm 18/11/2026. Hai nguồn tự suy (tag dịch vụ, loại buổi) lo được
+   * 215/325 ca của mấy gói "NGÀY CƯỚI/HỎI 1 NGÀY"; phần còn lại lịch chỉ ghi
+   * "Ngày chụp" chung chung, mà chỉ người đang ngồi với khách mới biết hôm
+   * đó chụp nhà gái hay đám hỏi.
+   *
+   * `undefined` = không ai chọn, cứ tự suy như cũ.
+   * Mảng RỖNG = người lập cố ý không gắn mã nào — khác hẳn, nên đừng gộp hai
+   * trường hợp này lại.
+   */
+  maTuChon?: readonly string[],
 ): Promise<KetQuaTaoThuMuc> {
   try {
     const prisma = getPrisma();
@@ -324,14 +337,16 @@ export async function taoThuMucVaAlbum(
     */
     const ma = tenTuChon
       ? []
-      : [
-          ...new Set([
-            /* Mã gắn sẵn trên dịch vụ: Baby, NS, AB… */
-            ...hd.chiTiet.map((d) => d.dichVu?.maAlbum ?? null),
-            /* Mã suy từ loại buổi: nhà gái ra HER, nhà trai ra HIS. */
-            ...hd.lich.map((l) => maAlbumTheoBuoi(l.loai)),
-          ].filter((m): m is string => !!m)),
-        ];
+      : maTuChon
+        ? [...maTuChon]
+        : [
+            ...new Set([
+              /* Mã gắn sẵn trên dịch vụ: Baby, NS, AB… */
+              ...hd.chiTiet.map((d) => d.dichVu?.maAlbum ?? null),
+              /* Mã suy từ loại buổi: nhà gái ra HER, nhà trai ra HIS. */
+              ...hd.lich.map((l) => maAlbumTheoBuoi(l.loai)),
+            ].filter((m): m is string => !!m)),
+          ];
     const tenAlbum = ma.length > 0 ? ganNhieuMa(tenGoc, ma) : tenGoc;
 
     /*

@@ -75,7 +75,41 @@ export function loaiBuoiGoiY(chiTiet: string | null | undefined, soBuoi: number)
 export const MA_ALBUM_THEO_BUOI: Readonly<Record<string, string>> = {
   "nhà gái": "HER",
   "nhà trai": "HIS",
+  /*
+    Bốn dòng dưới thêm 18/11/2026, sau khi anh hỏi về mấy gói "NGÀY CƯỚI/HỎI
+    1 NGÀY" — cùng một gói dùng cho cả cưới lẫn hỏi, nên không gắn mã cố định
+    lên dịch vụ được.
+
+    Đo 325 dòng dùng bốn gói đó: lịch chụp của chúng ghi nhà gái 152, nhà
+    trai 126, Đính Hôn 30, dạm ngõ 1 — tức người lập VỐN ĐÃ ghi đúng việc vào
+    lịch, chỉ là web chưa biết đọc. Khai thêm hai loại này đưa tỉ lệ suy ra
+    được từ 185/325 (57%) lên 215/325 (66%).
+
+    Và 139 hợp đồng loại HỎI thì lịch ghi "Đính Hôn" 68 lần, "chup dạm ngõ"
+    9 lần — đúng hai loại này.
+  */
+  "đính hôn": "ĐH",
+  "chup dạm ngõ": "DN",
+  "chụp dạm ngõ": "DN",
+  /* Hai mảng kia: loại buổi đã nói thẳng là mảng nào. */
+  "nhà su": "NS",
+  "hami baby": "Baby",
+  "chụp bé": "Baby",
+  "chụp thôi nôi": "Baby",
+  "chụp đầy tháng": "Baby",
 };
+
+/*
+  BA LOẠI BUỔI CỐ Ý KHÔNG CÓ MÃ, anh chốt 18/11/2026:
+
+    "Ngày chụp"         461 buổi — chung chung, có thể là bất cứ việc gì
+    "Ngày cưới"          25 buổi — chụp cả hai nhà hay một nhà thì không rõ
+    "Ngày lễ gia tiên"   13 buổi — không có mã nào tương ứng trong bộ
+
+  Đoán bừa cho chúng thì bộ lọc theo mã ở trang quản lý album bắt trượt, mà
+  nhìn tên album vẫn thấy đúng — loại lỗi khó phát hiện nhất. Những hợp đồng
+  rơi vào đây thì người lập tự chọn mã ngay trong form lập hợp đồng.
+*/
 
 /** Mã album ứng với một loại buổi, hoặc null nếu loại đó không suy ra mã nào. */
 export function maAlbumTheoBuoi(loai: string | null | undefined): string | null {
