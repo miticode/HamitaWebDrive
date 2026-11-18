@@ -21,12 +21,23 @@ export function KhoiLich({
   hopDongId,
   banDau,
   duocSua,
+  loaiBuoi,
 }: {
   hopDongId: string;
   banDau: DongLichSua[];
   duocSua: boolean;
+  /**
+   * Loại buổi đang dùng, đọc từ bảng `LoaiBuoi` (anh yêu cầu 18/11/2026).
+   *
+   * Thiếu thì dùng bảng cứng `LOAI_LICH`. Khối này là chỗ anh phát hiện ra
+   * lỗ của em: sửa form lập hợp đồng mà quên trang hợp đồng, nên tắt "đang
+   * dùng" ở trang Loại buổi rồi mà ô chọn ở đây vẫn hiện đủ mười hai loại cũ.
+   */
+  loaiBuoi?: readonly { ten: string }[];
 }) {
   const router = useRouter();
+  const dsLoai = loaiBuoi && loaiBuoi.length > 0 ? loaiBuoi.map((l) => l.ten) : [...LOAI_LICH];
+  const loaiDau = dsLoai[0] ?? LOAI_LICH[0];
   const [dong, setDong] = useState<DongLichSua[]>(banDau);
   const [dangLuu, start] = useTransition();
   const [loi, setLoi] = useState<string | null>(null);
@@ -95,7 +106,14 @@ export function KhoiLich({
           <label className="block">
             <span className="eyebrow block">Loại buổi</span>
             <select value={d.loai} onChange={(e) => doi(i, { loai: e.target.value })} className="input mt-1.5">
-              {[...new Set([d.loai, ...LOAI_LICH])].filter(Boolean).map((l) => (
+              {/*
+                Loại HIỆN TẠI của dòng luôn nằm trong danh sách, kể cả khi nó
+                đã ngưng dùng hoặc bị xoá khỏi bảng. Bỏ đi thì mở hợp đồng cũ
+                ra là ô chọn nhảy sang loại khác, bấm Lưu một cái là mất loại
+                thật của buổi đó — "ngưng dùng" nghĩa là đừng cho chọn MỚI,
+                không phải xoá dấu vết của những buổi đã có.
+              */}
+              {[...new Set([d.loai, ...dsLoai])].filter(Boolean).map((l) => (
                 <option key={l} value={l}>
                   {l}
                 </option>
@@ -139,7 +157,7 @@ export function KhoiLich({
           type="button"
           className="btn"
           onClick={() =>
-            setDong((ds) => [...ds, { ngay: "", gio: "", loai: LOAI_LICH[0], ghiChu: "", trangThai: "Chưa làm" }])
+            setDong((ds) => [...ds, { ngay: "", gio: "", loai: loaiDau, ghiChu: "", trangThai: "Chưa làm" }])
           }
         >
           Thêm buổi

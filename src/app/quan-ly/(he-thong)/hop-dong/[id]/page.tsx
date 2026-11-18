@@ -7,6 +7,7 @@ import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { albumCuaHopDong } from "@/lib/noiAlbum";
+import { docLoaiBuoi } from "@/lib/loaiBuoi";
 import { coGiaoAnh } from "@/lib/thuMucHopDong";
 import { NutTaoThuMuc } from "./NutTaoThuMuc";
 import { buocTiepTheo, docBuocDayDu, laBuocXong } from "@/lib/buocHopDong";
@@ -35,7 +36,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
   const { id } = await params;
   const prisma = getPrisma();
 
-  const [hd, bangTen, album, cacBuoc] = await Promise.all([
+  const [hd, bangTen, album, cacBuoc, loaiBuoi] = await Promise.all([
     prisma.hopDong.findUnique({
       where: { id },
       include: {
@@ -57,6 +58,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
     tenTheoMaNV(),
     albumCuaHopDong(id),
     docBuocDayDu(),
+    docLoaiBuoi(),
   ]);
   if (!hd) notFound();
 
@@ -343,6 +345,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
       <section className="mt-8">
         <h2 className="eyebrow">Lịch chụp ({hd.lich.length})</h2>
         <KhoiLich
+          loaiBuoi={loaiBuoi}
           hopDongId={hd.id}
           duocSua={duocSua}
           banDau={hd.lich.map((l) => ({

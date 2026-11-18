@@ -126,6 +126,7 @@ export function NutLapHopDong() {
                   laQuanLy={du.laQuanLy}
                   tenNguoiLap={du.tenNguoiLap}
                   cacBuoc={du.cacBuoc}
+                  loaiBuoi={du.loaiBuoi}
                   onThoi={dong}
                   onXong={(id) => {
                     dong();
