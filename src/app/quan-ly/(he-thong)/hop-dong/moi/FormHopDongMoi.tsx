@@ -304,6 +304,33 @@ export function FormHopDongMoi({
     gợi ý, vì người lập biết nhà đó chụp gì hơn bảng giá.
   */
   const sinhLichChoGoi = (dv: DichVuGon) => {
+    /*
+      BUỔI GẮN SẴN TRÊN DỊCH VỤ ĐI TRƯỚC — anh yêu cầu 18/11/2026.
+
+      Người bán đã nói thẳng gói này gồm những buổi nào thì không việc gì phải
+      đoán nữa. Phép đoán cũ (số buổi đọc từ tên "2 ngày", loại buổi dò regex
+      trong phần chi tiết) chỉ giữ cho những dịch vụ CHƯA gắn — đo 18/11: nó
+      đoán ra 7/95 gói, đúng với GTC2DAY nhưng chịu thua mọi gói khác.
+    */
+    if (dv.buoi && dv.buoi.length > 0) {
+      setLich((ds) => {
+        const moi = [...ds];
+        const con = [...dv.buoi!];
+        /* Rót vào dòng còn trắng tinh trước, rồi mới thêm dòng mới. */
+        for (let i = 0; i < moi.length && con.length > 0; i++) {
+          const l = moi[i];
+          if (!l.ngay && !l.gio && !l.ghiChu && l.loai === loaiDau) {
+            moi[i] = { ...l, loai: con.shift()! };
+          }
+        }
+        for (const ten of con) {
+          moi.push({ ngay: "", gio: "", loai: ten, ghiChu: "", hienThi: "" });
+        }
+        return moi;
+      });
+      return;
+    }
+
     const soBuoi = soBuoiCuaGoi(dv.ten);
     if (soBuoi < 2) return;
     const goiY = loaiBuoiGoiY(dv.chiTiet, soBuoi).filter(Boolean);

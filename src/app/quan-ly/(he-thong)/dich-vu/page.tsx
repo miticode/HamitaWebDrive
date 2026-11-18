@@ -4,6 +4,7 @@ import { tien } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { LOAI_DICH_VU, TEN_LOAI, boDau, laLoaiDichVu, loaiDuocSua, type LoaiDichVu } from "@/lib/dichVuChung";
 import { OMaAlbum } from "./OMaAlbum";
+import { OBuoiChup } from "./OBuoiChup";
 import { TabDanhMuc, TrangDanhMuc } from "./TrangDanhMuc";
 
 export const dynamic = "force-dynamic";
@@ -47,12 +48,25 @@ export default async function DichVuPage({ searchParams }: Props) {
   const so = Math.max(MOI_LUOT, Math.floor(Number(sp.so)) || MOI_LUOT);
 
   const prisma = getPrisma();
-  const [demLoai, cuaLoai] = await Promise.all([
+  const [demLoai, cuaLoai, dsLoaiBuoi] = await Promise.all([
     prisma.dichVu.groupBy({ by: ["loai"], where: { dangDung: tt === "dang-dung" }, _count: { _all: true } }),
     prisma.dichVu.findMany({
       where: { loai, dangDung: tt === "dang-dung" },
-      select: { id: true, maDV: true, ten: true, nhom: true, maAlbum: true, chiTiet: true, donGia: true, donVi: true },
+      select: {
+        id: true, maDV: true, ten: true, nhom: true, maAlbum: true, chiTiet: true, donGia: true, donVi: true,
+        /* Buổi chụp mặc định — anh yêu cầu 18/11/2026. */
+        buoi: { select: { loaiBuoi: { select: { id: true, ten: true } } }, orderBy: { thuTu: "asc" } },
+      },
       orderBy: [{ nhom: "asc" }, { maDV: "asc" }],
+    }),
+    /*
+      Danh sách loại buổi cho ô chọn. Đọc một lần cho cả bảng, không phải mỗi
+      dòng một lần — bảng trang phục có tới 888 dòng.
+    */
+    prisma.loaiBuoi.findMany({
+      where: { dangDung: true },
+      select: { id: true, ten: true },
+      orderBy: [{ thuTu: "asc" }, { ten: "asc" }],
     }),
   ]);
   const soTheoLoai: Record<string, number> = Object.fromEntries(demLoai.map((d) => [d.loai, d._count._all]));
@@ -159,6 +173,11 @@ export default async function DichVuPage({ searchParams }: Props) {
                 mã nói album của nó mang tên gì.
               */}
               <th className="px-4 py-2.5 font-medium">Mã album</th>
+              {/*
+                Cột buổi chụp CHỈ ở tab Dịch vụ: trang phục và sản phẩm không
+                sinh buổi chụp nào, thêm một cột trống cho 888 dòng là tốn chỗ.
+              */}
+              {loai === "dich-vu" && <th className="px-4 py-2.5 font-medium">Buổi chụp</th>}
               <th className="px-4 py-2.5 text-right font-medium">Đơn giá</th>
             </tr>
           </thead>
@@ -182,6 +201,16 @@ export default async function DichVuPage({ searchParams }: Props) {
                   <td className="px-4 py-2.5 whitespace-nowrap">
                     <OMaAlbum id={d.id} maDau={d.maAlbum ?? ""} suaDuoc={themDuoc} />
                   </td>
+                  {loai === "dich-vu" && (
+                    <td className="px-4 py-2.5">
+                      <OBuoiChup
+                        dichVuId={d.id}
+                        banDau={d.buoi.map((b) => b.loaiBuoi)}
+                        dsLoai={dsLoaiBuoi}
+                        suaDuoc={themDuoc}
+                      />
+                    </td>
+                  )}
                   <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">
                     {tien(d.donGia)}đ
                     {d.donVi && <span className="text-fg-faint"> / {d.donVi}</span>}

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { getPrisma } from "@/lib/db";
+import { phangBuoi } from "@/lib/dichVuChung";
 import { boDau, homNayStudio, MUI_GIO } from "@/lib/constants";
 import { layNguoiDung, lapHopDong } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
@@ -469,6 +470,15 @@ export type DuLieuFormHopDong = {
     donVi: string | null;
     chiTiet: string | null;
     maAlbum: string | null;
+    /*
+      Buổi chụp mặc định, đã làm phẳng thành mảng tên.
+
+      PHẢI khai ở đây, không được quên: `phangBuoi` có trả về trường này,
+      nhưng kiểu khai báo thiếu thì TypeScript lặng lẽ cắt nó đi khi gán, và
+      cửa sổ lập hợp đồng mất danh sách mà không ai báo. Đúng loại lỗi đã xảy
+      ra hôm 18/11 với danh sách loại buổi.
+    */
+    buoi: string[];
   }[];
   giaHangMuc: { dichVuId: string; hangMuc: string | null; donGia: number }[];
   /** Loại buổi chụp đang dùng, đọc từ bảng `LoaiBuoi`. */
@@ -503,7 +513,11 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
     prisma.dichVu.findMany({
       where: { dangDung: true },
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
-      select: { id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true, chiTiet: true, maAlbum: true },
+      select: {
+        id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true,
+        chiTiet: true, maAlbum: true,
+        buoi: { select: { loaiBuoi: { select: { ten: true } } }, orderBy: { thuTu: "asc" } },
+      },
     }),
     prisma.giaHangMuc.findMany({
       orderBy: { taoLuc: "asc" },
@@ -516,7 +530,7 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
   ]);
 
   return {
-    dichVu,
+    dichVu: phangBuoi(dichVu),
     giaHangMuc,
     luotDung,
     cacBuoc,

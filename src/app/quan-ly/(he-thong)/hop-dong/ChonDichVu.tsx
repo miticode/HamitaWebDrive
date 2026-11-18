@@ -17,6 +17,14 @@ export type DichVuGon = {
   chiTiet: string | null;
   /** Mã album gắn sẵn cho dịch vụ này — dùng để gợi ý mã cho album. */
   maAlbum?: string | null;
+  /**
+   * Buổi chụp mặc định, đúng thứ tự (anh yêu cầu 18/11/2026).
+   *
+   * Chọn dịch vụ này là lịch chụp tự có đủ dòng với loại đã đặt sẵn, người
+   * lập chỉ còn điền ngày giờ. Lặp tên là có thật: gói hai ngày có thể là
+   * hai buổi cùng loại.
+   */
+  buoi?: readonly string[];
 };
 
 export type GiaGon = { dichVuId: string; hangMuc: string | null; donGia: number };

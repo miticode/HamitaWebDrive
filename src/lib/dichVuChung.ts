@@ -127,3 +127,20 @@ export function kiemDichVu(du: DuLieuDichVu): { loi: string } | DichVuSach {
     dangDung: du.dangDung !== false,
   };
 }
+
+/**
+ * Làm phẳng danh sách buổi chụp mặc định của dịch vụ: từ hình dạng Prisma
+ * (`buoi: [{ loaiBuoi: { ten } }]`) thành mảng tên.
+ *
+ * Để ở đây vì BA nơi cùng đọc dịch vụ cho form hợp đồng — trang lập, trang
+ * sửa, và server action của cửa sổ lập. Viết ba lần là ba lần có thể quên một
+ * chỗ, đúng kiểu lỗi đã xảy ra hôm 18/11 với danh sách loại buổi.
+ */
+export function phangBuoi<T extends { buoi?: { loaiBuoi: { ten: string } }[] }>(
+  ds: T[],
+): (Omit<T, "buoi"> & { buoi: string[] })[] {
+  return ds.map(({ buoi, ...con }) => ({
+    ...(con as Omit<T, "buoi">),
+    buoi: (buoi ?? []).map((b) => b.loaiBuoi.ten),
+  }));
+}

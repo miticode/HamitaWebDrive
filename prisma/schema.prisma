@@ -787,6 +787,8 @@ model DichVu {
 
   chiPhi      GiaHangMuc[]
   dongHopDong ChiTietHopDong[]
+  /// Buoi chup mac dinh — xem model DichVuBuoi.
+  buoi        DichVuBuoi[]
 
   @@index([loai, dangDung])
 }
@@ -1202,6 +1204,34 @@ model KhachTiemNang {
 ///
 /// CODE VAN GIU CAC_BUOC lam ban du phong: bang nay rong (chua chep) thi form
 /// hop dong khong duoc phep tro nen trong tron.
+/// BUOI CHUP MAC DINH CUA MOT DICH VU — anh yeu cau 18/11/2026.
+///
+/// "Moi dich vu deu di kem loai buoi chup, de khi lap hop dong chon dich vu
+/// la co san lich chup va loai buoi luon, nguoi lap chi chon ngay gio thoi."
+///
+/// Truoc do web DOAN: so buoi doc tu ten goi ("2 ngay"), loai buoi do bang
+/// regex trong phan chi tiet ("Nhà gái : chụp phóng sự"). Doan dung 7/95 goi
+/// — dung voi GTC2DAY nhung chiu thua voi moi goi khac.
+///
+/// Luu `loaiBuoiId` chu KHONG luu ten: tu 18/11 ten loai buoi sua duoc o trang
+/// Quan ly dich vu, luu ten thi doi ten la phai nho cap nhat them cho nay.
+///
+/// KHONG unique (dichVuId, loaiBuoiId): mot goi co the can HAI buoi cung loai,
+/// vi du hai ngay deu la "Ngày chụp". Thu tu quyet dinh dong nao truoc.
+model DichVuBuoi {
+  id         String   @id @default(cuid())
+  dichVuId   String
+  loaiBuoiId String
+  thuTu      Int      @default(0)
+  taoLuc     DateTime @default(now())
+
+  dichVu   DichVu   @relation(fields: [dichVuId], references: [id], onDelete: Cascade)
+  loaiBuoi LoaiBuoi @relation(fields: [loaiBuoiId], references: [id], onDelete: Cascade)
+
+  @@index([dichVuId, thuTu])
+  @@index([loaiBuoiId])
+}
+
 /// DANH MUC DUNG CHUNG — anh yeu cau 18/11/2026.
 ///
 /// Mot bang cho MOI danh muc nho cua form lap hop dong, phan biet bang cot
@@ -1260,6 +1290,9 @@ model LoaiBuoi {
   dangDung   Boolean  @default(true)
   taoLuc     DateTime @default(now())
   capNhatLuc DateTime @updatedAt
+
+  /// Dich vu nao dang lay loai buoi nay lam mac dinh.
+  dichVu DichVuBuoi[]
 
   @@index([dangDung, thuTu])
 }

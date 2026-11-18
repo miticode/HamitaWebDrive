@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
+import { phangBuoi } from "@/lib/dichVuChung";
 import { MUI_GIO } from "@/lib/constants";
 import { batBuocDangNhap, batBuocQuyen, lapHopDong } from "@/lib/phienNhanVien";
 import { docCacBuoc } from "@/lib/buocHopDong";
@@ -42,7 +43,11 @@ export default async function LapHopDongPage() {
     prisma.dichVu.findMany({
       where: { dangDung: true },
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
-      select: { id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true, chiTiet: true, maAlbum: true },
+      select: {
+        id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true,
+        chiTiet: true, maAlbum: true,
+        buoi: { select: { loaiBuoi: { select: { ten: true } } }, orderBy: { thuTu: "asc" } },
+      },
     }),
     prisma.giaHangMuc.findMany({
       orderBy: { taoLuc: "asc" },
@@ -66,7 +71,7 @@ export default async function LapHopDongPage() {
       </p>
 
       <FormHopDongMoi
-        dichVu={dichVu}
+        dichVu={phangBuoi(dichVu)}
         giaHangMuc={giaHangMuc}
         luotDung={luotDung}
         homNay={homNay()}
