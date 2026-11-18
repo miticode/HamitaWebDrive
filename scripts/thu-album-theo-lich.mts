@@ -105,7 +105,9 @@ if (kq2.ok) {
   kiem("ten THAT tren Drive cung khong co ma", tm?.name === `${DAU.ten} hai ngay`, tm?.name ?? "");
   const thang = tm?.parents?.[0] ? await docDrive(token, tm.parents[0]) : null;
   const nam = thang?.parents?.[0] ? await docDrive(token, thang.parents[0]) : null;
-  kiem("dung thang CHUP, khong phai thang lap", thang?.name === "T4" && nam?.name === "2027", `${nam?.name}/${thang?.name}`);
+  /* Anh doi 18/11/2026: lay thang LAP hop dong, khong phai thang chup.
+     Hop dong nay lap 15/11/2026 nhung chup 04/2027 — phai vao T11/2026. */
+  kiem("dung thang LAP hop dong, khong phai thang chup", thang?.name === "T11" && nam?.name === "2026", `${nam?.name}/${thang?.name}`);
 }
 
 /* ── 2. Chỉ một buổi nhà gái → MỘT album HER ──────────────────────────── */

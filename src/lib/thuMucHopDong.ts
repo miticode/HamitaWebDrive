@@ -35,9 +35,12 @@ import { maAlbumTheoBuoi } from "@/lib/goiNhieuNgay";
  *
  * ━━ Tháng nào ━━
  *
- * Tháng của BUỔI CHỤP ĐẦU TIÊN nếu hợp đồng đã có lịch; chưa có lịch thì tháng
- * lập hợp đồng. Ảnh xếp theo tháng chụp mới đúng nghĩa thư mục "T11" — một
- * hợp đồng PreWedding ký tháng 11 mà chụp tháng 5 thì ảnh của nó thuộc T5.
+ * THÁNG LẬP HỢP ĐỒNG — anh chốt 18/11/2026.
+ *
+ * Từ 14/11 đến 18/11 web lấy tháng của buổi chụp đầu tiên, với lý do "ảnh xếp
+ * theo tháng chụp mới đúng nghĩa thư mục T11". Anh bảo không, và lý do của anh
+ * mạnh hơn: người lập hợp đồng hôm nay mở Drive ra phải thấy thư mục ở tháng
+ * này, chứ không phải đi tìm trong một tháng nào đó của tương lai.
  *
  * ━━ Quyền ━━
  *
@@ -185,6 +188,22 @@ function namThang(ngay?: string | null): { nam: number; thang: number } {
   return { nam: Number(homNay.slice(0, 4)), thang: Number(homNay.slice(5, 7)) };
 }
 
+/**
+ * Từ năm này trở đi, hai thư mục mảng trên ổ kho mới có thêm cấp NĂM.
+ *
+ * Anh chốt 18/11/2026. Cây hiện tại ở đó phẳng — "HAMI BABY / Tháng 1…11",
+ * "Tiệm Ảnh Nhà Su / Tháng 3…11", không có năm. Dồn ảnh 2027 vào chính những
+ * thư mục ấy là hai năm trộn vào nhau.
+ *
+ * Vì sao 2027 chứ không phải ngay bây giờ: thêm cấp năm từ hôm nay thì 19 thư
+ * mục tháng của 2026 nằm ngoài cây mới, và chỉ có người mới được quyết chuyện
+ * kéo ảnh thật đi đâu — không phải web. Anh chọn để nguyên 2026, sang năm bắt
+ * đầu nếp mới.
+ *
+ * Drive ảnh cưới KHÔNG dính mốc này: bên đó vốn đã có cấp năm từ đầu.
+ */
+const NAM_CO_CAP_NAM = 2027;
+
 export type KetQuaTaoThuMuc =
   | {
       ok: true;
@@ -238,11 +257,12 @@ export async function taoThuMucVaAlbum(
         loaiDV: true,
         ngayDat: true,
         /*
-          Đọc ĐỦ lịch kèm loại buổi, không chỉ buổi đầu.
+          Lịch đọc về CHỈ để lấy loại buổi — "nhà gái" ra mã HER, "nhà trai"
+          ra HIS (anh yêu cầu 15/11/2026).
 
-          Buổi đầu để biết tháng (xem chú thích đầu tệp); còn loại của từng
-          buổi để biết hợp đồng này cần mấy album và mang mã gì — "nhà gái"
-          ra HER, "nhà trai" ra HIS (anh yêu cầu 15/11/2026).
+          Không còn dùng để tính tháng nữa: từ 18/11 tháng lấy theo ngày lập
+          hợp đồng. Giữ `where ngay not null` cho khỏi đọc về những dòng lịch
+          trống người lập bỏ lại.
         */
         lich: {
           select: { ngay: true, loai: true },
@@ -320,6 +340,19 @@ export async function taoThuMucVaAlbum(
       };
     }
 
+    /*
+      THÁNG NÀO — anh đổi lại 18/11/2026: lấy THÁNG LẬP HỢP ĐỒNG.
+
+      Trước đó web lấy tháng của buổi chụp đầu tiên, với lý do "ảnh xếp theo
+      tháng chụp mới đúng nghĩa thư mục T11". Anh bảo không: "đang ở tháng nào
+      thì tạo trong folder của tháng đó". Người lập hợp đồng hôm nay muốn mở
+      Drive ra thấy thư mục nằm ở tháng này, chứ không phải đi tìm trong một
+      tháng nào đó của tương lai.
+
+      Hợp đồng chưa có ngày lập (dữ liệu cũ) thì `namThang` tự lấy hôm nay.
+    */
+    const { nam, thang } = namThang(hd.ngayDat);
+
     let idThang: string;
     if (noi.thuMucGoc) {
       const goc = await timThuMuc(token, noi.thuMucGoc);
@@ -341,10 +374,16 @@ export async function taoThuMucVaAlbum(
               "Vào trang Quản lý album ảnh, khối “Kho ảnh CRM”, bấm Nối lại rồi lập lại album.",
         };
       }
-      idThang = goc;
+      /*
+        Cây bên ổ kho: "{mảng} / Tháng {n} / {album}", và từ 2027 có thêm cấp
+        năm ở giữa. Tên thư mục tháng viết ĐẦY ĐỦ ("Tháng 11") chứ không viết
+        tắt như bên Drive ảnh cưới ("T11") — mỗi bên một nếp, chép sai nếp là
+        tiệm có hai kiểu tên trong cùng một thư mục.
+      */
+      const cha = nam >= NAM_CO_CAP_NAM ? await timHoacTao(token, String(nam), goc) : goc;
+      idThang = await timHoacTao(token, `Tháng ${thang}`, cha);
     } else {
-      /* Tháng chụp nếu có, không thì tháng lập — xem chú thích đầu tệp. */
-      const { nam, thang } = namThang(hd.lich[0]?.ngay ?? hd.ngayDat);
+      /* Drive ảnh cưới: "{năm} / T{tháng}", nếp có sẵn từ đầu. */
       const idNam = await timHoacTao(token, String(nam));
       idThang = await timHoacTao(token, `T${thang}`, idNam);
     }
