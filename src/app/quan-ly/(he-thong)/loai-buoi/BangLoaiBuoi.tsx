@@ -37,6 +37,11 @@ export function BangLoaiBuoi({ ds, laQuanLy }: { ds: DongLoai[]; laQuanLy: boole
   const [nhac, setNhac] = useState<string | null>(null);
   const [suaId, setSuaId] = useState<string | null>(null);
   const [themMo, setThemMo] = useState(false);
+  /*
+    Dòng đang chờ xác nhận xoá. Xoá là không lùi được, mà bảng này mỗi dòng
+    chỉ cao chừng 40px — bấm trượt một dòng là chuyện thường.
+  */
+  const [choXoa, setChoXoa] = useState<string | null>(null);
 
   const xong = (ok: { loi?: string }, lam?: () => void) => {
     if (ok.loi) {
@@ -57,7 +62,8 @@ export function BangLoaiBuoi({ ds, laQuanLy }: { ds: DongLoai[]; laQuanLy: boole
 
   const xoa = (d: DongLoai) =>
     batDau(async () => {
-      xong(await xoaLoaiBuoiAction(d.id));
+      setChoXoa(null);
+      if (xong(await xoaLoaiBuoiAction(d.id))) setNhac(`Đã xoá loại “${d.ten}”.`);
     });
 
   return (
@@ -149,20 +155,41 @@ export function BangLoaiBuoi({ ds, laQuanLy }: { ds: DongLoai[]; laQuanLy: boole
                         Sửa
                       </button>
                       {/*
-                        Nút xoá chỉ hiện khi CHƯA CÓ buổi nào dùng. Máy chủ
-                        chặn lần nữa (nguyên tắc 3), nhưng giấu nút ở đây để
-                        khỏi mời người ta bấm một thứ chắc chắn bị từ chối.
+                        NÚT XOÁ LUÔN HIỆN — sửa 18/11/2026 sau khi anh báo
+                        "chưa có chức năng delete".
+
+                        Bản đầu em giấu nút khi loại còn lịch, nghĩ rằng đỡ
+                        mời người ta bấm một thứ chắc chắn bị từ chối. Nhưng
+                        đo ra thì CẢ 15 LOẠI đều đang có lịch — nút không hiện
+                        ở một dòng nào, nên nhìn vào bảng thì chức năng xoá
+                        coi như không tồn tại.
+
+                        Giấu một chức năng khác hẳn với chặn nó. Giờ nút luôn
+                        thấy, bấm vào thì nói rõ vì sao chưa xoá được và phải
+                        làm gì thay thế. Máy chủ vẫn chặn lần nữa (nguyên tắc 3).
                       */}
-                      {d.soBuoi === 0 && (
-                        <button
-                          type="button"
-                          className="btn btn-danger ml-2 px-3 py-1 text-xs"
-                          onClick={() => xoa(d)}
-                          disabled={dang}
-                        >
-                          Xoá
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        className="btn btn-danger ml-2 px-3 py-1 text-xs"
+                        onClick={() => {
+                          if (d.soBuoi > 0) {
+                            setNhac(null);
+                            setLoi(
+                              `“${d.ten}” đang có ${d.soBuoi} buổi dùng nên không xoá được. ` +
+                                "Bấm Sửa rồi bỏ tick “Đang dùng” để nó không hiện trong ô chọn nữa.",
+                            );
+                            return;
+                          }
+                          if (choXoa === d.id) xoa(d);
+                          else {
+                            setLoi(null);
+                            setChoXoa(d.id);
+                          }
+                        }}
+                        disabled={dang}
+                      >
+                        {choXoa === d.id ? "Bấm lần nữa để xoá" : "Xoá"}
+                      </button>
                     </td>
                   )}
                 </tr>
