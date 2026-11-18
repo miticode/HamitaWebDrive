@@ -126,6 +126,21 @@ export function FormHopDongMoi({
   const [ttTuChon, setTtTuChon] = useState<string | null>(null);
   const [moHetBuoc, setMoHetBuoc] = useState(false);
 
+  /*
+    BA BƯỚC — anh yêu cầu 18/11/2026 ("form lập dài quá, gom lại thành các
+    bước đi").
+
+    Chia theo đúng mạch người lập vẫn làm: ai là khách → mua gì, trả bao
+    nhiêu → chụp khi nào, album tên gì. Mỗi bước vừa một màn hình, không phải
+    cuộn qua tám khối mới tới nút Lưu.
+
+    KHÔNG ÉP THỨ TỰ. Bấm số nào cũng nhảy thẳng tới bước đó, và nút "Lập hợp
+    đồng" nằm ở thanh dưới nên bấm được từ bất cứ bước nào. Hợp đồng khách lẻ
+    chỉ có một dòng dịch vụ thì không việc gì bắt đi hết ba bước. Bước ở đây
+    là cách CHIA MÀN HÌNH, không phải cái khoá.
+  */
+  const [buoc, setBuoc] = useState(1);
+
   // ── Các dòng ────────────────────────────────────────────────────────────
   const [dong, setDong] = useState<DongDichVuMoi[]>([]);
   const [thu, setThu] = useState<DongThuMoi[]>([
@@ -463,7 +478,18 @@ export function FormHopDongMoi({
         luu();
       }}
     >
-      {/* ── Khách ─────────────────────────────────────────────────────── */}
+      <ThanhBuoc
+        buoc={buoc}
+        onChon={setBuoc}
+        xong={{
+          1: Boolean((khachCu || khachMoi.ten.trim()) && tenKhach.trim()),
+          2: dong.length > 0,
+          3: lich.some((l) => l.ngay),
+        }}
+      />
+
+      {/* ── Bước 1: khách và thông tin hợp đồng ───────────────────────── */}
+      <div className={buoc === 1 ? "grid gap-5" : "hidden"}>
       <Khung ten="Khách hàng">
         {khachCu ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-bg-soft px-3.5 py-3 text-sm">
@@ -625,6 +651,10 @@ export function FormHopDongMoi({
       </Khung>
 
       {/* ── Dịch vụ ───────────────────────────────────────────────────── */}
+      </div>
+
+      {/* ── Bước 2: dịch vụ và tiền ───────────────────────────────────── */}
+      <div className={buoc === 2 ? "grid gap-5" : "hidden"}>
       <Khung ten="Dịch vụ, trang phục, sản phẩm">
         <ChonDichVu dichVu={dichVu} luotDung={luotDung} onChon={themDong} />
 
@@ -906,6 +936,10 @@ export function FormHopDongMoi({
       </Khung>
 
       {/* ── Lịch ──────────────────────────────────────────────────────── */}
+      </div>
+
+      {/* ── Bước 3: lịch chụp, mã album, đầu việc ─────────────────────── */}
+      <div className={buoc === 3 ? "grid gap-5" : "hidden"}>
       <Khung ten="Lịch chụp" chu="Mỗi ngày quay/chụp một dòng — đúng như bảng Lịch bên AppSheet.">
         {ngayChupChuaCoLich.length > 0 && (
           <button
@@ -1068,22 +1102,130 @@ export function FormHopDongMoi({
         )}
       </Khung>
 
+      </div>
+
       {loi && <p className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">{loi}</p>}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" className="btn-primary" disabled={dangLuu}>
-          {dangLuu ? "Đang lưu…" : "Lập hợp đồng"}
-        </button>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => (onThoi ? onThoi() : router.push("/quan-ly/hop-dong"))}
-          disabled={dangLuu}
-        >
-          Thôi
-        </button>
-        <span className="text-xs text-fg-faint">Người lập: {tenNguoiLap}</span>
+      {/*
+        THANH DƯỚI DÍNH ĐÁY — anh yêu cầu 18/11/2026.
+
+        Ba thứ phải luôn thấy dù đang ở bước nào: tổng tiền (người lập vừa gõ
+        giá xong là muốn biết ngay), nút sang bước sau, và nút Lập hợp đồng.
+
+        Nút Lập nằm ở đây chứ không nằm cuối bước 3, vì bước không phải cái
+        khoá — hợp đồng một dòng dịch vụ thì lập xong ngay từ bước 2.
+      */}
+      <div className="sticky bottom-0 -mx-1 border-t border-line bg-bg/95 px-1 py-3 backdrop-blur">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          {/*
+            Một dòng duy nhất: thanh này dính đáy, cao thêm một dòng là che
+            mất phần cuối của khối đang điền. "Người lập" nép vào đây vì nó
+            chỉ để đối chiếu, không ai đọc nó mỗi lần nhìn xuống.
+          */}
+          <span className="text-sm">
+            <span className="text-fg-muted">Tổng tiền </span>
+            <b className="tabular-nums">{tien(tongTien)}đ</b>
+            {daThu > 0 && (
+              <span className="text-fg-muted">
+                {" · còn lại "}
+                <b className="tabular-nums text-fg">{tien(tongTien - daThu)}đ</b>
+              </span>
+            )}
+            <span className="ml-2 hidden text-xs text-fg-faint lg:inline">· {tenNguoiLap} lập</span>
+          </span>
+
+          <span className="ml-auto flex flex-wrap items-center gap-2">
+            {buoc > 1 && (
+              <button type="button" className="btn" onClick={() => setBuoc(buoc - 1)} disabled={dangLuu}>
+                ← Quay lại
+              </button>
+            )}
+            {buoc < 3 && (
+              <button type="button" className="btn" onClick={() => setBuoc(buoc + 1)} disabled={dangLuu}>
+                {TEN_BUOC[buoc]} →
+              </button>
+            )}
+            <button type="submit" className="btn-primary" disabled={dangLuu}>
+              {dangLuu ? "Đang lưu…" : "Lập hợp đồng"}
+            </button>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => (onThoi ? onThoi() : router.push("/quan-ly/hop-dong"))}
+              disabled={dangLuu}
+            >
+              Thôi
+            </button>
+          </span>
+        </div>
       </div>
     </form>
+  );
+}
+
+/** Tên bước sau, hiện trên nút "… →" ở thanh dưới. */
+const TEN_BUOC: Record<number, string> = { 1: "Dịch vụ", 2: "Lịch chụp" };
+
+const BUOC = [
+  { so: 1, ten: "Khách", chu: "Khách hàng & thông tin hợp đồng" },
+  { so: 2, ten: "Dịch vụ", chu: "Dịch vụ, trang phục & tiền cọc" },
+  { so: 3, ten: "Lịch chụp", chu: "Lịch chụp, mã album & đầu việc" },
+] as const;
+
+/**
+ * Thanh ba bước ở đầu form.
+ *
+ * Bấm được vào bất cứ bước nào — xem chú thích ở `buoc` trong form. Dấu tích
+ * chỉ để BÁO ĐÃ ĐIỀN, không phải điều kiện để đi tiếp: người lập nhìn một
+ * cái là biết còn thiếu chỗ nào, mà vẫn tự quyết lập hợp đồng lúc nào.
+ */
+function ThanhBuoc({
+  buoc,
+  onChon,
+  xong,
+}: {
+  buoc: number;
+  onChon: (b: number) => void;
+  xong: Record<number, boolean>;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {BUOC.map((b) => {
+        const dangMo = b.so === buoc;
+        return (
+          <button
+            key={b.so}
+            type="button"
+            onClick={() => onChon(b.so)}
+            aria-current={dangMo ? "step" : undefined}
+            title={b.chu}
+            className={`flex min-w-0 flex-1 items-center gap-2.5 rounded-md border px-3 py-2.5 text-left transition ${
+              dangMo
+                ? "border-accent bg-accent-soft"
+                : "border-line bg-bg-raised hover:border-line-strong"
+            }`}
+          >
+            <span
+              className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs tabular-nums ${
+                dangMo
+                  ? "bg-accent font-medium text-white"
+                  : xong[b.so]
+                    ? "bg-accent-soft text-accent"
+                    : "bg-bg-soft text-fg-faint"
+              }`}
+            >
+              {/* Đã điền thì thay số bằng dấu tích — trừ bước đang mở, ở đó số giữ chỗ cho mắt. */}
+              {xong[b.so] && !dangMo ? "✓" : b.so}
+            </span>
+            <span className="min-w-0">
+              <span className={`block text-sm whitespace-nowrap ${dangMo ? "font-medium text-accent" : ""}`}>
+                {b.ten}
+              </span>
+              <span className="hidden truncate text-xs text-fg-faint sm:block">{b.chu}</span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
