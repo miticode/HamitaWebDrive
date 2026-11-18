@@ -257,3 +257,39 @@ export async function getUserAccessToken(ket: KetNoi = "default"): Promise<strin
   if (token) tokenCache.set(ket, { token, hetHan: Date.now() + HAN_TOKEN });
   return token ?? null;
 }
+
+/**
+ * Phiếu của kết nối này có đủ quyền `drive` chưa.
+ *
+ * Thêm 18/11/2026 sau khi anh lập một hợp đồng Baby mà album không tạo được:
+ * quyền xin đã nới lên `drive` từ 15/11, nhưng PHIẾU ĐÃ LƯU vẫn là phiếu cấp
+ * ngày 13/11 với quyền cũ — Google không tự nâng quyền cho phiếu cũ, phải có
+ * người bấm nối lại.
+ *
+ * Nhìn từ bên ngoài, hai chuyện này giống hệt nhau: tìm thư mục ra 0 kết quả.
+ * Một đằng phải đi nối lại, một đằng phải đi tìm xem thư mục bị đổi tên hay
+ * xoá. Hỏi Google một câu là tách được, nên đừng bắt người dùng đoán.
+ *
+ * CHỈ GỌI KHI ĐÃ THẤT BẠI. Đây là một lượt gọi mạng nữa; để nó trên đường
+ * chạy bình thường là làm chậm mọi lần tạo album chỉ để phòng một lần hỏng.
+ *
+ * CHỈ CÓ NGHĨA VỚI KẾT NỐI "kho". Gọi với "default" luôn trả false, và đó
+ * KHÔNG phải dấu hiệu hỏng: kết nối ảnh cưới cố ý chỉ xin `drive.readonly` +
+ * `drive.file`, không bao giờ xin `drive`. Đừng dùng hàm này để đoán sức khoẻ
+ * của kết nối đó.
+ */
+export async function duQuyenDrive(ket: KetNoi): Promise<boolean> {
+  const token = await getUserAccessToken(ket).catch(() => null);
+  if (!token) return false;
+  try {
+    const r = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${token}`);
+    if (!r.ok) return false;
+    const j = (await r.json()) as { scope?: string };
+    return (j.scope ?? "").split(" ").includes("https://www.googleapis.com/auth/drive");
+  } catch {
+    /* Không hỏi được thì đừng kết luận là thiếu quyền — trả true để người
+       dùng nhận câu báo lỗi kia, thay vì bị đẩy đi nối lại một kết nối đang
+       lành lặn. */
+    return true;
+  }
+}

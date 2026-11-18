@@ -1,4 +1,4 @@
-import { getUserAccessToken, type KetNoi } from "@/lib/googleAuth";
+import { duQuyenDrive, getUserAccessToken, type KetNoi } from "@/lib/googleAuth";
 import { emailChiaSe, noiChuaAlbum } from "@/lib/noiChuaAlbum";
 import { getPrisma } from "@/lib/db";
 import { createGallery, setAccess } from "@/lib/store";
@@ -294,11 +294,21 @@ export async function taoThuMucVaAlbum(
     if (noi.thuMucGoc) {
       const goc = await timThuMuc(token, noi.thuMucGoc);
       if (!goc) {
+        /*
+          Hai nguyên nhân khác hẳn nhau mà nhìn từ ngoài giống hệt: phiếu cũ
+          chưa đủ quyền, hay thư mục bị đổi tên / xoá. Hỏi Google một câu để
+          tách ra, vì hai cái cần hai việc khác nhau.
+
+          Đây là chuyện có thật: 18/11/2026 anh lập hợp đồng Baby mà album
+          không ra, lý do là phiếu cấp ngày 13/11 vẫn mang quyền cũ.
+        */
+        const duQuyen = await duQuyenDrive(noi.ketNoi);
         return {
           ok: false,
-          loi:
-            `Không thấy thư mục “${noi.thuMucGoc}” trên Kho ảnh CRM. ` +
-            "Nếu vừa nới quyền thì vào Thông tin studio nối lại kết nối đó.",
+          loi: duQuyen
+            ? `Không thấy thư mục “${noi.thuMucGoc}” trên Kho ảnh CRM. Kiểm tra xem thư mục còn đúng tên đó không.`
+            : "Kết nối Kho ảnh CRM chưa đủ quyền (phiếu cũ, cấp trước khi nới quyền). " +
+              "Vào trang Quản lý album ảnh, khối “Kho ảnh CRM”, bấm Nối lại rồi lập lại album.",
         };
       }
       idThang = goc;
