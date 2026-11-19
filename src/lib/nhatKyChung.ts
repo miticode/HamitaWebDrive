@@ -83,7 +83,14 @@ export type HanhDong =
     hợp đồng ra thấy bước đã nhảy mà không ai gõ thì phải tra được nó đến từ
     trang album.
   */
-  | "doi-buoc-anh-goc";
+  | "doi-buoc-anh-goc"
+  /*
+    KHACH tu bam "da chon xong" → buoc 4 sang 5, hoac 13 sang 14 (anh yeu cau
+    19/11/2026). Ghi rieng khoi "doi-buoc-anh-goc" vi NGUOI BAM khac han: dong
+    nay luon co `nguoi = null`, va do la su that dang ghi chu khong phai thieu
+    du lieu.
+  */
+  | "doi-buoc-khach-chon";
 
 export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "dang-nhap": "Đăng nhập",
@@ -144,4 +151,5 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "lam-moi-album": "Đọc lại album từ Drive",
   "gui-thong-bao": "Gửi thông báo cho khách",
   "doi-buoc-anh-goc": "Đổi bước: đã gửi ảnh gốc",
+  "doi-buoc-khach-chon": "Đổi bước: khách đã chọn xong",
 };

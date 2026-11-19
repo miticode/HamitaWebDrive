@@ -74,3 +74,28 @@ export function buocSauKhiGuiAnhGoc(buoc: number | null | undefined): number | n
 export function tenBuocTheoSo(cacBuoc: readonly string[], so: number): string | null {
   return cacBuoc.find((ten) => tachTrangThai(ten).buoc === so) ?? null;
 }
+
+/** Bước 5 — nhánh chụp studio: "Đang Retouch". */
+const SAU_CHON_NHANH_CHUP = 5;
+/** Bước 14 — nhánh tiệc: "Đang chỉnh sửa hình , clip tiệc". */
+const SAU_CHON_NHANH_TIEC = 14;
+
+/**
+ * Bước đích khi KHÁCH tự bấm "đã chọn xong" — anh yêu cầu 19/11/2026.
+ *
+ * Chỉ nhận đúng hai bước chờ khách, và chỉ tiến đúng một nhịp:
+ *   4  "Đã gửi ảnh gốc, chờ Khách chọn"       → 5  "Đang Retouch"
+ *   13 "Đã gửi ảnh gốc tiệc, chờ Khách chọn"  → 14 "Đang chỉnh sửa hình , clip tiệc"
+ *
+ * Hẹp hơn hẳn `buocSauKhiGuiAnhGoc`, và cố ý: ở đó người bấm là NHÂN VIÊN
+ * studio, ở đây là KHÁCH. Khách bấm thì web không được suy diễn gì thêm —
+ * họ chỉ nói "tôi chọn xong rồi", không nói hợp đồng đang ở đâu.
+ *
+ * Trang hợp đồng vẫn còn câu nhắc cũ cho những hợp đồng bị kẹt lại từ trước
+ * 19/11 (khách đã báo xong mà bước vẫn đứng ở 4 hoặc 13).
+ */
+export function buocSauKhiKhachChonXong(buoc: number | null | undefined): number | null {
+  if (buoc === 4) return SAU_CHON_NHANH_CHUP;
+  if (buoc === 13) return SAU_CHON_NHANH_TIEC;
+  return null;
+}

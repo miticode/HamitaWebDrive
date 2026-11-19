@@ -1,7 +1,10 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { daMoKhoa } from "@/lib/access";
 import { getGalleryBySlug, setMucXong } from "@/lib/store";
+import { buocSauKhiKhachChonXong } from "@/lib/buocAnhGoc";
+import { NGUOI_KHACH, doiBuocAlbum } from "@/lib/doiBuocAlbum";
 
 export const runtime = "nodejs";
 
@@ -74,5 +77,35 @@ export async function POST(req: NextRequest) {
     loai,
     ...("hanLay" in body ? { hanLay: body.hanLay ?? null } : {}),
   });
+
+  /*
+    KHACH BAO "DA CHON XONG" → DOI BUOC HOP DONG (anh yeu cau 19/11/2026).
+
+    Bước 4 "Đã gửi ảnh gốc, chờ Khách chọn" sang 5 "Đang Retouch"; bước 13
+    sang 14 bên nhánh tiệc. Trước hôm nay trang hợp đồng chỉ NHẮC một câu để
+    người phụ trách tự chuyển — anh đổi ý vì câu nhắc đó cũng bị bỏ qua.
+
+    CHI khi loai === "xong". Hai giá trị kia không phải "chọn xong":
+      - "can-sua": khách bấm "cần chỉnh lại" ở thư mục ảnh đã chỉnh. Lúc đó
+        hợp đồng đang ở bước 6, mà `buocSauKhiKhachChonXong(6)` trả null nên
+        có gọi cũng không đổi gì — nhưng chặn ngay ở đây thì đỡ một lượt đọc
+        database cho mỗi cú bấm (nguyên tắc 53).
+      - null: khách bấm "chọn thêm nữa" để gỡ trạng thái. KHÔNG lùi bước về
+        4: Media có thể đã bắt đầu retouch từ lúc nhận tin, lùi bước là nói
+        sai việc đang làm. Khách chọn thêm thì studio nhìn danh sách là biết.
+
+    Đặt SAU `setMucXong`, không phải trước: việc chính là báo cho studio biết
+    khách đã chọn xong. Phần đổi bước là tiện thể, không được phép làm hỏng
+    việc chính nếu nó gặp sự cố (`doiBuocAlbum` không bao giờ ném lỗi).
+
+    `NGUOI_KHACH` vì người bấm là KHÁCH, không có tài khoản nhân viên nào.
+    Truyền null thì nhật ký ghi "(không rõ)" — đo 19/11 và thấy chữ đó nói
+    sai, nhân viên đọc sẽ tưởng dữ liệu lỗi.
+  */
+  if (loai === "xong") {
+    const kq = await doiBuocAlbum(gallery.id, buocSauKhiKhachChonXong, "doi-buoc-khach-chon", NGUOI_KHACH);
+    for (const d of kq.veLai ?? []) revalidatePath(d);
+  }
+
   return Response.json({ ok: true });
 }

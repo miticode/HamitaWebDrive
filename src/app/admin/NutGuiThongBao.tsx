@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { guiThongBaoAction } from "./actions";
 import { daGuiAnhGocAction } from "./actionsHopDong";
-import type { KetQuaAnhGoc } from "./actionsHopDong";
+import type { KetQuaDoiBuoc } from "@/lib/doiBuocAlbum";
 
 /**
  * Một câu nói kết quả việc ĐỔI BƯỚC HỢP ĐỒNG — anh yêu cầu 19/11/2026.
@@ -11,7 +11,7 @@ import type { KetQuaAnhGoc } from "./actionsHopDong";
  * Việc thứ hai của nút này, nên phải nói ra: bấm một cái mà hai thứ thay đổi,
  * im lặng về một thứ thì lần sau không ai biết nó có xảy ra hay không.
  */
-function chuBuoc(kq: KetQuaAnhGoc): string | null {
+function chuBuoc(kq: KetQuaDoiBuoc): string | null {
   if (kq.doiBuoc) return `Hợp đồng ${kq.doiBuoc.tenKhach}: chuyển sang “${kq.doiBuoc.den}”`;
   if (kq.chuaGan) return "Album chưa gắn hợp đồng nên không đổi được trạng thái";
   if (kq.giuBuoc) return `Hợp đồng ${kq.giuBuoc.tenKhach} đang ở “${kq.giuBuoc.buoc}” — giữ nguyên`;

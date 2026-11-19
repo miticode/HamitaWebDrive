@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { doiBuocSauKhiGuiTin, type KetQuaAnhGoc } from "./actionsHopDong";
+import { doiBuocSauKhiGuiTin } from "./actionsHopDong";
+import type { KetQuaDoiBuoc } from "@/lib/doiBuocAlbum";
 import { ghepChacCuaAlbum } from "@/lib/ghepAlbum";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
@@ -233,7 +234,7 @@ export async function refreshGalleryAction(formData: FormData) {
  */
 export async function guiThongBaoAction(
   galleryId: string,
-): Promise<{ error?: string; daGui?: number } & KetQuaAnhGoc> {
+): Promise<{ error?: string; daGui?: number } & KetQuaDoiBuoc> {
   if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
 
   const g = await getGalleryById(galleryId);

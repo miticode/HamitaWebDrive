@@ -83,9 +83,18 @@ export default async function ChiTietHopDongPage({ params }: Props) {
 
   /*
     Khách đã bấm "đã chọn xong" mà hợp đồng vẫn đứng ở bước chờ khách (4 nhánh
-    chụp, 13 nhánh tiệc) — nhắc một câu để người phụ trách chuyển bước. Web
-    KHÔNG tự chuyển: đổi bước là đổi tiến độ cả một nhà khách, phải do người
-    nhìn rồi quyết. Từ 23/09/2026 chuyển ngay trên web được (nút Sửa hợp đồng).
+    chụp, 13 nhánh tiệc) — nhắc một câu để người phụ trách chuyển bước.
+
+    TỪ 19/11/2026 WEB TỰ CHUYỂN bước này (anh yêu cầu): khách bấm "đã chọn
+    xong" là hợp đồng sang 5 hoặc 14 ngay, xem `buocSauKhiKhachChonXong`. Đảo
+    ngược hẳn câu trước đó ở chỗ này — "web không tự chuyển, phải do người nhìn
+    rồi quyết" — vì thực tế câu nhắc cũng bị bỏ qua, nên hợp đồng vẫn kẹt.
+
+    CÂU NHẮC VẪN GIỮ, và không phải thừa: nó bắt những hợp đồng kẹt lại từ
+    TRƯỚC 19/11 (khách đã báo xong hồi đó mà bước vẫn đứng ở 4 hoặc 13), và
+    bắt cả trường hợp việc đổi bước tự động gặp sự cố — `doiBuocAlbum` nuốt
+    lỗi để không làm hỏng việc báo của khách, nên nó có thể im lặng không đổi.
+    Mất câu nhắc thì những hợp đồng đó không ai thấy nữa.
   */
   const daChonXong = album.find((a) => a.xongLuc);
   const nhacChuyenBuoc = daChonXong && (hd.buoc === 4 || hd.buoc === 13);
