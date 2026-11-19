@@ -18,7 +18,7 @@ import { BangMaAlbum, type DongMa } from "./BangMaAlbum";
   thứ dữ liệu khác nhau:
     · `loai-buoi` có thêm mã album
     · `buoc` có thêm trách nhiệm và thứ tự trong quy trình
-    · ba nhóm còn lại chỉ có tên, dùng chung `BangDanhMuc`
+    · bốn nhóm còn lại chỉ có tên, dùng chung `BangDanhMuc`
 */
 
 /** Các tab danh mục, đúng thứ tự hiện trên thanh. */
@@ -29,6 +29,7 @@ export const TAB_DM = [
   { khoa: NHOM.hinhThucThu, ten: CHU_NHOM[NHOM.hinhThucThu].ten },
   { khoa: NHOM.noiDungThu, ten: CHU_NHOM[NHOM.noiDungThu].ten },
   { khoa: "ma-album", ten: "Mã album" },
+  { khoa: NHOM.lyDoTrongNgay, ten: CHU_NHOM[NHOM.lyDoTrongNgay].ten },
 ] as const;
 
 /** Thanh tab dùng chung cho cả hai nhánh của trang. */
@@ -217,7 +218,7 @@ export async function TrangDanhMuc({ nhom, nguoi }: { nhom: string; nguoi: Nguoi
     );
   }
 
-  /* ── Ba nhóm còn lại ──────────────────────────────────────────────── */
+  /* ── Bốn nhóm còn lại ──────────────────────────────────────────────── */
   const khoa = (Object.values(NHOM) as string[]).includes(nhom) ? (nhom as TenNhom) : NHOM.loaiHopDong;
   const { bang, cot } = COT_DUNG[khoa];
   const [ds, dem] = await Promise.all([
@@ -228,7 +229,9 @@ export async function TrangDanhMuc({ nhom, nguoi }: { nhom: string; nguoi: Nguoi
     }),
     bang === "hopDong"
       ? prisma.hopDong.groupBy({ by: [cot as "loaiDV"], _count: { _all: true } })
-      : prisma.phieuThu.groupBy({ by: [cot as "hinhThuc"], _count: { _all: true } }),
+      : bang === "lichChup"
+        ? prisma.lichChup.groupBy({ by: [cot as "lyDoTrong"], _count: { _all: true } })
+        : prisma.phieuThu.groupBy({ by: [cot as "hinhThuc"], _count: { _all: true } }),
   ]);
   const so = new Map(
     (dem as { [k: string]: unknown; _count: { _all: number } }[]).map((n) => [
@@ -237,7 +240,7 @@ export async function TrangDanhMuc({ nhom, nguoi }: { nhom: string; nguoi: Nguoi
     ]),
   );
   const dong: DongDanhMuc[] = ds.map((d) => ({ ...d, soDung: so.get(d.ten.toLowerCase()) ?? 0 }));
-  const donVi = bang === "hopDong" ? "hợp đồng" : "phiếu thu";
+  const donVi = bang === "hopDong" ? "hợp đồng" : bang === "lichChup" ? "buổi chụp" : "phiếu thu";
 
   /*
     Nhóm "nội dung thu" KHÔNG kể giá trị lạc: 234 nội dung gõ tay ngoài bảng

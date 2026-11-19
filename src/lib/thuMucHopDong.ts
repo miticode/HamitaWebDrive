@@ -275,13 +275,18 @@ export async function taoThuMucVaAlbum(
           ra HIS (anh yêu cầu 15/11/2026).
 
           Không còn dùng để tính tháng nữa: từ 18/11 tháng lấy theo ngày lập
-          hợp đồng. Giữ `where ngay not null` cho khỏi đọc về những dòng lịch
-          trống người lập bỏ lại.
+          hợp đồng.
+
+          KHÔNG lọc `ngay not null` nữa (19/11/2026). Bộ lọc đó có từ hồi mọi
+          dòng lịch trống ngày đều bị loại lúc lưu, nên nó chỉ chặn rác. Giờ
+          một buổi có loại mà chưa có ngày là buổi THẬT — gói prewedding đặt
+          trước, hoặc ngày cưới đang hoãn — mà mã album suy từ chính loại buổi
+          đó. Lọc nó ra thì album của hợp đồng "chưa có ngày chụp" ra tên trơn
+          không mã, đúng cái lỗ anh gặp.
         */
         lich: {
           select: { ngay: true, loai: true },
-          where: { ngay: { not: null } },
-          orderBy: { ngay: "asc" },
+          orderBy: { ngay: { sort: "asc", nulls: "last" } },
         },
       },
     });

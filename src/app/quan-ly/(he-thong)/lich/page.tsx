@@ -79,7 +79,7 @@ export default async function LichPage({ searchParams }: Props) {
     ...(loai ? { loai } : {}),
   };
   const prisma = getPrisma();
-  const [ds, demLoai] = await Promise.all([
+  const [ds, demLoai, choNgay] = await Promise.all([
     prisma.lichChup.findMany({
       where,
       select: {
@@ -97,6 +97,36 @@ export default async function LichPage({ searchParams }: Props) {
       by: ["loai"],
       where: { matBenAppSheet: null, ngay: { startsWith: thang } },
       _count: { _all: true },
+    }),
+    /*
+      BUỔI CHƯA CÓ NGÀY — anh chốt 19/11/2026.
+
+      KHÔNG lọc theo tháng, vì một buổi chưa có ngày không thuộc tháng nào:
+      nó là VIỆC ĐANG TREO, phải thấy dù đang xem tháng nào (nguyên tắc 29 —
+      xếp theo việc cần làm). Lọc theo loại thì vẫn theo, để chip "Mọi loại"
+      không nói dối.
+
+      Cũ nhất lên đầu: hợp đồng ký từ tháng 6 mà chưa chốt ngày thì gấp hơn
+      cái ký tuần trước.
+    */
+    prisma.lichChup.findMany({
+      where: { matBenAppSheet: null, ngay: null, ...(loai ? { loai } : {}) },
+      select: {
+        id: true,
+        loai: true,
+        lyDoTrong: true,
+        ghiChu: true,
+        hopDong: {
+          select: {
+            id: true,
+            tenKhach: true,
+            ngayDat: true,
+            loaiDV: true,
+            khachHang: { select: { soDienThoai: true } },
+          },
+        },
+      },
+      orderBy: [{ taoLuc: "asc" }],
     }),
   ]);
 
@@ -169,6 +199,68 @@ export default async function LichPage({ searchParams }: Props) {
             </Link>
           ))}
       </div>
+
+      {/*
+        Khu CHỜ XẾP NGÀY — đứng trên lưới vì nó là việc cần làm, còn lưới là
+        việc đã xếp xong. Chỉ hiện khi có buổi; không có thì trang y như cũ.
+
+        Nó KHÔNG đổi theo tháng: buổi chưa có ngày không nằm trong tháng nào.
+      */}
+      {choNgay.length > 0 && (
+        <section className="mt-5 rounded-lg border border-amber-300 bg-amber-50 p-4">
+          <h2 className="font-display text-lg font-medium text-amber-900">
+            Chờ xếp ngày <span className="tabular-nums opacity-70">{choNgay.length}</span>
+          </h2>
+          <p className="mt-1 text-xs text-amber-900/80">
+            Khách đã mua buổi này nhưng chưa có ngày. Gọi khách chốt ngày rồi điền vào lịch của hợp
+            đồng — buổi sẽ tự rời khỏi đây.
+          </p>
+          <ul className="mt-3 grid gap-2">
+            {choNgay.map((l) => (
+              <li
+                key={l.id}
+                className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-md border border-amber-300/70 bg-bg-raised px-3.5 py-2.5 text-sm"
+              >
+                <span className={`inline-flex items-center gap-2 ${LOP_NHOM[nhomCuaLoai(l.loai)]}`}>
+                  <span className="cham-lich" aria-hidden />
+                  {l.loai ?? "—"}
+                </span>
+                {l.hopDong ? (
+                  moHopDong ? (
+                    <Link
+                      href={`/quan-ly/hop-dong/${l.hopDong.id}`}
+                      className="font-medium hover:text-accent"
+                    >
+                      {l.hopDong.tenKhach}
+                    </Link>
+                  ) : (
+                    <span className="font-medium">{l.hopDong.tenKhach}</span>
+                  )
+                ) : (
+                  <span className="text-fg-faint">chưa nối hợp đồng</span>
+                )}
+                {l.hopDong?.khachHang?.soDienThoai && (
+                  <span className="text-xs text-fg-muted tabular-nums">
+                    {l.hopDong.khachHang.soDienThoai}
+                  </span>
+                )}
+                {/*
+                  Lý do là thứ quyết việc phải làm, nên tô đậm hơn mọi thứ
+                  khác trên dòng: "chưa chốt" thì gọi nhắc, "đã hoãn" thì phải
+                  báo lại ekip đã xếp người.
+                */}
+                <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900">
+                  {l.lyDoTrong ?? "chưa ghi lý do"}
+                </span>
+                {l.hopDong?.ngayDat && (
+                  <span className="text-xs text-fg-faint">ký {ngayVN(l.hopDong.ngayDat)}</span>
+                )}
+                {l.ghiChu && <span className="text-xs text-fg-muted">{l.ghiChu}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {xem === "luoi" && <LuoiLich ds={buoi} thang={thang} nay={nay} moHopDong={moHopDong} />}
 

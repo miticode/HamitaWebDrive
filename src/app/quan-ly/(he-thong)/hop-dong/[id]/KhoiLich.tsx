@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { LOAI_LICH } from "@/lib/hopDongChung";
+import { LOAI_LICH, LY_DO_TRONG_NGAY } from "@/lib/hopDongChung";
 import { luuLichAction, type DongLichSua } from "../../../actionsHopDong";
 
 const TRANG_THAI_BUOI = ["Chưa làm", "Đang làm", "Hoàn thành"] as const;
@@ -22,6 +22,7 @@ export function KhoiLich({
   banDau,
   duocSua,
   loaiBuoi,
+  lyDo,
 }: {
   hopDongId: string;
   banDau: DongLichSua[];
@@ -34,9 +35,15 @@ export function KhoiLich({
    * dùng" ở trang Loại buổi rồi mà ô chọn ở đây vẫn hiện đủ mười hai loại cũ.
    */
   loaiBuoi?: readonly { ten: string }[];
+  /**
+   * Lý do một buổi chưa có ngày, nhóm `ly-do-trong-ngay` của bảng `DanhMuc`
+   * (anh yêu cầu 19/11/2026). Thiếu thì dùng bảng cứng `LY_DO_TRONG_NGAY`.
+   */
+  lyDo?: readonly string[];
 }) {
   const router = useRouter();
   const dsLoai = loaiBuoi && loaiBuoi.length > 0 ? loaiBuoi.map((l) => l.ten) : [...LOAI_LICH];
+  const dsLyDo = lyDo && lyDo.length > 0 ? [...lyDo] : [...LY_DO_TRONG_NGAY];
   const loaiDau = dsLoai[0] ?? LOAI_LICH[0];
   const [dong, setDong] = useState<DongLichSua[]>(banDau);
   const [dangLuu, start] = useTransition();
@@ -53,12 +60,15 @@ export function KhoiLich({
     So bằng JSON vì mỗi dòng chỉ có năm trường chữ và danh sách nhiều lắm
     năm bảy dòng; so từng trường cho khéo chỉ tốn code chứ không nhanh hơn.
 
-    BỎ DÒNG TRỐNG NGÀY ra khỏi cả hai vế trước khi so. Server cũng bỏ chúng
-    lúc lưu (xem chữ nhắc cạnh nút), nên một dòng vừa thêm mà chưa điền ngày
-    KHÔNG phải "thay đổi chưa lưu" — không lọc thì bấm Thêm buổi xong là nút
-    kẹt ở trạng thái có thay đổi, bấm Lưu cũng không hết.
+    BỎ DÒNG TRỐNG TRƠN ra khỏi cả hai vế trước khi so — server cũng bỏ chúng
+    lúc lưu, nên chúng không phải "thay đổi chưa lưu".
+
+    Từ 19/11/2026 "trống trơn" nghĩa là KHÔNG CÓ CẢ NGÀY LẪN LOẠI BUỔI. Trước
+    đó chỉ cần trống ngày là bị loại, vì server cũng loại; giờ buổi có loại mà
+    chưa có ngày thì được lưu thật, nên nó PHẢI tính là thay đổi — nếu không
+    thì thêm một buổi "chờ ngày" rồi bấm Lưu sẽ không lưu được gì.
   */
-  const deSo = (ds: DongLichSua[]) => JSON.stringify(ds.filter((d) => d.ngay));
+  const deSo = (ds: DongLichSua[]) => JSON.stringify(ds.filter((d) => d.ngay || d.loai));
   const coDoi = deSo(dong) !== deSo(banDau);
 
   /*
@@ -98,11 +108,23 @@ export function KhoiLich({
     ) : (
       <ul className="mt-2 grid gap-1.5 text-sm">
         {dong.map((d) => (
-          <li key={d.id} className="rounded-md border border-line bg-bg-raised px-3.5 py-2">
-            <span className="tabular-nums">{d.ngay}</span>
+          <li
+            key={d.id}
+            className={`rounded-md border px-3.5 py-2 ${
+              d.ngay ? "border-line bg-bg-raised" : "border-amber-300 bg-amber-50"
+            }`}
+          >
+            {d.ngay ? (
+              <span className="tabular-nums">{d.ngay}</span>
+            ) : (
+              <span className="font-medium text-amber-900">Chờ ngày</span>
+            )}
             {d.gio && <span className="ml-2 font-medium tabular-nums">{d.gio}</span>}
             <span className="mx-2 text-fg-muted">{d.loai}</span>
             <span className="text-xs text-fg-faint">{d.trangThai}</span>
+            {!d.ngay && d.lyDoTrong && (
+              <span className="block text-xs text-amber-900">{d.lyDoTrong}</span>
+            )}
             {d.ghiChu && <span className="block text-xs text-fg-muted">{d.ghiChu}</span>}
           </li>
         ))}
@@ -113,7 +135,13 @@ export function KhoiLich({
   return (
     <div className="mt-2 grid gap-3">
       {dong.map((d, i) => (
-        <div key={d.id ?? `moi-${i}`} className="grid gap-2 rounded-md border border-line bg-bg-raised p-3 sm:grid-cols-[9rem_6rem_10rem_9rem_1fr_auto]">
+        <div
+          key={d.id ?? `moi-${i}`}
+          className={`grid gap-2 rounded-md border p-3 ${
+            d.ngay ? "border-line bg-bg-raised" : "border-amber-300 bg-amber-50/60"
+          }`}
+        >
+          <div className="grid gap-2 sm:grid-cols-[9rem_6rem_10rem_9rem_1fr_auto]">
           <label className="block">
             <span className="eyebrow block">Ngày</span>
             <input
@@ -180,6 +208,37 @@ export function KhoiLich({
               Bỏ
             </button>
           </div>
+          </div>
+
+          {/*
+            Ô lý do chỉ hiện khi ngày trống — nó chỉ có nghĩa lúc đó, và server
+            cũng xoá lý do ngay khi dòng có ngày trở lại.
+
+            Đây là chỗ dùng nhiều nhất của cột này: khách hoãn cưới thì người
+            sửa XOÁ NGÀY ở dòng cũ, ô lý do hiện ra ngay bên dưới để chọn "Đã
+            hoãn, chờ ngày mới". Ngày cũ không mất — nhật ký đã ghi lại.
+          */}
+          {!d.ngay && (
+            <div className="grid gap-2 sm:grid-cols-[1fr_15rem] sm:items-end">
+              <p className="text-xs text-amber-900">
+                Buổi này chưa có ngày, nên nó đứng ở khu “Chờ xếp ngày” của trang Lịch chụp.
+              </p>
+              <label className="block">
+                <span className="eyebrow block">Vì sao chưa có ngày</span>
+                <select
+                  value={d.lyDoTrong || dsLyDo[0]}
+                  onChange={(e) => doi(i, { lyDoTrong: e.target.value })}
+                  className="input mt-1.5"
+                >
+                  {[...new Set([d.lyDoTrong, ...dsLyDo])].filter(Boolean).map((x) => (
+                    <option key={x} value={x}>
+                      {x}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
         </div>
       ))}
 
@@ -190,7 +249,10 @@ export function KhoiLich({
           type="button"
           className="btn"
           onClick={() =>
-            setDong((ds) => [...ds, { ngay: "", gio: "", loai: loaiDau, ghiChu: "", trangThai: "Chưa làm" }])
+            setDong((ds) => [
+              ...ds,
+              { ngay: "", gio: "", loai: loaiDau, lyDoTrong: "", ghiChu: "", trangThai: "Chưa làm" },
+            ])
           }
         >
           Thêm buổi
@@ -211,7 +273,9 @@ export function KhoiLich({
         {coDoi && !dangLuu && !daLuu && (
           <span className="text-sm font-medium text-amber-800">Có thay đổi chưa lưu</span>
         )}
-        <span className="text-xs text-fg-faint">Dòng để trống ngày sẽ không được lưu.</span>
+        <span className="text-xs text-fg-faint">
+          Chưa biết ngày thì để trống — buổi vẫn được lưu, kèm lý do.
+        </span>
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ import {
   HINH_THUC_THU,
   LOAI_DV_HD,
   LOAI_LICH,
+  LY_DO_TRONG_NGAY,
   NOI_DUNG_THU,
   ngayVN,
   type DongDichVuMoi,
@@ -66,7 +67,7 @@ export function FormHopDongMoi({
    * Ba danh mục nhỏ đọc từ bảng `DanhMuc` (anh yêu cầu 18/11/2026).
    * Thiếu thì dùng bảng cứng — ô chọn không bao giờ được phép rỗng.
    */
-  danhMuc?: { loaiHopDong: string[]; hinhThucThu: string[]; noiDungThu: string[] };
+  danhMuc?: { loaiHopDong: string[]; hinhThucThu: string[]; noiDungThu: string[]; lyDoTrongNgay?: string[] };
   /**
    * Bộ mã album, đọc từ bảng `MaAlbum` (anh yêu cầu 19/11/2026).
    * Thiếu thì dùng bộ cứng — ô chọn không bao giờ được phép rỗng.
@@ -196,6 +197,7 @@ export function FormHopDongMoi({
   const dsLoaiHD = danhMuc?.loaiHopDong?.length ? danhMuc.loaiHopDong : [...LOAI_DV_HD];
   const dsHinhThuc = danhMuc?.hinhThucThu?.length ? danhMuc.hinhThucThu : [...HINH_THUC_THU];
   const dsNoiDung = danhMuc?.noiDungThu?.length ? danhMuc.noiDungThu : [...NOI_DUNG_THU];
+  const dsLyDo = danhMuc?.lyDoTrongNgay?.length ? danhMuc.lyDoTrongNgay : [...LY_DO_TRONG_NGAY];
   const maTheoLoai = useMemo(() => {
     const m = new Map<string, string>();
     for (const l of dsLoai) if (l.maAlbum) m.set(l.ten.trim().toLowerCase(), l.maAlbum);
@@ -275,7 +277,7 @@ export function FormHopDongMoi({
   const datNgayBuoi = (k: number, ngay: string) =>
     setLich((ds) => {
       const moi = [...ds];
-      while (moi.length <= k) moi.push({ ngay: "", gio: "", loai: loaiDau, ghiChu: "", hienThi: "" });
+      while (moi.length <= k) moi.push({ ngay: "", gio: "", loai: loaiDau, lyDoTrong: "", ghiChu: "", hienThi: "" });
       moi[k] = { ...moi[k], ngay };
       return moi;
     });
@@ -382,7 +384,7 @@ export function FormHopDongMoi({
           }
         }
         for (const ten of con) {
-          moi.push({ ngay: "", gio: "", loai: ten, ghiChu: "", hienThi: "" });
+          moi.push({ ngay: "", gio: "", loai: ten, lyDoTrong: "", ghiChu: "", hienThi: "" });
         }
         return moi;
       });
@@ -410,7 +412,7 @@ export function FormHopDongMoi({
         if (trangTinh) moi[i] = { ...l, loai: con.shift()! };
       }
       while (moi.length < soBuoi) {
-        moi.push({ ngay: "", gio: "", loai: con.shift() ?? loaiDau, ghiChu: "", hienThi: "" });
+        moi.push({ ngay: "", gio: "", loai: con.shift() ?? loaiDau, lyDoTrong: "", ghiChu: "", hienThi: "" });
       }
       return moi;
     });
@@ -945,7 +947,10 @@ export function FormHopDongMoi({
 
       {/* ── Bước 3: lịch chụp, mã album, đầu việc ─────────────────────── */}
       <div className={buoc === 3 ? "grid gap-5" : "hidden"}>
-      <Khung ten="Lịch chụp" chu="Mỗi ngày quay/chụp một dòng — đúng như bảng Lịch bên AppSheet.">
+      <Khung
+        ten="Lịch chụp"
+        chu="Mỗi buổi quay/chụp một dòng. Chưa biết ngày thì cứ chọn loại buổi và để trống ngày — buổi vẫn được lưu."
+      >
         {ngayChupChuaCoLich.length > 0 && (
           <button
             type="button"
@@ -953,7 +958,7 @@ export function FormHopDongMoi({
             onClick={() =>
               setLich((ds) => [
                 ...ds,
-                ...ngayChupChuaCoLich.map((ngay) => ({ ngay, gio: "", loai: loaiDau, ghiChu: "", hienThi: "" })),
+                ...ngayChupChuaCoLich.map((ngay) => ({ ngay, gio: "", loai: loaiDau, lyDoTrong: "", ghiChu: "", hienThi: "" })),
               ])
             }
           >
@@ -963,7 +968,13 @@ export function FormHopDongMoi({
 
         <div className="grid gap-3">
           {lich.map((l, i) => (
-            <div key={i} className="grid gap-3 sm:grid-cols-[9rem_6rem_11rem_1fr_auto]">
+            <div
+              key={i}
+              className={`grid gap-3 rounded-lg ${
+                l.ngay ? "" : "border border-amber-300 bg-amber-50/60 p-3"
+              }`}
+            >
+            <div className="grid gap-3 sm:grid-cols-[9rem_6rem_11rem_1fr_auto]">
               <O nhan="Ngày">
                 <input
                   type="date"
@@ -1006,13 +1017,47 @@ export function FormHopDongMoi({
                 </button>
               </div>
             </div>
+
+            {/*
+              Buổi ĐÃ CHỌN LOẠI mà chưa có ngày thì vẫn lưu (anh chốt
+              19/11/2026) — ba tình huống: gói prewedding đặt trước chưa chốt
+              ngày, trọn gói mà chưa chụp prewedding, và hoãn ngày cưới.
+
+              Ô lý do chỉ hiện khi ngày trống, vì nó chỉ có nghĩa lúc đó. Hai
+              lý do khác nhau ở việc phải làm: chưa chốt thì gọi nhắc, còn đã
+              hoãn thì phải báo lại ekip đã xếp người và váy.
+            */}
+            {!l.ngay && (
+              <div className="grid gap-3 sm:grid-cols-[1fr_15rem] sm:items-end">
+                <p className="text-xs text-amber-900">
+                  Buổi này sẽ lưu là <strong>chưa có ngày</strong>. Nó đứng ở khu “Chờ xếp ngày” của
+                  trang Lịch chụp cho tới khi ai đó điền ngày.
+                </p>
+                <O nhan="Vì sao chưa có ngày">
+                  <select
+                    value={l.lyDoTrong || dsLyDo[0]}
+                    onChange={(e) =>
+                      setLich((ds) => ds.map((x, j) => (i === j ? { ...x, lyDoTrong: e.target.value } : x)))
+                    }
+                    className="input"
+                  >
+                    {dsLyDo.map((x) => (
+                      <option key={x} value={x}>
+                        {x}
+                      </option>
+                    ))}
+                  </select>
+                </O>
+              </div>
+            )}
+            </div>
           ))}
         </div>
 
         <button
           type="button"
           className="btn mt-3"
-          onClick={() => setLich((ds) => [...ds, { ngay: "", gio: "", loai: loaiDau, ghiChu: "", hienThi: "" }])}
+          onClick={() => setLich((ds) => [...ds, { ngay: "", gio: "", loai: loaiDau, lyDoTrong: "", ghiChu: "", hienThi: "" }])}
         >
           Thêm dòng lịch
         </button>

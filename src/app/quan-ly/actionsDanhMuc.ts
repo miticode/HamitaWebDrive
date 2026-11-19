@@ -38,7 +38,9 @@ async function demDung(nhom: TenNhom, ten: string): Promise<number> {
   const { bang, cot } = COT_DUNG[nhom];
   const prisma = getPrisma();
   const where = { [cot]: ten } as never;
-  return bang === "hopDong" ? prisma.hopDong.count({ where }) : prisma.phieuThu.count({ where });
+  if (bang === "hopDong") return prisma.hopDong.count({ where });
+  if (bang === "lichChup") return prisma.lichChup.count({ where });
+  return prisma.phieuThu.count({ where });
 }
 
 export async function themDanhMucAction(nhom: string, ten: string): Promise<{ loi?: string; ok?: true }> {
@@ -113,7 +115,12 @@ export async function suaDanhMucAction(
     if (t.ten !== cu.ten) {
       const where = { [cot]: cu.ten } as never;
       const data = { [cot]: t.ten } as never;
-      const kq = bang === "hopDong" ? await tx.hopDong.updateMany({ where, data }) : await tx.phieuThu.updateMany({ where, data });
+      const kq =
+        bang === "hopDong"
+          ? await tx.hopDong.updateMany({ where, data })
+          : bang === "lichChup"
+            ? await tx.lichChup.updateMany({ where, data })
+            : await tx.phieuThu.updateMany({ where, data });
       doiTheo = kq.count;
     }
   });
@@ -181,7 +188,14 @@ export async function chepDanhMucAction(nhom: string): Promise<{ loi?: string; t
   const { bangCung } = await import("@/lib/danhMuc");
   const ten: string[] = [...bangCung(nhom)];
 
-  if (nhom !== NHOM.noiDungThu) {
+  /*
+    Hai nhóm KHÔNG chép từ dữ liệu thật:
+      - "Nội dung thu": 605 phiếu gõ tay mỗi phiếu một kiểu, chép vào là bảng
+        danh mục thành bãi rác.
+      - "Lý do chưa có ngày": cột `lyDoTrong` mới có từ 19/11/2026 nên dữ liệu
+        cũ rỗng sạch — chép chỉ ra đúng bảng cứng, mà bảng cứng đã nằm trên kia.
+  */
+  if (nhom !== NHOM.noiDungThu && nhom !== NHOM.lyDoTrongNgay) {
     const { bang, cot } = COT_DUNG[nhom];
     const nhomDL =
       bang === "hopDong"

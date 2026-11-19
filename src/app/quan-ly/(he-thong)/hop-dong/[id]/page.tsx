@@ -8,6 +8,7 @@ import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { albumCuaHopDong } from "@/lib/noiAlbum";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
+import { NHOM, docDanhMuc } from "@/lib/danhMuc";
 import { docMaAlbum } from "@/lib/docMaAlbum";
 import { coGiaoAnh } from "@/lib/thuMucHopDong";
 import { NutTaoThuMuc } from "./NutTaoThuMuc";
@@ -39,7 +40,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
   const { id } = await params;
   const prisma = getPrisma();
 
-  const [hd, bangTen, album, cacBuoc, loaiBuoi, boMa] = await Promise.all([
+  const [hd, bangTen, album, cacBuoc, loaiBuoi, boMa, dsLyDo] = await Promise.all([
     prisma.hopDong.findUnique({
       where: { id },
       include: {
@@ -63,6 +64,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
     docBuocDayDu(),
     docLoaiBuoi(),
     docMaAlbum(),
+    docDanhMuc(NHOM.lyDoTrongNgay),
   ]);
   if (!hd) notFound();
 
@@ -344,6 +346,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
         <TieuDeKhoi ten="Lịch chụp" so={hd.lich.length} />
         <KhoiLich
           loaiBuoi={loaiBuoi}
+          lyDo={dsLyDo}
           hopDongId={hd.id}
           duocSua={duocSua}
           banDau={hd.lich.map((l) => ({
@@ -351,6 +354,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
             ngay: l.ngay ?? "",
             gio: l.gio ?? "",
             loai: l.loai ?? "Ngày chụp",
+            lyDoTrong: l.lyDoTrong ?? "",
             ghiChu: l.ghiChu ?? "",
             trangThai: l.trangThai ?? "Chưa làm",
           }))}

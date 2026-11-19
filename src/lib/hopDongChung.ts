@@ -123,6 +123,25 @@ export const HINH_THUC_THU = ["Tiền mặt", "Chuyển khoản"] as const;
 export const NOI_DUNG_THU = ["Cọc", "Cọc lần 1", "Cọc lần 2", "Thanh toán đủ", "Đủ"] as const;
 
 /**
+ * Vì sao một buổi chụp chưa có ngày — anh chốt 19/11/2026.
+ *
+ * Ba tình huống anh nêu đều rơi vào hai lý do này, và hai lý do đó khác nhau
+ * ở VIỆC PHẢI LÀM:
+ *
+ *   - Khách chưa chốt ngày (gói prewedding đặt trước, hoặc trọn gói mà chưa
+ *     chụp prewedding) → sale gọi nhắc, chưa ai phải làm gì khác.
+ *   - Đã hoãn, chờ ngày mới (hoãn cưới vì chuyện gia đình) → buổi này TỪNG
+ *     có ngày, ekip có thể đã xếp người và váy, nên phải báo lại.
+ *
+ * Trộn hai thứ vào một ô ghi chú thì không lọc được cái nào. Đo 1.456 buổi
+ * cũ: 0 buổi ghi lý do hoãn ở bất cứ đâu, nên không có gì phải chép lại.
+ *
+ * Là GỢI Ý chứ không phải bộ giá trị khoá — y như `NOI_DUNG_THU`. Sửa được
+ * ở Quản lý dịch vụ → Lý do chưa có ngày (nhóm `ly-do-trong-ngay`).
+ */
+export const LY_DO_TRONG_NGAY = ["Khách chưa chốt ngày", "Đã hoãn, chờ ngày mới"] as const;
+
+/**
  * Trạng thái phiếu thu theo hình thức. Bên AppSheet phiếu do nhân viên tạo
  * mang "Chờ duyệt" cho tới khi quản lý duyệt — web giữ đúng nếp đó: chỉ quản
  * lý mới ghi thẳng thành đã thu.
@@ -161,10 +180,13 @@ export type DongThuMoi = {
 };
 
 export type DongLichMoi = {
+  /** "" hoặc "YYYY-MM-DD". Rỗng = buổi đã bán nhưng chưa biết ngày. */
   ngay: string;
   /** "HH:MM" hoặc rỗng — giờ hẹn có mặt. Xem chú thích ở model `LichChup`. */
   gio: string;
   loai: string;
+  /** Chỉ có nghĩa khi `ngay` rỗng — xem `LY_DO_TRONG_NGAY`. */
+  lyDoTrong: string;
   ghiChu: string;
   /** Dòng chữ vẽ lên lịch; để trống thì máy chủ tự ghép từ tên khách và ngày. */
   hienThi: string;
@@ -328,13 +350,30 @@ export function kiemHopDongMoi(
   const lich: DongLichMoi[] = [];
   for (const [i, l] of (du.lich ?? []).entries()) {
     const ngay = gon(l.ngay);
-    // Dòng lịch bỏ trống ngày thì coi như không thêm.
-    if (!ngay) continue;
-    if (!NGAY_RE.test(ngay)) return { loi: `Ngày của dòng lịch ${i + 1} chưa đúng.` };
+    const loaiBuoi = gon(l.loai);
+    /*
+      Dòng TRỐNG TRƠN thì bỏ — form luôn chừa sẵn một dòng rỗng để gõ thêm.
+
+      Nhưng dòng ĐÃ CHỌN LOẠI BUỔI mà chưa có ngày thì PHẢI LƯU (anh chốt
+      19/11/2026). Trước đó mọi dòng không ngày đều bị loại, nên một hợp đồng
+      "chưa có ngày chụp" không có dòng lịch nào — đo 10 hợp đồng đang ở bước
+      1 thì 9 cái lịch rỗng. Mất hai thứ: khách đã mua buổi gì, và mã album
+      (mã suy từ LOẠI BUỔI, mà loại buổi nằm ở chính dòng lịch đó).
+    */
+    if (!ngay && !loaiBuoi) continue;
+    if (ngay && !NGAY_RE.test(ngay)) return { loi: `Ngày của dòng lịch ${i + 1} chưa đúng.` };
     /* Giờ KHÔNG bắt buộc — xem chú thích ở model `LichChup`. */
     const gio = gon(l.gio);
     if (gio && !GIO_RE.test(gio)) return { loi: `Giờ của dòng lịch ${i + 1} chưa đúng.` };
-    lich.push({ ngay, gio, loai: gon(l.loai) || "Ngày chụp", ghiChu: gon(l.ghiChu), hienThi: gon(l.hienThi) });
+    lich.push({
+      ngay,
+      gio,
+      loai: loaiBuoi || "Ngày chụp",
+      /* Có ngày rồi thì lý do vô nghĩa, xoá luôn kẻo còn sót lại từ lần trước. */
+      lyDoTrong: ngay ? "" : gon(l.lyDoTrong) || LY_DO_TRONG_NGAY[0],
+      ghiChu: gon(l.ghiChu),
+      hienThi: gon(l.hienThi),
+    });
   }
 
   const viec: (DongViecMoi & { thanhTien: number })[] = [];

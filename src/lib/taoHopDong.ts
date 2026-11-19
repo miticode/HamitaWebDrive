@@ -198,9 +198,10 @@ async function ghiHopDong(sach: HopDongSach, nguoi: NguoiLap, luc: Date, so: num
       await tx.lichChup.createMany({
         data: sach.lich.map((l) => ({
           hopDongId: hd.id,
-          ngay: l.ngay,
+          ngay: l.ngay || null,
           gio: l.gio || null,
           loai: l.loai,
+          lyDoTrong: l.lyDoTrong || null,
           ghiChu: l.ghiChu || null,
           trangThai: "Chưa làm",
           /*
@@ -209,7 +210,10 @@ async function ghiHopDong(sach: HopDongSach, nguoi: NguoiLap, luc: Date, so: num
             ghép tạm tên khách, ngày và số điện thoại — sửa lại được sau.
           */
           hienThi:
-            l.hienThi || [sach.tenKhach, ngayVN(l.ngay), soDienThoai].filter(Boolean).join(" - "),
+            l.hienThi ||
+            [sach.tenKhach, l.ngay ? ngayVN(l.ngay) : "chưa có ngày", soDienThoai]
+              .filter(Boolean)
+              .join(" - "),
           nguoiTaoMaNV: maNV,
           taoLuc: luc,
         })),

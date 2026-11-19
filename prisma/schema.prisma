@@ -1034,6 +1034,19 @@ model LichChup {
   /// "07:30" la 07:30 gio Viet Nam, khong phai mot thoi diem UTC phai doi.
   gio            String?
   loai           String?
+  /// Vi sao buoi nay CHUA CO NGAY — chi co nghia khi `ngay` la null.
+  ///
+  /// Anh chot 19/11/2026. Truoc do web loai han dong lich bo trong ngay, nen
+  /// mot hop dong "chua co ngay chup" khong co dong lich nao: mat luon thong
+  /// tin khach da mua buoi gi, va ma album khong suy ra duoc (ma suy tu LOAI
+  /// BUOI, ma loai buoi nam o chinh dong lich do).
+  ///
+  /// Hai gia tri khac nhau ve VIEC PHAI LAM: "khach chua chot ngay" thi chi
+  /// goi nhac, con "da hoan" thi phai bao ekip da xep nguoi. Do 1.456 buoi cu:
+  /// 0 buoi nao ghi ly do hoan o bat cu dau.
+  ///
+  /// Gia tri lay tu nhom "ly-do-trong-ngay" cua bang DanhMuc (co CRUD).
+  lyDoTrong      String?
   ghiChu         String?
   /// "Hoàn thành" | "Đang làm" | "Chưa làm"
   trangThai      String?

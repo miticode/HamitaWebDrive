@@ -15,7 +15,13 @@ import { docLoaiBuoi } from "@/lib/loaiBuoi";
 import { docBaDanhMuc } from "@/lib/danhMuc";
 import { docMaAlbum } from "@/lib/docMaAlbum";
 import { lapHopDongMoi, maNguoiLap, type NguoiLap } from "@/lib/taoHopDong";
-import { ngayVN, type DuLieuHopDongMoi, type DuLieuPhieuThu, type DuLieuSuaHopDong } from "@/lib/hopDongChung";
+import {
+  LY_DO_TRONG_NGAY,
+  ngayVN,
+  type DuLieuHopDongMoi,
+  type DuLieuPhieuThu,
+  type DuLieuSuaHopDong,
+} from "@/lib/hopDongChung";
 import { duyetPhieuThu, suaHopDong, themPhieuThu, xoaHopDong, xoaPhieuThu } from "@/lib/suaHopDong";
 
 /**
@@ -383,10 +389,13 @@ export async function xoaHopDongAction(
 export type DongLichSua = {
   /** Có id là dòng cũ, không có là dòng vừa thêm. */
   id?: string;
+  /** "" hoặc "YYYY-MM-DD". Rỗng = buổi đã bán nhưng chưa biết ngày. */
   ngay: string;
   /** "HH:MM" hoặc rỗng. Giờ hẹn có mặt — xem chú thích ở model `LichChup`. */
   gio: string;
   loai: string;
+  /** Chỉ có nghĩa khi `ngay` rỗng — xem `LY_DO_TRONG_NGAY`. */
+  lyDoTrong: string;
   ghiChu: string;
   trangThai: string;
 };
@@ -416,8 +425,10 @@ export async function luuLichAction(
   const sach: (DongLichSua & { hienThi: string })[] = [];
   for (const [i, d] of dong.entries()) {
     const ngay = String(d.ngay ?? "").trim();
-    if (!ngay) continue;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay)) return { loi: `Ngày của dòng ${i + 1} chưa đúng.` };
+    const loaiBuoi = String(d.loai ?? "").trim();
+    /* Dòng trống trơn thì bỏ; có loại buổi mà chưa có ngày thì GIỮ — xem `kiemHopDongMoi`. */
+    if (!ngay && !loaiBuoi) continue;
+    if (ngay && !/^\d{4}-\d{2}-\d{2}$/.test(ngay)) return { loi: `Ngày của dòng ${i + 1} chưa đúng.` };
     /* Giờ KHÔNG bắt buộc — 1.454 buổi cũ đều không có giờ, bắt buộc là chặn mọi lần sửa. */
     const gio = String(d.gio ?? "").trim();
     if (gio && !/^([01]\d|2[0-3]):[0-5]\d$/.test(gio)) return { loi: `Giờ của dòng ${i + 1} chưa đúng.` };
@@ -425,11 +436,15 @@ export async function luuLichAction(
       id: d.id,
       ngay,
       gio,
-      loai: String(d.loai ?? "").trim() || "Ngày chụp",
+      loai: loaiBuoi || "Ngày chụp",
+      /* Có ngày rồi thì lý do vô nghĩa — xoá kẻo còn sót "đã hoãn" từ lần trước. */
+      lyDoTrong: ngay ? "" : String(d.lyDoTrong ?? "").trim() || LY_DO_TRONG_NGAY[0],
       ghiChu: String(d.ghiChu ?? "").trim(),
       trangThai: String(d.trangThai ?? "").trim() || "Chưa làm",
       // Dòng chữ vẽ lên lịch, ghép như lúc lập hợp đồng.
-      hienThi: [hd.tenKhach, ngayVN(ngay), hd.khachHang?.soDienThoai].filter(Boolean).join(" - "),
+      hienThi: [hd.tenKhach, ngay ? ngayVN(ngay) : "chưa có ngày", hd.khachHang?.soDienThoai]
+        .filter(Boolean)
+        .join(" - "),
     });
   }
 
@@ -442,9 +457,10 @@ export async function luuLichAction(
 
     for (const d of sach) {
       const data = {
-        ngay: d.ngay,
+        ngay: d.ngay || null,
         gio: d.gio || null,
         loai: d.loai,
+        lyDoTrong: d.lyDoTrong || null,
         ghiChu: d.ghiChu || null,
         trangThai: d.trangThai,
         hienThi: d.hienThi,
