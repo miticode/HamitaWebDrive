@@ -75,7 +75,15 @@ export type HanhDong =
   | "xoa-album"
   | "sua-album"
   | "lam-moi-album"
-  | "gui-thong-bao";
+  | "gui-thong-bao"
+  /*
+    Đổi bước hợp đồng từ TRANG ALBUM (anh yêu cầu 19/11/2026) — bấm "Gửi
+    thông báo" hoặc "Đã gửi file gốc" là hợp đồng nhảy sang bước đã gửi ảnh
+    gốc. Ghi riêng một hành động chứ không gộp vào "sua-hop-dong": người mở
+    hợp đồng ra thấy bước đã nhảy mà không ai gõ thì phải tra được nó đến từ
+    trang album.
+  */
+  | "doi-buoc-anh-goc";
 
 export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "dang-nhap": "Đăng nhập",
@@ -135,4 +143,5 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   // nhung dong CU trong so nhat ky he thong van doc duoc ra tieng Viet.
   "lam-moi-album": "Đọc lại album từ Drive",
   "gui-thong-bao": "Gửi thông báo cho khách",
+  "doi-buoc-anh-goc": "Đổi bước: đã gửi ảnh gốc",
 };

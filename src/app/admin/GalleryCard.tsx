@@ -471,6 +471,7 @@ export function GalleryCard({
               <NutGuiThongBao
                 galleryId={gallery.id}
                 soMay={soMayChoTin}
+                slug={gallery.slug}
                 lop="muc-menu"
               />
 

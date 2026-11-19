@@ -2,6 +2,21 @@
 
 import { useState, useTransition } from "react";
 import { guiThongBaoAction } from "./actions";
+import { daGuiAnhGocAction } from "./actionsHopDong";
+import type { KetQuaAnhGoc } from "./actionsHopDong";
+
+/**
+ * Một câu nói kết quả việc ĐỔI BƯỚC HỢP ĐỒNG — anh yêu cầu 19/11/2026.
+ *
+ * Việc thứ hai của nút này, nên phải nói ra: bấm một cái mà hai thứ thay đổi,
+ * im lặng về một thứ thì lần sau không ai biết nó có xảy ra hay không.
+ */
+function chuBuoc(kq: KetQuaAnhGoc): string | null {
+  if (kq.doiBuoc) return `Hợp đồng ${kq.doiBuoc.tenKhach}: chuyển sang “${kq.doiBuoc.den}”`;
+  if (kq.chuaGan) return "Album chưa gắn hợp đồng nên không đổi được trạng thái";
+  if (kq.giuBuoc) return `Hợp đồng ${kq.giuBuoc.tenKhach} đang ở “${kq.giuBuoc.buoc}” — giữ nguyên`;
+  return null;
+}
 
 /**
  * Nút gửi tin "có ảnh mới" cho khách của một album.
@@ -23,16 +38,23 @@ import { guiThongBaoAction } from "./actions";
 export function NutGuiThongBao({
   galleryId,
   soMay,
+  slug,
   lop,
 }: {
   galleryId: string;
   /** Số máy khách đang chờ nhận tin của album này. */
   soMay: number;
+  /**
+   * Slug album — chỉ dùng để chỉ đường sang chỗ gắn hợp đồng khi album chưa
+   * gắn. Thiếu thì câu nhắc vẫn hiện, chỉ không có liên kết.
+   */
+  slug?: string;
   /** Lớp CSS cho nút — thẻ album gọi nó trong bảng "…" nên hình dạng khác. */
   lop?: string;
 }) {
   const [hoi, setHoi] = useState(false);
   const [ketQua, setKetQua] = useState<string | null>(null);
+  const [chuaGan, setChuaGan] = useState(false);
   const [dangGui, start] = useTransition();
 
   /*
@@ -47,15 +69,53 @@ export function NutGuiThongBao({
     con số. Nút mờ đi đã nói rõ là bấm không được, còn lý do đầy đủ nằm trong
     chú thích khi rê chuột.
   */
+  /*
+    CHƯA AI BẬT THÔNG BÁO → nút "Đã gửi file gốc" (anh yêu cầu 19/11/2026).
+
+    Trước đó chỗ này là một chữ mờ bấm không được, vì không có máy nào để gửi
+    tin. Nhưng studio VẪN gửi file gốc cho khách — qua Zalo, qua link — nên
+    việc đó vẫn cần được đánh dấu, và hợp đồng vẫn phải sang bước 4.
+
+    Đo 19/11: 59/182 album không ai bật thông báo. Để nguyên chữ mờ thì một
+    phần ba album không bao giờ đổi được bước từ trang này.
+
+    KHÔNG có hộp hỏi lại như nút gửi tin: nút này không chạm tới khách, và đổi
+    bước thì sửa lại được ở trang hợp đồng. Hộp hỏi lại chỉ dành cho thứ không
+    rút lại được.
+  */
   if (soMay === 0) {
+    const danhDau = () =>
+      start(async () => {
+        const kq = await daGuiAnhGocAction(galleryId);
+        setChuaGan(!!kq.chuaGan);
+        setKetQua(kq.loi ?? chuBuoc(kq) ?? "Chưa có gì đổi");
+      });
+
     return (
-      <span
-        className={`${lop ?? "btn"} cursor-not-allowed opacity-45`}
-        title="Chưa ai đăng ký. Khách phải cài album ra màn hình chính rồi bấm “Nhận thông báo khi có ảnh mới” thì mới nhận được tin."
-      >
-        Gửi thông báo
-        <span className="ml-1.5 whitespace-nowrap">· 0 máy</span>
-      </span>
+      <>
+        <button
+          type="button"
+          onClick={danhDau}
+          disabled={dangGui}
+          className={lop ?? "btn"}
+          title="Chưa ai bật thông báo trong app nên không gửi tin được. Bấm đây để ghi nhận studio đã gửi file gốc cho khách — hợp đồng sẽ chuyển sang bước “đã gửi ảnh gốc”."
+        >
+          {dangGui ? "Đang ghi…" : "Đã gửi file gốc"}
+        </button>
+        {ketQua && (
+          <span className="self-center text-xs text-fg-muted">
+            {ketQua}
+            {chuaGan && slug && (
+              <>
+                {" "}
+                <a href={`/admin/${slug}`} className="underline hover:text-accent">
+                  gắn hợp đồng
+                </a>
+              </>
+            )}
+          </span>
+        )}
+      </>
     );
   }
 
@@ -63,13 +123,20 @@ export function NutGuiThongBao({
     start(async () => {
       const kq = await guiThongBaoAction(galleryId);
       setHoi(false);
-      setKetQua(
-        kq.error
-          ? kq.error
-          : kq.daGui
-            ? `Đã gửi tới ${kq.daGui} máy`
-            : "Không máy nào nhận được — có thể khách đã gỡ app",
-      );
+      setChuaGan(!!kq.chuaGan);
+      if (kq.error) {
+        setKetQua(kq.error);
+        return;
+      }
+      /*
+        Nói CẢ HAI việc trong một câu: tin đã đi tới mấy máy, và bước hợp đồng
+        thành gì. Một cú bấm làm hai việc thì phải báo cáo đủ hai việc.
+      */
+      const tin = kq.daGui
+        ? `Đã gửi tới ${kq.daGui} máy`
+        : "Không máy nào nhận được — có thể khách đã gỡ app";
+      const buoc = chuBuoc(kq);
+      setKetQua(buoc ? `${tin}. ${buoc}` : tin);
     });
 
   return (
@@ -101,7 +168,17 @@ export function NutGuiThongBao({
         xong mà im lặng thì lần sau không ai dám bấm nữa.
       */}
       {ketQua && (
-        <span className="self-center text-xs text-fg-muted">{ketQua}</span>
+        <span className="self-center text-xs text-fg-muted">
+          {ketQua}
+          {chuaGan && slug && (
+            <>
+              {" "}
+              <a href={`/admin/${slug}`} className="underline hover:text-accent">
+                gắn hợp đồng
+              </a>
+            </>
+          )}
+        </span>
       )}
 
       {hoi && (
@@ -129,7 +206,8 @@ export function NutGuiThongBao({
               Anh chị vào xem ảnh mới nhé ạ.
             </p>
             <p className="mt-3 text-xs leading-relaxed text-fg-faint">
-              Gửi rồi thì không thu hồi được.
+              Gửi rồi thì không thu hồi được. Hợp đồng của album này cũng chuyển sang bước “đã gửi
+              ảnh gốc” nếu đang ở bước trước đó.
             </p>
 
             <div className="mt-5 flex gap-2">

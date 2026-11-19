@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { doiBuocSauKhiGuiTin, type KetQuaAnhGoc } from "./actionsHopDong";
 import { ghepChacCuaAlbum } from "@/lib/ghepAlbum";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
@@ -225,10 +226,14 @@ export async function refreshGalleryAction(formData: FormData) {
  *
  * KHONG chay trong `after()` nhu Lam moi: studio can biet ngay tin da di duoc
  * toi may may. Gui xong ma im lang thi lan sau khong ai dam bam nua.
+ *
+ * Tu 19/11/2026 lam LUON hai viec (anh yeu cau): gui tin cho khach, va doi
+ * buoc hop dong sang "da gui anh goc". Media up anh roi bam nut nay la xong
+ * ca hai, khong phai nho sang trang hop dong doi buoc bang tay nua.
  */
 export async function guiThongBaoAction(
   galleryId: string,
-): Promise<{ error?: string; daGui?: number }> {
+): Promise<{ error?: string; daGui?: number } & KetQuaAnhGoc> {
   if (!(await quyenAlbum())) return { error: "Chưa đăng nhập." };
 
   const g = await getGalleryById(galleryId);
@@ -263,7 +268,19 @@ export async function guiThongBaoAction(
     revalidatePath("/admin");
   }
 
-  return { daGui: kq.daGui };
+  /*
+    Doi buoc SAU khi da gui tin, khong phai truoc.
+
+    Neu doi truoc ma viec gui chet thi hop dong noi "da gui anh goc" trong khi
+    khach chua nhan duoc gi. Nguoc lai thi te hon: doiBuocGuiAnhGoc khong bao
+    gio nem loi (xem chu thich o do), nen tin da di roi thi buoc cung di theo.
+
+    Doi KE CA khi daGui = 0: khach go app nen khong may nao nhan duoc, nhung
+    studio DA GUI that. Viec cua studio van la da lam xong.
+  */
+  const buoc = await doiBuocSauKhiGuiTin(galleryId);
+
+  return { daGui: kq.daGui, ...buoc };
 }
 
 /**
