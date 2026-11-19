@@ -15,6 +15,7 @@ import { goiYHopDong, hopDongCuaAlbum } from "@/lib/noiAlbum";
 import { NutDoiTong } from "../NutDoiTong";
 import { ExportButton, NutChep } from "./ExportButton";
 import { LuoiAnhChon } from "./LuoiAnhChon";
+import { KhoiMuc } from "./KhoiMuc";
 import { GanHopDong } from "./GanHopDong";
 
 export const dynamic = "force-dynamic";
@@ -192,27 +193,17 @@ export default async function ResultsPage({ params }: Props) {
                 - tên thư mục in bằng phông tiêu đề cỡ lớn, không còn là nhãn
                   nhỏ màu nhạt.
               */
-              <div
+              /*
+                Khối thư mục THU GỌN ĐƯỢC từ 19/11/2026 — anh yêu cầu. Phần
+                khung, đầu mục dính và nút thu gọn chuyển sang `KhoiMuc` vì
+                việc đóng/mở phải chạy ở máy khách; nội dung đầu mục vẫn dựng
+                ở đây và truyền xuống.
+              */
+              <KhoiMuc
                 key={album}
-                className={
-                  thuTu === 0
-                    ? "mt-6"
-                    : "mt-14 border-t border-line-strong pt-10"
-                }
-              >
-                {/*
-                  Đầu mục DÍNH LẠI khi cuộn (`sticky top-0`).
-
-                  Đây là thứ trả lời đúng câu hỏi "đang xem thư mục nào" ở
-                  giữa một lưới trăm tấm: kẻ ngang chỉ nói được chỗ giáp ranh,
-                  cuộn qua rồi thì không còn gì trên màn hình nhắc nữa.
-
-                  Nền phải ĐẶC (`bg-bg`), không để trong suốt: ảnh chạy phía
-                  dưới sẽ lộ qua và chữ không đọc nổi. Kéo rộng ra hai bên
-                  bằng lề âm rồi bù lại bằng padding, để dải nền che trọn bề
-                  ngang chứ không để ảnh ló ra ở mép.
-                */}
-                <div className="sticky top-0 z-10 -mx-5 bg-bg px-5 py-3 sm:-mx-6 sm:px-6">
+                thuTu={thuTu}
+                soAnh={rows.length}
+                dauMuc={
                   <h3 className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <span className="font-display text-xl font-light text-fg sm:text-2xl">
                       {album}
@@ -312,7 +303,8 @@ export default async function ResultsPage({ params }: Props) {
                       text={rows.map((r) => maSoFile(r.fileName)).join(" ")}
                     />
                   </h3>
-                </div>
+                }
+              >
                 {/*
                   Lưới tách ra component riêng vì bấm xem to cần chạy ở máy
                   khách. Truyền theo TỪNG NHÓM thư mục chứ không phải cả danh
@@ -337,7 +329,7 @@ export default async function ResultsPage({ params }: Props) {
                     note: r.note,
                   }))}
                 />
-              </div>
+              </KhoiMuc>
             ))}
           </section>
         );
