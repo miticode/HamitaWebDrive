@@ -24,6 +24,10 @@ const xoa: [string, () => Promise<{ count: number }>][] = [
   ["khachHang", () => p.khachHang.deleteMany({ where: { OR: [{ ten: { contains: DAU.ten } }, { soDienThoai: { in: [DAU.sdt, DAU.sdt2, DAU.sdt3] } }] } })],
   /* Album thử: xoá SelectionList và MucXong trước (khoá ngoại Cascade lo phần Selection). */
   ["mucXong", () => p.mucXong.deleteMany({ where: { gallery: { slug: { startsWith: "zz-thu-" } } } })],
+  /* Bảng GuiIn thêm 19/11/2026. Cascade từ gallery cũng xoá, nhưng xoá thẳng
+     ở đây để phép đo dưới kia có cái mà đối chiếu — tin là cascade đã làm thì
+     không khác gì không đo. */
+  ["guiIn", () => p.guiIn.deleteMany({ where: { gallery: { slug: { startsWith: "zz-thu-" } } } })],
   ["selectionList", () => p.selectionList.deleteMany({ where: { gallery: { slug: { startsWith: "zz-thu-" } } } })],
   /*
     Loc theo CA slug LAN ten khach, khong chi slug.
@@ -73,9 +77,10 @@ const con = {
   gallery: await p.gallery.count({
     where: { OR: [{ slug: { contains: "zz-thu" } }, { clientName: { contains: DAU.tienTo } }] },
   }),
+  guiIn: await p.guiIn.count({ where: { gallery: { slug: { contains: "zz-thu" } } } }),
 };
 const sot = Object.entries(con).filter(([, v]) => v > 0);
-console.log(sot.length ? `CÒN SÓT: ${sot.map(([k, v]) => `${k}=${v}`).join(", ")}` : "ĐÃ SẠCH — đo lại 13 bảng, không còn dòng thử nào.");
+console.log(sot.length ? `CÒN SÓT: ${sot.map(([k, v]) => `${k}=${v}`).join(", ")}` : "ĐÃ SẠCH — đo lại 14 bảng, không còn dòng thử nào.");
 
 /* ── DỌN CẢ TRÊN DRIVE, không chỉ trong database (thêm 14/11/2026) ─────
  *
