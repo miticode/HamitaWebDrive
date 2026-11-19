@@ -117,6 +117,26 @@ model Gallery {
 
   syncedAt DateTime?
 
+  /// MOC BO CACHE CAY THU MUC — anh chot 19/11/2026.
+  ///
+  /// Cay thu muc Drive duoc dem trong BO NHO CUA TUNG MAY (src/lib/cache.ts),
+  /// ma Vercel chay nhieu may song song. Studio bam "Lam moi" thi chi may nhan
+  /// cu bam do xoa cache; nhung may khac van giu cay cu them toi nam phut.
+  ///
+  /// Hau qua da xay ra that (04/09/2026): studio them thu muc moi, khach bam
+  /// thong bao vao thang thu muc do, request roi vao mot may con giu cay cu —
+  /// tra ve "khong tim thay trang". Thu lan nua thi duoc, vi roi vao may khac.
+  ///
+  /// Cot nay la DAU THOI GIAN, khong phai ban sao cua cay. Do 19/11: cay cua
+  /// album lon nhat nang 1,2 MB, ca kho 167.000 anh khoang 37 MB — do het vao
+  /// database thi moi luot khach mo album la mot luot doc tung do byte tu Neon
+  /// (nguyen tac 53). Mot moc thi chi vai chuc byte, va trang khach VON DA doc
+  /// ban ghi album theo slug roi nen khong ton them truy van nao.
+  ///
+  /// May nao co cache nap TRUOC moc nay thi tu bo va doc lai Drive.
+  /// null = chua ai bam lam moi lan nao, cache chi het theo TTL nhu cu.
+  treeMoc DateTime?
+
   /// Moc studio du dinh xoa anh khoi Drive. Khach thay dem nguoc de tranh thu
   /// tai ve. Chi la loi nhac — het han khong tu chan link, vi anh nam tren Drive.
   expiresAt DateTime?

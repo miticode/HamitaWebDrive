@@ -45,6 +45,7 @@ type GalleryRow = {
   subfolders: string[];
   dungLuongMB: number;
   syncedAt: Date | null;
+  treeMoc: Date | null;
   expiresAt: Date | null;
   selectionsDoneAt: Date | null;
   accessCode: string | null;
@@ -58,6 +59,7 @@ function toGallery(row: GalleryRow): Gallery {
     khuGioiThieu: docKhu(row.khuGioiThieu),
     createdAt: row.createdAt.toISOString(),
     syncedAt: row.syncedAt?.toISOString() ?? null,
+    treeMoc: row.treeMoc?.toISOString() ?? null,
     expiresAt: row.expiresAt?.toISOString() ?? null,
     selectionsDoneAt: row.selectionsDoneAt?.toISOString() ?? null,
     xemLanDau: row.xemLanDau?.toISOString() ?? null,
@@ -258,6 +260,13 @@ export const prismaStore: Store = {
       data: hien?.coverPinned
         ? { ...conLai, syncedAt: new Date() }
         : { ...conLai, coverFileId, syncedAt: new Date() },
+    });
+  },
+
+  async datTreeMoc(galleryId: string) {
+    await getPrisma().gallery.update({
+      where: { id: galleryId },
+      data: { treeMoc: new Date() },
     });
   },
 

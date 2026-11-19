@@ -94,20 +94,6 @@ export async function syncGalleryMeta(
 
 }
 
-/**
- * Chụp số liệu RỒI dựng sẵn ảnh, cả hai trong một lượt.
- *
- * Chỉ còn dùng cho đường chạy nền hoàn toàn (cron đồng bộ), nơi không có ai
- * ngồi đợi nhìn con số. Nút "Làm mới" KHÔNG dùng hàm này nữa — xem chú thích
- * ở `syncGalleryMeta`.
- */
-export async function syncAndWarm(
-  galleryId: string,
-  folderId: string,
-): Promise<void> {
-  await syncGalleryMeta(galleryId, folderId);
-  await warmGallery(folderId);
-}
 
 /**
  * Gửi tin "có ảnh mới" cho những khách đã đăng ký của một album.

@@ -8,8 +8,22 @@ import { getGalleryTree, type GalleryTree } from "@/lib/drive";
  */
 const TTL_MS = 5 * 60 * 1000;
 
-export function loadTree(folderId: string): Promise<GalleryTree> {
-  return cached(`tree:${folderId}`, TTL_MS, () => getGalleryTree(folderId));
+/**
+ * `moc` là `Gallery.treeMoc` — lần cuối studio bấm "Làm mới" cho album này.
+ *
+ * Mọi nơi gọi hàm này đều đã có bản ghi album trong tay (trang khách đọc nó
+ * theo slug trước khi đọc cây), nên truyền thêm mốc KHÔNG tốn truy vấn nào.
+ * Xem chú thích ở cột `treeMoc` trong schema.
+ *
+ * Thiếu mốc thì hành vi y như trước: cache chỉ hết theo TTL năm phút.
+ */
+export function loadTree(folderId: string, moc?: Date | null): Promise<GalleryTree> {
+  return cached(
+    `tree:${folderId}`,
+    TTL_MS,
+    () => getGalleryTree(folderId),
+    moc ? moc.getTime() : null,
+  );
 }
 
 /**
@@ -24,6 +38,11 @@ export function loadTree(folderId: string): Promise<GalleryTree> {
  * thu muc nen tra ve "khong tim thay trang". Thu lai lan nua thi duoc, vi roi
  * vao may khac. Cung ban chat voi bay da ghi o rateLimit: dem trong bo nho tren
  * Vercel khong dang tin.
+ *
+ * TU 19/11/2026 cai goc da duoc chua bang cot `Gallery.treeMoc`: bam "Lam moi"
+ * la ghi mot moc vao database, may nao giu cache cu hon moc do thi tu bo. Ham
+ * nay VAN GIU, vi no giai mot canh khac — tim mot thu muc ma khong thay, luc do
+ * khong ai bam gi ca nen khong co moc nao moi de dua vao.
  *
  * Chi goi khi da tim ma KHONG THAY, khong goi cho moi luot xem: mot lan doc
  * Drive dat hon nhieu so voi doc cache.

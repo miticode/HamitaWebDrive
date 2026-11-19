@@ -49,7 +49,7 @@ export default async function AlbumPage({ params, searchParams }: Props) {
   let lists;
   try {
     [tree, lists] = await Promise.all([
-      loadTree(gallery.driveFolderId),
+      loadTree(gallery.driveFolderId, gallery.treeMoc ? new Date(gallery.treeMoc) : null),
       getLists(gallery.id),
     ]);
   } catch {

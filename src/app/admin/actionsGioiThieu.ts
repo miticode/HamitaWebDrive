@@ -37,11 +37,13 @@ export async function docThuMucAlbumAction(
   if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
   const g = await getPrisma().gallery.findUnique({
     where: { id: galleryId },
-    select: { driveFolderId: true },
+    select: { driveFolderId: true, treeMoc: true },
   });
   if (!g) return { loi: "Không tìm thấy album." };
   try {
-    const tree = await (docLai ? loadTreeMoi : loadTree)(g.driveFolderId);
+    const tree = docLai
+      ? await loadTreeMoi(g.driveFolderId)
+      : await loadTree(g.driveFolderId, g.treeMoc);
     return {
       thuMuc: tree.albums
         .filter((a) => a.photos.length > 0)

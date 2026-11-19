@@ -38,6 +38,11 @@ export type Gallery = {
 } & GalleryMeta & {
   coverPinned: boolean;
   syncedAt: string | null;
+  /**
+   * Lần cuối studio bấm "Làm mới" — mốc để mọi máy chủ bỏ cây thư mục đã đệm.
+   * Xem chú thích ở cột `treeMoc` trong schema.
+   */
+  treeMoc: string | null;
   accessCode: string | null;
 };
 
@@ -209,6 +214,14 @@ export type Store = {
   getLists(galleryId: string): Promise<SelectionList[]>;
   getSelections(galleryId: string): Promise<Selection[]>;
   updateGalleryMeta(galleryId: string, meta: GalleryMeta): Promise<void>;
+  /**
+   * Đóng dấu "từ giờ mọi cây thư mục đã đệm đều không đáng tin nữa".
+   *
+   * Gọi TRƯỚC khi đọc lại Drive, không phải sau: mốc đặt sau thì chính cây
+   * vừa nạp xong cũng rơi vào diện bị bỏ, và lần đọc kế tiếp lại gọi Drive
+   * thêm một lượt vô ích.
+   */
+  datTreeMoc(galleryId: string): Promise<void>;
   /** Dat anh bia do nguoi dung chon; null = tro lai tu dong lay tam dau tien. */
   setCover(galleryId: string, fileId: string | null): Promise<void>;
   /** Doi ma chon anh cua album. */

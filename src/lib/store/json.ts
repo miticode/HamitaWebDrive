@@ -147,6 +147,7 @@ export const jsonStore: Store = {
         taiLanCuoi: null,
         subfolders: [],
         syncedAt: null,
+        treeMoc: null,
         expiresAt: hanMacDinh().toISOString(),
         selectionsDoneAt: null,
         accessCode: null,
@@ -206,6 +207,16 @@ export const jsonStore: Store = {
       Object.assign(gallery, conLai, { syncedAt: new Date().toISOString() });
       if (!gallery.coverPinned) gallery.coverFileId = coverFileId;
 
+      await writeToDisk(db);
+    });
+  },
+
+  datTreeMoc(galleryId: string) {
+    return withLock(async () => {
+      const db = await readFromDisk();
+      const gallery = db.galleries.find((g) => g.id === galleryId);
+      if (!gallery) return;
+      gallery.treeMoc = new Date().toISOString();
       await writeToDisk(db);
     });
   },

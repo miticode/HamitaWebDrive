@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   let cover: string | null = null;
   let total = 0;
   try {
-    const tree = await loadTree(gallery.driveFolderId);
+    const tree = await loadTree(gallery.driveFolderId, gallery.treeMoc ? new Date(gallery.treeMoc) : null);
     // Cùng tấm bìa với trang album, để thẻ xem trước lúc khách gửi link qua
     // Zalo/Facebook khớp với thứ họ thấy khi bấm vào.
     cover = chonAnhBia(gallery.coverFileId, tree)?.id ?? null;
@@ -149,7 +149,7 @@ export default async function GalleryPage({ params }: Props) {
   */
   let tree;
   try {
-    tree = await loadTree(gallery.driveFolderId);
+    tree = await loadTree(gallery.driveFolderId, gallery.treeMoc ? new Date(gallery.treeMoc) : null);
   } catch {
     return <DriveLoi tenKhach={title} thuLaiHref={`/g/${slug}`} />;
   }

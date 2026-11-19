@@ -47,7 +47,7 @@ export async function GET(
     return Response.json({ error: "Album này không cho tải ảnh." }, { status: 403 });
   }
 
-  const tree = await loadTree(gallery.driveFolderId);
+  const tree = await loadTree(gallery.driveFolderId, gallery.treeMoc ? new Date(gallery.treeMoc) : null);
   const thuocAlbum = tree.albums.some((a) => a.photos.some((p) => p.id === fileId));
   if (!thuocAlbum) {
     return Response.json({ error: "Ảnh không thuộc album này." }, { status: 404 });

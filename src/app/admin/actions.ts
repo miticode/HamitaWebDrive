@@ -19,6 +19,7 @@ import { chiCoMa, ghepMaVoiTenThuMuc } from "@/lib/maAlbum";
 import { GIA_ANH_THEM_MAC_DINH } from "@/lib/constants";
 import {
   createGallery,
+  datTreeMoc,
   deleteGallery,
   getGalleryById,
   setAccess,
@@ -199,6 +200,25 @@ export async function refreshGalleryAction(formData: FormData) {
   // Hai cache rieng: cay anh cho trang khach, va danh sach thu muc con cho trang nay.
   invalidate(`tree:${folderId}`);
   invalidate(`subs:${folderId}`);
+
+  /*
+    DONG DAU cho MOI MAY CHU cung bo cay cu — anh chot 19/11/2026.
+
+    `invalidate` o tren chi xoa cai Map trong bo nho cua may dang nhan cu bam
+    nay. Vercel chay nhieu may song song, nhung may khac van giu cay cu them
+    toi nam phut — bay da ghi tu 04/09/2026 trong gallery.ts, va la ly do
+    studio them anh roi khach F5 van chua thay.
+
+    Mot cot DAU THOI GIAN trong bang Gallery chu khong phai ban sao cua cay:
+    do 19/11 thi cay album lon nhat nang 1,2 MB, ca kho khoang 37 MB. Do het
+    vao database thi moi luot khach mo album la mot luot doc tung do byte tu
+    Neon. Mot moc chi vai chuc byte, va trang khach VON DA doc ban ghi album
+    theo slug nen khong ton them truy van nao.
+
+    Dat moc TRUOC khi doc lai Drive: dat sau thi chinh cay vua nap xong cung
+    roi vao dien bi bo, va lan doc ke tiep lai goi Drive them mot luot vo ich.
+  */
+  await datTreeMoc(galleryId).catch(() => {});
 
   /*
     CHO DOC XONG DRIVE ROI MOI TRA LOI — sua 19/11/2026.

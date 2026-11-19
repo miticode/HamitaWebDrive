@@ -50,6 +50,8 @@ export const setSelectionNote: Store["setSelectionNote"] = (listId, driveFileId,
 export const updateGalleryMeta: Store["updateGalleryMeta"] = (id, meta) =>
   store.updateGalleryMeta(id, meta);
 export const listCounts: Store["listCounts"] = () => store.listCounts();
+export const datTreeMoc: Store["datTreeMoc"] = (id) => store.datTreeMoc(id);
+
 export const setCover: Store["setCover"] = (id, fileId) => store.setCover(id, fileId);
 export const setAccess: Store["setAccess"] = (id, code) => store.setAccess(id, code);
 export const setMessage: Store["setMessage"] = (id, message) =>
