@@ -204,7 +204,6 @@ export function FormHopDongMoi({
 
   const maGoiY = useMemo(() => {
     const tu = [
-      ...dong.map((d) => dichVu.find((x) => x.id === d.dichVuId)?.maAlbum ?? null),
       ...lich.map((l) => maTheoLoai.get((l.loai ?? "").trim().toLowerCase()) ?? null),
     ].filter((m): m is string => !!m);
     return [...new Set(tu)];

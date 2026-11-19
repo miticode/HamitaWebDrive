@@ -169,13 +169,12 @@ export async function TrangDanhMuc({ nhom, nguoi }: { nhom: string; nguoi: Nguoi
 
   /* ── Mã album (tag) ───────────────────────────────────────────────── */
   if (nhom === "ma-album") {
-    const [ds, album, dv, lb] = await Promise.all([
+    const [ds, album, lb] = await Promise.all([
       prisma.maAlbum.findMany({
         select: { id: true, ma: true, nghia: true, dangDung: true },
         orderBy: [{ thuTu: "asc" }, { ma: "asc" }],
       }),
       prisma.gallery.findMany({ select: { title: true, clientName: true } }),
-      prisma.dichVu.groupBy({ by: ["maAlbum"], where: { maAlbum: { not: null } }, _count: { _all: true } }),
       prisma.loaiBuoi.groupBy({ by: ["maAlbum"], where: { maAlbum: { not: null } }, _count: { _all: true } }),
     ]);
 
@@ -190,7 +189,6 @@ export async function TrangDanhMuc({ nhom, nguoi }: { nhom: string; nguoi: Nguoi
         .split(/[^a-z0-9]+/)
         .filter(Boolean),
     );
-    const demDV = new Map(dv.map((x) => [(x.maAlbum ?? "").toLowerCase(), x._count._all]));
     const demLB = new Map(lb.map((x) => [(x.maAlbum ?? "").toLowerCase(), x._count._all]));
 
     const dong: DongMa[] = ds.map((d) => {
@@ -198,7 +196,6 @@ export async function TrangDanhMuc({ nhom, nguoi }: { nhom: string; nguoi: Nguoi
       return {
         ...d,
         soAlbum: tuCuaAlbum.filter((t) => t.some((x) => x.startsWith(key))).length,
-        soDichVu: demDV.get(d.ma.toLowerCase()) ?? 0,
         soLoaiBuoi: demLB.get(d.ma.toLowerCase()) ?? 0,
       };
     });
@@ -206,7 +203,7 @@ export async function TrangDanhMuc({ nhom, nguoi }: { nhom: string; nguoi: Nguoi
     return (
       <Khung
         dangMo="ma-album"
-        chu="Mã hiện ở đầu tên album — “HIS - Minh Ngọc & Công Khoa”. Dùng để lọc ở trang quản lý album, và gắn sẵn được cho từng dịch vụ hoặc loại buổi."
+        chu="Mã hiện ở đầu tên album — “HIS - Minh Ngọc & Công Khoa”. Dùng để lọc ở trang quản lý album, và gắn sẵn được cho từng loại buổi chụp."
         canhBao={
           ds.length === 0 ? (
             <p className="mt-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">

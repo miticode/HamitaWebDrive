@@ -152,9 +152,9 @@ export async function suaMaAlbumAction(
 /**
  * Xoá một mã — CHỈ KHI không album, dịch vụ hay loại buổi nào đang dùng.
  *
- * Ba chỗ chứ không phải một: mã còn được gắn sẵn trên dịch vụ (`DichVu
- * .maAlbum`) và trên loại buổi (`LoaiBuoi.maAlbum`). Xoá mà bỏ sót hai chỗ
- * đó thì album sinh ra sau này mang một mã không còn trong bộ, lọc không ra.
+ * Hai chỗ chứ không phải một: mã còn được gắn sẵn trên loại buổi chụp
+ * (`LoaiBuoi.maAlbum`). Xoá mà bỏ sót chỗ đó thì album sinh ra sau này mang
+ * một mã không còn trong bộ, lọc không ra.
  */
 export async function xoaMaAlbumAction(id: string): Promise<{ loi?: string; ok?: true }> {
   const nguoi = await quanLy();
@@ -164,15 +164,13 @@ export async function xoaMaAlbumAction(id: string): Promise<{ loi?: string; ok?:
   const cu = await prisma.maAlbum.findUnique({ where: { id }, select: { ma: true } });
   if (!cu) return { loi: "Mã này không còn." };
 
-  const [soAlbum, soDichVu, soLoaiBuoi] = await Promise.all([
+  const [soAlbum, soLoaiBuoi] = await Promise.all([
     demAlbum(cu.ma),
-    prisma.dichVu.count({ where: { maAlbum: cu.ma } }),
     prisma.loaiBuoi.count({ where: { maAlbum: cu.ma } }),
   ]);
-  if (soAlbum > 0 || soDichVu > 0 || soLoaiBuoi > 0) {
+  if (soAlbum > 0 || soLoaiBuoi > 0) {
     const ke = [
       soAlbum > 0 ? `${soAlbum} album` : "",
-      soDichVu > 0 ? `${soDichVu} dịch vụ` : "",
       soLoaiBuoi > 0 ? `${soLoaiBuoi} loại buổi` : "",
     ].filter(Boolean);
     return {

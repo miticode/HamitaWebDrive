@@ -16,8 +16,6 @@ export type DongMa = {
   dangDung: boolean;
   /** Bao nhiêu album đang mang mã này. */
   soAlbum: number;
-  /** Bao nhiêu dịch vụ gắn sẵn mã này. */
-  soDichVu: number;
   /** Bao nhiêu loại buổi suy ra mã này. */
   soLoaiBuoi: number;
 };
@@ -128,18 +126,12 @@ export function BangMaAlbum({ ds, laQuanLy }: { ds: DongMa[]; laQuanLy: boolean 
                   <td className="px-4 py-2.5 text-fg-muted">{d.nghia ?? "—"}</td>
                   <td className="px-4 py-2.5 text-right text-fg-muted tabular-nums">{d.soAlbum}</td>
                   {/*
-                    "Gắn sẵn" = bao nhiêu dịch vụ và loại buổi đang trỏ tới mã
-                    này. Khác cột Album: album là cái đã có rồi, gắn sẵn là cái
-                    sẽ sinh ra tiếp. Cả hai đều chặn xoá.
+                    "Gắn sẵn" = bao nhiêu loại buổi chụp đang trỏ tới mã này.
+                    Khác cột Album: album là cái đã có rồi, gắn sẵn là cái sẽ
+                    sinh ra tiếp. Cả hai đều chặn xoá.
                   */}
                   <td className="px-4 py-2.5 text-right text-fg-muted tabular-nums">
-                    {d.soDichVu + d.soLoaiBuoi === 0 ? (
-                      "—"
-                    ) : (
-                      <span title={`${d.soDichVu} dịch vụ · ${d.soLoaiBuoi} loại buổi`}>
-                        {d.soDichVu + d.soLoaiBuoi}
-                      </span>
-                    )}
+                    {d.soLoaiBuoi === 0 ? "—" : d.soLoaiBuoi}
                   </td>
                   <td className="px-4 py-2.5 whitespace-nowrap">
                     {d.dangDung ? (
@@ -158,11 +150,11 @@ export function BangMaAlbum({ ds, laQuanLy }: { ds: DongMa[]; laQuanLy: boolean 
                         className="btn btn-danger ml-2 px-3 py-1 text-xs"
                         disabled={dang}
                         onClick={() => {
-                          const dung = d.soAlbum + d.soDichVu + d.soLoaiBuoi;
+                          const dung = d.soAlbum + d.soLoaiBuoi;
                           if (dung > 0) {
                             setNhac(null);
                             setLoi(
-                              `“${d.ma}” đang có ${d.soAlbum} album, ${d.soDichVu} dịch vụ và ${d.soLoaiBuoi} loại buổi dùng nên không xoá được. ` +
+                              `“${d.ma}” đang có ${d.soAlbum} album và ${d.soLoaiBuoi} loại buổi dùng nên không xoá được. ` +
                                 "Bấm Sửa rồi bỏ tick “Đang dùng” để nó không hiện trong ô chọn nữa.",
                             );
                             return;

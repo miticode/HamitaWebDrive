@@ -35,7 +35,7 @@ export default async function ThemDichVuPage({ searchParams }: Props) {
       <div className="mt-6 rounded-md border border-line bg-bg-raised p-4 sm:p-5">
         <FormDichVu
           che="them"
-          banDau={{ maDV: "", loai, ten: "", nhom: "", maAlbum: "", chiTiet: "", donGia: "", donVi: "", dangDung: true }}
+          banDau={{ maDV: "", loai, ten: "", nhom: "", chiTiet: "", donGia: "", donVi: "", dangDung: true }}
           dsLoai={dsLoai}
           nhomGoiY={await nhomTheoLoai()}
         />

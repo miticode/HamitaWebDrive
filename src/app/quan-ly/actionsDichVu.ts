@@ -6,7 +6,6 @@ import { getPrisma } from "@/lib/db";
 import { layNguoiDung } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { duocSuaDichVu, kiemDichVu, TEN_LOAI, type DichVuSach, type DuLieuDichVu, type LoaiDichVu } from "@/lib/dichVuChung";
-import { docMaAlbum } from "@/lib/docMaAlbum";
 
 /**
  * Thêm, sửa mục trong bảng dịch vụ & trang phục.
@@ -19,7 +18,6 @@ const CHU: Record<Exclude<keyof DichVuSach, "maDV">, string> = {
   loai: "loại",
   ten: "tên",
   nhom: "nhóm",
-  maAlbum: "mã album",
   chiTiet: "chi tiết",
   donGia: "đơn giá",
   donVi: "đơn vị",
@@ -35,7 +33,7 @@ async function nguoiDangDung() {
 export async function themDichVuAction(du: DuLieuDichVu): Promise<{ loi?: string; id?: string }> {
   const nguoi = await nguoiDangDung();
   if (!nguoi) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp em." };
-  const kq = kiemDichVu(du, await docMaAlbum());
+  const kq = kiemDichVu(du);
   if ("loi" in kq) return kq;
   if (!duocSuaDichVu(nguoi, kq.loai)) {
     return { loi: `Tài khoản này chưa được thêm ${TEN_LOAI[kq.loai].toLowerCase()}.` };
@@ -102,46 +100,6 @@ export async function suaDichVuAction(id: string, du: DuLieuDichVu): Promise<{ l
   revalidatePath("/quan-ly/dich-vu");
   revalidatePath(`/quan-ly/dich-vu/${id}`);
   return {};
-}
-
-/**
- * Gắn hoặc gỡ mã album cho một mục, ngay trên bảng danh sách.
- *
- * Thêm 18/11/2026 sau khi anh mở bảng và không thấy mã đâu: lúc đó cả 95 dịch
- * vụ đều chưa gắn, mà muốn gắn thì phải mở từng form sửa. Bảng có 95 dịch vụ,
- * 888 trang phục và 37 sản phẩm — gắn kiểu đó là vài trăm lần mở trang.
- *
- * KHÔNG dùng `kiemDichVu` ở đây: hàm đó kiểm cả tên, đơn giá, mã trùng… của
- * một mục đang sửa toàn phần. Ở đây chỉ đổi đúng một ô, nên chỉ kiểm đúng ô
- * đó — nhưng vẫn kiểm ở MÁY CHỦ, vì server action là đường mạng công khai
- * (nguyên tắc 3).
- */
-export async function ganMaAlbumAction(id: string, ma: string): Promise<{ loi?: string; ok?: true }> {
-  const nguoi = await nguoiDangDung();
-  if (!nguoi) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp em." };
-
-  const sach = String(ma ?? "").trim();
-  if (sach && !(await docMaAlbum()).some((m) => m.ma === sach)) return { loi: "Mã album không có trong bộ mã." };
-
-  const prisma = getPrisma();
-  const cu = await prisma.dichVu.findUnique({ where: { id }, select: { maDV: true, ten: true, loai: true, maAlbum: true } });
-  if (!cu) return { loi: "Mục này không còn." };
-  if (!duocSuaDichVu(nguoi, cu.loai)) {
-    return { loi: `Tài khoản này chưa được sửa ${TEN_LOAI[cu.loai as LoaiDichVu]?.toLowerCase() ?? "mục này"}.` };
-  }
-  if ((cu.maAlbum ?? "") === sach) return { ok: true };
-
-  await prisma.dichVu.update({ where: { id }, data: { maAlbum: sach || null } });
-  await ghiNhatKy({
-    nguoi,
-    hanhDong: "sua-dich-vu",
-    doiTuong: "DichVu",
-    doiTuongId: id,
-    chiTiet: { ten: `${cu.maDV} — ${cu.ten}`, doi: { maAlbum: { cu: cu.maAlbum, moi: sach || null } } },
-  });
-  revalidatePath("/quan-ly/dich-vu");
-  revalidatePath(`/quan-ly/dich-vu/${id}`);
-  return { ok: true };
 }
 
 /**

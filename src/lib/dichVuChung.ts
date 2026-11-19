@@ -1,4 +1,3 @@
-import { MA_ALBUM, type MaAlbum } from "@/lib/maAlbum";
 
 import { docTien } from "@/lib/studioNoiBo";
 
@@ -60,8 +59,6 @@ export type DuLieuDichVu = {
   loai: LoaiDichVu;
   ten: string;
   nhom: string;
-  /** Mã album gắn sẵn — "HC", "Baby", "NS"… Chuỗi rỗng = không gắn. */
-  maAlbum: string;
   chiTiet: string;
   donGia: string;
   donVi: string;
@@ -73,7 +70,6 @@ export type DichVuSach = {
   loai: LoaiDichVu;
   ten: string;
   nhom: string | null;
-  maAlbum: string | null;
   chiTiet: string | null;
   donGia: number;
   donVi: string | null;
@@ -81,18 +77,7 @@ export type DichVuSach = {
 };
 
 /** Kiểm và chuẩn hoá ô nhập. Trả về câu báo lỗi, hoặc dữ liệu sạch để ghi. */
-export function kiemDichVu(
-  du: DuLieuDichVu,
-  /*
-    Bộ mã album để đối chiếu. Hàm này THUẦN nên không tự đọc database được;
-    server action truyền bảng thật vào, còn chỗ gọi cũ dùng bộ cứng.
-
-    Thiếu tham số này thì một mã vừa thêm ở trang Quản lý dịch vụ sẽ bị từ
-    chối ngay lúc gắn cho dịch vụ — đúng lỗi phải tránh khi chuyển bộ mã sang
-    database ngày 19/11/2026.
-  */
-  boMa: readonly MaAlbum[] = MA_ALBUM,
-): { loi: string } | DichVuSach {
+export function kiemDichVu(du: DuLieuDichVu): { loi: string } | DichVuSach {
   const gon = (s: unknown) => String(s ?? "").trim().replace(/[ \t]+/g, " ");
 
   const maDV = gon(du.maDV);
@@ -107,15 +92,6 @@ export function kiemDichVu(
   const nhom = gon(du.nhom);
   if (nhom.length > 60) return { loi: "Tên nhóm dài quá." };
 
-  /*
-    Mã album phải NẰM TRONG bộ mã đã biết, không nhận chữ tự do.
-
-    Bộ mã là một nguồn duy nhất (nguyên tắc 37) và trang quản lý album lọc
-    theo đúng bộ đó. Cho gõ tự do thì sẽ có người gõ "his " hay "HER-", album
-    mang mã đó lọc mãi không ra mà nhìn thì vẫn thấy đúng.
-  */
-  const maAlbum = gon(du.maAlbum);
-  if (maAlbum && !boMa.some((m) => m.ma === maAlbum)) return { loi: "Mã album không có trong bộ mã." };
   const donVi = gon(du.donVi);
   if (donVi.length > 30) return { loi: "Đơn vị dài quá." };
 
@@ -131,7 +107,6 @@ export function kiemDichVu(
     loai: du.loai,
     ten,
     nhom: nhom || null,
-    maAlbum: maAlbum || null,
     chiTiet: chiTiet || null,
     donGia,
     donVi: donVi || null,

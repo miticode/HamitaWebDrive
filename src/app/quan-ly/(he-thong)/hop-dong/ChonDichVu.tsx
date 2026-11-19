@@ -15,8 +15,6 @@ export type DichVuGon = {
   donVi: string | null;
   /** Mô tả gói trong bảng — chảy thẳng vào ô Chi tiết của dòng hợp đồng. */
   chiTiet: string | null;
-  /** Mã album gắn sẵn cho dịch vụ này — dùng để gợi ý mã cho album. */
-  maAlbum?: string | null;
   /**
    * Buổi chụp mặc định, đúng thứ tự (anh yêu cầu 18/11/2026).
    *
@@ -473,7 +471,7 @@ function KhungTaoMuc({
       setLoi(null);
       const gia = Number(donGia.replace(/\D/g, "")) || 0;
       const kq = await themDichVuAction({
-        maDV, loai, ten, nhom, maAlbum: "", chiTiet: "", donGia: String(gia), donVi: "", dangDung: true,
+        maDV, loai, ten, nhom, chiTiet: "", donGia: String(gia), donVi: "", dangDung: true,
       });
       if (kq.loi || !kq.id) {
         setLoi(kq.loi ?? "Chưa tạo được mục này.");

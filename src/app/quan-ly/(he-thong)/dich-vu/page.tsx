@@ -3,9 +3,7 @@ import { getPrisma } from "@/lib/db";
 import { tien } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { LOAI_DICH_VU, TEN_LOAI, boDau, laLoaiDichVu, loaiDuocSua, type LoaiDichVu } from "@/lib/dichVuChung";
-import { OMaAlbum } from "./OMaAlbum";
 import { OBuoiChup } from "./OBuoiChup";
-import { docMaAlbum } from "@/lib/docMaAlbum";
 import { TabDanhMuc, TrangDanhMuc } from "./TrangDanhMuc";
 
 export const dynamic = "force-dynamic";
@@ -49,12 +47,12 @@ export default async function DichVuPage({ searchParams }: Props) {
   const so = Math.max(MOI_LUOT, Math.floor(Number(sp.so)) || MOI_LUOT);
 
   const prisma = getPrisma();
-  const [demLoai, cuaLoai, dsLoaiBuoi, boMa] = await Promise.all([
+  const [demLoai, cuaLoai, dsLoaiBuoi] = await Promise.all([
     prisma.dichVu.groupBy({ by: ["loai"], where: { dangDung: tt === "dang-dung" }, _count: { _all: true } }),
     prisma.dichVu.findMany({
       where: { loai, dangDung: tt === "dang-dung" },
       select: {
-        id: true, maDV: true, ten: true, nhom: true, maAlbum: true, chiTiet: true, donGia: true, donVi: true,
+        id: true, maDV: true, ten: true, nhom: true, chiTiet: true, donGia: true, donVi: true,
         /* Buổi chụp mặc định — anh yêu cầu 18/11/2026. */
         buoi: { select: { loaiBuoi: { select: { id: true, ten: true } } }, orderBy: { thuTu: "asc" } },
       },
@@ -69,7 +67,6 @@ export default async function DichVuPage({ searchParams }: Props) {
       select: { id: true, ten: true },
       orderBy: [{ thuTu: "asc" }, { ten: "asc" }],
     }),
-    docMaAlbum(),
   ]);
   const soTheoLoai: Record<string, number> = Object.fromEntries(demLoai.map((d) => [d.loai, d._count._all]));
 
@@ -174,7 +171,6 @@ export default async function DichVuPage({ searchParams }: Props) {
                 hay đi cùng nhau khi nhìn: nhóm nói mục này thuộc mảng nào,
                 mã nói album của nó mang tên gì.
               */}
-              <th className="px-4 py-2.5 font-medium">Mã album</th>
               {/*
                 Cột buổi chụp CHỈ ở tab Dịch vụ: trang phục và sản phẩm không
                 sinh buổi chụp nào, thêm một cột trống cho 888 dòng là tốn chỗ.
@@ -200,9 +196,6 @@ export default async function DichVuPage({ searchParams }: Props) {
                     {dong1 && <span className="mt-0.5 block max-w-md truncate text-xs text-fg-faint">{dong1}</span>}
                   </td>
                   <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{d.nhom ?? "—"}</td>
-                  <td className="px-4 py-2.5 whitespace-nowrap">
-                    <OMaAlbum id={d.id} maDau={d.maAlbum ?? ""} suaDuoc={themDuoc} boMa={boMa} />
-                  </td>
                   {loai === "dich-vu" && (
                     <td className="px-4 py-2.5">
                       <OBuoiChup

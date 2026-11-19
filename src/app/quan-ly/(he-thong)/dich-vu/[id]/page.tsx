@@ -100,7 +100,6 @@ export default async function ChiTietDichVuPage({ params }: Props) {
               loai: laLoaiDichVu(dv.loai) ? dv.loai : "dich-vu",
               ten: dv.ten,
               nhom: dv.nhom ?? "",
-              maAlbum: dv.maAlbum ?? "",
               chiTiet: dv.chiTiet ?? "",
               donGia: tien(dv.donGia),
               donVi: dv.donVi ?? "",

@@ -283,19 +283,6 @@ export async function taoThuMucVaAlbum(
           where: { ngay: { not: null } },
           orderBy: { ngay: "asc" },
         },
-        /*
-          Mã album gắn sẵn trên từng dịch vụ (anh yêu cầu 18/11/2026) — nguồn
-          thứ hai của mã, bên cạnh loại buổi trong lịch.
-
-          Chỉ lấy dòng còn gắn được với bảng Dịch vụ. 1.081/6.675 dòng chi tiết
-          mang mã KHÔNG còn trong bảng (đo 15/09, xem model ChiTietHopDong),
-          những dòng đó `dichVu` là null và không suy ra mã nào — đúng, vì
-          không biết chúng từng là dịch vụ gì.
-        */
-        chiTiet: {
-          where: { matBenAppSheet: null },
-          select: { dichVu: { select: { maAlbum: true } } },
-        },
       },
     });
     if (!hd) return { ok: false, loi: "Hợp đồng này không còn." };
@@ -322,13 +309,12 @@ export async function taoThuMucVaAlbum(
       Minh Trí & Tấn Đạt", đúng nếp tiệm vốn đã đặt ("HIS - HER - Nhã hân &
       Tân Lộc", 11/11/2026).
 
-      HAI NGUỒN MÃ, gộp lại rồi bỏ trùng:
+      MÃ SUY TỪ LOẠI BUỔI trong lịch — nhà gái ra HER, nhà trai ra HIS,
+      "Hami Baby" ra Baby.
 
-        · Mã gắn sẵn trên DỊCH VỤ (anh thêm 18/11/2026) — "BABY TIÊU CHUẨN 1"
-          gắn mã Baby, gói Nhà Su gắn NS. Không có nguồn này thì hợp đồng
-          Baby hay Nhà Su ra album tên trơn, lọc ở trang quản lý album không
-          bao giờ ra.
-        · Mã suy từ LOẠI BUỔI trong lịch — nhà gái ra HER, nhà trai ra HIS.
+      Từ 19/11/2026 chỉ còn MỘT nguồn này. Trước đó có thêm mã gắn thẳng trên
+      dịch vụ, nhưng anh bỏ cột đó: đo 19/11 thì 7/10 dịch vụ có mã đều suy
+      ra đúng mã ấy từ loại buổi, nên cột kia chỉ nói lại điều đã biết.
 
       Không suy từ loại hợp đồng: cùng là hợp đồng CƯỚI mà có nhà chỉ chụp một
       bên, nên lịch nói đúng hơn. Thứ tự trong tên do `ganNhieuMa` xếp theo bộ
@@ -348,8 +334,6 @@ export async function taoThuMucVaAlbum(
         ? [...maTuChon]
         : [
             ...new Set([
-              /* Mã gắn sẵn trên dịch vụ: Baby, NS, AB… */
-              ...hd.chiTiet.map((d) => d.dichVu?.maAlbum ?? null),
               /*
                 Mã suy từ loại buổi: nhà gái ra HER, nhà trai ra HIS.
 

@@ -35,7 +35,7 @@ export default async function SuaHopDongPage({ params }: Props) {
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
       select: {
         id: true, maDV: true, ten: true, loai: true, nhom: true, donGia: true, donVi: true,
-        chiTiet: true, maAlbum: true,
+        chiTiet: true,
         buoi: { select: { loaiBuoi: { select: { ten: true } } }, orderBy: { thuTu: "asc" } },
       },
     }),
