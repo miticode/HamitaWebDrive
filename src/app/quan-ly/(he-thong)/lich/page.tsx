@@ -3,7 +3,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/db";
 import { MUI_GIO } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri, xemHopDong } from "@/lib/phienNhanVien";
-import { ngayVN } from "@/lib/hopDongChung";
+import { BUOC_XONG, ngayVN } from "@/lib/hopDongChung";
 import { LOP_NHOM, nhomCuaLoai, type BuoiLich } from "@/lib/lichChung";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { LuoiLich } from "./LuoiLich";
@@ -108,9 +108,23 @@ export default async function LichPage({ searchParams }: Props) {
 
       Cũ nhất lên đầu: hợp đồng ký từ tháng 6 mà chưa chốt ngày thì gấp hơn
       cái ký tuần trước.
+
+      BỎ HỢP ĐỒNG ĐÃ XONG (bước 9 và 18). Đo 19/11 ngay sau khi làm khu này:
+      8 buổi đang không có ngày, và CẢ 8 đều thuộc hợp đồng đã hoàn thành từ
+      2024–2026 — dòng lịch rác chép về từ AppSheet. Không lọc thì khu này
+      hiện 8 việc giả vĩnh viễn, mà việc giả làm người ta thôi tin cả khu.
+
+      `buoc = null` thì GIỮ: hợp đồng chưa gõ bước không có nghĩa là đã xong.
+      Viết thành OR chứ không `notIn`, vì trong SQL `null NOT IN (9,18)` ra
+      null nên dòng đó bị loại oan.
     */
     prisma.lichChup.findMany({
-      where: { matBenAppSheet: null, ngay: null, ...(loai ? { loai } : {}) },
+      where: {
+        matBenAppSheet: null,
+        ngay: null,
+        hopDong: { OR: [{ buoc: null }, { buoc: { notIn: [...BUOC_XONG] } }] },
+        ...(loai ? { loai } : {}),
+      },
       select: {
         id: true,
         loai: true,
