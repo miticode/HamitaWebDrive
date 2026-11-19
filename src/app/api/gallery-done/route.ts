@@ -5,6 +5,7 @@ import { daMoKhoa } from "@/lib/access";
 import { getGalleryBySlug, setMucXong } from "@/lib/store";
 import { buocSauKhiKhachChonXong } from "@/lib/buocAnhGoc";
 import { NGUOI_KHACH, doiBuocAlbum } from "@/lib/doiBuocAlbum";
+import { laMucHoanThien } from "@/lib/constants";
 
 export const runtime = "nodejs";
 
@@ -86,13 +87,26 @@ export async function POST(req: NextRequest) {
     người phụ trách tự chuyển — anh đổi ý vì câu nhắc đó cũng bị bỏ qua.
 
     CHI khi loai === "xong". Hai giá trị kia không phải "chọn xong":
-      - "can-sua": khách bấm "cần chỉnh lại" ở thư mục ảnh đã chỉnh. Lúc đó
-        hợp đồng đang ở bước 6, mà `buocSauKhiKhachChonXong(6)` trả null nên
-        có gọi cũng không đổi gì — nhưng chặn ngay ở đây thì đỡ một lượt đọc
-        database cho mỗi cú bấm (nguyên tắc 53).
+      - "can-sua": khách bấm "cần chỉnh lại" ở thư mục ảnh đã chỉnh. Đó là
+        việc KHÁC HẲN, hiện chưa nối bước nào — xem docs/TRANG-THAI-ALBUM.md
+        mục 5.2.
       - null: khách bấm "chọn thêm nữa" để gỡ trạng thái. KHÔNG lùi bước về
         4: Media có thể đã bắt đầu retouch từ lúc nhận tin, lùi bước là nói
         sai việc đang làm. Khách chọn thêm thì studio nhìn danh sách là biết.
+
+    VÀ CHỈ VỚI THƯ MỤC FILE GỐC — sửa 19/11/2026 ngay trong ngày làm.
+
+    Bản đầu đổi bước với mọi thư mục `loai = "xong"`, và em lập luận sai rằng
+    điều kiện bước đã đủ chặn. Đo lại bảng `MucXong` thì 96/229 thư mục là
+    "hoàn thiện · xong" — đó là khách DUYỆT ảnh đã chỉnh, không phải CHỌN
+    file gốc. Hợp đồng đứng ở bước 4 mà khách bấm "Đã ok" ở thư mục hoàn
+    thiện thì bản đầu đẩy sang 5 "Đang Retouch" — nói sai việc đang làm, vì
+    retouch xong rồi, đáng ra là 7 "Gửi in".
+
+    Không phải chuyện hiếm: 54 album đang có cả hai loại thư mục cùng lúc.
+
+    Dùng `laMucHoanThien` y như trang khách dùng để hỏi khách câu khác
+    (nguyên tắc 49) — một nguồn phân loại duy nhất cho cả hai phía.
 
     Đặt SAU `setMucXong`, không phải trước: việc chính là báo cho studio biết
     khách đã chọn xong. Phần đổi bước là tiện thể, không được phép làm hỏng
@@ -102,7 +116,7 @@ export async function POST(req: NextRequest) {
     Truyền null thì nhật ký ghi "(không rõ)" — đo 19/11 và thấy chữ đó nói
     sai, nhân viên đọc sẽ tưởng dữ liệu lỗi.
   */
-  if (loai === "xong") {
+  if (loai === "xong" && !laMucHoanThien(body.tenMuc)) {
     const kq = await doiBuocAlbum(gallery.id, buocSauKhiKhachChonXong, "doi-buoc-khach-chon", NGUOI_KHACH);
     for (const d of kq.veLai ?? []) revalidatePath(d);
   }
