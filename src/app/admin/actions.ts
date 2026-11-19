@@ -32,7 +32,7 @@ import {
   setExpiry,
   setMessage,
 } from "@/lib/store";
-import { guiThongBaoAnhMoi, syncAndWarm } from "@/lib/warm";
+import { guiThongBaoAnhMoi, syncGalleryMeta, warmGallery } from "@/lib/warm";
 import { ghiMoc, khoaBaoTin } from "@/lib/moc";
 import { khoaDaDoc } from "@/lib/thongBao";
 
@@ -156,9 +156,13 @@ export async function createGalleryAction(
   */
   await setAccess(gallery.id, MA_MAC_DINH);
 
-  // Dung san nhung tam anh dau tien sau khi da tra loi — khach mo link ngay
-  // luc nay cung khong phai doi tung tam mot.
-  after(() => syncAndWarm(gallery.id, folderId).catch(() => {}));
+  /*
+    So lieu CHO xong, anh dung san de nen — cung ly do voi nut "Lam moi" o
+    duoi (sua 19/11/2026). Album vua tao ma the hien "0 anh" thi nguoi tao
+    tuong minh chon nham thu muc.
+  */
+  await syncGalleryMeta(gallery.id, folderId).catch(() => {});
+  after(() => warmGallery(folderId).catch(() => {}));
 
   await ghiViecAlbum("tao-album", gallery.id, { ten: clientName || folderName, thuMucDrive: folderId });
 
@@ -196,8 +200,28 @@ export async function refreshGalleryAction(formData: FormData) {
   invalidate(`tree:${folderId}`);
   invalidate(`subs:${folderId}`);
 
-  // Doc lai so lieu tu Drive roi dung san anh cua nhung folder vua them.
-  after(() => syncAndWarm(galleryId, folderId).catch(() => {}));
+  /*
+    CHO DOC XONG DRIVE ROI MOI TRA LOI — sua 19/11/2026.
+
+    Anh bao "bam Lam moi 4-5 lan moi co hinh moi". Nguyen nhan la THU TU, khong
+    phai Drive cham: ban cu day ca cum vao `after()` roi goi `revalidatePath`
+    ngay ben duoi. `after()` chay SAU khi phan hoi da gui, nen trang ve lai
+    bang so lieu CU trong database, trong khi viec dong bo moi bat dau — va
+    phan chay nen do co ngan sach toi 45 giay (`warmGallery`).
+
+    Hau qua dung nhu anh ta: bam lan mot khong thay gi, bam lan hai van chua
+    xong, moi cu bam lai khoi dong THEM mot luot dong bo nua. Toi luot nao do
+    lan dau xong thi cu bam ke tiep moi thay so moi.
+
+    Do 19/11 tren album lon nhat cua tiem (5.170 anh, 10 thu muc): doc Drive
+    het 5,1 giay; album co trung 490 anh het 1,4 giay. Trang /admin da dat
+    `maxDuration = 60` nen cho thoai mai.
+
+    Phan DUNG SAN ANH van de nen: no chi lam trang khach mo nhanh hon, khong
+    doi con so nao studio dang nhin.
+  */
+  await syncGalleryMeta(galleryId, folderId).catch(() => {});
+  after(() => warmGallery(folderId).catch(() => {}));
 
   /*
     KHONG ghi nhat ky (anh yeu cau 15/10/2026).

@@ -50,7 +50,23 @@ type Job = { fileId: string; size: number };
  * một lần điện thoại khách rung. Hai việc khác hẳn nhau về hậu quả — một cái
  * chỉ đụng số liệu trong nhà, một cái chạm tới khách — nên phải là hai nút.
  */
-export async function syncAndWarm(
+/**
+ * CHỈ chụp lại số liệu từ Drive vào database — KHÔNG dựng sẵn ảnh.
+ *
+ * Tách khỏi `syncAndWarm` ngày 19/11/2026, vì anh báo "bấm Làm mới 4-5 lần
+ * mới thấy hình mới". Nguyên nhân là thứ tự chứ không phải Drive chậm:
+ * `refreshGalleryAction` đẩy cả cụm vào `after()` rồi gọi `revalidatePath`
+ * ngay, nên trang vẽ lại bằng số liệu CŨ trong database trong khi việc đồng
+ * bộ mới bắt đầu chạy nền — và phần chạy nền đó có ngân sách tới 45 giây.
+ *
+ * Hai phần việc khác hẳn nhau về mức độ gấp:
+ *   - ĐỌC DRIVE + GHI DATABASE quyết định con số studio nhìn thấy. Đo
+ *     19/11 trên album lớn nhất của tiệm (5.170 ảnh, 10 thư mục): 5,1 giây.
+ *     Album cỡ trung 490 ảnh: 1,4 giây. Chờ được, và phải chờ.
+ *   - DỰNG SẴN ẢNH (`warmGallery`) chỉ làm trang khách mở nhanh hơn, không
+ *     đổi con số nào. Để nó chạy nền.
+ */
+export async function syncGalleryMeta(
   galleryId: string,
   folderId: string,
 ): Promise<void> {
@@ -76,6 +92,20 @@ export async function syncAndWarm(
     subfolders: tenMuc,
   });
 
+}
+
+/**
+ * Chụp số liệu RỒI dựng sẵn ảnh, cả hai trong một lượt.
+ *
+ * Chỉ còn dùng cho đường chạy nền hoàn toàn (cron đồng bộ), nơi không có ai
+ * ngồi đợi nhìn con số. Nút "Làm mới" KHÔNG dùng hàm này nữa — xem chú thích
+ * ở `syncGalleryMeta`.
+ */
+export async function syncAndWarm(
+  galleryId: string,
+  folderId: string,
+): Promise<void> {
+  await syncGalleryMeta(galleryId, folderId);
   await warmGallery(folderId);
 }
 

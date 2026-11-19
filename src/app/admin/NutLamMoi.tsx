@@ -5,10 +5,15 @@ import { useFormStatus } from "react-dom";
 /**
  * Nút "Làm mới" của một album, có báo trạng thái trong lúc chạy.
  *
- * Việc này lâu thật sự: đọc lại toàn bộ cây thư mục trên Drive, chụp lại số
- * liệu, rồi dựng sẵn những tấm ảnh đầu tiên — album nhiều ảnh mất hàng chục
- * giây. Trước đây nút không đổi gì trong suốt thời gian đó, nên rất dễ tưởng
- * bấm hụt rồi bấm thêm mấy lần nữa, mỗi lần lại một lượt đọc Drive.
+ * Việc này lâu thật sự: đọc lại toàn bộ cây thư mục trên Drive rồi chụp lại số
+ * liệu. Đo 19/11/2026 trên album lớn nhất của tiệm (5.170 ảnh, 10 thư mục):
+ * 4,6 giây; album cỡ trung 490 ảnh: 1,4 giây. Trước đây nút không đổi gì trong
+ * suốt thời gian đó, nên rất dễ tưởng bấm hụt rồi bấm thêm mấy lần nữa.
+ *
+ * Từ 19/11/2026 nút bị khoá cho tới khi số liệu đã ghi xong thật — trước đó
+ * việc đồng bộ chạy nền nên nút nhả ra ngay trong khi con số chưa đổi, và anh
+ * phải bấm bốn năm lần mới thấy ảnh mới. Phần dựng sẵn ảnh cho trang khách vẫn
+ * chạy nền sau đó, nhưng nó không đổi con số nào ở đây.
  *
  * Phải tách thành component riêng vì `useFormStatus` chỉ đọc được trạng thái
  * khi nó nằm BÊN TRONG thẻ form — đặt ngang hàng với form thì luôn báo rảnh.
@@ -22,8 +27,8 @@ export function NutLamMoi({ lop }: { lop?: string }) {
       disabled={pending}
       title={
         pending
-          ? "Đang đọc lại thư mục trên Drive, album nhiều ảnh có thể mất vài chục giây"
-          : "Đọc lại thư mục trên Drive và dựng sẵn những tấm ảnh đầu tiên"
+          ? "Đang đọc lại thư mục trên Drive — album nhiều ảnh mất khoảng năm giây"
+          : "Đọc lại thư mục trên Drive, cập nhật số ảnh và dung lượng"
       }
     >
       {pending ? (
