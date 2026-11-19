@@ -28,6 +28,7 @@ import { KhoAnh } from "./KhoAnh";
 import { DriveConnection } from "./DriveConnection";
 import { KhoAnhCrm } from "./KhoAnhCrm";
 import { AlbumList } from "./AlbumList";
+import { getPrisma } from "@/lib/db";
 import { NutTaoLink } from "./NutTaoLink";
 import { ChiManLon, ChiManNho } from "./TheoManHinh";
 import { ThongBao } from "./ThongBao";
@@ -164,6 +165,28 @@ export default async function AdminPage() {
     chạy ở máy khách, và mọi phép chia theo ngày tháng đều phải đi qua `MUI_GIO`
     (nguyên tắc 35) chứ không dựa vào múi giờ của máy đang mở trang.
   */
+  /*
+    BƯỚC HỢP ĐỒNG của từng album — anh yêu cầu 19/11/2026.
+
+    Thẻ album cần con số này để biết có hiện nút "Đã gửi in" hay không: nút chỉ
+    hiện ở bước 6 và 15 (xem GUI_IN_HIEN_O). Đọc MỘT LẦN cho cả trang rồi tra
+    theo id, cùng lý do với `soMayChoTin` ngay trên — mỗi thẻ một lượt hỏi là
+    mấy chục lượt cho một con số nhỏ (nguyên tắc 53).
+
+    Chỉ lấy album ĐÃ GẮN hợp đồng: 177/182 album chưa gắn, nên bảng tra này
+    hiện chỉ có năm dòng.
+  */
+  const buocHopDong: Record<string, number> = {};
+  if (!onJsonStore) {
+    const nho = await getPrisma()
+      .gallery.findMany({
+        where: { hopDongId: { not: null }, hopDong: { buoc: { not: null } } },
+        select: { id: true, hopDong: { select: { buoc: true } } },
+      })
+      .catch(() => []);
+    for (const g of nho) if (g.hopDong?.buoc != null) buocHopDong[g.id] = g.hopDong.buoc;
+  }
+
   const baoTinLuc: Record<string, string> = {};
   if (!onJsonStore) {
     const moc = await docLanBaoTinMoiAlbum().catch(() => ({}));
@@ -347,6 +370,7 @@ export default async function AdminPage() {
               goiMuc={goiMuc}
               soMayChoTin={soMayChoTin}
               baoTinLuc={baoTinLuc}
+              buocHopDong={buocHopDong}
               duocXoa={duocXoa}
               thongBao={<ThongBao tin={tinThongBao} />}
               heThong={

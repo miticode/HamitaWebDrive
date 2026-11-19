@@ -99,3 +99,38 @@ export function buocSauKhiKhachChonXong(buoc: number | null | undefined): number
   if (buoc === 13) return SAU_CHON_NHANH_TIEC;
   return null;
 }
+
+/** Bước 7 — nhánh chụp studio: "Gửi in". */
+const SAU_GUI_IN_NHANH_CHUP = 7;
+/** Bước 16 — nhánh tiệc: "Gửi in tiệc". */
+const SAU_GUI_IN_NHANH_TIEC = 16;
+
+/**
+ * Bước đích khi Media đã gửi link ảnh hoàn thiện cho xưởng in — anh yêu cầu
+ * 19/11/2026.
+ *
+ *   6  "Chờ Khách duyệt"  → 7  "Gửi in"
+ *   15 "Chờ Khách duyệt"  → 16 "Gửi in tiệc"
+ *
+ * Hẹp y như `buocSauKhiKhachChonXong`: chỉ đúng hai bước, chỉ tiến một nhịp.
+ * Anh nói rõ "trên album ở trạng thái số 6 và số 15 sẽ hiện một nút đã gửi
+ * in", nên nút chỉ xuất hiện ở đúng hai bước đó — xem `GUI_IN_HIEN_O`.
+ *
+ * Vì sao cần một mối nối riêng chứ không gộp vào lúc khách duyệt: khách duyệt
+ * xong KHÔNG có nghĩa đã gửi in. Media còn một việc nữa web không thấy — gửi
+ * link Drive cho xưởng qua Zalo. Đo 19/11: 96 thư mục hoàn thiện khách đã
+ * duyệt, mà không dòng nào ghi lại việc gửi in đó.
+ */
+export function buocSauKhiGuiIn(buoc: number | null | undefined): number | null {
+  if (buoc === 6) return SAU_GUI_IN_NHANH_CHUP;
+  if (buoc === 15) return SAU_GUI_IN_NHANH_TIEC;
+  return null;
+}
+
+/**
+ * Mấy bước có nút "Đã gửi in" trên thẻ album.
+ *
+ * Cùng một nguồn với `buocSauKhiGuiIn` để nút và việc không lệch nhau: nút
+ * hiện ra mà bấm vào không đổi gì là tệ hơn không có nút.
+ */
+export const GUI_IN_HIEN_O = [6, 15] as const;

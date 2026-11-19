@@ -6,7 +6,8 @@ import { quyenAlbum } from "@/lib/quyenAlbum";
 import { layNguoiDung } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { timHopDong, type HopDongGon } from "@/lib/noiAlbum";
-import { buocSauKhiGuiAnhGoc } from "@/lib/buocAnhGoc";
+import { buocSauKhiGuiAnhGoc, buocSauKhiGuiIn } from "@/lib/buocAnhGoc";
+import { tachLink } from "@/lib/guiIn";
 import { doiBuocAlbum, type KetQuaDoiBuoc } from "@/lib/doiBuocAlbum";
 
 /**
@@ -99,4 +100,109 @@ export async function doiBuocSauKhiGuiTin(galleryId: string): Promise<KetQuaDoiB
   );
   for (const d of kq.veLai ?? []) revalidatePath(d);
   return kq;
+}
+
+/* ── Gửi in: dán link rồi chuyển bước (anh yêu cầu 19/11/2026) ─────────── */
+
+/** Một đợt gửi in đã ghi, dạng gọn để trả về trình duyệt. */
+export type DotGuiIn = {
+  id: string;
+  links: string[];
+  ghiChu: string | null;
+  nguoiTen: string;
+  /** Chuỗi ISO — phía trình duyệt tự định dạng theo giờ studio (nguyên tắc 35). */
+  luc: string;
+};
+
+/**
+ * Ghi MỘT đợt gửi in rồi chuyển bước hợp đồng sang 7 (hoặc 16).
+ *
+ * Anh chốt 19/11/2026: phải dán link trước mới cho bấm chuyển bước. Nên hai
+ * việc nằm trong MỘT lượt gọi, không phải hai nút — dán được mà quên bấm thì
+ * lại đúng cái bệnh quên đổi bước đang chữa.
+ *
+ * Ghi đợt TRƯỚC, đổi bước sau. Nếu đổi bước hỏng thì đợt vẫn còn (truy được
+ * đã gửi gì), còn làm ngược lại thì hợp đồng nói "đã gửi in" mà không có link
+ * nào chứng minh.
+ */
+export async function guiInAction(
+  galleryId: string,
+  linkTho: string,
+  ghiChu: string,
+): Promise<{ loi?: string; dot?: DotGuiIn } & KetQuaDoiBuoc> {
+  if (!(await quyenAlbum())) return { loi: "Chưa đăng nhập." };
+
+  const kq = tachLink(linkTho);
+  if ("loi" in kq) return kq;
+
+  const nguoi = await layNguoiDung();
+  const prisma = getPrisma();
+
+  const album = await prisma.gallery.findUnique({
+    where: { id: galleryId },
+    select: { id: true, hopDong: { select: { buoc: true } } },
+  });
+  if (!album) return { loi: "Không tìm thấy album." };
+
+  /*
+    Kiểm bước Ở ĐÂY nữa, không chỉ dựa vào việc trang đã giấu nút (nguyên tắc
+    3). Server action là một đường mạng công khai, mà đây là việc đổi tiến độ
+    của cả một nhà khách.
+  */
+  if (buocSauKhiGuiIn(album.hopDong?.buoc) === null) {
+    return {
+      loi: album.hopDong
+        ? "Hợp đồng không ở bước “Chờ Khách duyệt” nên chưa gửi in được."
+        : "Album chưa gắn hợp đồng.",
+    };
+  }
+
+  const dot = await prisma.guiIn.create({
+    data: {
+      galleryId,
+      links: kq.links,
+      ghiChu: ghiChu.trim().slice(0, 200) || null,
+      nguoiMaNV: nguoi?.maNV ?? null,
+      nguoiTen: nguoi?.ten ?? "(không rõ)",
+    },
+    select: { id: true, links: true, ghiChu: true, nguoiTen: true, luc: true },
+  });
+
+  await ghiNhatKy({
+    nguoi,
+    hanhDong: "gui-in",
+    doiTuong: "Gallery",
+    doiTuongId: galleryId,
+    chiTiet: { ten: dot.ghiChu ?? "Gửi in", so: { "số link": kq.links.length } },
+  });
+
+  const buoc = await doiBuocSauKhiGuiIn(galleryId);
+  return { dot: { ...dot, luc: dot.luc.toISOString() }, ...buoc };
+}
+
+/** Lõi đổi bước của việc gửi in — tách ra để `guiInAction` đọc được dễ. */
+async function doiBuocSauKhiGuiIn(galleryId: string): Promise<KetQuaDoiBuoc> {
+  const kq = await doiBuocAlbum(galleryId, buocSauKhiGuiIn, "gui-in", await layNguoiDung());
+  for (const d of kq.veLai ?? []) revalidatePath(d);
+  return kq;
+}
+
+/**
+ * LỊCH SỬ GỬI IN của một album — anh yêu cầu 19/11/2026, hiện trong cửa sổ Logs.
+ *
+ * Đọc khi MỞ cửa sổ chứ không tải sẵn theo thẻ, y như `docLogAction`: lưới có
+ * mấy chục thẻ mà chín phần mười không ai mở ra xem (nguyên tắc 53).
+ */
+export async function docGuiInAction(galleryId: string): Promise<{ loi?: string; ds?: DotGuiIn[] }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  try {
+    const ds = await getPrisma().guiIn.findMany({
+      where: { galleryId },
+      select: { id: true, links: true, ghiChu: true, nguoiTen: true, luc: true },
+      orderBy: { luc: "asc" },
+    });
+    return { ds: ds.map((d) => ({ ...d, luc: d.luc.toISOString() })) };
+  } catch {
+    return { loi: "Không đọc được lịch sử gửi in lúc này." };
+  }
 }

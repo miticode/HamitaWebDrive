@@ -145,6 +145,7 @@ model Gallery {
 
   lists        SelectionList[]
   pushSubs     PushSub[]
+  guiIn        GuiIn[]
   mucXong      MucXong[]
   moMuc        MoMuc[]
   biaMuc       BiaMuc[]
@@ -227,6 +228,51 @@ model MucXong {
 
   @@unique([galleryId, albumId])
   @@index([galleryId])
+}
+
+/// MOT DOT GUI IN — anh yeu cau 19/11/2026.
+///
+/// Khach duyet xong anh hoan thien thi Media con mot viec nua ma web khong
+/// thay: gui link Drive cho xuong in qua Zalo. Truoc day viec do khong de lai
+/// dau vet nao, nen hinh in sai thi khong truy duoc da gui cai gi.
+///
+/// MOI LAN DAN LA MOT DOT, khong gop vao mot cot mang trong Gallery:
+///   - mot nha khach gui in nhieu dot that. Do 19/11: 62/182 album co nhieu
+///     hon mot thu muc hoan thien ("hoan thien HC", "hoan thien nha gai",
+///     "hoan thien nha trai"), va 22 album da co khach duyet tu hai thu muc
+///     tro len.
+///   - phai giu AI DAN va LUC NAO cho tung dot. Cot mang chi giu duoc chuoi,
+///     mat han phan trach nhiem.
+///
+/// Xoa album thi xoa theo: khong con anh thi khong con gi de truy.
+model GuiIn {
+  id        String @id @default(cuid())
+  galleryId String
+
+  /// Cac link Drive da gui cho xuong, moi dot it nhat mot link.
+  ///
+  /// Mang chu khong phai bang con: mot dot gui ba link thi ba link do SINH RA
+  /// CUNG LUC, cung nguoi, cung muc dich — tach bang chi them mot moi noi ma
+  /// khong tra loi them cau hoi nao.
+  links     String[]
+
+  /// Media tu ghi dot nay la dot nao ("nha gai", "HC"). De trong duoc.
+  ///
+  /// Khong bat buoc va khong phai o chon: ten thu muc hoan thien moi album
+  /// moi khac ("file hoan thien 1", "photobook hoan thien"), nen mot o chon
+  /// cung dung sai. Dot con duoc dinh danh bang thu tu va thoi diem.
+  ghiChu    String?
+
+  /// Ai dan — ghi ca ma nhan vien lan ten, de ten con doc duoc khi nguoi do
+  /// da nghi va ban ghi nhan vien bi xoa.
+  nguoiMaNV String?
+  nguoiTen  String
+
+  luc DateTime @default(now())
+
+  gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  @@index([galleryId, luc])
 }
 
 /// Mot may khach da dong y nhan thong bao day ve cho album nay.

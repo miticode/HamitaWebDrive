@@ -90,7 +90,13 @@ export type HanhDong =
     nay luon co `nguoi = null`, va do la su that dang ghi chu khong phai thieu
     du lieu.
   */
-  | "doi-buoc-khach-chon";
+  | "doi-buoc-khach-chon"
+  /*
+    Media dan link Drive da gui cho xuong in roi chuyen buoc (anh yeu cau
+    19/11/2026). Ghi rieng vi day la viec CO TRACH NHIEM: hinh in sai thi phai
+    truy duoc ai da gui cai gi.
+  */
+  | "gui-in";
 
 export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "dang-nhap": "Đăng nhập",
@@ -152,4 +158,5 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "gui-thong-bao": "Gửi thông báo cho khách",
   "doi-buoc-anh-goc": "Đổi bước: đã gửi ảnh gốc",
   "doi-buoc-khach-chon": "Đổi bước: khách đã chọn xong",
+  "gui-in": "Gửi in cho xưởng",
 };

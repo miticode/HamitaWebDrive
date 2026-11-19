@@ -70,6 +70,7 @@ export function AlbumList({
   goiMuc,
   soMayChoTin,
   baoTinLuc,
+  buocHopDong,
   thongBao,
   boMa,
   duocXoa,
@@ -90,6 +91,11 @@ export function AlbumList({
    * vi sao khong the doc thang do la "chua gui bao gio".
    */
   baoTinLuc: Record<string, string>;
+  /**
+   * galleryId → bước hợp đồng của album đó. Thiếu khoá = album chưa gắn hợp
+   * đồng, hoặc hợp đồng chưa gõ bước. Dùng để quyết có hiện nút "Đã gửi in".
+   */
+  buocHopDong?: Record<string, number>;
   /**
    * Bộ mã album cho hàng nút lọc, đọc từ bảng `MaAlbum` (19/11/2026).
    * Thiếu thì dùng bộ cứng — hàng lọc không bao giờ được phép rỗng.
@@ -367,6 +373,7 @@ export function AlbumList({
                     goiMuc={goiMuc.filter((x) => x.galleryId === g.id)}
                     soMayChoTin={soMayChoTin[g.id] ?? 0}
                     baoTinLuc={baoTinLuc[g.id] ?? null}
+                    buocHopDong={buocHopDong?.[g.id] ?? null}
                     duocXoa={duocXoa}
                   />
                 ))}

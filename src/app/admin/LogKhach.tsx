@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { docLogAction, type DongLogGon, type ViecStudioGon } from "./actions";
+import { docGuiInAction, type DotGuiIn } from "./actionsHopDong";
 import { CHU_HANH_DONG, type HanhDong } from "@/lib/nhatKyChung";
 import { MUI_GIO } from "@/lib/constants";
 
@@ -38,6 +39,16 @@ export function LogKhach({
 }) {
   const [ds, setDs] = useState<DongLogGon[] | null>(null);
   const [viec, setViec] = useState<ViecStudioGon[]>([]);
+  const [guiIn, setGuiIn] = useState<DotGuiIn[]>([]);
+  /*
+    LỊCH SỬ GỬI IN mở ra bằng một cú bấm, không bày sẵn — anh yêu cầu
+    19/11/2026 ("bấm vào sẽ coi được là link in của đợt nào").
+
+    Một đợt có thể tới hai mươi link, mỗi link dài một dòng. Bày sẵn thì cửa
+    sổ Logs thành một bức tường chữ, mà phần hay cần hơn — khách đã mở thư mục
+    nào — bị đẩy xuống tận cuối.
+  */
+  const [moDot, setMoDot] = useState<string | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,6 +60,14 @@ export function LogKhach({
         setDs(kq.ds ?? []);
         setViec(kq.viec ?? []);
       }
+    });
+    /*
+      Đọc RIÊNG một lượt, không gộp vào `docLogAction`: lịch sử gửi in chỉ có
+      ở album đã gắn hợp đồng và đã tới khâu in — hiện là rất ít. Gộp vào thì
+      mọi lần mở Logs đều kéo thêm một truy vấn gần như luôn rỗng.
+    */
+    docGuiInAction(galleryId).then((kq) => {
+      if (!boQua && kq.ds) setGuiIn(kq.ds);
     });
     return () => {
       boQua = true;
@@ -113,6 +132,69 @@ export function LogKhach({
                     <span className="text-xs text-fg-muted">{v.nguoiTen}</span>
                   </span>
                   <span className="shrink-0 text-xs text-fg-muted tabular-nums">{GIO_NGAY.format(new Date(v.luc))}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {/*
+          LỊCH SỬ GỬI IN — đứng sau "Studio đã làm" vì cùng là việc của studio,
+          nhưng tách riêng vì nó mang DỮ LIỆU (các link) chứ không chỉ là một
+          dòng "ai làm gì lúc nào".
+        */}
+        {guiIn.length > 0 && (
+          <>
+            <p className="eyebrow mt-5">Lịch sử gửi in</p>
+            <ul className="mt-2 divide-y divide-line border-y border-line">
+              {guiIn.map((d, i) => (
+                <li key={d.id} className="py-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setMoDot(moDot === d.id ? null : d.id)}
+                    className="flex w-full items-baseline justify-between gap-4 text-left"
+                    aria-expanded={moDot === d.id}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium">
+                        Đợt {i + 1}
+                        {d.ghiChu && <span className="font-normal text-fg-muted"> · {d.ghiChu}</span>}
+                        <span className="ml-1.5 font-normal text-fg-muted">
+                          · {d.links.length} link
+                        </span>
+                      </span>
+                      <span className="text-xs text-fg-muted">{d.nguoiTen}</span>
+                    </span>
+                    <span className="shrink-0 text-xs text-fg-muted tabular-nums">
+                      {GIO_NGAY.format(new Date(d.luc))}
+                      <span className="ml-1.5" aria-hidden>
+                        {moDot === d.id ? "▴" : "▾"}
+                      </span>
+                    </span>
+                  </button>
+
+                  {moDot === d.id && (
+                    <ul className="mt-2 grid gap-1.5 rounded-md bg-bg-soft px-3 py-2.5">
+                      {d.links.map((l) => (
+                        <li key={l} className="min-w-0">
+                          {/*
+                            Mở tab mới kèm `rel="noreferrer"`: đây là link
+                            studio tự dán, nhưng trang này là trang quản lý —
+                            không gửi địa chỉ trang quản lý sang nơi khác.
+                          */}
+                          <a
+                            href={l}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block truncate font-mono text-xs text-accent underline-offset-2 hover:underline"
+                            title={l}
+                          >
+                            {l}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               ))}
             </ul>

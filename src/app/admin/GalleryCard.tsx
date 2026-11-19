@@ -20,6 +20,8 @@ import { TenAlbum } from "./TenAlbum";
 import { MenuThe, MucMenuLink } from "./MenuThe";
 import { NutLamMoi } from "./NutLamMoi";
 import { NutGuiThongBao } from "./NutGuiThongBao";
+import { NutGuiIn } from "./NutGuiIn";
+import { GUI_IN_HIEN_O } from "@/lib/buocAnhGoc";
 import { NutDaSuaXong } from "./NutDaSuaXong";
 import { XoaAlbumDialog } from "./XoaAlbumDialog";
 import { duongDanAnh } from "@/lib/anhXem";
@@ -126,6 +128,7 @@ export function GalleryCard({
   goiMuc,
   soMayChoTin,
   baoTinLuc,
+  buocHopDong,
   duocXoa,
 }: {
   gallery: Gallery;
@@ -140,6 +143,11 @@ export function GalleryCard({
   soMayChoTin: number;
   /** Lần cuối bấm "Gửi thông báo" (chuỗi ISO). null = chưa ghi được lần nào. */
   baoTinLuc: string | null;
+  /**
+   * Bước hợp đồng của album này. null = chưa gắn hợp đồng, hoặc chưa gõ bước.
+   * Quyết có hiện nút "Đã gửi in" — xem `GUI_IN_HIEN_O`.
+   */
+  buocHopDong?: number | null;
   /* Duoc xoa album khong: quan ly hoac nguoi phong Media (anh chot 28/09/2026,
      xem quyenXoaAlbum). Tach khoi `quanLy` vi hai quyen nay khong con la mot;
      may chu van kiem lai, day chi de do bay nut vo ich. */
@@ -474,6 +482,18 @@ export function GalleryCard({
                 slug={gallery.slug}
                 lop="muc-menu"
               />
+
+              {/*
+                Nút "Đã gửi in" — CHỈ hiện ở bước 6 và 15 (anh chốt
+                19/11/2026). Khác hẳn nút gửi thông báo vốn lúc nào cũng có:
+                gửi in là một khâu đúng một lần trong quy trình, hiện nó ở mọi
+                bước thì bảng này dài ra mà chín phần mười lần bấm là sai chỗ.
+
+                Ô dán link nằm trong popup vì thẻ chỉ rộng 325px — xem NutGuiIn.
+              */}
+              {buocHopDong != null && (GUI_IN_HIEN_O as readonly number[]).includes(buocHopDong) && (
+                <NutGuiIn galleryId={gallery.id} tenAlbum={title} lop="muc-menu" />
+              )}
 
               <span aria-hidden className="my-1 block h-px bg-line" />
 
