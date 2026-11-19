@@ -4,7 +4,9 @@ import { getPrisma } from "@/lib/db";
 import { MUI_GIO } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri, xemHopDong } from "@/lib/phienNhanVien";
 import { BUOC_XONG, ngayVN } from "@/lib/hopDongChung";
-import { LOP_NHOM, nhomCuaLoai, type BuoiLich } from "@/lib/lichChung";
+import { laViecHauKy } from "@/lib/viecLich";
+import { khoaCuaToi, khoaNguoi } from "@/lib/hopDongMayChu";
+import { LOP_NHOM, nhomCuaLoai, type BuoiLich, type ViecBuoi } from "@/lib/lichChung";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { LuoiLich } from "./LuoiLich";
 
@@ -79,7 +81,11 @@ export default async function LichPage({ searchParams }: Props) {
     ...(loai ? { loai } : {}),
   };
   const prisma = getPrisma();
-  const [ds, demLoai, choNgay] = await Promise.all([
+  /* Mã nhân viên, hoặc tên đăng nhập với học viên chưa có mã — xem `khoaNguoi`. */
+  const khoaToi = khoaCuaToi(nguoi);
+  const quanTri = laQuanTri(nguoi);
+
+  const [ds, demLoai, choNgay, dsNhanVien] = await Promise.all([
     prisma.lichChup.findMany({
       where,
       select: {
@@ -142,7 +148,62 @@ export default async function LichPage({ searchParams }: Props) {
       },
       orderBy: [{ taoLuc: "asc" }],
     }),
+    /*
+      Nhân viên còn làm — để ô chọn người trên từng đầu việc có cái mà bày.
+
+      Khoá ghép là mã NẾU CÓ, không thì tên đăng nhập (`khoaNguoi`): học viên
+      chưa có mã vẫn nhận được việc, anh chốt 14/11/2026.
+    */
+    prisma.nhanVien.findMany({
+      where: { dangLam: true },
+      orderBy: { ten: "asc" },
+      select: { maNV: true, tenDangNhap: true, ten: true },
+    }),
   ]);
+
+  /*
+    ĐẦU VIỆC CỦA CÁC BUỔI TRONG THÁNG — anh yêu cầu 19/11/2026.
+
+    "Trên lịch hãy hiển thị đầu việc lên hết để quản lý có thể chia việc trên
+    lịch chụp cho dễ luôn."
+
+    Đọc theo HỢP ĐỒNG của những buổi đang hiện, không đọc cả bảng: 5.299 đầu
+    việc mà một tháng chỉ dính tới vài chục hợp đồng (nguyên tắc 53).
+
+    BỎ VIỆC HẬU KỲ ngay sau khi đọc, không lọc trong SQL: phép phân loại nằm
+    ở `laViecHauKy` và phải có MỘT nguồn duy nhất — viết lại điều kiện đó bằng
+    tiếng SQL là sớm muộn hai bên lệch nhau. Đo 19/11: lọc bỏ 1.366/5.299 việc
+    (26%), đúng những tên Photoshop, edit clip, Dựng phim, Xưởng in.
+  */
+  const hopDongIds = [...new Set([...ds, ...choNgay].map((l) => l.hopDong?.id).filter((x): x is string => !!x))];
+  const viecTho = hopDongIds.length
+    ? await prisma.congViec.findMany({
+        where: { matBenAppSheet: null, hopDongId: { in: hopDongIds } },
+        select: {
+          id: true,
+          hopDongId: true,
+          loai: true,
+          donGia: true,
+          soLuong: true,
+          nguoiPhuTrachMaNV: true,
+          trangThai: true,
+        },
+        orderBy: [{ loai: "asc" }],
+      })
+    : [];
+  const viecTheoHopDong = new Map<string, ViecBuoi[]>();
+  for (const v of viecTho) {
+    if (!v.hopDongId || laViecHauKy(v.loai)) continue;
+    const cu = viecTheoHopDong.get(v.hopDongId) ?? [];
+    cu.push({
+      id: v.id,
+      loai: v.loai,
+      tienCong: Math.round(v.donGia * v.soLuong),
+      nguoiPhuTrachMaNV: v.nguoiPhuTrachMaNV,
+      trangThai: v.trangThai,
+    });
+    viecTheoHopDong.set(v.hopDongId, cu);
+  }
 
   const [nam, thangSo] = thang.split("-").map(Number);
 
@@ -162,6 +223,7 @@ export default async function LichPage({ searchParams }: Props) {
     hopDongId: l.hopDong?.id ?? null,
     tenKhach: l.hopDong?.tenKhach ?? null,
     soDienThoai: l.hopDong?.khachHang?.soDienThoai ?? null,
+    viec: l.hopDong?.id ? (viecTheoHopDong.get(l.hopDong.id) ?? []) : [],
   }));
 
   const link = (thay: Record<string, string>) => {
@@ -276,7 +338,17 @@ export default async function LichPage({ searchParams }: Props) {
         </section>
       )}
 
-      {xem === "luoi" && <LuoiLich ds={buoi} thang={thang} nay={nay} moHopDong={moHopDong} />}
+      {xem === "luoi" && (
+        <LuoiLich
+          ds={buoi}
+          thang={thang}
+          nay={nay}
+          moHopDong={moHopDong}
+          nhanVien={dsNhanVien.map((n) => ({ maNV: khoaNguoi(n), ten: n.ten }))}
+          quanTri={quanTri}
+          maToi={khoaToi}
+        />
+      )}
 
       <div className={`mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised ${xem === "ds" ? "" : "hidden"}`}>
         <table className="w-full text-sm">

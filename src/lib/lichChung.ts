@@ -98,6 +98,22 @@ export const THU_TU_NHOM: readonly NhomLich[] = [
  * Khai ở đây chứ không ở component: trang (máy chủ) và lưới (trình duyệt) cùng
  * đọc kiểu này, lệch một trường là lỗi lúc dựng chứ không phải lúc chạy.
  */
+/**
+ * Một đầu việc hiện dưới buổi chụp trên lịch — anh yêu cầu 19/11/2026.
+ *
+ * Chỉ mang đúng thứ cần để chia người: làm việc gì, công bao nhiêu, ai đang
+ * nhận. Không mang thời hạn hay ghi chú — những thứ đó ở trang Đầu việc, còn
+ * trên lịch mà bày hết thì mỗi buổi thành một bảng con.
+ */
+export type ViecBuoi = {
+  id: string;
+  loai: string | null;
+  /** Đơn giá × số lượng, tức tiền người làm việc này nhận. */
+  tienCong: number;
+  nguoiPhuTrachMaNV: string | null;
+  trangThai: string | null;
+};
+
 export type BuoiLich = {
   id: string;
   ngay: string | null;
@@ -108,4 +124,12 @@ export type BuoiLich = {
   hopDongId: string | null;
   tenKhach: string | null;
   soDienThoai: string | null;
+  /**
+   * Đầu việc của HỢP ĐỒNG mà buổi này thuộc về, đã bỏ việc hậu kỳ.
+   *
+   * Theo hợp đồng chứ không theo buổi, vì `CongViec` không có cột trỏ tới
+   * buổi nào. Hợp đồng hai ngày thì cả hai ngày cùng hiện một danh sách —
+   * người đã giao thì hiện tên, nên vẫn biết cái nào xong rồi.
+   */
+  viec: ViecBuoi[];
 };

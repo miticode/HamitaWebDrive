@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ngayVN } from "@/lib/hopDongChung";
 import { LOP_NHOM, TEN_NHOM, THU_TU_NHOM, nhomCuaLoai, type BuoiLich } from "@/lib/lichChung";
+import { NutViec, type NhanVienGon } from "../cong-viec/NutViec";
+import { tien } from "@/lib/constants";
 
 const THU = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
@@ -33,6 +35,9 @@ export function LuoiLich({
   thang,
   nay,
   moHopDong,
+  nhanVien,
+  quanTri,
+  maToi,
 }: {
   ds: BuoiLich[];
   /** "YYYY-MM" đang xem. */
@@ -41,6 +46,11 @@ export function LuoiLich({
   nay: string;
   /** Người này có được mở hợp đồng không — không thì tên khách là chữ trơn. */
   moHopDong: boolean;
+  /** Nhân viên còn làm, để ô chọn người của từng đầu việc có cái mà bày. */
+  nhanVien: NhanVienGon[];
+  quanTri: boolean;
+  /** Mã của chính người đang xem — người thường chỉ nhận việc về mình. */
+  maToi: string | null;
 }) {
   /*
     Mặc định mở ngày hôm nay, nhưng chỉ khi hôm nay nằm trong tháng đang xem.
@@ -71,6 +81,15 @@ export function LuoiLich({
   const troTruoc = (new Date(Date.UTC(nam, thangSo - 1, 1)).getUTCDay() + 6) % 7;
 
   const cuaNgay = ngayChon ? (theoNgay.get(ngayChon) ?? []) : [];
+
+  /*
+    Bao nhiêu đầu việc của buổi này chưa có người.
+
+    Con số này mới là thứ quản lý mở lịch ra để tìm — danh sách việc thì dài,
+    mà câu hỏi của họ chỉ là "nhà này đủ người chưa". In nó ngay cạnh tiêu đề
+    khối, trước khi phải đọc từng dòng.
+  */
+  const chuaGiao = (l: BuoiLich) => l.viec.filter((v) => !v.nguoiPhuTrachMaNV).length;
   const panel = useRef<HTMLDivElement>(null);
 
   /*
@@ -203,6 +222,51 @@ export function LuoiLich({
                         )}
                       </span>
                       {l.ghiChu && <span className="mt-0.5 block text-xs text-fg-muted">{l.ghiChu}</span>}
+
+                      {/*
+                        ĐẦU VIỆC CỦA BUỔI NÀY — anh yêu cầu 19/11/2026, để
+                        quản lý chia người ngay trên lịch thay vì mở sang
+                        trang Đầu việc rồi dò lại ngày.
+
+                        Đã bỏ việc hậu kỳ ở máy chủ (`laViecHauKy`): anh chốt
+                        "chỉ hiện những việc hôm đó làm".
+
+                        Dùng lại `NutViec` của trang Đầu việc, không dựng ô
+                        chọn riêng: hai chỗ cùng gọi `giaoViecAction`, mà cái
+                        action đó còn kiểm quyền và ghi nhật ký. Chép ra một
+                        bản thứ hai là sớm muộn một bên quên mất một phép kiểm.
+                      */}
+                      {l.viec.length > 0 && (
+                        <div className="mt-2 grid gap-1.5 rounded-md border border-line bg-bg px-3 py-2.5">
+                          <p className="eyebrow">
+                            Đầu việc <span className="tabular-nums opacity-70">{l.viec.length}</span>
+                            {chuaGiao(l) > 0 && (
+                              <span className="ml-2 font-medium text-amber-800">
+                                {chuaGiao(l)} chưa có người
+                              </span>
+                            )}
+                          </p>
+                          {l.viec.map((v) => (
+                            <div
+                              key={v.id}
+                              className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-line pt-1.5 first:border-0 first:pt-0"
+                            >
+                              <span className="min-w-28 text-sm font-medium">{v.loai ?? "—"}</span>
+                              <span className="text-xs text-fg-muted tabular-nums">{tien(v.tienCong)}đ</span>
+                              <span className="ml-auto flex flex-wrap items-center gap-2">
+                                <NutViec
+                                  id={v.id}
+                                  nguoiPhuTrachMaNV={v.nguoiPhuTrachMaNV}
+                                  trangThai={v.trangThai}
+                                  nhanVien={nhanVien}
+                                  quanTri={quanTri}
+                                  maToi={maToi}
+                                />
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </span>
                   </li>
                 ))}
