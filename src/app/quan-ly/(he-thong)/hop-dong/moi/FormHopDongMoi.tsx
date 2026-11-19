@@ -6,7 +6,7 @@ import { tien } from "@/lib/constants";
 import { docTien } from "@/lib/studioNoiBo";
 import { LOAI_DICH_VU, TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import { loaiBuoiGoiY, soBuoiCuaGoi } from "@/lib/goiNhieuNgay";
-import { MA_ALBUM, ganNhieuMa } from "@/lib/maAlbum";
+import { MA_ALBUM, ganNhieuMa, type MaAlbum } from "@/lib/maAlbum";
 import {
   BUOC_MOI_LAP,
   CAC_BUOC,
@@ -41,6 +41,7 @@ export function FormHopDongMoi({
   cacBuoc = CAC_BUOC,
   loaiBuoi,
   danhMuc,
+  boMa = MA_ALBUM,
   onThoi,
   onXong,
 }: {
@@ -66,6 +67,11 @@ export function FormHopDongMoi({
    * Thiếu thì dùng bảng cứng — ô chọn không bao giờ được phép rỗng.
    */
   danhMuc?: { loaiHopDong: string[]; hinhThucThu: string[]; noiDungThu: string[] };
+  /**
+   * Bộ mã album, đọc từ bảng `MaAlbum` (anh yêu cầu 19/11/2026).
+   * Thiếu thì dùng bộ cứng — ô chọn không bao giờ được phép rỗng.
+   */
+  boMa?: readonly MaAlbum[];
   /** Quản lý lập phiếu thu thì ghi thẳng "đã thu"; sale thì phiếu nằm chờ duyệt. */
   laQuanLy: boolean;
   tenNguoiLap: string;
@@ -205,7 +211,7 @@ export function FormHopDongMoi({
   }, [dong, lich, dichVu, maTheoLoai]);
   const [maTuGo, setMaTuGo] = useState<string[] | null>(null);
   const maAlbum = maTuGo ?? maGoiY;
-  const tenAlbumXem = maAlbum.length > 0 ? ganNhieuMa(tenKhach || "tên khách", maAlbum) : tenKhach || "tên khách";
+  const tenAlbumXem = maAlbum.length > 0 ? ganNhieuMa(tenKhach || "tên khách", maAlbum, boMa) : tenKhach || "tên khách";
 
   const doiMa = (m: string) =>
     setMaTuGo(maAlbum.includes(m) ? maAlbum.filter((x) => x !== m) : [...maAlbum, m]);
@@ -1019,7 +1025,7 @@ export function FormHopDongMoi({
         chu="Album trên web sẽ mang mã này ở đầu tên. Thư mục trên Drive thì không — mã chỉ để lọc ở trang quản lý album."
       >
         <div className="flex flex-wrap gap-1.5">
-          {MA_ALBUM.map((m) => {
+          {boMa.map((m) => {
             const chon = maAlbum.includes(m.ma);
             return (
               <button

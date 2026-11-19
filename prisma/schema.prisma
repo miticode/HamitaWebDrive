@@ -1232,6 +1232,34 @@ model DichVuBuoi {
   @@index([loaiBuoiId])
 }
 
+/// MA ALBUM (TAG) — anh yeu cau 19/11/2026, thay bang cung MA_ALBUM.
+///
+/// Ma dung o dau ten album: "HIS - Minh Ngoc & Cong Khoa". Do 19/11 tren 181
+/// album: HIS 47, HER 45, HC 39, Baby 30, AB 25, NS 20, GD 10, DH 6, Bau 1,
+/// DN 1, NP 0, TET 0.
+///
+/// KHONG CHO DOI `ma` khi da co album dung — anh chot 19/11. Ma nam TRONG ten
+/// album, ma ten album la chu tu do: cung mot ma co cai viet "HIS - ", cai
+/// viet "His-", cai viet "HIS-". Sua hang loat la de sot hoac sua nham. Them
+/// ma moi va tat ma cu thi van duoc.
+///
+/// `nghia` sua duoc luc nao cung duoc: no chi hien trong goi y, khong nam
+/// trong du lieu nao.
+model MaAlbum {
+  id         String   @id @default(cuid())
+  /// Chu hien o dau ten album. Khong doi duoc khi da co album dung.
+  ma         String   @unique
+  /// "hinh cong", "nha trai"… — hien khi re chuot len nut chon ma.
+  nghia      String?
+  thuTu      Int      @default(0)
+  /// false = khong hien trong o chon nua; album cu van loc duoc binh thuong.
+  dangDung   Boolean  @default(true)
+  taoLuc     DateTime @default(now())
+  capNhatLuc DateTime @updatedAt
+
+  @@index([dangDung, thuTu])
+}
+
 /// DANH MUC DUNG CHUNG — anh yeu cau 18/11/2026.
 ///
 /// Mot bang cho MOI danh muc nho cua form lap hop dong, phan biet bang cot

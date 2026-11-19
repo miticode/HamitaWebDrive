@@ -13,6 +13,7 @@ import { coGiaoAnh, taoThuMucVaAlbum } from "@/lib/thuMucHopDong";
 import { MA_ALBUM } from "@/lib/maAlbum";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
 import { docBaDanhMuc } from "@/lib/danhMuc";
+import { docMaAlbum } from "@/lib/docMaAlbum";
 import { lapHopDongMoi, maNguoiLap, type NguoiLap } from "@/lib/taoHopDong";
 import { ngayVN, type DuLieuHopDongMoi, type DuLieuPhieuThu, type DuLieuSuaHopDong } from "@/lib/hopDongChung";
 import { duyetPhieuThu, suaHopDong, themPhieuThu, xoaHopDong, xoaPhieuThu } from "@/lib/suaHopDong";
@@ -160,8 +161,14 @@ export async function lapHopDongAction(
   */
   if (coGiaoAnh(du.loaiDV)) {
     after(async () => {
-      /* Lọc lại ở máy chủ: trình duyệt gửi gì cũng phải nằm trong bộ mã. */
-      const maSach = maAlbum?.filter((x) => MA_ALBUM.some((m) => m.ma === x));
+      /*
+        Lọc lại ở máy chủ: trình duyệt gửi gì cũng phải nằm trong bộ mã.
+
+        Đọc bộ mã TỪ BẢNG, không dùng bộ cứng — từ 19/11/2026 quản lý tự thêm
+        mã được, và một mã vừa thêm phải dùng được ngay.
+      */
+      const boMaThat = await docMaAlbum();
+      const maSach = maAlbum?.filter((x) => boMaThat.some((m) => m.ma === x));
       const album = await taoThuMucVaAlbum(kq.id, undefined, maSach);
       await ghiNhatKy({
         nguoi: { id: nguoi.id || null, ten: nguoi.ten },
@@ -485,6 +492,8 @@ export type DuLieuFormHopDong = {
   loaiBuoi: { ten: string; maAlbum: string | null }[];
   /** Ba danh mục nhỏ, đọc từ bảng `DanhMuc`. */
   danhMuc: { loaiHopDong: string[]; hinhThucThu: string[]; noiDungThu: string[] };
+  /** Bộ mã album, đọc từ bảng `MaAlbum`. */
+  boMa: { ma: string; nghia: string | null }[];
   /** maDV → số lần đã dùng trong hợp đồng; xếp danh sách lúc duyệt. */
   luotDung: Record<string, number>;
   homNay: string;
@@ -509,7 +518,7 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
   if (!nguoi) return { loi: "Tài khoản này chưa được lập hợp đồng, hoặc phiên đăng nhập đã hết." };
 
   const prisma = getPrisma();
-  const [dichVu, giaHangMuc, luotDung, cacBuoc, loaiBuoi, danhMuc] = await Promise.all([
+  const [dichVu, giaHangMuc, luotDung, cacBuoc, loaiBuoi, danhMuc, boMa] = await Promise.all([
     prisma.dichVu.findMany({
       where: { dangDung: true },
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
@@ -527,6 +536,7 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
     docCacBuoc(),
     docLoaiBuoi(),
     docBaDanhMuc(),
+    docMaAlbum(),
   ]);
 
   return {
@@ -536,6 +546,7 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
     cacBuoc,
     loaiBuoi,
     danhMuc,
+    boMa,
     // Hôm nay theo giờ studio, không theo giờ máy khách (nguyên tắc 35).
     homNay: new Intl.DateTimeFormat("en-CA", {
       timeZone: MUI_GIO,

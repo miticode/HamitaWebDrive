@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MA_ALBUM } from "@/lib/maAlbum";
+import { MA_ALBUM, type MaAlbum } from "@/lib/maAlbum";
 import { ganMaAlbumAction } from "../../actionsDichVu";
 
 /*
@@ -21,12 +21,18 @@ export function OMaAlbum({
   id,
   maDau,
   suaDuoc,
+  boMa = MA_ALBUM,
 }: {
   id: string;
   /** Mã đang gắn, "" nếu chưa có. */
   maDau: string;
   /** Không có quyền sửa loại này thì chỉ xem. */
   suaDuoc: boolean;
+  /**
+   * Bộ mã album, đọc từ bảng `MaAlbum` (anh yêu cầu 19/11/2026).
+   * Thiếu thì dùng bộ cứng — ô chọn không bao giờ được phép rỗng.
+   */
+  boMa?: readonly MaAlbum[];
 }) {
   const router = useRouter();
   const [ma, setMa] = useState(maDau);
@@ -96,7 +102,7 @@ export function OMaAlbum({
       {mo && (
         <div className="absolute top-full left-0 z-30 mt-1 w-56 rounded-md border border-line bg-bg-raised p-2 shadow-lift">
           <div className="flex flex-wrap gap-1">
-            {MA_ALBUM.map((m) => (
+            {boMa.map((m) => (
               <button
                 key={m.ma}
                 type="button"

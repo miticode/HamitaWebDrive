@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MA_ALBUM, ganMa, laMa } from "@/lib/maAlbum";
+import { MA_ALBUM, ganMa, laMa, type MaAlbum } from "@/lib/maAlbum";
 import { taoThuMucAlbumAction } from "../../../actionsHopDong";
 
 /**
@@ -29,10 +29,16 @@ import { taoThuMucAlbumAction } from "../../../actionsHopDong";
 export function NutTaoThuMuc({
   hopDongId,
   tenKhach,
+  boMa = MA_ALBUM,
 }: {
   hopDongId: string;
   /** Tên khách trên hợp đồng — điền sẵn để khỏi gõ lại. */
   tenKhach: string;
+  /**
+   * Bộ mã album, đọc từ bảng `MaAlbum` (anh yêu cầu 19/11/2026).
+   * Thiếu thì dùng bộ cứng — ô chọn không bao giờ được phép rỗng.
+   */
+  boMa?: readonly MaAlbum[];
 }) {
   const router = useRouter();
   const [mo, setMo] = useState(false);
@@ -106,13 +112,13 @@ export function NutTaoThuMuc({
       {/* Đủ bộ mã, kể cả mã chưa album nào dùng — giống hệt form tạo link bên
           `/admin`, vì hai chỗ cùng trả lời câu "được phép đặt mã nào". */}
       <div className="mt-2.5 flex flex-wrap gap-1.5">
-        {MA_ALBUM.map((m) => {
-          const dangCo = laMa(ten, m.ma);
+        {boMa.map((m) => {
+          const dangCo = laMa(ten, m.ma, boMa);
           return (
             <button
               key={m.ma}
               type="button"
-              onClick={() => setTen((t) => ganMa(t, m.ma))}
+              onClick={() => setTen((t) => ganMa(t, m.ma, boMa))}
               title={m.nghia ? `${m.ma} — ${m.nghia}` : m.ma}
               className={`min-h-8 rounded-full border px-2.5 text-xs tracking-wide transition ${
                 dangCo

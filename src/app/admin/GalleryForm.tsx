@@ -1,11 +1,11 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { MA_ALBUM, ganMa, laMa } from "@/lib/maAlbum";
+import { MA_ALBUM, ganMa, laMa, type MaAlbum } from "@/lib/maAlbum";
 import { createGalleryAction, type ActionState } from "./actions";
 import { ganHopDongAction } from "./actionsHopDong";
 
-export function GalleryForm() {
+export function GalleryForm({ boMa = MA_ALBUM }: { boMa?: readonly MaAlbum[] }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(
     createGalleryAction,
     {},
@@ -75,8 +75,8 @@ export function GalleryForm() {
         đầu tiên.
       */}
       <div className="mt-2.5 flex flex-wrap gap-1.5">
-        {MA_ALBUM.map((m) => {
-          const dang = laMa(ten, m.ma);
+        {boMa.map((m) => {
+          const dang = laMa(ten, m.ma, boMa);
           return (
             <button
               key={m.ma}

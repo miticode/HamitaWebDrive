@@ -5,6 +5,7 @@ import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { LOAI_DICH_VU, TEN_LOAI, boDau, laLoaiDichVu, loaiDuocSua, type LoaiDichVu } from "@/lib/dichVuChung";
 import { OMaAlbum } from "./OMaAlbum";
 import { OBuoiChup } from "./OBuoiChup";
+import { docMaAlbum } from "@/lib/docMaAlbum";
 import { TabDanhMuc, TrangDanhMuc } from "./TrangDanhMuc";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +49,7 @@ export default async function DichVuPage({ searchParams }: Props) {
   const so = Math.max(MOI_LUOT, Math.floor(Number(sp.so)) || MOI_LUOT);
 
   const prisma = getPrisma();
-  const [demLoai, cuaLoai, dsLoaiBuoi] = await Promise.all([
+  const [demLoai, cuaLoai, dsLoaiBuoi, boMa] = await Promise.all([
     prisma.dichVu.groupBy({ by: ["loai"], where: { dangDung: tt === "dang-dung" }, _count: { _all: true } }),
     prisma.dichVu.findMany({
       where: { loai, dangDung: tt === "dang-dung" },
@@ -68,6 +69,7 @@ export default async function DichVuPage({ searchParams }: Props) {
       select: { id: true, ten: true },
       orderBy: [{ thuTu: "asc" }, { ten: "asc" }],
     }),
+    docMaAlbum(),
   ]);
   const soTheoLoai: Record<string, number> = Object.fromEntries(demLoai.map((d) => [d.loai, d._count._all]));
 
@@ -199,7 +201,7 @@ export default async function DichVuPage({ searchParams }: Props) {
                   </td>
                   <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{d.nhom ?? "—"}</td>
                   <td className="px-4 py-2.5 whitespace-nowrap">
-                    <OMaAlbum id={d.id} maDau={d.maAlbum ?? ""} suaDuoc={themDuoc} />
+                    <OMaAlbum id={d.id} maDau={d.maAlbum ?? ""} suaDuoc={themDuoc} boMa={boMa} />
                   </td>
                   {loai === "dich-vu" && (
                     <td className="px-4 py-2.5">

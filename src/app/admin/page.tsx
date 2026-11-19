@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { demChuaGhep } from "@/lib/ghepAlbum";
+import { docMaAlbum } from "@/lib/docMaAlbum";
 import { cookies } from "next/headers";
 import { adminPasswordIsSet } from "@/lib/auth";
 import { quyenAlbum, quyenAlbumNguyHiem, quyenXoaAlbum } from "@/lib/quyenAlbum";
@@ -109,12 +110,13 @@ export default async function AdminPage() {
     luc tao link va moi lan bam "Lam moi" — neu doc thang tu Drive thi 9 album
     la khoang 70 lan goi, cham 8-10 giay moi lan mo trang.
   */
-  const [galleries, counts, mucXong, biaMuc, goiMuc] = await Promise.all([
+  const [galleries, counts, mucXong, biaMuc, goiMuc, boMa] = await Promise.all([
     listGalleries(),
     listCounts(),
     listMucXong(),
     listBiaMuc(),
     listGoiMuc(),
+    docMaAlbum(),
   ]);
 
   const driveAccount = await getConnectedAccount().catch(() => null);
@@ -214,7 +216,7 @@ export default async function AdminPage() {
         <TheoDoiKhach />
 
         <div className="flex flex-wrap items-center gap-5">
-          <NutTaoLink />
+          <NutTaoLink boMa={boMa} />
           {/*
             Lối sang phần quản lý studio (thay dần AppSheet, bắt đầu 15/09/2026).
             Đang cầm mật khẩu quản lý album thì vào thẳng, không phải đăng nhập lại.
@@ -337,6 +339,7 @@ export default async function AdminPage() {
               vẫn là component phía khách, không phải biết gì về database.
             */
             <AlbumList
+              boMa={boMa}
               galleries={galleries}
               counts={counts}
               mucXong={mucXong}

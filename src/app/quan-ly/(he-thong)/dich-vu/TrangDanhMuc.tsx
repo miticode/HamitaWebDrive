@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { laQuanTri, type NguoiDung } from "@/lib/phienNhanVien";
-import { LOAI_DICH_VU, TEN_LOAI } from "@/lib/dichVuChung";
+import { LOAI_DICH_VU, TEN_LOAI, boDau } from "@/lib/dichVuChung";
+import { MA_ALBUM } from "@/lib/maAlbum";
 import { CHU_NHOM, COT_DUNG, NHOM, bangCung, type TenNhom } from "@/lib/danhMuc";
 import { LOAI_LICH } from "@/lib/hopDongChung";
 import { BangDanhMuc, type DongDanhMuc } from "./BangDanhMuc";
 import { BangLoaiBuoi, type DongLoai } from "../loai-buoi/BangLoaiBuoi";
 import { BangBuoc, type DongBuoc } from "./BangBuoc";
+import { BangMaAlbum, type DongMa } from "./BangMaAlbum";
 
 /*
   TRANG DANH MỤC — anh chốt 18/11/2026: gom mọi thứ có CRUD vào một mục
@@ -26,6 +28,7 @@ export const TAB_DM = [
   { khoa: "buoc", ten: "Trạng thái hợp đồng" },
   { khoa: NHOM.hinhThucThu, ten: CHU_NHOM[NHOM.hinhThucThu].ten },
   { khoa: NHOM.noiDungThu, ten: CHU_NHOM[NHOM.noiDungThu].ten },
+  { khoa: "ma-album", ten: "Mã album" },
 ] as const;
 
 /** Thanh tab dùng chung cho cả hai nhánh của trang. */
@@ -160,6 +163,59 @@ export async function TrangDanhMuc({ nhom, nguoi }: { nhom: string; nguoi: Nguoi
         canhBao={lac.length > 0 ? <KhungLac ds={lac} donVi="hợp đồng" /> : undefined}
       >
         <BangBuoc ds={dong} laQuanLy={quanLy} />
+      </Khung>
+    );
+  }
+
+  /* ── Mã album (tag) ───────────────────────────────────────────────── */
+  if (nhom === "ma-album") {
+    const [ds, album, dv, lb] = await Promise.all([
+      prisma.maAlbum.findMany({
+        select: { id: true, ma: true, nghia: true, dangDung: true },
+        orderBy: [{ thuTu: "asc" }, { ma: "asc" }],
+      }),
+      prisma.gallery.findMany({ select: { title: true, clientName: true } }),
+      prisma.dichVu.groupBy({ by: ["maAlbum"], where: { maAlbum: { not: null } }, _count: { _all: true } }),
+      prisma.loaiBuoi.groupBy({ by: ["maAlbum"], where: { maAlbum: { not: null } }, _count: { _all: true } }),
+    ]);
+
+    /*
+      Đếm album y như BỘ LỌC ở trang quản lý album: tách tên thành TỪ RỜI rồi
+      khớp theo đầu từ. Đếm bằng `startsWith` trên cả tên thì hụt hẳn — đo
+      19/11: cách đó ra HIS 0 album trong khi bộ lọc thật thấy 47, vì tên hay
+      mang hai mã ("HIS - HER - Nhã hân") hoặc viết thường ("Her - Minh Ngọc").
+    */
+    const tuCuaAlbum = album.map((a) =>
+      boDau([a.clientName ?? "", a.title].join(" "))
+        .split(/[^a-z0-9]+/)
+        .filter(Boolean),
+    );
+    const demDV = new Map(dv.map((x) => [(x.maAlbum ?? "").toLowerCase(), x._count._all]));
+    const demLB = new Map(lb.map((x) => [(x.maAlbum ?? "").toLowerCase(), x._count._all]));
+
+    const dong: DongMa[] = ds.map((d) => {
+      const key = boDau(d.ma);
+      return {
+        ...d,
+        soAlbum: tuCuaAlbum.filter((t) => t.some((x) => x.startsWith(key))).length,
+        soDichVu: demDV.get(d.ma.toLowerCase()) ?? 0,
+        soLoaiBuoi: demLB.get(d.ma.toLowerCase()) ?? 0,
+      };
+    });
+
+    return (
+      <Khung
+        dangMo="ma-album"
+        chu="Mã hiện ở đầu tên album — “HIS - Minh Ngọc & Công Khoa”. Dùng để lọc ở trang quản lý album, và gắn sẵn được cho từng dịch vụ hoặc loại buổi."
+        canhBao={
+          ds.length === 0 ? (
+            <p className="mt-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              Bảng còn rỗng nên web đang dùng {MA_ALBUM.length} mã cứng sẵn có.
+            </p>
+          ) : undefined
+        }
+      >
+        <BangMaAlbum ds={dong} laQuanLy={quanLy} />
       </Khung>
     );
   }

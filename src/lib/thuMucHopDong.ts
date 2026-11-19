@@ -5,6 +5,7 @@ import { createGallery, setAccess } from "@/lib/store";
 import { MA_MAC_DINH } from "@/lib/access";
 import { MUI_GIO } from "@/lib/constants";
 import { ganNhieuMa, tenKhongMa } from "@/lib/maAlbum";
+import { docMaAlbumDayDu } from "@/lib/docMaAlbum";
 import { docMaTheoBuoi, maTheoBuoi } from "@/lib/loaiBuoi";
 
 /**
@@ -336,6 +337,11 @@ export async function taoThuMucVaAlbum(
       Người bấm nút tạo tay mà tự đặt tên thì KHÔNG đụng vào: họ gõ sẵn mã rồi.
     */
     const bangMa = await docMaTheoBuoi();
+    /*
+      Bộ mã ĐẦY ĐỦ, kể cả mã đã ngưng dùng: album cũ vẫn mang mã đã tắt, và
+      `tenKhongMa` phải bóc được nó ra thì tên thư mục Drive mới sạch mã.
+    */
+    const boMa = await docMaAlbumDayDu();
     const ma = tenTuChon
       ? []
       : maTuChon
@@ -355,7 +361,7 @@ export async function taoThuMucVaAlbum(
               ...hd.lich.map((l) => maTheoBuoi(bangMa, l.loai)),
             ].filter((m): m is string => !!m)),
           ];
-    const tenAlbum = ma.length > 0 ? ganNhieuMa(tenGoc, ma) : tenGoc;
+    const tenAlbum = ma.length > 0 ? ganNhieuMa(tenGoc, ma, boMa) : tenGoc;
 
     /*
       THƯ MỤC DRIVE KHÔNG MANG MÃ — anh chốt 15/11/2026.
@@ -370,7 +376,7 @@ export async function taoThuMucVaAlbum(
       phải của người gõ — họ gõ mã để album web có mã, chứ không phải để thư
       mục có mã.
     */
-    const tenThuMuc = tenKhongMa(tenAlbum) || tenAlbum;
+    const tenThuMuc = tenKhongMa(tenAlbum, boMa) || tenAlbum;
 
     /*
       DRIVE NÀO, THƯ MỤC NÀO — anh yêu cầu 15/11/2026. Xem `noiChuaAlbum.ts`.

@@ -1,4 +1,4 @@
-import { MA_ALBUM } from "@/lib/maAlbum";
+import { MA_ALBUM, type MaAlbum } from "@/lib/maAlbum";
 
 import { docTien } from "@/lib/studioNoiBo";
 
@@ -81,7 +81,18 @@ export type DichVuSach = {
 };
 
 /** Kiểm và chuẩn hoá ô nhập. Trả về câu báo lỗi, hoặc dữ liệu sạch để ghi. */
-export function kiemDichVu(du: DuLieuDichVu): { loi: string } | DichVuSach {
+export function kiemDichVu(
+  du: DuLieuDichVu,
+  /*
+    Bộ mã album để đối chiếu. Hàm này THUẦN nên không tự đọc database được;
+    server action truyền bảng thật vào, còn chỗ gọi cũ dùng bộ cứng.
+
+    Thiếu tham số này thì một mã vừa thêm ở trang Quản lý dịch vụ sẽ bị từ
+    chối ngay lúc gắn cho dịch vụ — đúng lỗi phải tránh khi chuyển bộ mã sang
+    database ngày 19/11/2026.
+  */
+  boMa: readonly MaAlbum[] = MA_ALBUM,
+): { loi: string } | DichVuSach {
   const gon = (s: unknown) => String(s ?? "").trim().replace(/[ \t]+/g, " ");
 
   const maDV = gon(du.maDV);
@@ -104,7 +115,7 @@ export function kiemDichVu(du: DuLieuDichVu): { loi: string } | DichVuSach {
     mang mã đó lọc mãi không ra mà nhìn thì vẫn thấy đúng.
   */
   const maAlbum = gon(du.maAlbum);
-  if (maAlbum && !MA_ALBUM.some((m) => m.ma === maAlbum)) return { loi: "Mã album không có trong bộ mã." };
+  if (maAlbum && !boMa.some((m) => m.ma === maAlbum)) return { loi: "Mã album không có trong bộ mã." };
   const donVi = gon(du.donVi);
   if (donVi.length > 30) return { loi: "Đơn vị dài quá." };
 

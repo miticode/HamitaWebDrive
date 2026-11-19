@@ -2,7 +2,7 @@
 
 import { useDeferredValue, useMemo, useState, type ReactNode } from "react";
 import { boDau as bo_dau } from "@/lib/constants";
-import { MA_ALBUM } from "@/lib/maAlbum";
+import { MA_ALBUM, type MaAlbum } from "@/lib/maAlbum";
 import type { BiaMuc, Gallery, GoiMuc, ListCount, MucXong } from "@/lib/store";
 import { GalleryCard } from "./GalleryCard";
 import { LocTheoThang, hopMoc, type MocLoc } from "./LocTheoThang";
@@ -13,7 +13,11 @@ import { LocTheoThang, hopMoc, type MocLoc } from "./LocTheoThang";
   Truoc day o day co bang rieng, gõ tay. Them ma moi thi phai nho sua ca hai
   cho — quen mot cho la nhan vien dat ten bang ma moi ma loc lai khong ra.
 */
-const NHAN = MA_ALBUM.map((m) => m.ma);
+/*
+  Bộ mã dùng cho hàng nút lọc. Từ 19/11/2026 nó đến từ bảng `MaAlbum` qua
+  prop `boMa`; dòng dưới chỉ còn là mặc định khi bảng rỗng.
+*/
+const NHAN_MAC_DINH = MA_ALBUM.map((m) => m.ma);
 
 /*
   Lọc theo tiến độ chọn ảnh (anh yêu cầu 17/09/2026). HAI nhóm: bản đầu có
@@ -67,6 +71,7 @@ export function AlbumList({
   soMayChoTin,
   baoTinLuc,
   thongBao,
+  boMa,
   duocXoa,
   heThong,
 }: {
@@ -85,6 +90,11 @@ export function AlbumList({
    * vi sao khong the doc thang do la "chua gui bao gio".
    */
   baoTinLuc: Record<string, string>;
+  /**
+   * Bộ mã album cho hàng nút lọc, đọc từ bảng `MaAlbum` (19/11/2026).
+   * Thiếu thì dùng bộ cứng — hàng lọc không bao giờ được phép rỗng.
+   */
+  boMa?: readonly MaAlbum[];
   duocXoa: boolean;
   /**
    * Khung "Thông báo", dựng sẵn ở máy chủ rồi truyền xuống.
@@ -123,7 +133,7 @@ export function AlbumList({
   // Chi hien nhung ma nhan that su co album, kem so luong.
   const nhanCoDung = useMemo(
     () =>
-      NHAN.map((ma) => {
+      (boMa ? boMa.map((m) => m.ma) : NHAN_MAC_DINH).map((ma) => {
         const key = bo_dau(ma);
         return {
           ma,
@@ -131,7 +141,9 @@ export function AlbumList({
           so: chiMuc.filter((m) => m.tu.some((t) => t.startsWith(key))).length,
         };
       }).filter((n) => n.so > 0),
-    [chiMuc],
+    /* `boMa` nằm trong danh sách phụ thuộc: thêm một mã ở trang Quản lý dịch
+       vụ mà quên nó thì hàng lọc không hiện mã mới cho tới lần tải lại sau. */
+    [chiMuc, boMa],
   );
 
   const ketQua = useMemo(() => {

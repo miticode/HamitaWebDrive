@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { GalleryForm } from "./GalleryForm";
+import type { MaAlbum } from "@/lib/maAlbum";
 
 /**
  * Nút "Tạo link mới" ở đầu trang quản lý album, bấm mới mở khung tạo link.
@@ -12,7 +13,7 @@ import { GalleryForm } from "./GalleryForm";
  * vài lần một ngày) nhường chỗ cho việc xem album (làm cả ngày) và thu vào một
  * nút, giống nút "Tạo" của Gump.
  */
-export function NutTaoLink() {
+export function NutTaoLink({ boMa }: { boMa?: readonly MaAlbum[] }) {
   const [mo, setMo] = useState(false);
 
   useEffect(() => {
@@ -55,7 +56,7 @@ export function NutTaoLink() {
             >
               ✕
             </button>
-            <GalleryForm />
+            <GalleryForm boMa={boMa} />
           </div>
         </div>
       )}

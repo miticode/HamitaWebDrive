@@ -6,7 +6,7 @@ import { getPrisma } from "@/lib/db";
 import { layNguoiDung } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { duocSuaDichVu, kiemDichVu, TEN_LOAI, type DichVuSach, type DuLieuDichVu, type LoaiDichVu } from "@/lib/dichVuChung";
-import { MA_ALBUM } from "@/lib/maAlbum";
+import { docMaAlbum } from "@/lib/docMaAlbum";
 
 /**
  * Thêm, sửa mục trong bảng dịch vụ & trang phục.
@@ -35,7 +35,7 @@ async function nguoiDangDung() {
 export async function themDichVuAction(du: DuLieuDichVu): Promise<{ loi?: string; id?: string }> {
   const nguoi = await nguoiDangDung();
   if (!nguoi) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp em." };
-  const kq = kiemDichVu(du);
+  const kq = kiemDichVu(du, await docMaAlbum());
   if ("loi" in kq) return kq;
   if (!duocSuaDichVu(nguoi, kq.loai)) {
     return { loi: `Tài khoản này chưa được thêm ${TEN_LOAI[kq.loai].toLowerCase()}.` };
@@ -121,7 +121,7 @@ export async function ganMaAlbumAction(id: string, ma: string): Promise<{ loi?: 
   if (!nguoi) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp em." };
 
   const sach = String(ma ?? "").trim();
-  if (sach && !MA_ALBUM.some((m) => m.ma === sach)) return { loi: "Mã album không có trong bộ mã." };
+  if (sach && !(await docMaAlbum()).some((m) => m.ma === sach)) return { loi: "Mã album không có trong bộ mã." };
 
   const prisma = getPrisma();
   const cu = await prisma.dichVu.findUnique({ where: { id }, select: { maDV: true, ten: true, loai: true, maAlbum: true } });

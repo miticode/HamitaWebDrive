@@ -5,7 +5,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/db";
 import { layNguoiDung, laQuanTri } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
-import { MA_ALBUM } from "@/lib/maAlbum";
+import { docMaAlbum } from "@/lib/docMaAlbum";
 
 /**
  * Quản lý LOẠI BUỔI CHỤP — anh yêu cầu 18/11/2026.
@@ -29,10 +29,11 @@ function kiemTen(ten: string): { loi: string } | { ten: string } {
   return { ten: sach };
 }
 
-function kiemMa(ma: string): { loi: string } | { ma: string | null } {
+async function kiemMa(ma: string): Promise<{ loi: string } | { ma: string | null }> {
   const sach = ma.trim();
   if (!sach) return { ma: null };
-  if (!MA_ALBUM.some((m) => m.ma === sach)) return { loi: "Mã album không có trong bộ mã." };
+  /* Đọc bảng, không dùng bộ cứng: mã vừa thêm phải gắn được ngay (19/11/2026). */
+  if (!(await docMaAlbum()).some((m) => m.ma === sach)) return { loi: "Mã album không có trong bộ mã." };
   return { ma: sach };
 }
 
@@ -42,7 +43,7 @@ export async function themLoaiBuoiAction(ten: string, maAlbum: string): Promise<
 
   const t = kiemTen(ten);
   if ("loi" in t) return t;
-  const m = kiemMa(maAlbum);
+  const m = await kiemMa(maAlbum);
   if ("loi" in m) return m;
 
   const prisma = getPrisma();
@@ -94,7 +95,7 @@ export async function suaLoaiBuoiAction(
 
   const t = kiemTen(du.ten);
   if ("loi" in t) return t;
-  const m = kiemMa(du.maAlbum);
+  const m = await kiemMa(du.maAlbum);
   if ("loi" in m) return m;
 
   const prisma = getPrisma();

@@ -23,6 +23,14 @@ export type MaAlbum = {
   nghia: string | null;
 };
 
+/*
+  BỘ MÃ GIỜ SỬA ĐƯỢC TỪ GIAO DIỆN — anh yêu cầu 19/11/2026.
+
+  Bảng dưới vẫn còn, nhưng từ nay chỉ là MẶC ĐỊNH khi bảng `MaAlbum` trong
+  database còn rỗng — y như `LOAI_LICH` với `LoaiBuoi`. Mọi hàm trong tệp này
+  nhận thêm tham số `bo` để làm việc với bộ mã thật; không truyền thì dùng
+  bảng dưới, nên chỗ gọi cũ không vỡ.
+*/
 export const MA_ALBUM: readonly MaAlbum[] = [
   { ma: "HC", nghia: "hình cổng" },
   { ma: "AB", nghia: "album" },
@@ -59,9 +67,9 @@ export const NOI_MA = " - ";
  * - Đang mang mã khác → thay bằng mã mới, giữ nguyên phần tên. Đây mới là
  *   trường hợp hay gặp: gõ tên xong mới nhớ ra chọn nhầm mã.
  */
-export function ganMa(ten: string, ma: string): string {
-  const con = boMa(ten);
-  if (laMa(ten, ma)) return con;
+export function ganMa(ten: string, ma: string, bo: readonly MaAlbum[] = MA_ALBUM): string {
+  const con = boMa(ten, bo);
+  if (laMa(ten, ma, bo)) return con;
   /*
     Ô còn trống thì vẫn kèm sẵn dấu nối — "ĐH - " chứ không phải "ĐH".
 
@@ -74,8 +82,8 @@ export function ganMa(ten: string, ma: string): string {
 }
 
 /** Tên này có đang mang đúng mã đó ở đầu không. */
-export function laMa(ten: string, ma: string): boolean {
-  return maDangCo(ten)?.toLowerCase() === ma.toLowerCase();
+export function laMa(ten: string, ma: string, bo: readonly MaAlbum[] = MA_ALBUM): boolean {
+  return maDangCo(ten, bo)?.toLowerCase() === ma.toLowerCase();
 }
 
 /**
@@ -85,9 +93,9 @@ export function laMa(ten: string, ma: string): boolean {
  * có dạng giống hệt một mã cộng dấu nối, mà "Khmer" không phải mã — nhận bừa
  * thì bấm nút gợi ý sẽ nuốt mất một phần tên khách.
  */
-function maDangCo(ten: string): string | null {
+function maDangCo(ten: string, bo: readonly MaAlbum[] = MA_ALBUM): string | null {
   const dau = ten.trimStart();
-  for (const { ma } of MA_ALBUM) {
+  for (const { ma } of bo) {
     if (!dau.toLowerCase().startsWith(ma.toLowerCase())) continue;
     // Phải có dấu ngăn ngay sau, không thì "AB" khớp cả tên "Abigail".
     const sau = dau.slice(ma.length);
@@ -97,8 +105,8 @@ function maDangCo(ten: string): string | null {
 }
 
 /** Phần tên còn lại sau khi bỏ mã ở đầu (nếu có). */
-function boMa(ten: string): string {
-  const ma = maDangCo(ten);
+function boMa(ten: string, bo: readonly MaAlbum[] = MA_ALBUM): string {
+  const ma = maDangCo(ten, bo);
   if (!ma) return ten.trim();
   return ten
     .trimStart()
@@ -112,10 +120,10 @@ function boMa(ten: string): string {
  * "Công Hiếu & Ngọc Hằng". Dùng cho chữ khách đọc (trang Ảnh cưới): mã là
  * ký hiệu nội bộ, khách không hiểu.
  */
-export function tenKhongMa(ten: string): string {
+export function tenKhongMa(ten: string, bo: readonly MaAlbum[] = MA_ALBUM): string {
   let con = ten.trim();
-  while (maDangCo(con)) {
-    const tiep = boMa(con);
+  while (maDangCo(con, bo)) {
+    const tiep = boMa(con, bo);
     if (tiep === con) break;
     con = tiep;
   }
@@ -180,11 +188,11 @@ export function ghepMaVoiTenThuMuc(maDaBam: string, tenThuMuc: string): string {
  * Thứ tự theo `MA_ALBUM` chứ không theo thứ tự người gọi truyền vào: hai hợp
  * đồng giống nhau phải ra cùng một tên, dù lịch bên nào điền trước.
  */
-export function ganNhieuMa(ten: string, ma: readonly string[]): string {
+export function ganNhieuMa(ten: string, ma: readonly string[], bo: readonly MaAlbum[] = MA_ALBUM): string {
   /* `tenKhongMa` chứ không `boMa`: tên có sẵn hai mã thì phải bóc hết cả hai,
      không thì gắn lại ra "HIS - HER - HER - Minh Trí". */
-  const con = tenKhongMa(ten);
-  const thuTu = MA_ALBUM.filter((m) => ma.some((x) => x.toLowerCase() === m.ma.toLowerCase())).map((m) => m.ma);
+  const con = tenKhongMa(ten, bo);
+  const thuTu = bo.filter((m) => ma.some((x) => x.toLowerCase() === m.ma.toLowerCase())).map((m) => m.ma);
   if (thuTu.length === 0) return con;
   const dau = thuTu.join(NOI_MA);
   return con ? `${dau}${NOI_MA}${con}` : `${dau}${NOI_MA}`;

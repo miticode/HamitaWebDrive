@@ -6,6 +6,7 @@ import { batBuocDangNhap, batBuocQuyen, lapHopDong } from "@/lib/phienNhanVien";
 import { docCacBuoc } from "@/lib/buocHopDong";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
 import { docBaDanhMuc } from "@/lib/danhMuc";
+import { docMaAlbum } from "@/lib/docMaAlbum";
 import { demLuotDung } from "@/lib/dichVuHayDung";
 import { FormHopDongMoi } from "./FormHopDongMoi";
 
@@ -39,7 +40,7 @@ export default async function LapHopDongPage() {
   batBuocQuyen(lapHopDong(nguoi));
 
   const prisma = getPrisma();
-  const [dichVu, giaHangMuc, luotDung, cacBuoc, loaiBuoi, danhMuc] = await Promise.all([
+  const [dichVu, giaHangMuc, luotDung, cacBuoc, loaiBuoi, danhMuc, boMa] = await Promise.all([
     prisma.dichVu.findMany({
       where: { dangDung: true },
       orderBy: [{ loai: "asc" }, { ten: "asc" }],
@@ -57,6 +58,7 @@ export default async function LapHopDongPage() {
     docCacBuoc(),
     docLoaiBuoi(),
     docBaDanhMuc(),
+    docMaAlbum(),
   ]);
 
   return (
@@ -80,6 +82,7 @@ export default async function LapHopDongPage() {
         cacBuoc={cacBuoc}
         loaiBuoi={loaiBuoi}
         danhMuc={danhMuc}
+        boMa={boMa}
       />
     </div>
   );

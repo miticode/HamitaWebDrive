@@ -8,6 +8,7 @@ import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { albumCuaHopDong } from "@/lib/noiAlbum";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
+import { docMaAlbum } from "@/lib/docMaAlbum";
 import { coGiaoAnh } from "@/lib/thuMucHopDong";
 import { NutTaoThuMuc } from "./NutTaoThuMuc";
 import { buocTiepTheo, docBuocDayDu, laBuocXong } from "@/lib/buocHopDong";
@@ -38,7 +39,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
   const { id } = await params;
   const prisma = getPrisma();
 
-  const [hd, bangTen, album, cacBuoc, loaiBuoi] = await Promise.all([
+  const [hd, bangTen, album, cacBuoc, loaiBuoi, boMa] = await Promise.all([
     prisma.hopDong.findUnique({
       where: { id },
       include: {
@@ -61,6 +62,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
     albumCuaHopDong(id),
     docBuocDayDu(),
     docLoaiBuoi(),
+    docMaAlbum(),
   ]);
   if (!hd) notFound();
 
@@ -250,7 +252,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
                 : `Loại “${hd.loaiDV ?? "—"}” thường không giao ảnh, nên web không tự tạo thư mục.`}{" "}
               Album đã có sẵn trên Drive thì mở trang quản lý album rồi bấm “Gắn hợp đồng”.
             </p>
-            {duocSua && <NutTaoThuMuc hopDongId={hd.id} tenKhach={hd.tenKhach} />}
+            {duocSua && <NutTaoThuMuc hopDongId={hd.id} tenKhach={hd.tenKhach} boMa={boMa} />}
           </div>
         ) : (
           <ul className="mt-3 divide-y divide-line rounded-md border border-line bg-bg-raised text-sm">
@@ -286,7 +288,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           đồng cũ có thể thiếu một bên. Bấm nhầm thì server action hỏi lại kèm
           tên album đang có, không tạo ngay.
         */}
-        {album.length > 0 && duocSua && <NutTaoThuMuc hopDongId={hd.id} tenKhach={hd.tenKhach} />}
+        {album.length > 0 && duocSua && <NutTaoThuMuc hopDongId={hd.id} tenKhach={hd.tenKhach} boMa={boMa} />}
       </section>
 
       <section className="mt-8">

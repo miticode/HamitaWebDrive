@@ -1,6 +1,6 @@
 "use client";
 
-import { MA_ALBUM } from "@/lib/maAlbum";
+import { MA_ALBUM, type MaAlbum } from "@/lib/maAlbum";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { TEN_LOAI, type DuLieuDichVu, type LoaiDichVu } from "@/lib/dichVuChung";
@@ -17,9 +17,14 @@ type Props = {
   dsLoai: LoaiDichVu[];
   nhomGoiY: Partial<Record<LoaiDichVu, string[]>>;
   onXong?: () => void;
+  /**
+   * Bộ mã album, đọc từ bảng `MaAlbum` (anh yêu cầu 19/11/2026).
+   * Thiếu thì dùng bộ cứng — ô chọn không bao giờ được phép rỗng.
+   */
+  boMa?: readonly MaAlbum[];
 };
 
-export function FormDichVu({ che, id, banDau, dsLoai, nhomGoiY, onXong }: Props) {
+export function FormDichVu({ che, id, banDau, dsLoai, nhomGoiY, boMa = MA_ALBUM, onXong }: Props) {
   const router = useRouter();
   const [du, setDu] = useState(banDau);
   const [loi, setLoi] = useState<string | null>(null);
@@ -119,7 +124,7 @@ export function FormDichVu({ che, id, banDau, dsLoai, nhomGoiY, onXong }: Props)
         */}
         <O nhan="Mã album" goiY="Album của hợp đồng dùng dịch vụ này sẽ mang mã đó ở đầu tên. Để trống nếu không cần.">
           <div className="flex flex-wrap gap-1.5">
-            {MA_ALBUM.map((m) => {
+            {boMa.map((m) => {
               const dangChon = du.maAlbum === m.ma;
               return (
                 <button
