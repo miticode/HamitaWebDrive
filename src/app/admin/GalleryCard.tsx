@@ -589,6 +589,35 @@ export function GalleryCard({
                 : `gói ${gallery.soAnhTrongGoi} ảnh`}
           </span>
         </div>
+
+        {/*
+          CHƯA GẮN HỢP ĐỒNG — anh duyệt 20/11/2026 (KE-HOACH-GIAO-DIEN §4.4).
+
+          Đo 20/11: 178/186 album chưa gắn hợp đồng. Mối nối ấy có từ
+          16/09/2026, đã có màn hình gắn, đã có gợi ý tự động — chỉ là không ai
+          bấm. KE-HOACH-V3 gọi đó là cái nền 2% mà mọi thứ về tiến độ sản xuất
+          đứng lên trên.
+
+          Nhắc Ở ĐÂY vì đây là nơi studio nhìn mỗi ngày (98 lần sửa album
+          trong 14 ngày), chứ không phải trang Tổng quan mà người làm media ít
+          mở. Một dòng mờ, không viền không nền: nó là lời mời, không phải báo
+          động — thẻ này còn mang nhãn hạn lấy hình và nhãn khách chọn xong,
+          thêm một miếng màu nữa là cả ba cùng mất tiếng.
+
+          Chỉ hiện khi KHÔNG BIẾT bước nào: `buocHopDong` chỉ có giá trị với
+          album đã gắn và hợp đồng đã gõ bước. Album gắn rồi mà hợp đồng chưa
+          gõ bước cũng lọt vào đây — chấp nhận, vì hai cảnh đó cùng cần một
+          việc: mở ra ghép cho đúng.
+        */}
+        {buocHopDong == null && (
+          <Link
+            href="/admin/ghep-hop-dong"
+            className="mt-0.5 inline-flex w-fit items-center gap-1 text-xs text-fg-faint underline-offset-2 transition hover:text-accent hover:underline"
+            title="Gắn album này vào hợp đồng để trang hợp đồng thấy khách chọn ảnh tới đâu"
+          >
+            chưa gắn hợp đồng
+          </Link>
+        )}
       </div>
 
       {moLog && (

@@ -12,6 +12,7 @@ import { tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { LuoiLich } from "./LuoiLich";
 import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
+import { NutThemViecLich } from "./NutViecLich";
 
 export const dynamic = "force-dynamic";
 
@@ -329,10 +330,22 @@ export default async function LichPage({ searchParams }: Props) {
 
   return (
     <div>
-      <p className="eyebrow">Hằng ngày</p>
-      <h1 className="mt-2 font-display text-3xl font-light">
-        Lịch chụp <span className="text-fg-faint tabular-nums">{ds.length}</span>
-      </h1>
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+        <div>
+          <p className="eyebrow">Hằng ngày</p>
+          <h1 className="mt-2 font-display text-3xl font-light">
+            Lịch chụp <span className="text-fg-faint tabular-nums">{ds.length}</span>
+          </h1>
+        </div>
+        {/*
+          Nút thêm việc CŨNG ở đầu trang — anh duyệt 20/11/2026.
+
+          Bản 20/11 sáng chỉ đặt nó trong panel ngày, vì bấm ở đó là ghi thẳng
+          vào ngày đang mở. Vẫn đúng, nhưng người mở trang ra mà chưa chọn ngày
+          nào thì không thấy nút đâu cả. Ở đây mặc định là HÔM NAY.
+        */}
+        {quanTri && <NutThemViecLich ngayGoiY={nay} />}
+      </div>
       <BangDongBo quanTri={laQuanTri(nguoi)} />
 
       <div className="mt-5 flex flex-wrap items-center gap-2">

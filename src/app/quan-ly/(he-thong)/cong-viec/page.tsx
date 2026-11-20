@@ -80,7 +80,9 @@ export default async function CongViecPage({ searchParams }: Props) {
   const theoNguoi: Prisma.CongViecWhereInput = quanTri
     ? {}
     : { OR: [...(khoaToi ? [{ nguoiPhuTrachMaNV: khoaToi }] : []), ...chuaGiao] };
-  const tt = ["qua-han", "sap-toi", "da-lam", "tat-ca"].includes(sp.tt ?? "") ? sp.tt! : "chua-xong";
+  const tt = ["qua-han", "hom-nay", "sap-toi", "da-lam", "tat-ca"].includes(sp.tt ?? "")
+    ? sp.tt!
+    : "chua-xong";
   const so = Math.max(MOI_LUOT, Math.floor(Number(sp.so)) || MOI_LUOT);
   const nay = homNay();
 
@@ -100,7 +102,18 @@ export default async function CongViecPage({ searchParams }: Props) {
     .toLocaleDateString("sv-SE", { timeZone: MUI_GIO });
 
   const theoTrangThai: Prisma.CongViecWhereInput =
-    tt === "sap-toi"
+    /*
+      "Hôm nay" — anh duyệt 20/11/2026 (KE-HOACH-GIAO-DIEN §4.6).
+
+      "Bảy ngày tới" đã có, nhưng nó trộn việc hôm nay với việc thứ bảy tuần
+      sau. Người mở trang buổi sáng cần đúng một câu: hôm nay phải xong gì.
+      So bằng chuỗi "YYYY-MM-DD" theo GIỜ STUDIO (nguyên tắc 35), không dùng
+      `new Date()` của máy — lệch bảy tiếng là lệch hẳn một ngày với mọi việc
+      hạn buổi sáng.
+    */
+    tt === "hom-nay"
+      ? { trangThai: { not: "Đã làm" }, thoiHan: nay }
+      : tt === "sap-toi"
       ? { trangThai: { not: "Đã làm" }, thoiHan: { gte: nay, lte: bayNgayNua } }
       : tt === "da-lam"
       ? { trangThai: "Đã làm" }
@@ -117,7 +130,7 @@ export default async function CongViecPage({ searchParams }: Props) {
   };
 
   const prisma = getPrisma();
-  const [ds, demNguoi, soQuaHan, soSapToi, bangTen, dsNhanVien] = await Promise.all([
+  const [ds, demNguoi, soQuaHan, soHomNay, soSapToi, bangTen, dsNhanVien] = await Promise.all([
     prisma.congViec.findMany({
       where,
       select: {
@@ -142,6 +155,9 @@ export default async function CongViecPage({ searchParams }: Props) {
       : Promise.resolve([] as { nguoiPhuTrachMaNV: string | null; _count: { _all: number } }[]),
     prisma.congViec.count({
       where: { matBenAppSheet: null, ...theoNguoi, trangThai: { not: "Đã làm" }, thoiHan: { lt: nay } },
+    }),
+    prisma.congViec.count({
+      where: { matBenAppSheet: null, ...theoNguoi, trangThai: { not: "Đã làm" }, thoiHan: nay },
     }),
     prisma.congViec.count({
       where: {
@@ -211,6 +227,10 @@ export default async function CongViecPage({ searchParams }: Props) {
         <Link href={link({ tt: "chua-xong" })} className={lopChip(tt === "chua-xong")}>Chưa xong</Link>
         <Link href={link({ tt: "qua-han" })} className={lopChip(tt === "qua-han")}>
           Quá hạn <span className="tabular-nums opacity-70">{soQuaHan}</span>
+        </Link>
+        {/* Hôm nay đứng giữa "quá hạn" và "bảy ngày tới" — đúng trục thời gian. */}
+        <Link href={link({ tt: "hom-nay" })} className={lopChip(tt === "hom-nay")}>
+          Hôm nay <span className="tabular-nums opacity-70">{soHomNay}</span>
         </Link>
         <Link href={link({ tt: "sap-toi" })} className={lopChip(tt === "sap-toi")}>
           Bảy ngày tới <span className="tabular-nums opacity-70">{soSapToi}</span>
