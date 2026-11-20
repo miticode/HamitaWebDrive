@@ -236,7 +236,23 @@ export default async function ChiTietHopDongPage({ params }: Props) {
         </p>
       )}
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
+      {/*
+        BỐ CỤC WORKSPACE — anh duyệt 20/11/2026 (KE-HOACH-GIAO-DIEN §4.3).
+
+        Trước đó bảy khối xếp dọc một mạch: Khách · Tiền · Album · Dịch vụ ·
+        Lịch · Đầu việc · Phiếu thu. Trên màn rộng thì nửa phải trống trơn, mà
+        muốn xem còn nợ bao nhiêu với album tới đâu vẫn phải cuộn qua nhau.
+
+        Hai cột từ 1024px: TRÁI là thứ người ta làm việc trên đó (lịch, đầu
+        việc, dịch vụ, phiếu thu), PHẢI là thứ liếc một cái rồi thôi (tiền,
+        album, liên hệ khách). Cột phải hẹp và `sticky` nên cuộn tới đâu nó
+        vẫn đứng đó.
+
+        TRÊN ĐIỆN THOẠI CỘT PHẢI LÊN TRƯỚC (`order-first`): tiền và album là
+        hai thứ mở hợp đồng ra để liếc, không phải thứ cuộn mãi mới tới.
+      */}
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_21rem]">
+      <div className="order-first grid min-w-0 gap-6 lg:order-none lg:col-start-2">
         <section className="rounded-md border border-line bg-bg-raised p-4">
           <h2 className="eyebrow">Khách</h2>
           <dl className="mt-3 grid grid-cols-[7rem_1fr] gap-x-3 gap-y-1.5 text-sm">
@@ -281,9 +297,8 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           conLai={hd.conLai}
           soPhieuChoDuyet={choDuyet.length}
         />
-      </div>
 
-      <section className="mt-8">
+      <section>
         <TieuDeKhoi ten="Album ảnh" so={album.length} />
         {nhacChuyenBuoc && (
           <p className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
@@ -346,7 +361,10 @@ export default async function ChiTietHopDongPage({ params }: Props) {
         {album.length > 0 && duocSua && <NutTaoThuMuc hopDongId={hd.id} tenKhach={hd.tenKhach} boMa={boMa} />}
       </section>
 
-      <section className="mt-8">
+      </div>
+
+      <div className="grid min-w-0 gap-6 lg:col-start-1 lg:row-start-1">
+      <section>
         <TieuDeKhoi ten="Dịch vụ, trang phục" so={hd.chiTiet.length} />
         <Bang lop="mt-3" cot={Object.values(COT_DV)} trong="Chưa có dòng nào.">
           {hd.chiTiet.map((c) => (
@@ -393,7 +411,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
         </Bang>
       </section>
 
-      <section className="mt-8">
+      <section>
         <TieuDeKhoi ten="Lịch chụp" so={hd.lich.length} />
         <KhoiLich
           loaiBuoi={loaiBuoi}
@@ -418,7 +436,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
         xem phải cuộn qua chuyện tiền nong mới tới chuyện chia người.
       */}
       {hd.congViec.length > 0 && (
-        <section className="mt-8">
+        <section>
           <TieuDeKhoi ten="Đầu việc" so={hd.congViec.length} />
           <KhoiViec
             buoi={hd.lich.map((l) => ({
@@ -449,7 +467,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
         </section>
       )}
 
-      <section className="mt-8">
+      <section>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <TieuDeKhoi ten="Phiếu thu" so={hd.phieuThu.length} />
           {duocSua && <ThemPhieuThu hopDongId={hd.id} homNay={homNay()} laQuanLy={quanTri} />}
@@ -504,6 +522,9 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           ))}
         </Bang>
       </section>
+
+      </div>
+      </div>
 
       {hd.ghiChu && (
         <section className="mt-8">
