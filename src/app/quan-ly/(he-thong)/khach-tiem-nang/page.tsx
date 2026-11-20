@@ -8,8 +8,22 @@ import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { DA_CHOT, KHA_NANG } from "@/lib/khachTiemNangChung";
 import { Chip } from "../Chip";
 import { NutSuaTiemNang, NutThemTiemNang } from "./FormTiemNang";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+/* Khai theo TÊN vì cột "Việc" chỉ người được sửa mới thấy. */
+const COT = {
+  nguoi: { ten: "Người liên hệ", chinh: true },
+  dienThoai: { ten: "Điện thoại" },
+  nguon: { ten: "Nguồn" },
+  nhuCau: { ten: "Nhu cầu", lop: "min-w-40" },
+  khaNang: { ten: "Khả năng" },
+  tinhTrang: { ten: "Tình trạng" },
+  phuTrach: { ten: "Phụ trách" },
+  henGoi: { ten: "Hẹn gọi lại" },
+  viec: { ten: "Việc", phai: true, rong: true },
+} satisfies Record<string, CotBang>;
 
 type Props = { searchParams: Promise<{ loc?: string }> };
 
@@ -100,92 +114,91 @@ export default async function KhachTiemNangPage({ searchParams }: Props) {
         </Link>
       </div>
 
-      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Người liên hệ</th>
-              <th className="px-4 py-2.5 font-medium">Điện thoại</th>
-              <th className="px-4 py-2.5 font-medium">Nguồn</th>
-              <th className="px-4 py-2.5 font-medium">Nhu cầu</th>
-              <th className="px-4 py-2.5 font-medium">Khả năng</th>
-              <th className="px-4 py-2.5 font-medium">Tình trạng</th>
-              <th className="px-4 py-2.5 font-medium">Phụ trách</th>
-              <th className="px-4 py-2.5 font-medium">Hẹn gọi lại</th>
-              {duocSua && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((k) => {
-              const conLai = k.ngayLienHeLai ? soNgayToiHan(k.ngayLienHeLai) : null;
-              const denHen = conLai !== null && conLai <= 0 && k.khaNang !== DA_CHOT;
-              return (
-                <tr key={k.id} className="align-top transition hover:bg-bg-soft">
-                  <td className="px-4 py-2.5">
-                    <span className="font-medium">{k.tenNguoi}</span>
-                    {k.diaChi && <span className="block text-xs text-fg-faint">{k.diaChi}</span>}
-                  </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">
-                    {k.soDienThoai ? (
-                      <a href={`tel:${k.soDienThoai}`} className="hover:text-accent">{k.soDienThoai}</a>
-                    ) : (
-                      "—"
-                    )}
-                    {k.loaiCskh && <span className="block text-xs text-fg-faint">{k.loaiCskh}</span>}
-                  </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{k.nguon ?? "—"}</td>
-                  <td className="min-w-40 px-4 py-2.5">{k.nhuCau ?? "—"}</td>
-                  <td className="px-4 py-2.5 whitespace-nowrap">
-                    <Chip chu={k.khaNang} kieu={kieuKhaNang(k.khaNang)} />
-                  </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{k.tinhTrang ?? "—"}</td>
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
-                    {tenNV(bangTen, k.phuTrachMaNV) ?? "—"}
-                  </td>
-                  <td
-                    className={`px-4 py-2.5 whitespace-nowrap tabular-nums ${
-                      denHen ? "font-medium text-amber-800" : "text-fg-muted"
-                    }`}
-                  >
-                    {ngayVN(k.ngayLienHeLai) || "—"}
-                    {denHen && <span className="block text-xs">đến hẹn</span>}
-                  </td>
-                  {duocSua && (
-                    <td className="px-4 py-2.5 text-right">
-                      <NutSuaTiemNang
-                        khach={{
-                          id: k.id,
-                          tenNguoi: k.tenNguoi,
-                          soDienThoai: k.soDienThoai,
-                          nguon: k.nguon,
-                          nhuCau: k.nhuCau,
-                          diaChi: k.diaChi,
-                          phuTrachMaNV: k.phuTrachMaNV,
-                          khaNang: k.khaNang,
-                          tinhTrang: k.tinhTrang,
-                          ghiChu: k.ghiChu,
-                          loaiCskh: k.loaiCskh,
-                          ngayLienHeLai: k.ngayLienHeLai,
-                          lichSuCskh: k.lichSuCskh,
-                        }}
-                      />
-                    </td>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
-            {loc === "dang-theo"
-              ? "Không còn khách nào đang theo."
-              : loc === "da-chot"
-                ? "Chưa có khách tiềm năng nào chốt."
-                : "Chưa có khách tiềm năng nào. Bấm “Thêm khách tiềm năng” để ghi người đầu tiên."}
-          </p>
-        )}
-      </div>
+      <Bang
+        lop="mt-5"
+        cot={[
+          COT.nguoi,
+          COT.dienThoai,
+          COT.nguon,
+          COT.nhuCau,
+          COT.khaNang,
+          COT.tinhTrang,
+          COT.phuTrach,
+          COT.henGoi,
+          ...(duocSua ? [COT.viec] : []),
+        ]}
+        trong={
+          loc === "dang-theo"
+            ? "Không còn khách nào đang theo."
+            : loc === "da-chot"
+              ? "Chưa có khách tiềm năng nào chốt."
+              : "Chưa có khách tiềm năng nào. Bấm “Thêm khách tiềm năng” để ghi người đầu tiên."
+        }
+      >
+        {ds.map((k) => {
+          const conLai = k.ngayLienHeLai ? soNgayToiHan(k.ngayLienHeLai) : null;
+          const denHen = conLai !== null && conLai <= 0 && k.khaNang !== DA_CHOT;
+          return (
+            <Hang key={k.id} lop="align-top transition hover:bg-bg-soft">
+              <O cot={COT.nguoi}>
+                <span className="font-medium">{k.tenNguoi}</span>
+                {k.diaChi && <span className="block text-xs text-fg-faint">{k.diaChi}</span>}
+              </O>
+              <O cot={COT.dienThoai} lop="whitespace-nowrap tabular-nums">
+                {k.soDienThoai ? (
+                  <a href={`tel:${k.soDienThoai}`} className="hover:text-accent">
+                    {k.soDienThoai}
+                  </a>
+                ) : (
+                  "—"
+                )}
+                {k.loaiCskh && <span className="block text-xs text-fg-faint">{k.loaiCskh}</span>}
+              </O>
+              <O cot={COT.nguon} lop="whitespace-nowrap text-fg-muted">
+                {k.nguon ?? "—"}
+              </O>
+              <O cot={COT.nhuCau}>{k.nhuCau ?? "—"}</O>
+              <O cot={COT.khaNang} lop="whitespace-nowrap">
+                <Chip chu={k.khaNang} kieu={kieuKhaNang(k.khaNang)} />
+              </O>
+              <O cot={COT.tinhTrang} lop="whitespace-nowrap text-fg-muted">
+                {k.tinhTrang ?? "—"}
+              </O>
+              <O cot={COT.phuTrach} lop="whitespace-nowrap text-fg-muted">
+                {tenNV(bangTen, k.phuTrachMaNV) ?? "—"}
+              </O>
+              <O
+                cot={COT.henGoi}
+                lop={`whitespace-nowrap tabular-nums ${denHen ? "font-medium text-amber-800" : "text-fg-muted"}`}
+              >
+                {ngayVN(k.ngayLienHeLai) || "—"}
+                {denHen && <span className="ml-1.5 text-xs md:ml-0 md:block">đến hẹn</span>}
+              </O>
+              {duocSua && (
+                <O cot={COT.viec}>
+                  <NutSuaTiemNang
+                    khach={{
+                      id: k.id,
+                      tenNguoi: k.tenNguoi,
+                      soDienThoai: k.soDienThoai,
+                      nguon: k.nguon,
+                      nhuCau: k.nhuCau,
+                      diaChi: k.diaChi,
+                      phuTrachMaNV: k.phuTrachMaNV,
+                      khaNang: k.khaNang,
+                      tinhTrang: k.tinhTrang,
+                      ghiChu: k.ghiChu,
+                      loaiCskh: k.loaiCskh,
+                      ngayLienHeLai: k.ngayLienHeLai,
+                      lichSuCskh: k.lichSuCskh,
+                    }}
+                  />
+                </O>
+              )}
+            </Hang>
+          );
+        })}
+      </Bang>
 
       <p className="mt-2 text-xs leading-relaxed text-fg-faint">
         Khách ở đây <span className="text-fg-muted">chưa phải khách hàng</span> — chốt được rồi thì

@@ -11,8 +11,23 @@ import { docMauTheoBuoi, mauTheoBuoi } from "@/lib/loaiBuoi";
 import { tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { LuoiLich } from "./LuoiLich";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+/*
+  Cột của BẢNG DANH SÁCH (kiểu xem thứ hai của trang Lịch; kiểu lưới nằm ở
+  LuoiLich). Khách là `chinh`: trên điện thoại tên nhà làm tiêu đề thẻ, còn
+  ngày giờ xuống thành hai dòng nhãn — ngược lại thì mỗi thẻ mở đầu bằng một
+  con số, không nhận ra đang đọc nhà nào.
+*/
+const COT = {
+  ngay: { ten: "Ngày" },
+  gio: { ten: "Giờ" },
+  loai: { ten: "Loại" },
+  khach: { ten: "Khách", chinh: true, lop: "min-w-40" },
+  trangThai: { ten: "Trạng thái" },
+} satisfies Record<string, CotBang>;
 
 type Props = { searchParams: Promise<{ thang?: string; loai?: string; xem?: string }> };
 
@@ -434,62 +449,59 @@ export default async function LichPage({ searchParams }: Props) {
         />
       )}
 
-      <div className={`mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised ${xem === "ds" ? "" : "hidden"}`}>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Ngày</th>
-              <th className="px-4 py-2.5 font-medium">Giờ</th>
-              <th className="px-4 py-2.5 font-medium">Loại</th>
-              <th className="px-4 py-2.5 font-medium">Khách</th>
-              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((l) => (
-              <tr key={l.id} className={`align-top transition hover:bg-bg-soft ${l.ngay === nay ? "bg-accent-soft/40" : ""}`}>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{ngayVN(l.ngay)}</td>
-                <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">
-                  {l.gio ? <span className="font-medium">{l.gio}</span> : <span className="text-fg-faint">—</span>}
-                </td>
-                {/* Chấm màu cùng bảng với lưới — học màu một lần, đọc được cả hai kiểu xem. */}
-                <td className={`px-4 py-2.5 whitespace-nowrap ${LOP_NHOM[nhomMau(l)]}`}>
-                  <span className="inline-flex items-center gap-2">
-                    <span className="cham-lich" aria-hidden />
-                    {/* Việc tự thêm không có loại buổi — tên việc đứng vào chỗ đó. */}
-                    {l.tuThem ? (l.hienThi ?? "Việc của tiệm") : (l.loai ?? "—")}
-                  </span>
-                </td>
-                <td className="min-w-40 px-4 py-2.5">
-                  {l.hopDong ? (
-                    moHopDong ? (
-                      <Link href={`/quan-ly/hop-dong/${l.hopDong.id}`} className="font-medium hover:text-accent">
-                        {l.hopDong.tenKhach}
-                      </Link>
-                    ) : (
-                      <span className="font-medium">{l.hopDong.tenKhach}</span>
-                    )
-                  ) : (
-                    <span className="text-fg-faint">—</span>
-                  )}
-                  {l.ghiChu && <span className="block text-xs text-fg-muted">{l.ghiChu}</span>}
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{l.trangThai ?? "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
+      <Bang
+        lop={`mt-5 ${xem === "ds" ? "" : "hidden"}`}
+        cot={Object.values(COT)}
+        trong={
+          <>
             Tháng này chưa có lịch nào{loai ? ` thuộc loại “${loai}”` : ""}.{" "}
             {loai && (
               <Link href={link({ loai: "" })} className="text-accent underline underline-offset-2">
                 Xem mọi loại
               </Link>
             )}
-          </p>
-        )}
-      </div>
+          </>
+        }
+      >
+        {ds.map((l) => (
+          <Hang
+            key={l.id}
+            lop={`align-top transition hover:bg-bg-soft ${l.ngay === nay ? "bg-accent-soft/40" : ""}`}
+          >
+            <O cot={COT.ngay} lop="whitespace-nowrap text-fg-muted tabular-nums">
+              {ngayVN(l.ngay)}
+            </O>
+            <O cot={COT.gio} lop="whitespace-nowrap tabular-nums">
+              {l.gio ? <span className="font-medium">{l.gio}</span> : <span className="text-fg-faint">—</span>}
+            </O>
+            {/* Chấm màu cùng bảng với lưới — học màu một lần, đọc được cả hai kiểu xem. */}
+            <O cot={COT.loai} lop={`whitespace-nowrap ${LOP_NHOM[nhomMau(l)]}`}>
+              <span className="inline-flex items-center gap-2">
+                <span className="cham-lich" aria-hidden />
+                {/* Việc tự thêm không có loại buổi — tên việc đứng vào chỗ đó. */}
+                {l.tuThem ? (l.hienThi ?? "Việc của tiệm") : (l.loai ?? "—")}
+              </span>
+            </O>
+            <O cot={COT.khach}>
+              {l.hopDong ? (
+                moHopDong ? (
+                  <Link href={`/quan-ly/hop-dong/${l.hopDong.id}`} className="font-medium hover:text-accent">
+                    {l.hopDong.tenKhach}
+                  </Link>
+                ) : (
+                  <span className="font-medium">{l.hopDong.tenKhach}</span>
+                )
+              ) : (
+                <span className="text-fg-faint">—</span>
+              )}
+              {l.ghiChu && <span className="block text-xs text-fg-muted">{l.ghiChu}</span>}
+            </O>
+            <O cot={COT.trangThai} lop="whitespace-nowrap text-fg-muted">
+              {l.trangThai ?? "—"}
+            </O>
+          </Hang>
+        ))}
+      </Bang>
     </div>
   );
 }
