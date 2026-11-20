@@ -44,8 +44,13 @@ export function Bang({
   lop,
 }: {
   cot: CotBang[];
-  /** Câu hiện khi không có hàng nào. Để trống thì không vẽ gì. */
-  trong?: string;
+  /**
+   * Hiện khi không có hàng nào. Để trống thì không vẽ gì.
+   *
+   * Nhận cả JSX chứ không chỉ chữ: trạng thái rỗng phải có LỐI RA (mục P2-3
+   * của KE-HOACH-UX), mà lối ra thường là một link "Bỏ lọc".
+   */
+  trong?: ReactNode;
   /** Các `<Hang>`. Rỗng thì `trong` hiện ra thay. */
   children: ReactNode;
   lop?: string;

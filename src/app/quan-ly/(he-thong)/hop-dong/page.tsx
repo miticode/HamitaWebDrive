@@ -9,10 +9,32 @@ import { BangDongBo } from "./BangDongBo";
 import { NutLapHopDong } from "./NutLapHopDong";
 import { ChipTrangThai } from "./ChipTrangThai";
 import { ChonLoc } from "./ChonLoc";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ q?: string; tt?: string; loai?: string; no?: string; so?: string }> };
+
+/*
+  CỘT CỦA BẢNG HỢP ĐỒNG.
+
+  KHÁCH ĐỨNG ĐẦU, không phải ngày đặt — anh chốt 18/11/2026. Người ta tìm một
+  hợp đồng bằng TÊN KHÁCH; ngày đặt chỉ là thứ tra sau khi đã thấy đúng nhà.
+  Để ngày ở cột đầu thì mắt lướt danh sách gặp một cột số trước khi gặp thứ
+  mình cần. `chinh` cũng vì vậy: trên điện thoại tên khách là tiêu đề thẻ.
+
+  "Sắp chụp" đứng cạnh "Ngày đặt" vì hai cột ngày đi cùng nhau thì mắt so
+  được ngay.
+*/
+const COT: CotBang[] = [
+  { ten: "Khách", chinh: true, lop: "min-w-48" },
+  { ten: "Ngày đặt" },
+  { ten: "Sắp chụp" },
+  { ten: "Loại" },
+  { ten: "Trạng thái" },
+  { ten: "Tổng tiền", phai: true },
+  { ten: "Còn lại", phai: true },
+];
 
 const MOI_LUOT = 100;
 
@@ -190,86 +212,78 @@ export default async function HopDongPage({ searchParams }: Props) {
         )}
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              {/*
-                KHÁCH ĐỨNG ĐẦU, không phải ngày đặt — sửa 18/11/2026.
-
-                Người ta tìm một hợp đồng bằng TÊN KHÁCH; ngày đặt chỉ là thứ
-                tra sau khi đã thấy đúng nhà. Để ngày ở cột đầu thì mắt lướt
-                danh sách gặp một cột số trước khi gặp thứ mình cần.
-              */}
-              <th className="px-4 py-2.5 font-medium">Khách</th>
-              <th className="px-4 py-2.5 font-medium">Ngày đặt</th>
-              {/*
-                Cột "Sắp chụp" — nhà nào sắp tới lượt, để chuẩn bị. Đặt cạnh
-                ngày đặt vì hai cột ngày đi cùng nhau thì mắt so được ngay.
-              */}
-              <th className="px-4 py-2.5 font-medium">Sắp chụp</th>
-              <th className="px-4 py-2.5 font-medium">Loại</th>
-              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
-              <th className="px-4 py-2.5 text-right font-medium">Tổng tiền</th>
-              <th className="px-4 py-2.5 text-right font-medium">Còn lại</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {hien.map((h) => (
-              <tr key={h.id} className="align-top transition hover:bg-bg-soft">
-                <td className="min-w-48 px-4 py-2.5">
-                  <Link href={`/quan-ly/hop-dong/${h.id}`} className="font-medium hover:text-accent">
-                    {h.tenKhach || h.khachHang?.ten || h.maHD}
-                  </Link>
-                  {h.khachHang?.soDienThoai && (
-                    <span className="block text-xs text-fg-faint tabular-nums">{h.khachHang.soDienThoai}</span>
-                  )}
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{ngayVN(h.ngayDat)}</td>
-                <td className="px-4 py-2.5 whitespace-nowrap">
-                  {(() => {
-                    const ngay = sapChup.get(h.id);
-                    if (!ngay) return <span className="text-fg-faint">—</span>;
-                    const con = conMayNgay(ngay);
-                    /* Trong tuần tới thì tô vàng: đó là việc cần lo ngay. */
-                    const gan = con <= 7;
-                    return (
-                      <span className={gan ? "text-amber-800" : "text-fg-muted"}>
-                        <span className="tabular-nums">{ngayVN(ngay)}</span>
-                        <span className="block text-xs">
-                          {con === 0 ? "hôm nay" : con === 1 ? "ngày mai" : `còn ${con} ngày`}
-                        </span>
-                      </span>
-                    );
-                  })()}
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{h.loaiDV}</td>
-                <td className="px-4 py-2.5"><ChipTrangThai trangThai={h.trangThai} /></td>
-                <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">{tien(h.tongTien)}đ</td>
-                {/* Số ÂM là studio THU DƯ — nói rõ, đừng để nó chìm vào màu xám. */}
-                <td
-                  className={`px-4 py-2.5 text-right whitespace-nowrap tabular-nums ${
-                    h.conLai > 0 ? "font-medium text-amber-800" : h.conLai < 0 ? "text-accent" : "text-fg-faint"
-                  }`}
-                >
-                  {h.conLai > 0 ? `${tien(h.conLai)}đ` : h.conLai < 0 ? `dư ${tien(-h.conLai)}đ` : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {loc.length === 0 && (
+      <Bang
+        lop="mt-4"
+        cot={COT}
+        trong={
           /* Trạng thái rỗng phải có LỐI RA, đừng để người mới kẹt (mục P2-3). */
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
+          <>
             Không có hợp đồng nào khớp bộ lọc.{" "}
             {(q || tt || loai || no) && (
               <Link href="/quan-ly/hop-dong" className="text-accent underline underline-offset-2">
                 Bỏ lọc
               </Link>
             )}
-          </p>
-        )}
-      </div>
+          </>
+        }
+      >
+        {hien.map((h) => (
+          <Hang key={h.id} lop="align-top transition hover:bg-bg-soft">
+            <O cot={COT[0]}>
+              <Link href={`/quan-ly/hop-dong/${h.id}`} className="font-medium hover:text-accent">
+                {h.tenKhach || h.khachHang?.ten || h.maHD}
+              </Link>
+              {h.khachHang?.soDienThoai && (
+                <span className="block text-xs text-fg-faint tabular-nums">{h.khachHang.soDienThoai}</span>
+              )}
+            </O>
+            <O cot={COT[1]} lop="whitespace-nowrap text-fg-muted tabular-nums">
+              {ngayVN(h.ngayDat)}
+            </O>
+            <O cot={COT[2]} lop="whitespace-nowrap">
+              {(() => {
+                const ngay = sapChup.get(h.id);
+                if (!ngay) return <span className="text-fg-faint">—</span>;
+                const con = conMayNgay(ngay);
+                /* Trong tuần tới thì tô vàng: đó là việc cần lo ngay. */
+                const gan = con <= 7;
+                return (
+                  <span className={gan ? "text-amber-800" : "text-fg-muted"}>
+                    <span className="tabular-nums">{ngayVN(ngay)}</span>
+                    {/*
+                      "còn 3 ngày" xuống dòng riêng trong bảng, nhưng trên thẻ
+                      điện thoại thì nằm ngay sau ngày — `inline md:block`.
+                      Để `block` cả hai nơi thì ô trên thẻ cao gấp đôi mà chỉ
+                      chứa hai chữ.
+                    */}
+                    <span className="ml-1.5 text-xs md:ml-0 md:block">
+                      {con === 0 ? "hôm nay" : con === 1 ? "ngày mai" : `còn ${con} ngày`}
+                    </span>
+                  </span>
+                );
+              })()}
+            </O>
+            <O cot={COT[3]} lop="whitespace-nowrap text-fg-muted">
+              {h.loaiDV}
+            </O>
+            <O cot={COT[4]}>
+              <ChipTrangThai trangThai={h.trangThai} />
+            </O>
+            <O cot={COT[5]} lop="whitespace-nowrap tabular-nums">
+              {tien(h.tongTien)}đ
+            </O>
+            {/* Số ÂM là studio THU DƯ — nói rõ, đừng để nó chìm vào màu xám. */}
+            <O
+              cot={COT[6]}
+              lop={`whitespace-nowrap tabular-nums ${
+                h.conLai > 0 ? "font-medium text-amber-800" : h.conLai < 0 ? "text-accent" : "text-fg-faint"
+              }`}
+            >
+              {h.conLai > 0 ? `${tien(h.conLai)}đ` : h.conLai < 0 ? `dư ${tien(-h.conLai)}đ` : "—"}
+            </O>
+          </Hang>
+        ))}
+      </Bang>
 
       <div className="mt-3 flex flex-wrap justify-between gap-2 text-sm text-fg-muted">
         {loc.length > hien.length ? (
