@@ -170,10 +170,27 @@ export default async function LichPage({ searchParams }: Props) {
     Đọc theo HỢP ĐỒNG của những buổi đang hiện, không đọc cả bảng: 5.299 đầu
     việc mà một tháng chỉ dính tới vài chục hợp đồng (nguyên tắc 53).
 
-    BỎ VIỆC HẬU KỲ ngay sau khi đọc, không lọc trong SQL: phép phân loại nằm
-    ở `laViecHauKy` và phải có MỘT nguồn duy nhất — viết lại điều kiện đó bằng
-    tiếng SQL là sớm muộn hai bên lệch nhau. Đo 19/11: lọc bỏ 1.366/5.299 việc
-    (26%), đúng những tên Photoshop, edit clip, Dựng phim, Xưởng in.
+    HAI ĐƯỜNG GẮN VIỆC VÀO BUỔI, tuỳ hợp đồng lập ở đâu:
+
+    1. Hợp đồng lập trên web TỪ 20/11/2026 có `CongViec.lichChupId` — người
+       lập đã chỉ rõ việc nào làm buổi nào (bảng giá hạng mục khai sẵn, sửa
+       được trong form). Tin thẳng cột đó: việc không gắn buổi là việc hậu kỳ
+       họ cố ý để ngoài, không hiện lên lịch.
+
+    2. 5.310 dòng chép từ AppSheet KHÔNG CÓ cột ấy. Với chúng vẫn phải đoán
+       theo tên như từ 19/11: bỏ việc hậu kỳ bằng `laViecHauKy`, phần còn lại
+       hiện ở mọi buổi của hợp đồng. Hợp đồng hai ngày thì cả hai ngày cùng
+       hiện một danh sách — đó là giới hạn của dữ liệu cũ, không chữa được.
+
+    Ranh giới giữa hai đường là CẢ HỢP ĐỒNG, không phải từng dòng việc: hợp
+    đồng nào có dù chỉ một việc gắn buổi thì nó thuộc đường 1 trọn vẹn. Trộn
+    hai đường trong cùng một hợp đồng thì việc thêm tay (không gắn buổi, tên
+    không khớp `laViecHauKy`) sẽ mọc lên ở MỌI buổi — đúng cái lỗi đang chữa.
+
+    Lọc bằng `laViecHauKy` ngay sau khi đọc chứ không trong SQL: phép phân
+    loại phải có MỘT nguồn duy nhất, viết lại bằng tiếng SQL là sớm muộn hai
+    bên lệch nhau. Đo 19/11: bỏ 1.366/5.299 việc (26%), đúng những tên
+    Photoshop, edit clip, Dựng phim, Xưởng in.
   */
   const hopDongIds = [...new Set([...ds, ...choNgay].map((l) => l.hopDong?.id).filter((x): x is string => !!x))];
   const viecTho = hopDongIds.length
@@ -182,6 +199,7 @@ export default async function LichPage({ searchParams }: Props) {
         select: {
           id: true,
           hopDongId: true,
+          lichChupId: true,
           loai: true,
           donGia: true,
           soLuong: true,
@@ -191,18 +209,33 @@ export default async function LichPage({ searchParams }: Props) {
         orderBy: [{ loai: "asc" }],
       })
     : [];
+
+  const gon = (v: (typeof viecTho)[number]): ViecBuoi => ({
+    id: v.id,
+    loai: v.loai,
+    tienCong: Math.round(v.donGia * v.soLuong),
+    nguoiPhuTrachMaNV: v.nguoiPhuTrachMaNV,
+    trangThai: v.trangThai,
+  });
+
+  /** Hợp đồng đã khai buổi cho việc — thuộc đường 1, xem chú thích trên. */
+  const hdCoBuoi = new Set(
+    viecTho.filter((v) => v.lichChupId && v.hopDongId).map((v) => v.hopDongId as string),
+  );
+
+  /** Đường 1: việc gắn thẳng vào một dòng lịch. */
+  const viecTheoBuoi = new Map<string, ViecBuoi[]>();
+  /** Đường 2: việc chỉ biết hợp đồng, hiện ở mọi buổi của hợp đồng đó. */
   const viecTheoHopDong = new Map<string, ViecBuoi[]>();
   for (const v of viecTho) {
-    if (!v.hopDongId || laViecHauKy(v.loai)) continue;
-    const cu = viecTheoHopDong.get(v.hopDongId) ?? [];
-    cu.push({
-      id: v.id,
-      loai: v.loai,
-      tienCong: Math.round(v.donGia * v.soLuong),
-      nguoiPhuTrachMaNV: v.nguoiPhuTrachMaNV,
-      trangThai: v.trangThai,
-    });
-    viecTheoHopDong.set(v.hopDongId, cu);
+    if (!v.hopDongId) continue;
+    if (v.lichChupId) {
+      viecTheoBuoi.set(v.lichChupId, [...(viecTheoBuoi.get(v.lichChupId) ?? []), gon(v)]);
+      continue;
+    }
+    /* Hợp đồng đã khai buổi: việc không buổi là hậu kỳ, cố ý để ngoài lịch. */
+    if (hdCoBuoi.has(v.hopDongId) || laViecHauKy(v.loai)) continue;
+    viecTheoHopDong.set(v.hopDongId, [...(viecTheoHopDong.get(v.hopDongId) ?? []), gon(v)]);
   }
 
   const [nam, thangSo] = thang.split("-").map(Number);
@@ -223,7 +256,10 @@ export default async function LichPage({ searchParams }: Props) {
     hopDongId: l.hopDong?.id ?? null,
     tenKhach: l.hopDong?.tenKhach ?? null,
     soDienThoai: l.hopDong?.khachHang?.soDienThoai ?? null,
-    viec: l.hopDong?.id ? (viecTheoHopDong.get(l.hopDong.id) ?? []) : [],
+    viec: [
+      ...(viecTheoBuoi.get(l.id) ?? []),
+      ...(l.hopDong?.id ? (viecTheoHopDong.get(l.hopDong.id) ?? []) : []),
+    ],
   }));
 
   const link = (thay: Record<string, string>) => {

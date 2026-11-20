@@ -5,6 +5,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/db";
 import { layNguoiDung } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
+import { docTien } from "@/lib/studioNoiBo";
 import { duocSuaDichVu, kiemDichVu, TEN_LOAI, type DichVuSach, type DuLieuDichVu, type LoaiDichVu } from "@/lib/dichVuChung";
 
 /**
@@ -155,5 +156,127 @@ export async function datBuoiDichVuAction(
   });
   revalidatePath("/quan-ly/dich-vu");
   revalidatePath(`/quan-ly/dich-vu/${dichVuId}`);
+  return { ok: true };
+}
+
+/* ── Bảng giá hạng mục = ĐẦU VIỆC TỰ SINH (anh yêu cầu 20/11/2026) ───────── */
+
+/**
+ * Một dòng bảng giá, đúng như người dùng gõ.
+ *
+ * `id` rỗng nghĩa là dòng mới. Dòng cũ giữ nguyên id để KHÔNG MẤT
+ * `maAppSheet` — script nhập (`scripts/nhap-dich-vu.mts`) tra theo cột đó,
+ * xoá sạch rồi ghi lại là lần nhập sau sinh ra 313 dòng trùng.
+ */
+export type DongGiaNhap = {
+  id: string;
+  hangMuc: string;
+  /** Chữ người gõ: "300.000", "300000", "300,000đ" — `docTien` lo phần còn lại. */
+  donGia: string;
+  /** Buổi thứ mấy của gói, hoặc "" = không gắn buổi (việc hậu kỳ). */
+  buoiThu: string;
+};
+
+/**
+ * Đặt lại cả bảng giá hạng mục của một dịch vụ — anh chốt 20/11/2026.
+ *
+ * Vì sao cần sửa được trên web: 313 dòng bảng giá chép từ AppSheet dùng tên
+ * đánh số ("Photo 1", "Photo 2", "makeup 1", "hoa cầm tay 2") mà chính anh
+ * cũng không còn nhớ số đó là buổi thứ mấy hay người thứ mấy. Không làm rõ
+ * được bằng cách đoán, nên phải cho sửa thẳng ở đây.
+ *
+ * CHỈ QUẢN TRỊ: bảng này là tiền công thợ (xem chú thích model GiaHangMuc).
+ * `duocSuaDichVu` cho cả sale sửa dịch vụ, nhưng sale không được xem lương,
+ * nên ở đây siết thêm một tầng.
+ */
+export async function datBangGiaAction(
+  dichVuId: string,
+  dong: DongGiaNhap[],
+): Promise<{ loi?: string; ok?: true }> {
+  const nguoi = await nguoiDangDung();
+  if (!nguoi) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp em." };
+  if (nguoi.vaiTro !== "quan-tri") return { loi: "Chỉ quản lý sửa được bảng giá hạng mục." };
+
+  const prisma = getPrisma();
+  const dv = await prisma.dichVu.findUnique({
+    where: { id: dichVuId },
+    select: { maDV: true, ten: true, _count: { select: { buoi: true } } },
+  });
+  if (!dv) return { loi: "Mục này không còn." };
+
+  if (dong.length > 40) return { loi: "Nhiều hạng mục quá, tối đa 40 dòng." };
+
+  const soBuoi = dv._count.buoi;
+  const sach: { id: string | null; hangMuc: string; donGia: number; buoiThu: number | null }[] = [];
+  for (const [i, d] of dong.entries()) {
+    const ten = d.hangMuc.trim();
+    if (!ten) return { loi: `Dòng ${i + 1} chưa có tên hạng mục.` };
+    if (ten.length > 60) return { loi: `Tên hạng mục dòng ${i + 1} dài quá (tối đa 60 chữ).` };
+
+    const gia = docTien(d.donGia);
+    if (gia === null || gia < 0) return { loi: `Tiền công dòng ${i + 1} chưa đúng.` };
+    if (gia > 50_000_000) return { loi: `Tiền công dòng ${i + 1} lớn bất thường, anh chị xem lại.` };
+
+    let buoi: number | null = null;
+    if (d.buoiThu.trim() !== "") {
+      buoi = Number(d.buoiThu);
+      if (!Number.isInteger(buoi) || buoi < 1) return { loi: `Buổi của dòng ${i + 1} chưa đúng.` };
+      /*
+        Chặn buổi vượt quá số buổi gói đã khai. Gắn "buổi 2" cho gói mới khai
+        một buổi thì việc đó sinh ra sẽ không buổi nào nhận — im lặng rơi mất,
+        đúng kiểu lỗi không ai phát hiện cho tới lúc thiếu người ở hiện trường.
+      */
+      if (buoi > soBuoi) {
+        return {
+          loi:
+            soBuoi === 0
+              ? "Gói này chưa khai buổi chụp nào. Gắn buổi cho gói ở bảng Dịch vụ trước đã."
+              : `Gói này có ${soBuoi} buổi, không gắn hạng mục vào buổi ${buoi} được.`,
+        };
+      }
+    }
+    sach.push({ id: d.id || null, hangMuc: ten, donGia: gia, buoiThu: buoi });
+  }
+
+  const cu = await prisma.giaHangMuc.findMany({ where: { dichVuId }, select: { id: true } });
+  const idCu = new Set(cu.map((c) => c.id));
+  const idGiu = new Set(sach.map((s) => s.id).filter((x): x is string => !!x));
+  /* Id lạ (dòng của dịch vụ khác, hoặc vừa bị ai xoá) thì coi như dòng mới. */
+  for (const s of sach) if (s.id && !idCu.has(s.id)) s.id = null;
+  const boDi = [...idCu].filter((x) => !idGiu.has(x));
+
+  await prisma.$transaction(async (tx) => {
+    if (boDi.length) await tx.giaHangMuc.deleteMany({ where: { id: { in: boDi } } });
+    for (const s of sach) {
+      if (s.id) {
+        await tx.giaHangMuc.update({
+          where: { id: s.id },
+          data: { hangMuc: s.hangMuc, donGia: s.donGia, buoiThu: s.buoiThu },
+        });
+      } else {
+        await tx.giaHangMuc.create({
+          data: { dichVuId, hangMuc: s.hangMuc, donGia: s.donGia, buoiThu: s.buoiThu },
+        });
+      }
+    }
+  });
+
+  await ghiNhatKy({
+    nguoi,
+    hanhDong: "sua-dich-vu",
+    doiTuong: "DichVu",
+    doiTuongId: dichVuId,
+    chiTiet: {
+      ten: `${dv.maDV} — ${dv.ten}`,
+      doi: {
+        bangGia: {
+          truoc: `${cu.length} hạng mục`,
+          sau: `${sach.length} hạng mục`,
+        },
+      },
+    },
+  });
+  revalidatePath(`/quan-ly/dich-vu/${dichVuId}`);
+  revalidatePath("/quan-ly/hop-dong/moi");
   return { ok: true };
 }

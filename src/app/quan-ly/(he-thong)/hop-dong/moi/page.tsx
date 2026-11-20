@@ -52,7 +52,7 @@ export default async function LapHopDongPage() {
     }),
     prisma.giaHangMuc.findMany({
       orderBy: { taoLuc: "asc" },
-      select: { dichVuId: true, hangMuc: true, donGia: true },
+      select: { dichVuId: true, hangMuc: true, donGia: true, buoiThu: true },
     }),
     demLuotDung(),
     docCacBuoc(),

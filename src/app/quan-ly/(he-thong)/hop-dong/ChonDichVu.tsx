@@ -25,7 +25,16 @@ export type DichVuGon = {
   buoi?: readonly string[];
 };
 
-export type GiaGon = { dichVuId: string; hangMuc: string | null; donGia: number };
+export type GiaGon = {
+  dichVuId: string;
+  hangMuc: string | null;
+  donGia: number;
+  /**
+   * Hạng mục này làm ở buổi thứ mấy của gói — 1 là buổi đầu. null = hậu kỳ,
+   * không thuộc buổi nào. Xem `GiaHangMuc.buoiThu` trong schema.
+   */
+  buoiThu: number | null;
+};
 
 /** Bao nhiêu mục hiện mỗi lần khi đang DUYỆT; bấm "Xem thêm" là cộng thêm bấy nhiêu. */
 const MOI_LAN = 24;

@@ -502,7 +502,7 @@ export type DuLieuFormHopDong = {
     */
     buoi: string[];
   }[];
-  giaHangMuc: { dichVuId: string; hangMuc: string | null; donGia: number }[];
+  giaHangMuc: { dichVuId: string; hangMuc: string | null; donGia: number; buoiThu: number | null }[];
   /** Loại buổi chụp đang dùng, đọc từ bảng `LoaiBuoi`. */
   loaiBuoi: { ten: string; maAlbum: string | null }[];
   /** Ba danh mục nhỏ, đọc từ bảng `DanhMuc`. */
@@ -545,7 +545,7 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
     }),
     prisma.giaHangMuc.findMany({
       orderBy: { taoLuc: "asc" },
-      select: { dichVuId: true, hangMuc: true, donGia: true },
+      select: { dichVuId: true, hangMuc: true, donGia: true, buoiThu: true },
     }),
     demLuotDung(),
     docCacBuoc(),

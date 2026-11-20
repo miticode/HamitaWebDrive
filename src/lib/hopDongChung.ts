@@ -193,12 +193,28 @@ export type DongLichMoi = {
 };
 
 export type DongViecMoi = {
-  /** Dòng dịch vụ thứ mấy trong `dong` sinh ra đầu việc này. */
+  /**
+   * Dòng dịch vụ thứ mấy trong `dong` sinh ra đầu việc này.
+   *
+   * `-1` = KHÔNG THUỘC DÒNG NÀO — việc người lập tự thêm tay (anh yêu cầu
+   * 20/11/2026). Lúc ghi, `chiTietId` của nó để null.
+   */
   dong: number;
   loai: string;
   donGia: number;
   soLuong: number;
   thoiHan: string;
+  /**
+   * Việc này làm ở BUỔI NÀO — chỉ số dòng trong `lich`, đếm từ 0.
+   *
+   * null = không thuộc buổi nào: việc hậu kỳ (Photoshop, Xưởng in, Dựng phim)
+   * hoặc việc tính cho cả hợp đồng.
+   *
+   * Anh chốt 20/11/2026. Sinh từ `GiaHangMuc.buoiThu` của chính dịch vụ, hoặc
+   * do người lập chọn tay. Nhờ nó lịch chụp chia được việc theo từng buổi —
+   * trước đó mở ngày nhà gái vẫn thấy cả việc nhà trai.
+   */
+  buoi: number | null;
 };
 
 export type KhachMoi = { ten: string; soDienThoai: string; tinh: string; ghiChu: string };
@@ -380,8 +396,9 @@ export function kiemHopDongMoi(
   for (const [i, v] of (du.viec ?? []).entries()) {
     const loai = gon(v.loai);
     if (!loai) continue;
+    /* `-1` là việc thêm tay, cố ý không gắn dòng dịch vụ nào. */
     const chiSo = Math.round(Number(v.dong));
-    if (!Number.isInteger(chiSo) || chiSo < 0 || chiSo >= dong.length) {
+    if (!Number.isInteger(chiSo) || chiSo < -1 || chiSo >= dong.length) {
       return { loi: `Đầu việc ${i + 1} không thuộc dòng dịch vụ nào.` };
     }
     const donGia = soNguyen(v.donGia, 999_999_999);
@@ -392,7 +409,20 @@ export function kiemHopDongMoi(
     }
     const thoiHan = gon(v.thoiHan);
     if (thoiHan && !NGAY_RE.test(thoiHan)) return { loi: `Thời hạn đầu việc ${i + 1} chưa đúng.` };
-    viec.push({ dong: chiSo, loai, donGia, soLuong, thoiHan, thanhTien: Math.round(donGia * soLuong) });
+    /*
+      Buổi phải trỏ tới một dòng lịch CÓ THẬT. Trỏ trượt thì việc đó rơi mất
+      khỏi mọi buổi mà không ai biết — đúng kiểu lỗi chỉ lộ ra hôm chụp, lúc
+      thiếu người ở hiện trường.
+    */
+    let buoi: number | null = null;
+    if (v.buoi !== null && v.buoi !== undefined && String(v.buoi) !== "") {
+      const b = Math.round(Number(v.buoi));
+      if (!Number.isInteger(b) || b < 0 || b >= lich.length) {
+        return { loi: `Đầu việc ${i + 1} gắn vào một buổi không có trong lịch.` };
+      }
+      buoi = b;
+    }
+    viec.push({ dong: chiSo, loai, donGia, soLuong, thoiHan, buoi, thanhTien: Math.round(donGia * soLuong) });
   }
 
   const thanhTien = dong.reduce((s, d) => s + d.thanhTien, 0);

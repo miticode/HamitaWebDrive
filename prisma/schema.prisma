@@ -274,14 +274,14 @@ model GuiIn {
   /// Mang chu khong phai bang con: mot dot gui ba link thi ba link do SINH RA
   /// CUNG LUC, cung nguoi, cung muc dich — tach bang chi them mot moi noi ma
   /// khong tra loi them cau hoi nao.
-  links     String[]
+  links String[]
 
   /// Media tu ghi dot nay la dot nao ("nha gai", "HC"). De trong duoc.
   ///
   /// Khong bat buoc va khong phai o chon: ten thu muc hoan thien moi album
   /// moi khac ("file hoan thien 1", "photobook hoan thien"), nen mot o chon
   /// cung dung sai. Dot con duoc dinh danh bang thu tu va thoi diem.
-  ghiChu    String?
+  ghiChu String?
 
   /// Ai dan — ghi ca ma nhan vien lan ten, de ten con doc duoc khi nguoi do
   /// da nghi va ban ghi nhan vien bi xoa.
@@ -871,6 +871,19 @@ model GiaHangMuc {
   /// "PHOTO", "Makeup", "Xưởng in"… giu nguyen chu ben AppSheet.
   hangMuc    String?
   donGia     Int      @default(0)
+  /// Hang muc nay lam o BUOI THU MAY cua goi — 1 la buoi dau, 2 la buoi hai…
+  /// Doi chieu voi `DichVuBuoi.thuTu` cua chinh dich vu do (thuTu 0 la buoi 1).
+  ///
+  /// null = KHONG GAN BUOI NAO: viec hau ky (Photoshop, Xuong in, Dung phim)
+  /// hoac viec tinh cho ca hop dong. Mac dinh null vi 313 dong bang gia chep tu
+  /// AppSheet khong co thong tin nay.
+  ///
+  /// Anh chot 20/11/2026. Truoc do bang gia hang muc va danh sach buoi la hai
+  /// danh sach phang khong noi voi nhau: goi hai ngay sinh ra mot dong viec
+  /// phang, khong buoi nao nhan, nen lich chup khong chia viec theo buoi duoc
+  /// va nguoi lap phai go tay. Do 20/11: 607 dong viec go tay kieu "Chup nha
+  /// gai" / "Chup nha trai" / "Chup le toi" — ba ten khong he co trong bang gia.
+  buoiThu    Int?
   /// Cot "ID" ben AppSheet — chay lai script nhap khong bi trung.
   maAppSheet String?  @unique
   taoLuc     DateTime @default(now())
@@ -1123,7 +1136,9 @@ model LichChup {
   bamAppSheet    String?
   matBenAppSheet DateTime?
 
-  hopDong HopDong? @relation(fields: [hopDongId], references: [id], onDelete: SetNull)
+  hopDong  HopDong?   @relation(fields: [hopDongId], references: [id], onDelete: SetNull)
+  /// Dau viec cua rieng buoi nay — xem `CongViec.lichChupId`.
+  congViec CongViec[]
 
   @@index([ngay])
   @@index([hopDongId])
@@ -1153,14 +1168,26 @@ model CongViec {
   /// Chu AppSheet tu tinh khi xong: "Trễ hẹn", "Đúng hẹn", "Sớm hẹn"…
   tienDo            String?
   ghiChu            String?
+  /// BUOI CHUP nao — anh chot 20/11/2026.
+  ///
+  /// Truoc do dau viec chi gan voi HOP DONG, nen hop dong hai ngay thi ca hai
+  /// ngay tren lich cung hien mot danh sach viec: mo ngay nha gai van thay viec
+  /// nha trai. Nay viec sinh tu bang gia mang theo buoi cua no (xem
+  /// `GiaHangMuc.buoiThu`), va nguoi lap cung chon duoc buoi cho viec them tay.
+  ///
+  /// null la binh thuong: viec hau ky khong thuoc buoi nao, va 5.310 dong chep
+  /// tu AppSheet deu khong co thong tin nay.
+  lichChupId        String?
   taoLuc            DateTime  @default(now())
   bamAppSheet       String?
   matBenAppSheet    DateTime?
 
-  hopDong HopDong?        @relation(fields: [hopDongId], references: [id], onDelete: SetNull)
-  chiTiet ChiTietHopDong? @relation(fields: [chiTietId], references: [id], onDelete: SetNull)
+  hopDong  HopDong?        @relation(fields: [hopDongId], references: [id], onDelete: SetNull)
+  chiTiet  ChiTietHopDong? @relation(fields: [chiTietId], references: [id], onDelete: SetNull)
+  lichChup LichChup?       @relation(fields: [lichChupId], references: [id], onDelete: SetNull)
 
   @@index([hopDongId])
+  @@index([lichChupId])
   @@index([nguoiPhuTrachMaNV])
   @@index([thoiHan])
   @@index([trangThai])

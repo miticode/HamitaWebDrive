@@ -6,6 +6,7 @@ import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { TEN_LOAI, laLoaiDichVu, loaiDuocSua } from "@/lib/dichVuChung";
 import { nhomTheoLoai } from "@/lib/dichVuMayChu";
 import { NutSuaDichVu } from "../FormDichVu";
+import { BangGiaHangMuc } from "../BangGiaHangMuc";
 
 export const dynamic = "force-dynamic";
 
@@ -26,13 +27,28 @@ export default async function ChiTietDichVuPage({ params }: Props) {
   const quanTri = laQuanTri(nguoi);
   const dsLoai = loaiDuocSua(nguoi);
   const suaDuoc = (dsLoai as string[]).includes(dv.loai);
-  const [chiPhi, nhomGoiY] = await Promise.all([
+  const [chiPhi, dsBuoi, nhomGoiY] = await Promise.all([
     quanTri
-      ? prisma.giaHangMuc.findMany({ where: { dichVuId: id }, orderBy: [{ hangMuc: "asc" }, { taoLuc: "asc" }] })
+      ? prisma.giaHangMuc.findMany({
+          where: { dichVuId: id },
+          /*
+            Xep theo BUOI truoc, roi moi den ten — tu 20/11/2026 bang nay chia
+            theo buoi, nen thu tu trong database cung phai theo buoi thi khoi
+            phai xep lai o may khach.
+          */
+          orderBy: [{ buoiThu: "asc" }, { hangMuc: "asc" }, { taoLuc: "asc" }],
+          select: { id: true, hangMuc: true, donGia: true, buoiThu: true },
+        })
+      : Promise.resolve([]),
+    quanTri
+      ? prisma.dichVuBuoi.findMany({
+          where: { dichVuId: id },
+          orderBy: { thuTu: "asc" },
+          select: { thuTu: true, loaiBuoi: { select: { ten: true } } },
+        })
       : Promise.resolve([]),
     suaDuoc ? nhomTheoLoai() : Promise.resolve({}),
   ]);
-  const tongChiPhi = chiPhi.reduce((s, c) => s + c.donGia, 0);
   const tenLoai = laLoaiDichVu(dv.loai) ? TEN_LOAI[dv.loai] : dv.loai;
 
   return (
@@ -65,30 +81,22 @@ export default async function ChiTietDichVuPage({ params }: Props) {
         </div>
       )}
 
-      {quanTri && chiPhi.length > 0 && (
-        <section className="mt-10">
-          <h2 className="eyebrow">Chi phí từng hạng mục</h2>
-          <p className="mt-1 text-xs text-fg-faint">
-            Tiền trả thợ, xưởng cho mỗi lần làm dịch vụ này, nhập từ AppSheet. Chỉ quản lý thấy. Sẽ dùng để tính
-            lương sản phẩm ở đợt Nhân sự.
-          </p>
-          <div className="mt-3 overflow-x-auto rounded-md border border-line bg-bg-raised">
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-line">
-                {chiPhi.map((c) => (
-                  <tr key={c.id}>
-                    <td className="px-4 py-2">{c.hangMuc ?? <span className="text-fg-faint">(không ghi hạng mục)</span>}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{tien(c.donGia)}đ</td>
-                  </tr>
-                ))}
-                <tr className="bg-bg-soft font-medium">
-                  <td className="px-4 py-2">Cộng</td>
-                  <td className="px-4 py-2 text-right tabular-nums">{tien(tongChiPhi)}đ</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+      {/*
+        Bang nay vua la bang gia (tien cong tho) vua la danh sach dau viec tu
+        sinh — tu 20/11/2026 sua duoc ngay tai day, xem BangGiaHangMuc.tsx.
+        CHI QUAN TRI: no la luong nguoi lam.
+      */}
+      {quanTri && (
+        <BangGiaHangMuc
+          dichVuId={dv.id}
+          banDau={chiPhi.map((c) => ({
+            id: c.id,
+            hangMuc: c.hangMuc ?? "",
+            donGia: c.donGia,
+            buoiThu: c.buoiThu,
+          }))}
+          dsBuoi={dsBuoi.map((b) => ({ thuTu: b.thuTu, ten: b.loaiBuoi.ten }))}
+        />
       )}
 
       {suaDuoc && (

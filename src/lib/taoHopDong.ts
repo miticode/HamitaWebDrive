@@ -194,30 +194,50 @@ async function ghiHopDong(sach: HopDongSach, nguoi: NguoiLap, luc: Date, so: num
       });
     }
 
+    /*
+      Id từng dòng lịch, đúng thứ tự người lập gõ — đầu việc gắn buổi tra theo
+      đây (xem `DongViecMoi.buoi`).
+    */
+    const idLich: string[] = [];
     if (sach.lich.length) {
-      await tx.lichChup.createMany({
-        data: sach.lich.map((l) => ({
-          hopDongId: hd.id,
-          ngay: l.ngay || null,
-          gio: l.gio || null,
-          loai: l.loai,
-          lyDoTrong: l.lyDoTrong || null,
-          ghiChu: l.ghiChu || null,
-          trangThai: "Chưa làm",
-          /*
-            "Hiển thị" là dòng chữ vẽ lên lịch. Bên AppSheet gõ tay theo kiểu
-            "Tên cô dâu chú rể 23-24-25/10/2026-0933867396"; để trống thì web
-            ghép tạm tên khách, ngày và số điện thoại — sửa lại được sau.
-          */
-          hienThi:
-            l.hienThi ||
-            [sach.tenKhach, l.ngay ? ngayVN(l.ngay) : "chưa có ngày", soDienThoai]
-              .filter(Boolean)
-              .join(" - "),
-          nguoiTaoMaNV: maNV,
-          taoLuc: luc,
-        })),
-      });
+      /*
+        TỪNG DÒNG MỘT, KHÔNG `createMany` — anh chốt 20/11/2026.
+
+        `createMany` không trả về id, mà đọc lại sau đó thì không có cột nào
+        nói dòng nào là dòng thứ mấy: cả mấy dòng cùng một `taoLuc`, và
+        `hienThi` trùng nhau khi hai buổi cùng ngày. Đọc lại rồi đoán thứ tự
+        là cách chắc chắn có lúc gắn việc nhầm buổi.
+
+        Giá phải trả nhỏ: lịch nhiều nhất chừng năm dòng, và cả vòng lặp nằm
+        trong transaction sẵn có nên không thêm lượt đi về nào ngoài dự tính.
+      */
+      for (const l of sach.lich) {
+        const d = await tx.lichChup.create({
+          select: { id: true },
+          data: {
+            hopDongId: hd.id,
+            ngay: l.ngay || null,
+            gio: l.gio || null,
+            loai: l.loai,
+            lyDoTrong: l.lyDoTrong || null,
+            ghiChu: l.ghiChu || null,
+            trangThai: "Chưa làm",
+            /*
+              "Hiển thị" là dòng chữ vẽ lên lịch. Bên AppSheet gõ tay theo kiểu
+              "Tên cô dâu chú rể 23-24-25/10/2026-0933867396"; để trống thì web
+              ghép tạm tên khách, ngày và số điện thoại — sửa lại được sau.
+            */
+            hienThi:
+              l.hienThi ||
+              [sach.tenKhach, l.ngay ? ngayVN(l.ngay) : "chưa có ngày", soDienThoai]
+                .filter(Boolean)
+                .join(" - "),
+            nguoiTaoMaNV: maNV,
+            taoLuc: luc,
+          },
+        });
+        idLich.push(d.id);
+      }
     }
 
     if (sach.viec.length) {
@@ -230,7 +250,10 @@ async function ghiHopDong(sach: HopDongSach, nguoi: NguoiLap, luc: Date, so: num
       await tx.congViec.createMany({
         data: sach.viec.map((v) => ({
           hopDongId: hd.id,
-          chiTietId: theoMa.get(`${maHD}_${v.dong + 1}`) ?? null,
+          /* `dong === -1` là việc thêm tay: không thuộc dòng dịch vụ nào. */
+          chiTietId: v.dong >= 0 ? (theoMa.get(`${maHD}_${v.dong + 1}`) ?? null) : null,
+          /* Buổi đã được kiểm nằm trong lịch (kiemHopDongMoi), nên chắc chắn có id. */
+          lichChupId: v.buoi === null ? null : (idLich[v.buoi] ?? null),
           loai: v.loai,
           soLuong: v.soLuong,
           donGia: v.donGia,
