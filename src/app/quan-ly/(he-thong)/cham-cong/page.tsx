@@ -5,8 +5,22 @@ import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { bangCongThang, docCaiDatCham, luotHomNay } from "@/lib/chamCong";
 import { chuNoiCham, gioVN } from "@/lib/chamCongChung";
 import { BamCham } from "./BamCham";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+/* Bảng công cả tiệm — chỉ quản lý thấy. Chín cột, tám trong đó là con số. */
+const COT = {
+  nhanVien: { ten: "Nhân viên", chinh: true },
+  ngayCong: { ten: "Ngày công", phai: true },
+  soGio: { ten: "Số giờ", phai: true },
+  soLuot: { ten: "Lượt chấm", phai: true },
+  treVao: { ten: "Trễ vào", phai: true },
+  veSom: { ten: "Về sớm", phai: true },
+  thieuGio: { ten: "Thiếu giờ", phai: true },
+  ngoaiTiem: { ten: "Ngoài tiệm", phai: true },
+  quenRa: { ten: "Quên bấm ra", phai: true },
+} satisfies Record<string, CotBang>;
 
 type Props = { searchParams: Promise<{ thang?: string }> };
 
@@ -175,61 +189,50 @@ export default async function ChamCongPage({ searchParams }: Props) {
             <Link href={`/quan-ly/cham-cong?thang=${doiThang(thang, 1)}`} className="btn px-3" aria-label="Tháng sau">›</Link>
           </div>
 
-          <div className="mt-4 overflow-x-auto rounded-md border border-line bg-bg-raised">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-                  <th className="px-4 py-2.5 font-medium">Nhân viên</th>
-                  <th className="px-4 py-2.5 text-right font-medium">Ngày công</th>
-                  <th className="px-4 py-2.5 text-right font-medium">Số giờ</th>
-                  <th className="px-4 py-2.5 text-right font-medium">Lượt chấm</th>
-                  <th className="px-4 py-2.5 text-right font-medium">Trễ vào</th>
-                  <th className="px-4 py-2.5 text-right font-medium">Về sớm</th>
-                  <th className="px-4 py-2.5 text-right font-medium">Thiếu giờ</th>
-                  <th className="px-4 py-2.5 text-right font-medium">Ngoài tiệm</th>
-                  <th className="px-4 py-2.5 text-right font-medium">Quên bấm ra</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {bang.map((d) => (
-                  <tr key={d.maNV} className="transition hover:bg-bg-soft">
-                    <td className="px-4 py-2.5">
-                      {tenNV(bangTen, d.maNV) ?? (
-                        /* Nửa số dòng mang mã của người đã nghỉ — nói rõ thay vì để trống. */
-                        <span className="text-fg-muted">
-                          {d.maNV} <span className="text-xs text-fg-faint">(đã nghỉ)</span>
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5 text-right tabular-nums">{d.soNgayCong}</td>
-                    <td className="px-4 py-2.5 text-right tabular-nums">{d.soGio}</td>
-                    <td className="px-4 py-2.5 text-right tabular-nums text-fg-muted">{d.soLuot}</td>
-                    <td className={`px-4 py-2.5 text-right tabular-nums ${d.soLanTre ? "text-amber-800" : "text-fg-faint"}`}>
-                      {d.soLanTre || "—"}
-                    </td>
-                    <td className={`px-4 py-2.5 text-right tabular-nums ${d.soLanVeSom ? "text-amber-800" : "text-fg-faint"}`}>
-                      {d.soLanVeSom || "—"}
-                    </td>
-                    <td className={`px-4 py-2.5 text-right tabular-nums ${d.tongThieuGio ? "text-amber-800" : "text-fg-faint"}`}>
-                      {d.tongThieuGio ? `${d.tongThieuGio} giờ` : "—"}
-                    </td>
-                    <td className="px-4 py-2.5 text-right tabular-nums text-fg-muted">
-                      {d.soLanNgoaiTiem || "—"}
-                      {d.soLanKhongRoViTri > 0 && (
-                        <span className="block text-xs text-fg-faint">{d.soLanKhongRoViTri} lượt không rõ</span>
-                      )}
-                    </td>
-                    <td className={`px-4 py-2.5 text-right tabular-nums ${d.thieuGioRa ? "text-amber-800" : "text-fg-faint"}`}>
-                      {d.thieuGioRa || "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {bang.length === 0 && (
-              <p className="px-4 py-8 text-center text-sm text-fg-muted">Tháng này chưa có lượt chấm công nào.</p>
-            )}
-          </div>
+          <Bang lop="mt-4" cot={Object.values(COT)} trong="Tháng này chưa có lượt chấm công nào.">
+            {bang.map((d) => (
+              <Hang key={d.maNV} lop="transition hover:bg-bg-soft">
+                <O cot={COT.nhanVien}>
+                  {tenNV(bangTen, d.maNV) ?? (
+                    /* Nửa số dòng mang mã của người đã nghỉ — nói rõ thay vì để trống. */
+                    <span className="text-fg-muted">
+                      {d.maNV} <span className="text-xs text-fg-faint">(đã nghỉ)</span>
+                    </span>
+                  )}
+                </O>
+                <O cot={COT.ngayCong} lop="tabular-nums">
+                  {d.soNgayCong}
+                </O>
+                <O cot={COT.soGio} lop="tabular-nums">
+                  {d.soGio}
+                </O>
+                <O cot={COT.soLuot} lop="tabular-nums text-fg-muted">
+                  {d.soLuot}
+                </O>
+                <O cot={COT.treVao} lop={`tabular-nums ${d.soLanTre ? "text-amber-800" : "text-fg-faint"}`}>
+                  {d.soLanTre || "—"}
+                </O>
+                <O cot={COT.veSom} lop={`tabular-nums ${d.soLanVeSom ? "text-amber-800" : "text-fg-faint"}`}>
+                  {d.soLanVeSom || "—"}
+                </O>
+                <O
+                  cot={COT.thieuGio}
+                  lop={`tabular-nums ${d.tongThieuGio ? "text-amber-800" : "text-fg-faint"}`}
+                >
+                  {d.tongThieuGio ? `${d.tongThieuGio} giờ` : "—"}
+                </O>
+                <O cot={COT.ngoaiTiem} lop="tabular-nums text-fg-muted">
+                  {d.soLanNgoaiTiem || "—"}
+                  {d.soLanKhongRoViTri > 0 && (
+                    <span className="block text-xs text-fg-faint">{d.soLanKhongRoViTri} lượt không rõ</span>
+                  )}
+                </O>
+                <O cot={COT.quenRa} lop={`tabular-nums ${d.thieuGioRa ? "text-amber-800" : "text-fg-faint"}`}>
+                  {d.thieuGioRa || "—"}
+                </O>
+              </Hang>
+            ))}
+          </Bang>
 
           <p className="mt-2 text-xs leading-relaxed text-fg-faint">
             Một ngày công đầy đủ là{" "}
