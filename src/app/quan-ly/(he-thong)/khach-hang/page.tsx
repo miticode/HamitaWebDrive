@@ -6,8 +6,19 @@ import { boDau } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { NutThemKhach } from "./FormKhach";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+const COT = {
+  ten: { ten: "Tên", chinh: true },
+  dienThoai: { ten: "Điện thoại" },
+  tinh: { ten: "Tỉnh" },
+  soHD: { ten: "Hợp đồng", phai: true },
+  ganNhat: { ten: "Gần nhất" },
+  tong: { ten: "Tổng các HĐ", phai: true },
+  no: { ten: "Còn nợ", phai: true },
+} satisfies Record<string, CotBang>;
 
 type Props = { searchParams: Promise<{ q?: string; loc?: string; so?: string }> };
 
@@ -115,54 +126,59 @@ export default async function KhachHangPage({ searchParams }: Props) {
         <Link href={link({ loc: "chua-hd" })} className={lopChip(loc === "chua-hd")}>Chưa có hợp đồng</Link>
       </div>
 
-      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Tên</th>
-              <th className="px-4 py-2.5 font-medium">Điện thoại</th>
-              <th className="px-4 py-2.5 font-medium">Tỉnh</th>
-              <th className="px-4 py-2.5 text-right font-medium">Hợp đồng</th>
-              <th className="px-4 py-2.5 font-medium">Gần nhất</th>
-              <th className="px-4 py-2.5 text-right font-medium">Tổng các HĐ</th>
-              <th className="px-4 py-2.5 text-right font-medium">Còn nợ</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {hien.map((k) => (
-              <tr key={k.id} className="transition hover:bg-bg-soft">
-                <td className="px-4 py-2.5">
-                  <Link href={`/quan-ly/khach-hang/${k.id}`} className="font-medium hover:text-accent">{k.ten}</Link>
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">
-                  {k.soDienThoai ? <a href={`tel:${k.soDienThoai}`} className="hover:text-accent">{k.soDienThoai}</a> : "—"}
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{k.tinh ?? "—"}</td>
-                <td className="px-4 py-2.5 text-right tabular-nums">{k.soHD}</td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{ngayVN(k.ganNhat) || "—"}</td>
-                <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">{k.soHD ? `${tien(k.tong)}đ` : "—"}</td>
-                <td className={`px-4 py-2.5 text-right whitespace-nowrap tabular-nums ${k.no > 0 ? "font-medium text-amber-800" : "text-fg-faint"}`}>
-                  {k.no > 0 ? `${tien(k.no)}đ` : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
-            {q || loc ? (
-              <>
-                Không có khách nào khớp.{" "}
-                <Link href="/quan-ly/khach-hang" className="text-accent underline underline-offset-2">
-                  Bỏ lọc
-                </Link>
-              </>
-            ) : (
-              "Chưa có khách nào. Bấm “Thêm khách” để ghi nhà đầu tiên."
-            )}
-          </p>
-        )}
-      </div>
+      <Bang
+        lop="mt-5"
+        cot={Object.values(COT)}
+        trong={
+          q || loc ? (
+            <>
+              Không có khách nào khớp.{" "}
+              <Link href="/quan-ly/khach-hang" className="text-accent underline underline-offset-2">
+                Bỏ lọc
+              </Link>
+            </>
+          ) : (
+            "Chưa có khách nào. Bấm “Thêm khách” để ghi nhà đầu tiên."
+          )
+        }
+      >
+        {hien.map((k) => (
+          <Hang key={k.id} lop="transition hover:bg-bg-soft">
+            <O cot={COT.ten}>
+              <Link href={`/quan-ly/khach-hang/${k.id}`} className="font-medium hover:text-accent">
+                {k.ten}
+              </Link>
+            </O>
+            <O cot={COT.dienThoai} lop="whitespace-nowrap tabular-nums">
+              {k.soDienThoai ? (
+                <a href={`tel:${k.soDienThoai}`} className="hover:text-accent">
+                  {k.soDienThoai}
+                </a>
+              ) : (
+                "—"
+              )}
+            </O>
+            <O cot={COT.tinh} lop="whitespace-nowrap text-fg-muted">
+              {k.tinh ?? "—"}
+            </O>
+            <O cot={COT.soHD} lop="tabular-nums">
+              {k.soHD}
+            </O>
+            <O cot={COT.ganNhat} lop="whitespace-nowrap text-fg-muted tabular-nums">
+              {ngayVN(k.ganNhat) || "—"}
+            </O>
+            <O cot={COT.tong} lop="whitespace-nowrap tabular-nums">
+              {k.soHD ? `${tien(k.tong)}đ` : "—"}
+            </O>
+            <O
+              cot={COT.no}
+              lop={`whitespace-nowrap tabular-nums ${k.no > 0 ? "font-medium text-amber-800" : "text-fg-faint"}`}
+            >
+              {k.no > 0 ? `${tien(k.no)}đ` : "—"}
+            </O>
+          </Hang>
+        ))}
+      </Bang>
 
       {ds.length > hien.length && (
         <p className="mt-3 text-sm text-fg-muted">

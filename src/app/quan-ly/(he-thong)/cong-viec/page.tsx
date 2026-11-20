@@ -7,8 +7,27 @@ import { ngayVN } from "@/lib/hopDongChung";
 import { khoaCuaToi, khoaNguoi, tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { NutViec } from "./NutViec";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+/*
+  THỜI HẠN ĐỨNG ĐẦU, không phải tên việc — giữ nguyên thứ tự cũ.
+
+  Bảng này xếp theo hạn, nên mắt lướt dọc cột đầu để tìm việc gấp. Tên việc
+  mới là `chinh`: trên điện thoại nó thành tiêu đề thẻ, vì "Photoshop" nhận
+  ra nhanh hơn một ngày tháng.
+
+  Ô "Người làm · trạng thái" là `rong`: nó chứa hai ô chọn, mà một dòng
+  "NGƯỜI LÀM · TRẠNG THÁI   [ô chọn][ô chọn]" trên thẻ thì nhãn chiếm mất
+  chỗ của chính hai ô ấy.
+*/
+const COT = {
+  thoiHan: { ten: "Thời hạn" },
+  viec: { ten: "Việc", chinh: true, lop: "min-w-40" },
+  khach: { ten: "Khách", lop: "min-w-40" },
+  nguoi: { ten: "Người làm · trạng thái", rong: true },
+} satisfies Record<string, CotBang>;
 
 type Props = { searchParams: Promise<{ nguoi?: string; tt?: string; so?: string }> };
 
@@ -217,75 +236,74 @@ export default async function CongViecPage({ searchParams }: Props) {
           ))}
       </div>
 
-      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Thời hạn</th>
-              <th className="px-4 py-2.5 font-medium">Việc</th>
-              <th className="px-4 py-2.5 font-medium">Khách</th>
-              <th className="px-4 py-2.5 font-medium">Người làm · trạng thái</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {hien.map((v) => {
-              const treHan = v.thoiHan !== null && v.thoiHan < nay && v.trangThai !== "Đã làm";
-              return (
-                <tr key={v.id} className="align-top transition hover:bg-bg-soft">
-                  <td className={`px-4 py-2.5 whitespace-nowrap tabular-nums ${treHan ? "font-medium text-amber-800" : "text-fg-muted"}`}>
-                    {ngayVN(v.thoiHan) || "—"}
-                    {treHan && <span className="block text-[11px]">quá hạn</span>}
-                  </td>
-                  <td className="min-w-40 px-4 py-2.5">
-                    {v.loai ?? "—"}
-                    {v.ghiChu && <span className="block text-xs text-fg-muted">{v.ghiChu}</span>}
-                  </td>
-                  <td className="min-w-40 px-4 py-2.5">
-                    {v.hopDong ? (
-                      <Link href={`/quan-ly/hop-dong/${v.hopDong.id}`} className="font-medium hover:text-accent">
-                        {v.hopDong.tenKhach}
-                      </Link>
-                    ) : (
-                      <span className="text-fg-faint">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <NutViec
-                      id={v.id}
-                      nguoiPhuTrachMaNV={v.nguoiPhuTrachMaNV}
-                      tenNguoiLam={
-                        v.nguoiPhuTrachMaNV
-                          ? (bangTen.get(v.nguoiPhuTrachMaNV.toLowerCase()) ?? null)
-                          : null
-                      }
-                      trangThai={v.trangThai}
-                      nhanVien={nhanVien}
-                      quanTri={quanTri}
-                      maToi={nguoi.maNV}
-                    />
-                    {v.trangThai === "Đã làm" && v.ngayHoanThanh && (
-                      <span className="mt-1 block text-xs text-fg-faint">
-                        xong {ngayVN(v.ngayHoanThanh)}
-                        {v.tienDo ? ` · ${v.tienDo}` : ""}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
+      <Bang
+        lop="mt-5"
+        cot={Object.values(COT)}
+        trong={
+          <>
             Không có đầu việc nào khớp bộ lọc.{" "}
             {(loc || tt !== "chua-xong") && (
               <Link href="/quan-ly/cong-viec" className="text-accent underline underline-offset-2">
                 Về việc chưa xong
               </Link>
             )}
-          </p>
-        )}
-      </div>
+          </>
+        }
+      >
+        {hien.map((v) => {
+          const treHan = v.thoiHan !== null && v.thoiHan < nay && v.trangThai !== "Đã làm";
+          return (
+            <Hang key={v.id} lop="align-top transition hover:bg-bg-soft">
+              <O
+                cot={COT.thoiHan}
+                lop={`whitespace-nowrap tabular-nums ${treHan ? "font-medium text-amber-800" : "text-fg-muted"}`}
+              >
+                {ngayVN(v.thoiHan) || "—"}
+                {/*
+                  "quá hạn" để `inline md:block`: trong bảng nó xuống dòng
+                  dưới ngày, còn trên thẻ thì nằm ngay sau — hai chữ không
+                  đáng một dòng riêng.
+                */}
+                {treHan && <span className="ml-1.5 text-[11px] md:ml-0 md:block">quá hạn</span>}
+              </O>
+              <O cot={COT.viec}>
+                {v.loai ?? "—"}
+                {v.ghiChu && <span className="block text-xs text-fg-muted">{v.ghiChu}</span>}
+              </O>
+              <O cot={COT.khach}>
+                {v.hopDong ? (
+                  <Link href={`/quan-ly/hop-dong/${v.hopDong.id}`} className="font-medium hover:text-accent">
+                    {v.hopDong.tenKhach}
+                  </Link>
+                ) : (
+                  <span className="text-fg-faint">—</span>
+                )}
+              </O>
+              <O cot={COT.nguoi}>
+                <NutViec
+                  id={v.id}
+                  nguoiPhuTrachMaNV={v.nguoiPhuTrachMaNV}
+                  tenNguoiLam={
+                    v.nguoiPhuTrachMaNV
+                      ? (bangTen.get(v.nguoiPhuTrachMaNV.toLowerCase()) ?? null)
+                      : null
+                  }
+                  trangThai={v.trangThai}
+                  nhanVien={nhanVien}
+                  quanTri={quanTri}
+                  maToi={nguoi.maNV}
+                />
+                {v.trangThai === "Đã làm" && v.ngayHoanThanh && (
+                  <span className="mt-1 block text-xs text-fg-faint">
+                    xong {ngayVN(v.ngayHoanThanh)}
+                    {v.tienDo ? ` · ${v.tienDo}` : ""}
+                  </span>
+                )}
+              </O>
+            </Hang>
+          );
+        })}
+      </Bang>
 
       {ds.length > hien.length && (
         <p className="mt-3 text-sm text-fg-muted">
