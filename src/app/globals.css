@@ -372,6 +372,137 @@ body {
     border-radius: 4px;
     box-shadow: var(--shadow-soft);
   }
+
+  /* ── BẢNG DÙNG CHUNG — anh duyệt 20/11/2026 ─────────────────────────
+     Xem KE-HOACH-GIAO-DIEN.md §2.2. Đo trước khi làm: 21 tệp trong
+     /quan-ly chép lại cùng một khung bảng, 21 chỗ chép lại cùng hàng tiêu
+     đề, và KHÔNG MỘT bảng nào có bản cho điện thoại — `md:hidden` dùng ở
+     đúng 0 chỗ. Trên màn 375px, bảng Hợp đồng 7 cột hiện được hai cột rưỡi.
+
+     DƯỚI 768px BẢNG THÀNH THẺ, làm bằng CSS thuần chứ không bằng hai nhánh
+     JSX. Hai nhánh JSX nghĩa là mỗi bảng viết hai lần, và sớm muộn hai bên
+     lệch nhau — đúng cái bẫy đã gặp với `laViecHauKy` hồi 19/11. Ở đây
+     markup chỉ có một: `<td data-nhan="Khách">`, còn CSS quyết nó hiện ra
+     ô trong bảng hay một dòng trong thẻ.
+
+     Ngưỡng 768px = `md` của Tailwind, để khớp với phần còn lại của trang.
+  */
+  .bang-khung {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--bg-raised);
+  }
+  .bang {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .bang thead tr {
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-soft);
+  }
+  .bang th {
+    padding: 0.625rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--fg-muted);
+    white-space: nowrap;
+  }
+  .bang tbody tr + tr {
+    border-top: 1px solid var(--line);
+  }
+  .bang td {
+    padding: 0.625rem 1rem;
+    vertical-align: top;
+  }
+  .bang th[data-phai],
+  .bang td[data-phai] {
+    text-align: right;
+  }
+
+  @media (max-width: 767px) {
+    .bang-khung {
+      /*
+        Thẻ KHÔNG nằm trong một khung có viền nữa: viền ngoài cộng viền từng
+        thẻ thành hai lớp kẻ sát nhau, trên màn hẹp nhìn rối. Mỗi thẻ tự là
+        một hộp.
+      */
+      overflow-x: visible;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+    .bang,
+    .bang tbody,
+    .bang tr,
+    .bang td {
+      display: block;
+    }
+    .bang thead {
+      display: none;
+    }
+    .bang tbody tr {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--bg-raised);
+      padding: 0.25rem 0;
+    }
+    .bang tbody tr + tr {
+      margin-top: 0.5rem;
+      border-top: 1px solid var(--line);
+    }
+    .bang td {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.3rem 0.875rem;
+      text-align: left;
+    }
+    /* Nhãn cột lấy thẳng từ markup, nên không có bảng tên thứ hai để lệch. */
+    .bang td[data-nhan]::before {
+      content: attr(data-nhan);
+      flex: none;
+      font-size: 0.6875rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--fg-faint);
+    }
+    .bang td[data-phai] {
+      text-align: right;
+    }
+    /*
+      Ô CHÍNH là tên của hàng — tên khách, tên việc. Nó thành tiêu đề thẻ:
+      chiếm trọn hàng, không nhãn, chữ đậm hơn. Không có ô chính thì thẻ chỉ
+      là một đống nhãn ngang nhau, nhìn không ra đang đọc nhà nào.
+    */
+    .bang td[data-chinh] {
+      display: block;
+      padding-top: 0.55rem;
+      padding-bottom: 0.4rem;
+      font-weight: 500;
+    }
+    .bang td[data-chinh]::before {
+      display: none;
+    }
+    /*
+      Ô đánh dấu `data-rong` bỏ nhãn và chiếm trọn hàng — dùng cho hàng nút,
+      hàng ô chọn. Một hàng "VIỆC   [Sửa] [Xoá]" trên thẻ nhìn vô nghĩa.
+    */
+    .bang td[data-rong] {
+      display: block;
+      padding-bottom: 0.55rem;
+    }
+    .bang td[data-rong]::before {
+      display: none;
+    }
+    /* Ô rỗng trên thẻ thì bỏ hẳn, đừng để một nhãn trỏ vào khoảng trống. */
+    .bang td:empty {
+      display: none;
+    }
+  }
 }
 
 /*
