@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MA_ALBUM } from "@/lib/maAlbum";
+import { LOP_NHOM, MAU_CHON, TEN_NHOM, mauMacDinh, laNhomLich } from "@/lib/lichChung";
 import {
   chepLoaiBuoiAction,
   suaLoaiBuoiAction,
@@ -14,6 +15,8 @@ export type DongLoai = {
   id: string;
   ten: string;
   maAlbum: string | null;
+  /** Màu trên lịch chụp. null = chưa gán, web suy theo tên. */
+  mau: string | null;
   dangDung: boolean;
   /** Bao nhiêu buổi chụp đang mang loại này. */
   soBuoi: number;
@@ -106,6 +109,7 @@ export function BangLoaiBuoi({ ds, laQuanLy }: { ds: DongLoai[]; laQuanLy: boole
             <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
               <th className="px-4 py-2.5 font-medium">Loại buổi</th>
               <th className="px-4 py-2.5 font-medium">Mã album</th>
+              <th className="px-4 py-2.5 font-medium">Màu trên lịch</th>
               <th className="px-4 py-2.5 text-right font-medium">Đang dùng</th>
               <th className="px-4 py-2.5 font-medium">Trạng thái</th>
               {laQuanLy && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
@@ -119,9 +123,9 @@ export function BangLoaiBuoi({ ds, laQuanLy }: { ds: DongLoai[]; laQuanLy: boole
                   d={d}
                   dang={dang}
                   onThoi={() => setSuaId(null)}
-                  onLuu={(ten, ma, dung) =>
+                  onLuu={(ten, ma, dung, mau) =>
                     batDau(async () => {
-                      const kq = await suaLoaiBuoiAction(d.id, { ten, maAlbum: ma, dangDung: dung });
+                      const kq = await suaLoaiBuoiAction(d.id, { ten, maAlbum: ma, dangDung: dung, mau });
                       if (xong(kq)) {
                         setSuaId(null);
                         if (kq.doiLich) setNhac(`Đã đổi tên, và ${kq.doiLich} buổi chụp đổi theo.`);
@@ -140,6 +144,9 @@ export function BangLoaiBuoi({ ds, laQuanLy }: { ds: DongLoai[]; laQuanLy: boole
                     ) : (
                       <span className="text-fg-faint">—</span>
                     )}
+                  </td>
+                  <td className="px-4 py-2.5 whitespace-nowrap">
+                    <ChipMau mau={d.mau} ten={d.ten} />
                   </td>
                   <td className="px-4 py-2.5 text-right text-fg-muted tabular-nums">{d.soBuoi}</td>
                   <td className="px-4 py-2.5 whitespace-nowrap">
@@ -208,6 +215,59 @@ export function BangLoaiBuoi({ ds, laQuanLy }: { ds: DongLoai[]; laQuanLy: boole
   );
 }
 
+/*
+  MÀU TRÊN LỊCH — anh chốt 20/11/2026.
+
+  Hiện cả khi CHƯA GÁN: lúc đó vẽ màu web đang tự suy theo tên, kèm chữ "tự
+  suy". Để trống hẳn thì nhìn bảng tưởng loại đó không có màu, trong khi trên
+  lịch nó vẫn đang mang một màu — hai nơi nói hai chuyện khác nhau.
+*/
+function ChipMau({ mau, ten }: { mau: string | null; ten: string }) {
+  const that = laNhomLich(mau) ? mau : null;
+  const hien = that ?? mauMacDinh(ten);
+  return (
+    <span className={`inline-flex items-center gap-2 ${LOP_NHOM[hien]}`}>
+      <span className="cham-lich" aria-hidden />
+      <span className="text-xs">{TEN_NHOM[hien]}</span>
+      {!that && <span className="text-[11px] text-fg-faint">tự suy</span>}
+    </span>
+  );
+}
+
+/** Ô chọn màu — năm màu gán được, cộng lựa chọn trả về "tự suy theo tên". */
+function ChonMau({ mau, ten, onDoi }: { mau: string; ten: string; onDoi: (m: string) => void }) {
+  const tuSuy = mauMacDinh(ten);
+  return (
+    <div className="flex flex-wrap gap-1">
+      <button
+        type="button"
+        onClick={() => onDoi("")}
+        title={`Để web tự suy theo tên — hiện đang ra "${TEN_NHOM[tuSuy]}"`}
+        className={`min-h-7 rounded-full border px-2.5 text-[11px] transition ${
+          mau === ""
+            ? "border-transparent bg-fg text-bg"
+            : "border-line-strong bg-bg text-fg-muted hover:border-accent hover:text-fg"
+        }`}
+      >
+        Tự suy
+      </button>
+      {MAU_CHON.map((m) => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => onDoi(m)}
+          className={`inline-flex min-h-7 items-center gap-1.5 rounded-full border px-2.5 text-[11px] transition ${LOP_NHOM[m]} ${
+            mau === m ? "border-fg" : "border-transparent opacity-70 hover:opacity-100"
+          }`}
+        >
+          <span className="cham-lich" aria-hidden />
+          {TEN_NHOM[m]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function ChonMa({ ma, onDoi }: { ma: string; onDoi: (m: string) => void }) {
   return (
     <div className="flex flex-wrap gap-1">
@@ -262,17 +322,18 @@ function DongSua({
 }: {
   d: DongLoai;
   dang: boolean;
-  onLuu: (ten: string, ma: string, dangDung: boolean) => void;
+  onLuu: (ten: string, ma: string, dangDung: boolean, mau: string) => void;
   onThoi: () => void;
 }) {
   const [ten, setTen] = useState(d.ten);
   const [ma, setMa] = useState(d.maAlbum ?? "");
   const [dung, setDung] = useState(d.dangDung);
+  const [mau, setMau] = useState(laNhomLich(d.mau) ? d.mau : "");
   const doiTen = ten.trim() !== d.ten;
 
   return (
     <tr className="bg-accent-soft/20">
-      <td colSpan={5} className="px-4 py-3">
+      <td colSpan={6} className="px-4 py-3">
         <div className="flex flex-wrap items-start gap-4">
           <label className="block min-w-56 flex-1">
             <span className="eyebrow block">Tên loại buổi</span>
@@ -299,11 +360,17 @@ function DongSua({
             Đang dùng
           </label>
         </div>
+        <div className="mt-3">
+          <span className="eyebrow block">Màu trên lịch chụp</span>
+          <div className="mt-1.5">
+            <ChonMau mau={mau} ten={ten} onDoi={setMau} />
+          </div>
+        </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => onLuu(ten, ma, dung)}
+            onClick={() => onLuu(ten, ma, dung, mau)}
             disabled={dang || !ten.trim()}
           >
             {dang ? "Đang lưu…" : "Lưu"}

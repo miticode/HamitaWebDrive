@@ -6,6 +6,7 @@ import { getPrisma } from "@/lib/db";
 import { layNguoiDung, laQuanTri } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { docMaAlbum } from "@/lib/docMaAlbum";
+import { MAU_CHON, laNhomLich } from "@/lib/lichChung";
 
 /**
  * Quản lý LOẠI BUỔI CHỤP — anh yêu cầu 18/11/2026.
@@ -27,6 +28,20 @@ function kiemTen(ten: string): { loi: string } | { ten: string } {
   if (!sach) return { loi: "Thiếu tên loại buổi." };
   if (sach.length > 60) return { loi: "Tên dài quá, tối đa 60 ký tự." };
   return { ten: sach };
+}
+
+/**
+ * Màu của loại buổi trên lịch (anh chốt 20/11/2026).
+ *
+ * Để trống = chưa gán, web tự suy theo tên (`mauMacDinh` trong lichChung.ts).
+ * Chỉ nhận màu nằm trong `MAU_CHON` — "tuthem" (đỏ) không có ở đó vì nó dành
+ * cho việc quản lý tự thêm, không phải cho một loại buổi.
+ */
+function kiemMau(mau: string): { loi: string } | { mau: string | null } {
+  const sach = mau.trim();
+  if (!sach) return { mau: null };
+  if (!laNhomLich(sach) || !MAU_CHON.includes(sach)) return { loi: "Màu không hợp lệ." };
+  return { mau: sach };
 }
 
 async function kiemMa(ma: string): Promise<{ loi: string } | { ma: string | null }> {
@@ -88,7 +103,7 @@ export async function themLoaiBuoiAction(ten: string, maAlbum: string): Promise<
  */
 export async function suaLoaiBuoiAction(
   id: string,
-  du: { ten: string; maAlbum: string; dangDung: boolean },
+  du: { ten: string; maAlbum: string; dangDung: boolean; mau: string },
 ): Promise<{ loi?: string; ok?: true; doiLich?: number }> {
   const nguoi = await quanLy();
   if (!nguoi) return { loi: "Chỉ quản lý mới sửa được danh mục này." };
@@ -97,9 +112,14 @@ export async function suaLoaiBuoiAction(
   if ("loi" in t) return t;
   const m = await kiemMa(du.maAlbum);
   if ("loi" in m) return m;
+  const mau = kiemMau(du.mau);
+  if ("loi" in mau) return mau;
 
   const prisma = getPrisma();
-  const cu = await prisma.loaiBuoi.findUnique({ where: { id }, select: { ten: true, maAlbum: true, dangDung: true } });
+  const cu = await prisma.loaiBuoi.findUnique({
+    where: { id },
+    select: { ten: true, maAlbum: true, dangDung: true, mau: true },
+  });
   if (!cu) return { loi: "Loại này không còn." };
 
   if (t.ten.toLowerCase() !== cu.ten.toLowerCase()) {
@@ -112,7 +132,10 @@ export async function suaLoaiBuoiAction(
 
   let doiLich = 0;
   await prisma.$transaction(async (tx) => {
-    await tx.loaiBuoi.update({ where: { id }, data: { ten: t.ten, maAlbum: m.ma, dangDung: du.dangDung } });
+    await tx.loaiBuoi.update({
+      where: { id },
+      data: { ten: t.ten, maAlbum: m.ma, dangDung: du.dangDung, mau: mau.mau },
+    });
     if (t.ten !== cu.ten) {
       const kq = await tx.lichChup.updateMany({ where: { loai: cu.ten }, data: { loai: t.ten } });
       doiLich = kq.count;
@@ -130,6 +153,7 @@ export async function suaLoaiBuoiAction(
         ...(t.ten !== cu.ten ? { ten: { cu: cu.ten, moi: t.ten }, soLichDoiTheo: doiLich } : {}),
         ...(m.ma !== cu.maAlbum ? { maAlbum: { cu: cu.maAlbum, moi: m.ma } } : {}),
         ...(du.dangDung !== cu.dangDung ? { dangDung: { cu: cu.dangDung, moi: du.dangDung } } : {}),
+        ...(mau.mau !== cu.mau ? { mau: { cu: cu.mau, moi: mau.mau } } : {}),
       },
     },
   });

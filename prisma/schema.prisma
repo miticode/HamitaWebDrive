@@ -1127,6 +1127,17 @@ model LichChup {
   /// Gia tri lay tu nhom "ly-do-trong-ngay" cua bang DanhMuc (co CRUD).
   lyDoTrong      String?
   ghiChu         String?
+  /// VIEC QUAN LY TU TAY THEM VAO LICH — anh yeu cau 20/11/2026.
+  ///
+  /// Hop, giao hang, di khao sat, nghi le… — thu khong co hop dong nao sinh
+  /// ra nhung van phai nam tren lich chup de ca tiem nhin thay. To MAU DO.
+  ///
+  /// Cot rieng chu KHONG doc theo `hopDongId === null`: quan he hop dong dung
+  /// `onDelete: SetNull`, nen mot buoi cua hop dong bi xoa se tu nhien thanh
+  /// "viec tu them" — sai ma khong ai phat hien. Do 20/11: 0/1.454 buoi hien
+  /// co khong gan hop dong, nghia la phep doan kia dang dung, va dung cho toi
+  /// dung lan xoa hop dong dau tien.
+  tuThem         Boolean   @default(false)
   /// "Hoàn thành" | "Đang làm" | "Chưa làm"
   trangThai      String?
   /// Cot "Hiển thị": mot dong chu gon AppSheet dung de ve len lich.
@@ -1417,6 +1428,20 @@ model LoaiBuoi {
   /// Ma album suy ra tu loai nay — "nhà gái" ra HER, "Đính Hôn" ra ĐH.
   /// null = loai nay khong suy ra ma nao (vd "Ngày chụp" chung chung).
   maAlbum    String?
+  /// MAU CUA LOAI BUOI NAY TREN LICH CHUP — anh chot 20/11/2026.
+  ///
+  /// Nhan mot trong: "cuoi" (xanh la) | "pre" (vang) | "makeup" (tim) |
+  /// "dichvu" (hong: baby, gia dinh, beauty, sinh nhat…) | "chua" (xam).
+  /// Mau do KHONG nam o day — no danh cho viec quan ly tu them vao lich, xem
+  /// `LichChup.tuThem`.
+  ///
+  /// null = CHUA AI GAN: luc do web suy theo ten (bang MAU_MAC_DINH trong
+  /// src/lib/lichChung.ts). Giu duoc mau dung cho 17 loai co san ma khong phai
+  /// ghi mot luot vao database — va anh sua loai nao thi loai do de len.
+  ///
+  /// Truoc 20/11 mau viet cung trong ma nguon, nen them mot loai buoi moi la
+  /// no ve mau xam cho toi khi co nguoi sua ma. Nay studio tu gan.
+  mau        String?
   /// Nho dung truoc trong o chon. Cung so thi xep theo ten.
   thuTu      Int      @default(0)
   /// false = khong hien trong o chon nua, nhung lich cu van doc binh thuong.

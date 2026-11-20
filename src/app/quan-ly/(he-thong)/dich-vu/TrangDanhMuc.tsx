@@ -109,7 +109,7 @@ export async function TrangDanhMuc({ nhom, nguoi }: { nhom: string; nguoi: Nguoi
   if (nhom === "loai-buoi") {
     const [ds, dem] = await Promise.all([
       prisma.loaiBuoi.findMany({
-        select: { id: true, ten: true, maAlbum: true, dangDung: true },
+        select: { id: true, ten: true, maAlbum: true, mau: true, dangDung: true },
         orderBy: [{ thuTu: "asc" }, { ten: "asc" }],
       }),
       prisma.lichChup.groupBy({ by: ["loai"], _count: { _all: true } }),

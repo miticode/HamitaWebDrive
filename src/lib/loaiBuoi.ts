@@ -70,3 +70,30 @@ export function maTheoBuoi(bang: Map<string, string>, loai: string | null | unde
   if (!loai) return null;
   return bang.get(loai.trim().toLowerCase()) ?? null;
 }
+
+/**
+ * Bảng tra loại buổi → MÀU trên lịch (anh chốt 20/11/2026).
+ *
+ * Lấy CẢ loại đã ngưng dùng, cùng lý do với `docMaTheoBuoi`: lịch cũ vẫn mang
+ * những loại đó và vẫn phải hiện đúng màu. Ngưng dùng chỉ có nghĩa "đừng cho
+ * chọn mới".
+ *
+ * Chỉ trả loại ĐÃ GÁN MÀU. Loại chưa gán không nằm trong bảng, và nơi gọi để
+ * `mauMacDinh` lo — xem `nhomCuaBuoi` trong lichChung.ts.
+ *
+ * `cache` của React như hai hàm trên: trang Lịch vẽ cả lưới lẫn bảng danh
+ * sách, không việc gì hỏi database hai lần (nguyên tắc 53).
+ */
+export const docMauTheoBuoi = cache(async (): Promise<Map<string, string>> => {
+  const ds = await getPrisma().loaiBuoi.findMany({
+    where: { mau: { not: null } },
+    select: { ten: true, mau: true },
+  });
+  return new Map(ds.map((x) => [x.ten.trim().toLowerCase(), x.mau!]));
+});
+
+/** Màu studio đã gán cho một loại buổi, hoặc null nếu chưa ai gán. */
+export function mauTheoBuoi(bang: Map<string, string>, loai: string | null | undefined): string | null {
+  if (!loai) return null;
+  return bang.get(loai.trim().toLowerCase()) ?? null;
+}

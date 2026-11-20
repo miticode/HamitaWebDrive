@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ngayVN } from "@/lib/hopDongChung";
-import { LOP_NHOM, TEN_NHOM, THU_TU_NHOM, nhomCuaLoai, type BuoiLich } from "@/lib/lichChung";
+import { LOP_NHOM, TEN_NHOM, THU_TU_NHOM, nhomCuaBuoi, type BuoiLich } from "@/lib/lichChung";
+import { NutSuaViecLich, NutThemViecLich } from "./NutViecLich";
 import { NutViec, type NhanVienGon } from "../cong-viec/NutViec";
 import { tien } from "@/lib/constants";
 
@@ -35,6 +36,7 @@ export function LuoiLich({
   thang,
   nay,
   moHopDong,
+  laQuanLy,
   nhanVien,
   quanTri,
   maToi,
@@ -46,6 +48,8 @@ export function LuoiLich({
   nay: string;
   /** Người này có được mở hợp đồng không — không thì tên khách là chữ trơn. */
   moHopDong: boolean;
+  /** Quản lý mới thêm/sửa được việc tự tay ghi vào lịch (anh chốt 20/11/2026). */
+  laQuanLy: boolean;
   /** Nhân viên còn làm, để ô chọn người của từng đầu việc có cái mà bày. */
   nhanVien: NhanVienGon[];
   quanTri: boolean;
@@ -153,8 +157,8 @@ export function LuoiLich({
               </span>
               <span className="mt-0.5 block space-y-0.5">
                 {cua.slice(0, CHIP_MOI_O).map((l) => (
-                  <span key={l.id} className={`chip-lich ${LOP_NHOM[nhomCuaLoai(l.loai)]}`}>
-                    {l.tenKhach || l.loai || "—"}
+                  <span key={l.id} className={`chip-lich ${LOP_NHOM[nhomCuaBuoi(l)]}`}>
+                    {l.tieuDe || l.tenKhach || l.loai || "—"}
                   </span>
                 ))}
               </span>
@@ -181,8 +185,15 @@ export function LuoiLich({
                 {ngayVN(ngayChon)}
                 {ngayChon === nay && <span className="ml-2 text-xs text-accent">hôm nay</span>}
               </h2>
-              <span className="text-xs text-fg-muted tabular-nums">
-                {cuaNgay.length} buổi
+              <span className="flex items-center gap-3">
+                <span className="text-xs text-fg-muted tabular-nums">{cuaNgay.length} buổi</span>
+                {/*
+                  Nút nằm TRONG panel ngày, không ở đầu trang: bấm nó là thêm
+                  việc vào đúng ngày đang mở, khỏi phải chọn lại ngày trong form.
+                */}
+                {laQuanLy && ngayChon && (
+                  <NutThemViecLich ngayGoiY={ngayChon} lop="btn btn-gon px-2.5 py-1 text-xs" />
+                )}
               </span>
             </div>
             {cuaNgay.length === 0 ? (
@@ -190,12 +201,14 @@ export function LuoiLich({
             ) : (
               <ul className="divide-y divide-line">
                 {cuaNgay.map((l) => (
-                  <li key={l.id} className={`flex flex-wrap items-start gap-x-3 gap-y-1 px-4 py-2.5 ${LOP_NHOM[nhomCuaLoai(l.loai)]}`}>
+                  <li key={l.id} className={`flex flex-wrap items-start gap-x-3 gap-y-1 px-4 py-2.5 ${LOP_NHOM[nhomCuaBuoi(l)]}`}>
                     <span className="mt-1.5 cham-lich" aria-hidden />
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-baseline gap-x-2">
                         {l.gio && <span className="font-medium tabular-nums">{l.gio}</span>}
-                        {l.hopDongId && l.tenKhach ? (
+                        {l.tuThem ? (
+                          <span className="font-medium">{l.tieuDe ?? "Việc của tiệm"}</span>
+                        ) : l.hopDongId && l.tenKhach ? (
                           moHopDong ? (
                             <Link href={`/quan-ly/hop-dong/${l.hopDongId}`} className="font-medium hover:text-accent">
                               {l.tenKhach}
@@ -206,6 +219,11 @@ export function LuoiLich({
                         ) : (
                           <span className="text-fg-muted">Không gắn hợp đồng</span>
                         )}
+                        {l.tuThem && laQuanLy && (
+                          <NutSuaViecLich
+                            viec={{ id: l.id, ngay: l.ngay, gio: l.gio, tieuDe: l.tieuDe, ghiChu: l.ghiChu }}
+                          />
+                        )}
                         {l.soDienThoai && (
                           <a href={`tel:${l.soDienThoai}`} className="text-xs text-fg-muted tabular-nums hover:text-accent">
                             {l.soDienThoai}
@@ -213,7 +231,7 @@ export function LuoiLich({
                         )}
                       </span>
                       <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-fg-muted">
-                        <span>{l.loai ?? "—"}</span>
+                        <span>{l.tuThem ? "Việc của tiệm" : (l.loai ?? "—")}</span>
                         {l.trangThai && (
                           <>
                             <span aria-hidden>·</span>

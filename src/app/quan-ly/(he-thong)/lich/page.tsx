@@ -6,7 +6,8 @@ import { batBuocDangNhap, laQuanTri, xemHopDong } from "@/lib/phienNhanVien";
 import { BUOC_XONG, ngayVN } from "@/lib/hopDongChung";
 import { laViecHauKy } from "@/lib/viecLich";
 import { khoaCuaToi, khoaNguoi } from "@/lib/hopDongMayChu";
-import { LOP_NHOM, nhomCuaLoai, type BuoiLich, type ViecBuoi } from "@/lib/lichChung";
+import { LOP_NHOM, nhomCuaBuoi, type BuoiLich, type ViecBuoi } from "@/lib/lichChung";
+import { docMauTheoBuoi, mauTheoBuoi } from "@/lib/loaiBuoi";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { LuoiLich } from "./LuoiLich";
 
@@ -85,7 +86,7 @@ export default async function LichPage({ searchParams }: Props) {
   const khoaToi = khoaCuaToi(nguoi);
   const quanTri = laQuanTri(nguoi);
 
-  const [ds, demLoai, choNgay, dsNhanVien] = await Promise.all([
+  const [ds, demLoai, choNgay, dsNhanVien, mauBuoi] = await Promise.all([
     prisma.lichChup.findMany({
       where,
       select: {
@@ -93,6 +94,8 @@ export default async function LichPage({ searchParams }: Props) {
         ngay: true,
         gio: true,
         loai: true,
+        tuThem: true,
+        hienThi: true,
         trangThai: true,
         ghiChu: true,
         hopDong: { select: { id: true, tenKhach: true, khachHang: { select: { soDienThoai: true } } } },
@@ -159,7 +162,16 @@ export default async function LichPage({ searchParams }: Props) {
       orderBy: { ten: "asc" },
       select: { maNV: true, tenDangNhap: true, ten: true },
     }),
+    /*
+      Màu studio gán cho từng loại buổi (anh chốt 20/11/2026) — một truy vấn
+      cho cả trang, dùng chung cho lưới, bảng danh sách và khu "Chờ xếp ngày".
+    */
+    docMauTheoBuoi(),
   ]);
+
+  /** Màu của một buổi, gộp sẵn để ba chỗ vẽ không ai phải tự tra bảng. */
+  const nhomMau = (l: { loai: string | null; tuThem?: boolean }) =>
+    nhomCuaBuoi({ loai: l.loai, mau: mauTheoBuoi(mauBuoi, l.loai), tuThem: l.tuThem });
 
   /*
     ĐẦU VIỆC CỦA CÁC BUỔI TRONG THÁNG — anh yêu cầu 19/11/2026.
@@ -251,6 +263,10 @@ export default async function LichPage({ searchParams }: Props) {
     ngay: l.ngay,
     gio: l.gio,
     loai: l.loai,
+    mau: mauTheoBuoi(mauBuoi, l.loai),
+    tuThem: l.tuThem,
+    /* Chỉ việc tự thêm mới cần — buổi của hợp đồng đã có tên khách. */
+    tieuDe: l.tuThem ? l.hienThi : null,
     trangThai: l.trangThai,
     ghiChu: l.ghiChu,
     hopDongId: l.hopDong?.id ?? null,
@@ -333,7 +349,7 @@ export default async function LichPage({ searchParams }: Props) {
                 key={l.id}
                 className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-md border border-amber-300/70 bg-bg-raised px-3.5 py-2.5 text-sm"
               >
-                <span className={`inline-flex items-center gap-2 ${LOP_NHOM[nhomCuaLoai(l.loai)]}`}>
+                <span className={`inline-flex items-center gap-2 ${LOP_NHOM[nhomMau(l)]}`}>
                   <span className="cham-lich" aria-hidden />
                   {l.loai ?? "—"}
                 </span>
@@ -380,6 +396,7 @@ export default async function LichPage({ searchParams }: Props) {
           thang={thang}
           nay={nay}
           moHopDong={moHopDong}
+          laQuanLy={quanTri}
           nhanVien={dsNhanVien.map((n) => ({ maNV: khoaNguoi(n), ten: n.ten }))}
           quanTri={quanTri}
           maToi={khoaToi}
@@ -405,10 +422,11 @@ export default async function LichPage({ searchParams }: Props) {
                   {l.gio ? <span className="font-medium">{l.gio}</span> : <span className="text-fg-faint">—</span>}
                 </td>
                 {/* Chấm màu cùng bảng với lưới — học màu một lần, đọc được cả hai kiểu xem. */}
-                <td className={`px-4 py-2.5 whitespace-nowrap ${LOP_NHOM[nhomCuaLoai(l.loai)]}`}>
+                <td className={`px-4 py-2.5 whitespace-nowrap ${LOP_NHOM[nhomMau(l)]}`}>
                   <span className="inline-flex items-center gap-2">
                     <span className="cham-lich" aria-hidden />
-                    {l.loai ?? "—"}
+                    {/* Việc tự thêm không có loại buổi — tên việc đứng vào chỗ đó. */}
+                    {l.tuThem ? (l.hienThi ?? "Việc của tiệm") : (l.loai ?? "—")}
                   </span>
                 </td>
                 <td className="min-w-40 px-4 py-2.5">

@@ -870,13 +870,19 @@ body {
 
   Anh yêu cầu 15/11/2026 — "làm giống bên Lark cho dễ dùng".
 
-  Tám nhóm màu, chia ở `src/lib/lichChung.ts`. Mỗi nhóm đặt ba biến rồi
-  `.chip-lich` dùng chung — thêm một nhóm sau này chỉ phải viết đúng một khối
-  ba dòng, không phải đụng vào chỗ vẽ chip.
+  Chia lại 20/11/2026 theo VIỆC của tiệm, không theo tên buổi: xanh lá ngày
+  cưới, vàng prewedding, tím makeup, hồng dịch vụ ngoài cưới, đỏ việc quản lý
+  tự thêm, xám chưa gán. Bản 15/11 chia tám nhóm theo tên nên nhà gái và nhà
+  trai thành hai màu khác nhau trong khi cùng một ngày cưới.
+
+  Loại buổi nào mang màu nào thì do studio gán, ở trang Loại buổi — xem
+  `src/lib/lichChung.ts`. Mỗi nhóm đặt ba biến rồi `.chip-lich` dùng chung:
+  thêm một nhóm sau này chỉ phải viết đúng một khối ba dòng, không đụng vào
+  chỗ vẽ chip.
 
   KHÔNG dùng lớp tiện ích màu của Tailwind ở đây, dù phần còn lại của trang
   quản lý có dùng. Lý do: mỗi màu Tailwind mới kéo theo một dòng chỉnh riêng
-  trong khối `[data-admin-theme="dark"]` phía trên, tám nhóm là tám lần nhớ,
+  trong khối `[data-admin-theme="dark"]` phía trên, sáu nhóm là sáu lần nhớ,
   sót một cái là một mảng chói giữa nền tối. Đặt bằng biến thì bản tối chỉ
   cần khai lại đúng những biến đó.
 
@@ -927,42 +933,44 @@ body {
   background: var(--lich-vien);
 }
 
-.l-chup {
+/* Xanh lá — mọi buổi thuộc chuỗi ngày cưới. */
+.l-cuoi {
   --lich-nen: #dcfce7;
   --lich-chu: #14532d;
   --lich-vien: #22c55e;
 }
-.l-gai {
-  --lich-nen: #fce7f3;
-  --lich-chu: #831843;
-  --lich-vien: #ec4899;
-}
-.l-trai {
-  --lich-nen: #dbeafe;
-  --lich-chu: #1e3a8a;
-  --lich-vien: #3b82f6;
-}
-.l-cuoi {
-  --lich-nen: #fee2e2;
-  --lich-chu: #7f1d1d;
-  --lich-vien: #ef4444;
-}
-.l-be {
+/* Vàng — prewedding, chụp trước ngày cưới. */
+.l-pre {
   --lich-nen: #fef3c7;
   --lich-chu: #78350f;
   --lich-vien: #f59e0b;
 }
-.l-su {
-  --lich-nen: #ccfbf1;
-  --lich-chu: #134e4a;
-  --lich-vien: #14b8a6;
-}
+/* Tím — makeup. */
 .l-makeup {
   --lich-nen: #ede9fe;
   --lich-chu: #4c1d95;
   --lich-vien: #8b5cf6;
 }
-.l-khac {
+/* Hồng — baby, gia đình, beauty, sinh nhật… */
+.l-dichvu {
+  --lich-nen: #fce7f3;
+  --lich-chu: #831843;
+  --lich-vien: #ec4899;
+}
+/*
+  Đỏ — việc quản lý tự tay thêm vào lịch.
+
+  Đỏ là màu duy nhất ở đây KHÔNG gắn với một loại buổi nào: nó nói "cái này
+  không phải buổi chụp của khách". Cũng vì thế mà để đỏ — mắt bắt nó trước
+  mọi màu khác trên lưới, và nó hiếm nên không làm lịch chói.
+*/
+.l-tuthem {
+  --lich-nen: #fee2e2;
+  --lich-chu: #7f1d1d;
+  --lich-vien: #ef4444;
+}
+/* Xám — loại buổi chưa ai gán màu. */
+.l-chua {
   --lich-nen: #e7e5e4;
   --lich-chu: #292524;
   --lich-vien: #a8a29e;
@@ -973,35 +981,27 @@ body {
   sáng. Viền trái GIỮ NGUYÊN màu đặc của bản ngày — nó nhỏ, nổi tốt trên cả
   hai nền, và là thứ duy nhất phải nhận ra ngay từ xa.
 */
-[data-admin-theme="dark"] .l-chup {
+[data-admin-theme="dark"] .l-cuoi {
   --lich-nen: #14271c;
   --lich-chu: #86efac;
 }
-[data-admin-theme="dark"] .l-gai {
-  --lich-nen: #2b1620;
-  --lich-chu: #f9a8d4;
-}
-[data-admin-theme="dark"] .l-trai {
-  --lich-nen: #16213a;
-  --lich-chu: #93c5fd;
-}
-[data-admin-theme="dark"] .l-cuoi {
-  --lich-nen: #2c1a1a;
-  --lich-chu: #fca5a5;
-}
-[data-admin-theme="dark"] .l-be {
+[data-admin-theme="dark"] .l-pre {
   --lich-nen: #2b2210;
   --lich-chu: #fcd34d;
-}
-[data-admin-theme="dark"] .l-su {
-  --lich-nen: #11292a;
-  --lich-chu: #5eead4;
 }
 [data-admin-theme="dark"] .l-makeup {
   --lich-nen: #211b33;
   --lich-chu: #c4b5fd;
 }
-[data-admin-theme="dark"] .l-khac {
+[data-admin-theme="dark"] .l-dichvu {
+  --lich-nen: #2b1620;
+  --lich-chu: #f9a8d4;
+}
+[data-admin-theme="dark"] .l-tuthem {
+  --lich-nen: #2c1a1a;
+  --lich-chu: #fca5a5;
+}
+[data-admin-theme="dark"] .l-chua {
   --lich-nen: #26231f;
   --lich-chu: #d6d3d1;
 }

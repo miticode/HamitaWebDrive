@@ -63,6 +63,9 @@ export type HanhDong =
   | "giao-dau-viec"
   | "doi-trang-thai-viec"
   | "sua-lich-chup"
+  | "them-viec-lich"
+  | "sua-viec-lich"
+  | "xoa-viec-lich"
   /*
     Việc trên trang quản lý ALBUM ẢNH (anh yêu cầu 28/09/2026). Trước đó nhật
     ký chỉ theo dõi phần CRM, còn cả mảng ảnh — nơi làm việc chính của phòng
@@ -147,6 +150,9 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "giao-dau-viec": "Giao đầu việc",
   "doi-trang-thai-viec": "Đổi trạng thái đầu việc",
   "sua-lich-chup": "Sửa lịch chụp",
+  "them-viec-lich": "Thêm việc vào lịch",
+  "sua-viec-lich": "Sửa việc trên lịch",
+  "xoa-viec-lich": "Xoá việc trên lịch",
   "tao-album": "Tạo album ảnh",
   "tao-album-tu-hop-dong": "Tạo thư mục Drive và album từ hợp đồng",
   "tao-album-tu-hop-dong-loi": "Tạo thư mục Drive từ hợp đồng KHÔNG THÀNH",
