@@ -102,7 +102,7 @@ export function BangGiaHangMuc({
   }
   const tenBuoi = (n: number) => dsBuoi.find((b) => b.thuTu + 1 === n)?.ten;
   const nhanBuoi = (k: string) => {
-    if (k === "") return "Không gắn buổi · hậu kỳ, tính cả hợp đồng";
+    if (k === "") return "Làm sau, không ra buổi chụp nào · hậu kỳ";
     const n = Number(k);
     const t = tenBuoi(n);
     return t ? `Buổi ${n} · ${t}` : `Buổi ${n} · (gói chưa khai buổi này)`;
@@ -120,8 +120,10 @@ export function BangGiaHangMuc({
           <h2 className="eyebrow">Đầu việc &amp; tiền công</h2>
           <p className="mt-1 max-w-xl text-xs leading-relaxed text-fg-faint">
             Mỗi dòng ở đây tự thành một đầu việc khi hợp đồng chọn dịch vụ này, kèm sẵn tiền công
-            người làm nhận. Ô <b>Buổi</b> cho biết việc làm hôm nào — nhờ đó lịch chụp chia được
-            việc cho từng buổi. Chỉ quản lý thấy bảng này.
+            người làm nhận. Ô <b>“Làm ở buổi chụp nào”</b> không hỏi việc đó là việc gì — nó hỏi
+            người làm việc đó phải có mặt ở <b>buổi chụp nào</b>. Makeup, stylist, thợ chụp đều có
+            mặt cùng một buổi thì cùng chọn buổi ấy; Photoshop, Xưởng in làm sau nên chọn “làm
+            sau”. Nhờ vậy lịch chụp chia được việc cho từng buổi. Chỉ quản lý thấy bảng này.
           </p>
         </div>
         {!sua && (
@@ -166,18 +168,18 @@ export function BangGiaHangMuc({
                 />
               </label>
 
-              <label className="w-52">
-                <span className="eyebrow block">Buổi</span>
+              <label className="w-60">
+                <span className="eyebrow block">Làm ở buổi chụp nào</span>
                 <select
                   value={d.buoiThu}
                   onChange={(e) => doi(i, { buoiThu: e.target.value })}
                   className="input mt-1 py-1.5 text-sm"
                 >
                   {/* Hậu kỳ đứng đầu vì đó là mặc định của 313 dòng cũ. */}
-                  <option value="">— hậu kỳ, không buổi —</option>
+                  <option value="">— Làm sau, không ra buổi —</option>
                   {dsBuoi.map((b) => (
                     <option key={b.thuTu} value={b.thuTu + 1}>
-                      Buổi {b.thuTu + 1} · {b.ten}
+                      Có mặt buổi {b.thuTu + 1} · {b.ten}
                     </option>
                   ))}
                   {/*

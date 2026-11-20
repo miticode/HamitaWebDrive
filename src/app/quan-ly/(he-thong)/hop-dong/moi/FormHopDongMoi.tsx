@@ -1204,7 +1204,7 @@ export function FormHopDongMoi({
       {/* ── Đầu việc ──────────────────────────────────────────────────── */}
       <Khung
         ten="Đầu việc"
-        chu="Việc tự sinh theo bảng giá hạng mục của từng dịch vụ, kèm tiền công người làm nhận. Ô buổi quyết định việc hiện lên lịch chụp ngày nào."
+        chu="Việc tự sinh theo bảng giá hạng mục của từng dịch vụ, kèm tiền công người làm nhận. Ô bên phải không hỏi việc đó là việc gì — nó hỏi người làm phải có mặt ở buổi chụp nào, và quyết định việc hiện lên lịch ngày nào."
       >
         {viecGoiY.length === 0 ? (
           <p className="text-sm text-fg-muted">
@@ -1256,9 +1256,9 @@ export function FormHopDongMoi({
                       onChange={(e) => setBuoiViec((cu) => new Map(cu).set(v.khoa, e.target.value))}
                       disabled={bo}
                       className="input w-full py-1 text-xs sm:w-auto sm:min-w-[11rem]"
-                      title="Việc này làm ở buổi nào — quyết định nó hiện lên lịch ngày nào"
+                      title="Người làm việc này có mặt ở buổi chụp nào — quyết định nó hiện lên lịch ngày nào"
                     >
-                      <option value="">— hậu kỳ, không buổi —</option>
+                      <option value="">— Làm sau, không ra buổi —</option>
                       {lich.map((_, i) => (
                         <option key={i} value={i}>
                           {nhanLich(i)}
@@ -1317,7 +1317,7 @@ export function FormHopDongMoi({
                       }
                       className="input w-full py-1 text-xs sm:w-auto sm:min-w-[11rem]"
                     >
-                      <option value="">— hậu kỳ, không buổi —</option>
+                      <option value="">— Làm sau, không ra buổi —</option>
                       {lich.map((_, k) => (
                         <option key={k} value={k}>
                           {nhanLich(k)}
