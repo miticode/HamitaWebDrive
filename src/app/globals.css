@@ -457,9 +457,33 @@ body {
       display: flex;
       align-items: baseline;
       justify-content: space-between;
-      gap: 1rem;
+      /*
+        XUỐNG DÒNG ĐƯỢC khi nhãn cộng giá trị không vừa một hàng.
+
+        Nhiều ô mang `whitespace-nowrap` để ngày tháng và số tiền không bị cắt
+        giữa chừng trong bảng. Trên thẻ thì nhãn `::before` đứng cùng hàng với
+        giá trị ấy, nên một cặp như "NGƯỜI THU · DUYỆT" + "Trần Thanh Tùng"
+        thành một dòng cứng 430px và kéo cả trang cuộn ngang — đo 20/11 trên
+        bảng Phiếu thu.
+
+        `flex-wrap` để giá trị tụt xuống dòng dưới nhãn, mà bản thân nó vẫn
+        không bị ngắt giữa con số.
+      */
+      flex-wrap: wrap;
+      gap: 0.15rem 1rem;
       padding: 0.3rem 0.875rem;
       text-align: left;
+    }
+    /*
+      Dòng phụ trong ô (ghi chú, "duyệt: …", số tài khoản) viết bằng
+      `<span className="block">` nên phải tụt xuống dòng riêng — không thì nó
+      đứng cạnh giá trị chính và đọc thành một câu lạ: "Thanh toán đủ khách
+      chuyển sáng". Trong flex, `display: block` không đủ: item vẫn nằm cùng
+      hàng, phải cho nó chiếm trọn một dòng.
+    */
+    .bang td[data-nhan] > .block {
+      flex: 1 0 100%;
+      text-align: right;
     }
     /* Nhãn cột lấy thẳng từ markup, nên không có bảng tên thứ hai để lệch. */
     .bang td[data-nhan]::before {

@@ -8,8 +8,28 @@ import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { Chip } from "../Chip";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { NutPhieuThu } from "../hop-dong/[id]/NutHopDong";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+/*
+  CỘT KHAI THEO TÊN, không phải theo chỉ số.
+
+  Bảng này có một cột CHỈ HIỆN VỚI QUẢN LÝ ("Việc"). Khai mảng rồi tra bằng
+  `COT[6]` thì chỉ số trượt đúng một nấc với người thường, và mọi ô sau đó
+  mang nhầm nhãn — trên điện thoại là nhãn sai chình ình giữa thẻ. Tra bằng
+  tên thì thêm bớt cột bao nhiêu cũng không lệch.
+*/
+const COT = {
+  ngay: { ten: "Ngày" },
+  khach: { ten: "Khách", chinh: true, lop: "min-w-40" },
+  noiDung: { ten: "Nội dung" },
+  hinhThuc: { ten: "Hình thức" },
+  soTien: { ten: "Số tiền", phai: true },
+  trangThai: { ten: "Trạng thái" },
+  nguoi: { ten: "Người thu · duyệt" },
+  viec: { ten: "Việc", phai: true, rong: true },
+} satisfies Record<string, CotBang>;
 
 type Props = { searchParams: Promise<{ thang?: string; ht?: string; tt?: string }> };
 
@@ -117,65 +137,66 @@ export default async function PhieuThuPage({ searchParams }: Props) {
         </div>
       )}
 
-      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Ngày</th>
-              <th className="px-4 py-2.5 font-medium">Khách</th>
-              <th className="px-4 py-2.5 font-medium">Nội dung</th>
-              <th className="px-4 py-2.5 font-medium">Hình thức</th>
-              <th className="px-4 py-2.5 text-right font-medium">Số tiền</th>
-              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
-              <th className="px-4 py-2.5 font-medium">Người thu · duyệt</th>
-              {/* Chỉ quản lý mới thấy cột việc — và cũng chỉ họ gọi được hai action đó. */}
-              {quanTri && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((p) => (
-              <tr key={p.id} className="align-top transition hover:bg-bg-soft">
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{ngayVN(p.ngayThu)}</td>
-                <td className="min-w-40 px-4 py-2.5">
-                  {p.hopDong ? (
-                    <Link href={`/quan-ly/hop-dong/${p.hopDong.id}`} className="font-medium hover:text-accent">
-                      {p.hopDong.tenKhach || "(không tên)"}
-                    </Link>
-                  ) : (
-                    <span className="text-fg-faint">—</span>
-                  )}
-                </td>
-                <td className="px-4 py-2.5">
-                  {p.noiDung ?? "—"}
-                  {p.ghiChu && <span className="block text-xs text-fg-muted">{p.ghiChu}</span>}
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
-                  {p.hinhThuc ?? "—"}
-                  {p.taiKhoan && <span className="block text-xs text-fg-faint">{p.taiKhoan}</span>}
-                </td>
-                <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">{tien(p.soTien)}đ</td>
-                <td className={`px-4 py-2.5 whitespace-nowrap ${p.trangThai === "Chờ duyệt" ? "font-medium text-amber-800" : "text-fg-muted"}`}>
-                  {p.trangThai}
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
-                  {tenNV(bangTen, p.nguoiTaoMaNV) ?? "—"}
-                  {p.nguoiDuyetMaNV && <span className="block text-xs text-fg-faint">duyệt: {tenNV(bangTen, p.nguoiDuyetMaNV)}</span>}
-                </td>
-                {quanTri && (
-                  <td className="px-4 py-2.5">
-                    <NutPhieuThu id={p.id} choDuyet={p.trangThai === "Chờ duyệt"} />
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
-            {choDuyet ? "Không có phiếu nào chờ duyệt." : "Tháng này chưa có phiếu thu nào."}
-          </p>
-        )}
-      </div>
+      <Bang
+        lop="mt-5"
+        /* Cột "Việc" chỉ quản lý thấy — và cũng chỉ họ gọi được hai action đó. */
+        cot={[
+          COT.ngay,
+          COT.khach,
+          COT.noiDung,
+          COT.hinhThuc,
+          COT.soTien,
+          COT.trangThai,
+          COT.nguoi,
+          ...(quanTri ? [COT.viec] : []),
+        ]}
+        trong={choDuyet ? "Không có phiếu nào chờ duyệt." : "Tháng này chưa có phiếu thu nào."}
+      >
+        {ds.map((p) => (
+          <Hang key={p.id} lop="align-top transition hover:bg-bg-soft">
+            <O cot={COT.ngay} lop="whitespace-nowrap text-fg-muted tabular-nums">
+              {ngayVN(p.ngayThu)}
+            </O>
+            <O cot={COT.khach}>
+              {p.hopDong ? (
+                <Link href={`/quan-ly/hop-dong/${p.hopDong.id}`} className="font-medium hover:text-accent">
+                  {p.hopDong.tenKhach || "(không tên)"}
+                </Link>
+              ) : (
+                <span className="text-fg-faint">—</span>
+              )}
+            </O>
+            <O cot={COT.noiDung}>
+              {p.noiDung ?? "—"}
+              {p.ghiChu && <span className="block text-xs text-fg-muted">{p.ghiChu}</span>}
+            </O>
+            <O cot={COT.hinhThuc} lop="whitespace-nowrap text-fg-muted">
+              {p.hinhThuc ?? "—"}
+              {p.taiKhoan && <span className="block text-xs text-fg-faint">{p.taiKhoan}</span>}
+            </O>
+            <O cot={COT.soTien} lop="whitespace-nowrap tabular-nums">
+              {tien(p.soTien)}đ
+            </O>
+            <O
+              cot={COT.trangThai}
+              lop={`whitespace-nowrap ${p.trangThai === "Chờ duyệt" ? "font-medium text-amber-800" : "text-fg-muted"}`}
+            >
+              {p.trangThai}
+            </O>
+            <O cot={COT.nguoi} lop="whitespace-nowrap text-fg-muted">
+              {tenNV(bangTen, p.nguoiTaoMaNV) ?? "—"}
+              {p.nguoiDuyetMaNV && (
+                <span className="block text-xs text-fg-faint">duyệt: {tenNV(bangTen, p.nguoiDuyetMaNV)}</span>
+              )}
+            </O>
+            {quanTri && (
+              <O cot={COT.viec}>
+                <NutPhieuThu id={p.id} choDuyet={p.trangThai === "Chờ duyệt"} />
+              </O>
+            )}
+          </Hang>
+        ))}
+      </Bang>
     </div>
   );
 }

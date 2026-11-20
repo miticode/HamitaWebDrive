@@ -26,15 +26,15 @@ type Props = { searchParams: Promise<{ q?: string; tt?: string; loai?: string; n
   "Sắp chụp" đứng cạnh "Ngày đặt" vì hai cột ngày đi cùng nhau thì mắt so
   được ngay.
 */
-const COT: CotBang[] = [
-  { ten: "Khách", chinh: true, lop: "min-w-48" },
-  { ten: "Ngày đặt" },
-  { ten: "Sắp chụp" },
-  { ten: "Loại" },
-  { ten: "Trạng thái" },
-  { ten: "Tổng tiền", phai: true },
-  { ten: "Còn lại", phai: true },
-];
+const COT = {
+  khach: { ten: "Khách", chinh: true, lop: "min-w-48" },
+  ngayDat: { ten: "Ngày đặt" },
+  sapChup: { ten: "Sắp chụp" },
+  loai: { ten: "Loại" },
+  trangThai: { ten: "Trạng thái" },
+  tongTien: { ten: "Tổng tiền", phai: true },
+  conLai: { ten: "Còn lại", phai: true },
+} satisfies Record<string, CotBang>;
 
 const MOI_LUOT = 100;
 
@@ -214,7 +214,7 @@ export default async function HopDongPage({ searchParams }: Props) {
 
       <Bang
         lop="mt-4"
-        cot={COT}
+        cot={Object.values(COT)}
         trong={
           /* Trạng thái rỗng phải có LỐI RA, đừng để người mới kẹt (mục P2-3). */
           <>
@@ -229,7 +229,7 @@ export default async function HopDongPage({ searchParams }: Props) {
       >
         {hien.map((h) => (
           <Hang key={h.id} lop="align-top transition hover:bg-bg-soft">
-            <O cot={COT[0]}>
+            <O cot={COT.khach}>
               <Link href={`/quan-ly/hop-dong/${h.id}`} className="font-medium hover:text-accent">
                 {h.tenKhach || h.khachHang?.ten || h.maHD}
               </Link>
@@ -237,10 +237,10 @@ export default async function HopDongPage({ searchParams }: Props) {
                 <span className="block text-xs text-fg-faint tabular-nums">{h.khachHang.soDienThoai}</span>
               )}
             </O>
-            <O cot={COT[1]} lop="whitespace-nowrap text-fg-muted tabular-nums">
+            <O cot={COT.ngayDat} lop="whitespace-nowrap text-fg-muted tabular-nums">
               {ngayVN(h.ngayDat)}
             </O>
-            <O cot={COT[2]} lop="whitespace-nowrap">
+            <O cot={COT.sapChup} lop="whitespace-nowrap">
               {(() => {
                 const ngay = sapChup.get(h.id);
                 if (!ngay) return <span className="text-fg-faint">—</span>;
@@ -263,18 +263,18 @@ export default async function HopDongPage({ searchParams }: Props) {
                 );
               })()}
             </O>
-            <O cot={COT[3]} lop="whitespace-nowrap text-fg-muted">
+            <O cot={COT.loai} lop="whitespace-nowrap text-fg-muted">
               {h.loaiDV}
             </O>
-            <O cot={COT[4]}>
+            <O cot={COT.trangThai}>
               <ChipTrangThai trangThai={h.trangThai} />
             </O>
-            <O cot={COT[5]} lop="whitespace-nowrap tabular-nums">
+            <O cot={COT.tongTien} lop="whitespace-nowrap tabular-nums">
               {tien(h.tongTien)}đ
             </O>
             {/* Số ÂM là studio THU DƯ — nói rõ, đừng để nó chìm vào màu xám. */}
             <O
-              cot={COT[6]}
+              cot={COT.conLai}
               lop={`whitespace-nowrap tabular-nums ${
                 h.conLai > 0 ? "font-medium text-amber-800" : h.conLai < 0 ? "text-accent" : "text-fg-faint"
               }`}

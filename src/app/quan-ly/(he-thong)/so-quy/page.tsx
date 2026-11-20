@@ -10,8 +10,21 @@ import { CHO_DUYET, HINH_THUC_CHI } from "@/lib/soQuyChung";
 import { Chip } from "../Chip";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { NutChi, NutGhiChi } from "./GhiChi";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+/* Khai theo TÊN vì cột "Việc" chỉ quản lý thấy — xem phieu-thu/page.tsx. */
+const COT = {
+  ngay: { ten: "Ngày" },
+  khoan: { ten: "Khoản chi", chinh: true, lop: "min-w-40" },
+  dienGiai: { ten: "Diễn giải" },
+  hinhThuc: { ten: "Hình thức" },
+  soTien: { ten: "Số tiền", phai: true },
+  trangThai: { ten: "Trạng thái" },
+  nguoi: { ten: "Người ghi · duyệt" },
+  viec: { ten: "Việc", phai: true, rong: true },
+} satisfies Record<string, CotBang>;
 
 type Props = { searchParams: Promise<{ thang?: string; ht?: string; tt?: string }> };
 
@@ -204,71 +217,69 @@ export default async function SoQuyPage({ searchParams }: Props) {
         </>
       )}
 
-      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Ngày</th>
-              <th className="px-4 py-2.5 font-medium">Khoản chi</th>
-              <th className="px-4 py-2.5 font-medium">Diễn giải</th>
-              <th className="px-4 py-2.5 font-medium">Hình thức</th>
-              <th className="px-4 py-2.5 text-right font-medium">Số tiền</th>
-              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
-              <th className="px-4 py-2.5 font-medium">Người ghi · duyệt</th>
-              {quanTri && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((c) => (
-              <tr key={c.id} className="align-top transition hover:bg-bg-soft">
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{ngayVN(c.ngayChi)}</td>
-                <td className="min-w-40 px-4 py-2.5 font-medium">
-                  {c.khoanChi ?? <span className="font-normal text-fg-faint">(không ghi)</span>}
-                  {c.nguoiNhan && <span className="block text-xs font-normal text-fg-muted">nhận: {c.nguoiNhan}</span>}
-                </td>
-                <td className="px-4 py-2.5">
-                  {c.dienGiai ?? "—"}
-                  {c.ghiChu && <span className="block text-xs text-fg-muted">{c.ghiChu}</span>}
-                  {c.anhKho && (
-                    <a
-                      href={`/api/quan-ly/chung-tu/${c.anhKho}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-0.5 block text-xs text-accent hover:underline"
-                    >
-                      Xem chứng từ
-                    </a>
-                  )}
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
-                  {c.hinhThuc ?? "—"}
-                  {c.taiKhoan && <span className="block text-xs text-fg-faint">{c.taiKhoan}</span>}
-                </td>
-                <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">{tien(c.soTien)}đ</td>
-                <td className="px-4 py-2.5 whitespace-nowrap">
-                  <Chip chu={c.trangThai} kieu={c.trangThai === CHO_DUYET ? "cho" : "xong"} />
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
-                  {tenNV(bangTen, c.nguoiTaoMaNV) ?? "—"}
-                  {c.nguoiDuyetMaNV && (
-                    <span className="block text-xs text-fg-faint">duyệt: {tenNV(bangTen, c.nguoiDuyetMaNV)}</span>
-                  )}
-                </td>
-                {quanTri && (
-                  <td className="px-4 py-2.5">
-                    <NutChi id={c.id} choDuyet={c.trangThai === CHO_DUYET} tuAppSheet={!!c.bamAppSheet} />
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
-            {choDuyet ? "Không có khoản nào chờ duyệt." : "Tháng này chưa có khoản chi nào."}
-          </p>
-        )}
-      </div>
+      <Bang
+        lop="mt-5"
+        cot={[
+          COT.ngay,
+          COT.khoan,
+          COT.dienGiai,
+          COT.hinhThuc,
+          COT.soTien,
+          COT.trangThai,
+          COT.nguoi,
+          ...(quanTri ? [COT.viec] : []),
+        ]}
+        trong={choDuyet ? "Không có khoản nào chờ duyệt." : "Tháng này chưa có khoản chi nào."}
+      >
+        {ds.map((c) => (
+          <Hang key={c.id} lop="align-top transition hover:bg-bg-soft">
+            <O cot={COT.ngay} lop="whitespace-nowrap text-fg-muted tabular-nums">
+              {ngayVN(c.ngayChi)}
+            </O>
+            <O cot={COT.khoan} lop="font-medium">
+              {c.khoanChi ?? <span className="font-normal text-fg-faint">(không ghi)</span>}
+              {c.nguoiNhan && (
+                <span className="block text-xs font-normal text-fg-muted">nhận: {c.nguoiNhan}</span>
+              )}
+            </O>
+            <O cot={COT.dienGiai}>
+              {c.dienGiai ?? "—"}
+              {c.ghiChu && <span className="block text-xs text-fg-muted">{c.ghiChu}</span>}
+              {c.anhKho && (
+                <a
+                  href={`/api/quan-ly/chung-tu/${c.anhKho}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-0.5 block text-xs text-accent hover:underline"
+                >
+                  Xem chứng từ
+                </a>
+              )}
+            </O>
+            <O cot={COT.hinhThuc} lop="whitespace-nowrap text-fg-muted">
+              {c.hinhThuc ?? "—"}
+              {c.taiKhoan && <span className="block text-xs text-fg-faint">{c.taiKhoan}</span>}
+            </O>
+            <O cot={COT.soTien} lop="whitespace-nowrap tabular-nums">
+              {tien(c.soTien)}đ
+            </O>
+            <O cot={COT.trangThai} lop="whitespace-nowrap">
+              <Chip chu={c.trangThai} kieu={c.trangThai === CHO_DUYET ? "cho" : "xong"} />
+            </O>
+            <O cot={COT.nguoi} lop="whitespace-nowrap text-fg-muted">
+              {tenNV(bangTen, c.nguoiTaoMaNV) ?? "—"}
+              {c.nguoiDuyetMaNV && (
+                <span className="block text-xs text-fg-faint">duyệt: {tenNV(bangTen, c.nguoiDuyetMaNV)}</span>
+              )}
+            </O>
+            {quanTri && (
+              <O cot={COT.viec}>
+                <NutChi id={c.id} choDuyet={c.trangThai === CHO_DUYET} tuAppSheet={!!c.bamAppSheet} />
+              </O>
+            )}
+          </Hang>
+        ))}
+      </Bang>
     </div>
   );
 }
