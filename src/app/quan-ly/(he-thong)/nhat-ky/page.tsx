@@ -3,8 +3,21 @@ import { getPrisma } from "@/lib/db";
 import { MUI_GIO } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { CHU_HANH_DONG, type HanhDong } from "@/lib/nhatKy";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+/*
+  "Việc" là `chinh` chứ không phải "Lúc": bảng này đọc để tìm xem AI LÀM GÌ,
+  nên trên thẻ điện thoại tên việc ("Sửa hợp đồng") phải đứng đầu, thời điểm
+  xuống thành một dòng nhãn.
+*/
+const COT = {
+  luc: { ten: "Lúc" },
+  nguoi: { ten: "Người" },
+  viec: { ten: "Việc", chinh: true },
+  chiTiet: { ten: "Chi tiết" },
+} satisfies Record<string, CotBang>;
 
 const NGAY_GIO = new Intl.DateTimeFormat("vi-VN", {
   timeZone: MUI_GIO,
@@ -60,33 +73,27 @@ export default async function NhatKyPage() {
         Ai làm gì, lúc nào. Mật khẩu không bao giờ được ghi vào đây.
       </p>
 
-      <div className="mt-6 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Lúc</th>
-              <th className="px-4 py-2.5 font-medium">Người</th>
-              <th className="px-4 py-2.5 font-medium">Việc</th>
-              <th className="px-4 py-2.5 font-medium">Chi tiết</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((d) => (
-              <tr key={d.id}>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{NGAY_GIO.format(d.luc)}</td>
-                <td className="px-4 py-2.5 whitespace-nowrap">{d.nguoiTen}</td>
-                <td className={`px-4 py-2.5 whitespace-nowrap ${d.hanhDong === "dang-nhap-sai" ? "text-red-700" : ""}`}>
-                  {CHU_HANH_DONG[d.hanhDong as HanhDong] ?? d.hanhDong}
-                </td>
-                <td className="px-4 py-2.5 text-fg-muted">{tomTat(d.chiTiet)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">Chưa có thao tác nào.</p>
-        )}
-      </div>
+      <Bang lop="mt-6" cot={Object.values(COT)} trong="Chưa có thao tác nào.">
+        {ds.map((d) => (
+          <Hang key={d.id}>
+            <O cot={COT.luc} lop="whitespace-nowrap text-fg-muted tabular-nums">
+              {NGAY_GIO.format(d.luc)}
+            </O>
+            <O cot={COT.nguoi} lop="whitespace-nowrap">
+              {d.nguoiTen}
+            </O>
+            <O
+              cot={COT.viec}
+              lop={`whitespace-nowrap ${d.hanhDong === "dang-nhap-sai" ? "text-red-700" : ""}`}
+            >
+              {CHU_HANH_DONG[d.hanhDong as HanhDong] ?? d.hanhDong}
+            </O>
+            <O cot={COT.chiTiet} lop="text-fg-muted">
+              {tomTat(d.chiTiet)}
+            </O>
+          </Hang>
+        ))}
+      </Bang>
     </div>
   );
 }

@@ -5,8 +5,31 @@ import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { maKy } from "@/lib/luong";
 import { NutChotKy, NutTinhLuong, SuaTien } from "./NutLuong";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+/*
+  Hai cột đầu và cuối chỉ quản lý thấy — người thường chỉ xem phiếu lương của
+  chính mình nên không cần cột tên, và cũng không sửa tay được. Khai theo tên
+  để bỏ cột không làm trượt nhãn.
+
+  Bảng mười cột, gần như toàn số: đây là bảng khổ nhất trên điện thoại trước
+  khi có thẻ.
+*/
+const COT = {
+  nhanVien: { ten: "Nhân viên", chinh: true },
+  ngayCong: { ten: "Ngày công", phai: true },
+  luongThang: { ten: "Lương tháng", phai: true },
+  sanPham: { ten: "Sản phẩm", phai: true },
+  thuong: { ten: "Thưởng", phai: true },
+  phat: { ten: "Phạt", phai: true },
+  tong: { ten: "Tổng", phai: true },
+  tamUng: { ten: "Tạm ứng", phai: true },
+  thucLanh: { ten: "Thực lãnh", phai: true },
+  conLai: { ten: "Còn lại", phai: true },
+  suaTay: { ten: "Sửa tay", phai: true, rong: true },
+} satisfies Record<string, CotBang>;
 
 type Props = { searchParams: Promise<{ ky?: string }> };
 
@@ -115,70 +138,74 @@ export default async function LuongPage({ searchParams }: Props) {
         </div>
       )}
 
-      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              {quanTri && <th className="px-4 py-2.5 font-medium">Nhân viên</th>}
-              <th className="px-4 py-2.5 text-right font-medium">Ngày công</th>
-              <th className="px-4 py-2.5 text-right font-medium">Lương tháng</th>
-              <th className="px-4 py-2.5 text-right font-medium">Sản phẩm</th>
-              <th className="px-4 py-2.5 text-right font-medium">Thưởng</th>
-              <th className="px-4 py-2.5 text-right font-medium">Phạt</th>
-              <th className="px-4 py-2.5 text-right font-medium">Tổng</th>
-              <th className="px-4 py-2.5 text-right font-medium">Tạm ứng</th>
-              <th className="px-4 py-2.5 text-right font-medium">Thực lãnh</th>
-              <th className="px-4 py-2.5 text-right font-medium">Còn lại</th>
-              {quanTri && <th className="px-4 py-2.5 text-right font-medium">Sửa tay</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {dong.map((d) => (
-              <tr key={d.id} className="align-top transition hover:bg-bg-soft">
-                {quanTri && (
-                  <td className="px-4 py-2.5 whitespace-nowrap">
-                    {tenNV(bangTen, d.maNV) ?? "—"}
-                    {d.phongBan && <span className="block text-xs text-fg-faint">{d.phongBan}</span>}
-                    {/* Thiếu lương cứng thì con số tính ra vô nghĩa — nói ngay tại dòng. */}
-                    {d.luongCung <= 0 && (
-                      <span className="block text-xs text-amber-800">chưa khai lương cứng</span>
-                    )}
-                  </td>
+      <Bang
+        lop="mt-5"
+        cot={[
+          ...(quanTri ? [COT.nhanVien] : []),
+          COT.ngayCong,
+          COT.luongThang,
+          COT.sanPham,
+          COT.thuong,
+          COT.phat,
+          COT.tong,
+          COT.tamUng,
+          COT.thucLanh,
+          COT.conLai,
+          ...(quanTri ? [COT.suaTay] : []),
+        ]}
+        trong={
+          quanTri
+            ? `Kỳ ${ky} chưa có bảng lương. Bấm “Tính kỳ này” để web tính từ chấm công, đầu việc và đánh giá.`
+            : `Chưa có phiếu lương tháng ${String(thang).padStart(2, "0")}/${nam} của anh/chị.`
+        }
+      >
+        {dong.map((d) => (
+          <Hang key={d.id} lop="align-top transition hover:bg-bg-soft">
+            {quanTri && (
+              <O cot={COT.nhanVien} lop="whitespace-nowrap">
+                {tenNV(bangTen, d.maNV) ?? "—"}
+                {d.phongBan && <span className="block text-xs text-fg-faint">{d.phongBan}</span>}
+                {/* Thiếu lương cứng thì con số tính ra vô nghĩa — nói ngay tại dòng. */}
+                {d.luongCung <= 0 && (
+                  <span className="block text-xs text-amber-800">chưa khai lương cứng</span>
                 )}
-                <td className="px-4 py-2.5 text-right tabular-nums text-fg-muted">{d.soNgayLam}</td>
-                <td className="px-4 py-2.5 text-right tabular-nums">{tien(d.luongThang)}</td>
-                <td className="px-4 py-2.5 text-right tabular-nums">{d.luongSP ? tien(d.luongSP) : "—"}</td>
-                <td className="px-4 py-2.5 text-right tabular-nums text-emerald-700">
-                  {d.thuong ? tien(d.thuong) : "—"}
-                </td>
-                <td className="px-4 py-2.5 text-right tabular-nums text-amber-800">
-                  {d.phat ? tien(d.phat) : "—"}
-                </td>
-                <td className="px-4 py-2.5 text-right font-medium tabular-nums">{tien(d.tongLuong)}</td>
-                <td className="px-4 py-2.5 text-right tabular-nums text-fg-muted">
-                  {d.tamUng ? tien(d.tamUng) : "—"}
-                </td>
-                <td className="px-4 py-2.5 text-right font-medium tabular-nums">{tien(d.thucLanh)}</td>
-                <td className={`px-4 py-2.5 text-right tabular-nums ${d.conLai > 0 ? "text-amber-800" : "text-fg-faint"}`}>
-                  {d.conLai ? tien(d.conLai) : "—"}
-                </td>
-                {quanTri && (
-                  <td className="px-4 py-2.5 text-right">
-                    <SuaTien id={d.id} tamUng={d.tamUng} daThanhToan={d.daThanhToan} khoa={daChot} />
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {dong.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
-            {quanTri
-              ? `Kỳ ${ky} chưa có bảng lương. Bấm “Tính kỳ này” để web tính từ chấm công, đầu việc và đánh giá.`
-              : `Chưa có phiếu lương tháng ${String(thang).padStart(2, "0")}/${nam} của anh/chị.`}
-          </p>
-        )}
-      </div>
+              </O>
+            )}
+            <O cot={COT.ngayCong} lop="tabular-nums text-fg-muted">
+              {d.soNgayLam}
+            </O>
+            <O cot={COT.luongThang} lop="tabular-nums">
+              {tien(d.luongThang)}
+            </O>
+            <O cot={COT.sanPham} lop="tabular-nums">
+              {d.luongSP ? tien(d.luongSP) : "—"}
+            </O>
+            <O cot={COT.thuong} lop="tabular-nums text-emerald-700">
+              {d.thuong ? tien(d.thuong) : "—"}
+            </O>
+            <O cot={COT.phat} lop="tabular-nums text-amber-800">
+              {d.phat ? tien(d.phat) : "—"}
+            </O>
+            <O cot={COT.tong} lop="font-medium tabular-nums">
+              {tien(d.tongLuong)}
+            </O>
+            <O cot={COT.tamUng} lop="tabular-nums text-fg-muted">
+              {d.tamUng ? tien(d.tamUng) : "—"}
+            </O>
+            <O cot={COT.thucLanh} lop="font-medium tabular-nums">
+              {tien(d.thucLanh)}
+            </O>
+            <O cot={COT.conLai} lop={`tabular-nums ${d.conLai > 0 ? "text-amber-800" : "text-fg-faint"}`}>
+              {d.conLai ? tien(d.conLai) : "—"}
+            </O>
+            {quanTri && (
+              <O cot={COT.suaTay}>
+                <SuaTien id={d.id} tamUng={d.tamUng} daThanhToan={d.daThanhToan} khoa={daChot} />
+              </O>
+            )}
+          </Hang>
+        ))}
+      </Bang>
 
       {quanTri && (
         <p className="mt-2 text-xs leading-relaxed text-fg-faint">

@@ -6,8 +6,20 @@ import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { SU_CO_DA_XONG, SU_CO_DANG_TAO } from "@/lib/suCoChung";
 import { Chip } from "../Chip";
 import { NutDongSuCo, NutGhiSuCo, NutMoLaiSuCo } from "./FormSuCo";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+/* Cột "Việc" chỉ quản lý thấy — chỉ họ đóng được sự cố. */
+const COT = {
+  luc: { ten: "Lúc" },
+  suCo: { ten: "Sự cố", chinh: true, lop: "min-w-40" },
+  chiTiet: { ten: "Chi tiết", lop: "min-w-48" },
+  daXuLy: { ten: "Đã xử lý", lop: "min-w-40" },
+  nguoiGhi: { ten: "Người ghi" },
+  trangThai: { ten: "Trạng thái" },
+  viec: { ten: "Việc", phai: true, rong: true },
+} satisfies Record<string, CotBang>;
 
 type Props = { searchParams: Promise<{ loc?: string }> };
 
@@ -95,59 +107,55 @@ export default async function SuCoPage({ searchParams }: Props) {
         </Link>
       </div>
 
-      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Lúc</th>
-              <th className="px-4 py-2.5 font-medium">Sự cố</th>
-              <th className="px-4 py-2.5 font-medium">Chi tiết</th>
-              <th className="px-4 py-2.5 font-medium">Đã xử lý</th>
-              <th className="px-4 py-2.5 font-medium">Người ghi</th>
-              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
-              {quanTri && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((s) => {
-              const xong = s.trangThai === SU_CO_DA_XONG;
-              /* Dòng chép từ AppSheet không mang thời điểm thật — để trống hơn là nói sai. */
-              const chep = !!s.bamAppSheet;
-              return (
-                <tr key={s.id} className="align-top transition hover:bg-bg-soft">
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">
-                    {chep ? <span className="text-fg-faint">từ AppSheet</span> : lucVN(s.taoLuc)}
-                    {s.xongLuc && (
-                      <span className="block text-xs text-fg-faint">xong {lucVN(s.xongLuc)}</span>
-                    )}
-                  </td>
-                  <td className="min-w-40 px-4 py-2.5 font-medium">{s.vanDe ?? "—"}</td>
-                  <td className="min-w-48 px-4 py-2.5 text-fg-muted">{s.thongTin ?? "—"}</td>
-                  <td className="min-w-40 px-4 py-2.5 text-fg-muted">{s.xuLy ?? "—"}</td>
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
-                    {tenNV(bangTen, s.nguoiGhiMaNV) ?? "—"}
-                  </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap">
-                    <Chip chu={s.trangThai ?? SU_CO_DANG_TAO} kieu={xong ? "xong" : "cho"} />
-                  </td>
-                  {quanTri && (
-                    <td className="px-4 py-2.5 text-right">
-                      {xong ? <NutMoLaiSuCo id={s.id} /> : <NutDongSuCo id={s.id} />}
-                    </td>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
-            {loc === "chua-xong"
-              ? "Không có sự cố nào đang treo."
-              : "Chưa có sự cố nào. Bấm “Ghi sự cố” khi có gì hỏng."}
-          </p>
-        )}
-      </div>
+      <Bang
+        lop="mt-5"
+        cot={[
+          COT.luc,
+          COT.suCo,
+          COT.chiTiet,
+          COT.daXuLy,
+          COT.nguoiGhi,
+          COT.trangThai,
+          ...(quanTri ? [COT.viec] : []),
+        ]}
+        trong={
+          loc === "chua-xong"
+            ? "Không có sự cố nào đang treo."
+            : "Chưa có sự cố nào. Bấm “Ghi sự cố” khi có gì hỏng."
+        }
+      >
+        {ds.map((s) => {
+          const xong = s.trangThai === SU_CO_DA_XONG;
+          /* Dòng chép từ AppSheet không mang thời điểm thật — để trống hơn là nói sai. */
+          const chep = !!s.bamAppSheet;
+          return (
+            <Hang key={s.id} lop="align-top transition hover:bg-bg-soft">
+              <O cot={COT.luc} lop="whitespace-nowrap text-fg-muted tabular-nums">
+                {chep ? <span className="text-fg-faint">từ AppSheet</span> : lucVN(s.taoLuc)}
+                {s.xongLuc && <span className="block text-xs text-fg-faint">xong {lucVN(s.xongLuc)}</span>}
+              </O>
+              <O cot={COT.suCo} lop="font-medium">
+                {s.vanDe ?? "—"}
+              </O>
+              <O cot={COT.chiTiet} lop="text-fg-muted">
+                {s.thongTin ?? "—"}
+              </O>
+              <O cot={COT.daXuLy} lop="text-fg-muted">
+                {s.xuLy ?? "—"}
+              </O>
+              <O cot={COT.nguoiGhi} lop="whitespace-nowrap text-fg-muted">
+                {tenNV(bangTen, s.nguoiGhiMaNV) ?? "—"}
+              </O>
+              <O cot={COT.trangThai} lop="whitespace-nowrap">
+                <Chip chu={s.trangThai ?? SU_CO_DANG_TAO} kieu={xong ? "xong" : "cho"} />
+              </O>
+              {quanTri && (
+                <O cot={COT.viec}>{xong ? <NutMoLaiSuCo id={s.id} /> : <NutDongSuCo id={s.id} />}</O>
+              )}
+            </Hang>
+          );
+        })}
+      </Bang>
 
       {/*
         Nói thẳng chất lượng của 22 dòng cũ. Người đọc bảng này cần biết vì sao

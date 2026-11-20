@@ -8,8 +8,26 @@ import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { DON_DA_DUYET, DON_DANG_TAO, DON_KHONG_DUYET } from "@/lib/donTuChung";
 import { Chip } from "../Chip";
 import { NutDuyetDon, NutGuiDon, NutHuyDon } from "./FormDon";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+/*
+  Cột "Người gửi" biến mất khi đang lọc "của tôi" — khai theo TÊN để bỏ một
+  cột giữa bảng không làm trượt nhãn của những cột sau.
+
+  "Loại đơn" là `chinh`: trên điện thoại nó làm tiêu đề thẻ. Ngày tháng không
+  nhận ra được đơn nào, còn "Nghỉ phép" thì có.
+*/
+const COT = {
+  ngay: { ten: "Ngày" },
+  nguoiGui: { ten: "Người gửi" },
+  loaiDon: { ten: "Loại đơn", chinh: true },
+  lyDo: { ten: "Lý do", lop: "min-w-48" },
+  trangThai: { ten: "Trạng thái" },
+  nguoiDuyet: { ten: "Người duyệt" },
+  viec: { ten: "Việc", phai: true, rong: true },
+} satisfies Record<string, CotBang>;
 
 type Props = { searchParams: Promise<{ loc?: string }> };
 
@@ -109,75 +127,69 @@ export default async function DonTuPage({ searchParams }: Props) {
         </div>
       )}
 
-      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Ngày</th>
-              {loc !== "cua-toi" && <th className="px-4 py-2.5 font-medium">Người gửi</th>}
-              <th className="px-4 py-2.5 font-medium">Loại đơn</th>
-              <th className="px-4 py-2.5 font-medium">Lý do</th>
-              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
-              <th className="px-4 py-2.5 font-medium">Người duyệt</th>
-              <th className="px-4 py-2.5 text-right font-medium">Việc</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((d) => {
-              const cuaToi = (d.maNV ?? "").toLowerCase() === (nguoi.maNV ?? "").toLowerCase();
-              return (
-                <tr key={d.id} className="align-top transition hover:bg-bg-soft">
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">
-                    {ngayVN(d.ngayYeuCau)}
-                  </td>
-                  {loc !== "cua-toi" && (
-                    <td className="px-4 py-2.5 whitespace-nowrap">{tenNV(bangTen, d.maNV) ?? "—"}</td>
-                  )}
-                  <td className="px-4 py-2.5 whitespace-nowrap">
-                    {d.loaiDon ?? "—"}
-                    {d.loaiNghi && <span className="block text-xs text-fg-muted">{d.loaiNghi}</span>}
-                    {d.soTien != null && d.soTien > 0 && (
-                      <span className="block text-xs tabular-nums text-fg-muted">{tien(d.soTien)}đ</span>
-                    )}
-                  </td>
-                  <td className="min-w-48 px-4 py-2.5">
-                    {d.lyDo ?? "—"}
-                    {d.ghiChu && (
-                      <span className="mt-0.5 block text-xs text-fg-muted">Quản lý: {d.ghiChu}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap">
-                    <Chip chu={d.trangThai} kieu={kieuDon(d.trangThai)} />
-                    {d.ngayDuyet && (
-                      <span className="block text-xs text-fg-faint tabular-nums">{ngayVN(d.ngayDuyet)}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">
-                    {tenNV(bangTen, d.nguoiDuyetMaNV) ?? "—"}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    {d.trangThai === DON_DANG_TAO && quanTri && !d.bamAppSheet && <NutDuyetDon id={d.id} />}
-                    {d.trangThai === DON_DANG_TAO && !quanTri && cuaToi && !d.bamAppSheet && (
-                      <div className="text-right">
-                        <NutHuyDon id={d.id} />
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
-            {loc === "cho-duyet"
-              ? "Không có đơn nào chờ duyệt."
-              : loc === "cua-toi"
-                ? "Anh/chị chưa gửi đơn nào."
-                : "Chưa có đơn nào."}
-          </p>
-        )}
-      </div>
+      <Bang
+        lop="mt-5"
+        cot={[
+          COT.ngay,
+          ...(loc !== "cua-toi" ? [COT.nguoiGui] : []),
+          COT.loaiDon,
+          COT.lyDo,
+          COT.trangThai,
+          COT.nguoiDuyet,
+          COT.viec,
+        ]}
+        trong={
+          loc === "cho-duyet"
+            ? "Không có đơn nào chờ duyệt."
+            : loc === "cua-toi"
+              ? "Anh/chị chưa gửi đơn nào."
+              : "Chưa có đơn nào."
+        }
+      >
+        {ds.map((d) => {
+          const cuaToi = (d.maNV ?? "").toLowerCase() === (nguoi.maNV ?? "").toLowerCase();
+          return (
+            <Hang key={d.id} lop="align-top transition hover:bg-bg-soft">
+              <O cot={COT.ngay} lop="whitespace-nowrap text-fg-muted tabular-nums">
+                {ngayVN(d.ngayYeuCau)}
+              </O>
+              {loc !== "cua-toi" && (
+                <O cot={COT.nguoiGui} lop="whitespace-nowrap">
+                  {tenNV(bangTen, d.maNV) ?? "—"}
+                </O>
+              )}
+              <O cot={COT.loaiDon} lop="whitespace-nowrap">
+                {d.loaiDon ?? "—"}
+                {d.loaiNghi && <span className="block text-xs text-fg-muted">{d.loaiNghi}</span>}
+                {d.soTien != null && d.soTien > 0 && (
+                  <span className="block text-xs tabular-nums text-fg-muted">{tien(d.soTien)}đ</span>
+                )}
+              </O>
+              <O cot={COT.lyDo}>
+                {d.lyDo ?? "—"}
+                {d.ghiChu && <span className="mt-0.5 block text-xs text-fg-muted">Quản lý: {d.ghiChu}</span>}
+              </O>
+              <O cot={COT.trangThai} lop="whitespace-nowrap">
+                <Chip chu={d.trangThai} kieu={kieuDon(d.trangThai)} />
+                {d.ngayDuyet && (
+                  <span className="block text-xs text-fg-faint tabular-nums">{ngayVN(d.ngayDuyet)}</span>
+                )}
+              </O>
+              <O cot={COT.nguoiDuyet} lop="whitespace-nowrap text-fg-muted">
+                {tenNV(bangTen, d.nguoiDuyetMaNV) ?? "—"}
+              </O>
+              <O cot={COT.viec}>
+                {d.trangThai === DON_DANG_TAO && quanTri && !d.bamAppSheet && <NutDuyetDon id={d.id} />}
+                {d.trangThai === DON_DANG_TAO && !quanTri && cuaToi && !d.bamAppSheet && (
+                  <div className="md:text-right">
+                    <NutHuyDon id={d.id} />
+                  </div>
+                )}
+              </O>
+            </Hang>
+          );
+        })}
+      </Bang>
 
       {/*
         Nói rõ đơn ĐÃ DUYỆT thì người gửi không tự huỷ được — tránh việc họ đi
