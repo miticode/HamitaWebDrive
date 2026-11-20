@@ -6,6 +6,7 @@ import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { LOAI_DICH_VU, TEN_LOAI, boDau, laLoaiDichVu, loaiDuocSua, type LoaiDichVu } from "@/lib/dichVuChung";
 import { OBuoiChup } from "./OBuoiChup";
 import { TabDanhMuc, TrangDanhMuc } from "./TrangDanhMuc";
+import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,19 @@ type Props = {
   tra váy thường gõ mã hay tên, nên ô tìm mới là đường chính.
 */
 const MOI_LUOT = 150;
+
+/*
+  Cột "Buổi chụp" CHỈ ở tab Dịch vụ: trang phục và sản phẩm không sinh buổi
+  chụp nào, thêm một cột trống cho 888 dòng là tốn chỗ. Khai theo tên để bỏ
+  cột giữa bảng không làm trượt nhãn của cột sau.
+*/
+const COT = {
+  ma: { ten: "Mã" },
+  ten: { ten: "Tên", chinh: true, lop: "min-w-56" },
+  nhom: { ten: "Nhóm" },
+  buoiChup: { ten: "Buổi chụp", rong: true },
+  donGia: { ten: "Đơn giá", phai: true },
+} satisfies Record<string, CotBang>;
 
 /**
  * Bảng dịch vụ & trang phục — trang "Dịch vụ" bên AppSheet cũ.
@@ -169,66 +183,51 @@ export default async function DichVuPage({ searchParams }: Props) {
         </p>
       )}
 
-      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Mã</th>
-              <th className="px-4 py-2.5 font-medium">Tên</th>
-              <th className="px-4 py-2.5 font-medium">Nhóm</th>
-              {/*
-                Cột mã album — anh yêu cầu 18/11/2026. Để cạnh Nhóm vì hai thứ
-                hay đi cùng nhau khi nhìn: nhóm nói mục này thuộc mảng nào,
-                mã nói album của nó mang tên gì.
-              */}
-              {/*
-                Cột buổi chụp CHỈ ở tab Dịch vụ: trang phục và sản phẩm không
-                sinh buổi chụp nào, thêm một cột trống cho 888 dòng là tốn chỗ.
-              */}
-              {loai === "dich-vu" && <th className="px-4 py-2.5 font-medium">Buổi chụp</th>}
-              <th className="px-4 py-2.5 text-right font-medium">Đơn giá</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {hien.map((d) => {
-              // Dòng chi tiết đầu tiên khác tên — cho biết gói gồm gì mà không phải mở ra.
-              const dong1 = (d.chiTiet ?? "")
-                .split("\n")
-                .map((s) => s.trim())
-                .find((s) => s && boDau(s) !== boDau(d.ten));
-              return (
-                <tr key={d.id} className="align-top transition hover:bg-bg-soft">
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{d.maDV}</td>
-                  <td className="min-w-56 px-4 py-2.5">
-                    <Link href={`/quan-ly/dich-vu/${d.id}`} className="font-medium hover:text-accent">
-                      {d.ten}
-                    </Link>
-                    {dong1 && <span className="mt-0.5 block max-w-md truncate text-xs text-fg-faint">{dong1}</span>}
-                  </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{d.nhom ?? "—"}</td>
-                  {loai === "dich-vu" && (
-                    <td className="px-4 py-2.5">
-                      <OBuoiChup
-                        dichVuId={d.id}
-                        banDau={d.buoi.map((b) => b.loaiBuoi)}
-                        dsLoai={dsLoaiBuoi}
-                        suaDuoc={themDuoc}
-                      />
-                    </td>
-                  )}
-                  <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">
-                    {tien(d.donGia)}đ
-                    {d.donVi && <span className="text-fg-faint"> / {d.donVi}</span>}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">Không có mục nào khớp bộ lọc.</p>
-        )}
-      </div>
+      <Bang
+        lop="mt-5"
+        cot={[COT.ma, COT.ten, COT.nhom, ...(loai === "dich-vu" ? [COT.buoiChup] : []), COT.donGia]}
+        trong="Không có mục nào khớp bộ lọc."
+      >
+        {hien.map((d) => {
+          // Dòng chi tiết đầu tiên khác tên — cho biết gói gồm gì mà không phải mở ra.
+          const dong1 = (d.chiTiet ?? "")
+            .split("\n")
+            .map((s) => s.trim())
+            .find((s) => s && boDau(s) !== boDau(d.ten));
+          return (
+            <Hang key={d.id} lop="align-top transition hover:bg-bg-soft">
+              <O cot={COT.ma} lop="whitespace-nowrap text-fg-muted tabular-nums">
+                {d.maDV}
+              </O>
+              <O cot={COT.ten}>
+                <Link href={`/quan-ly/dich-vu/${d.id}`} className="font-medium hover:text-accent">
+                  {d.ten}
+                </Link>
+                {dong1 && (
+                  <span className="mt-0.5 block max-w-md truncate text-xs text-fg-faint">{dong1}</span>
+                )}
+              </O>
+              <O cot={COT.nhom} lop="whitespace-nowrap text-fg-muted">
+                {d.nhom ?? "—"}
+              </O>
+              {loai === "dich-vu" && (
+                <O cot={COT.buoiChup}>
+                  <OBuoiChup
+                    dichVuId={d.id}
+                    banDau={d.buoi.map((b) => b.loaiBuoi)}
+                    dsLoai={dsLoaiBuoi}
+                    suaDuoc={themDuoc}
+                  />
+                </O>
+              )}
+              <O cot={COT.donGia} lop="whitespace-nowrap tabular-nums">
+                {tien(d.donGia)}đ
+                {d.donVi && <span className="text-fg-faint"> / {d.donVi}</span>}
+              </O>
+            </Hang>
+          );
+        })}
+      </Bang>
 
       {ds.length > hien.length && (
         <p className="mt-3 text-sm text-fg-muted">

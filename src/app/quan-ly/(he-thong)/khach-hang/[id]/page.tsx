@@ -7,8 +7,23 @@ import { ngayVN } from "@/lib/hopDongChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { ChipTrangThai } from "../../hop-dong/ChipTrangThai";
 import { NutSuaKhach } from "../FormKhach";
+import { Bang, Hang, O, type CotBang } from "../../_ui/Bang";
 
 export const dynamic = "force-dynamic";
+
+/*
+  Ngày đặt là `chinh` ở đây — khác với bảng Hợp đồng, nơi tên khách giữ vai
+  đó. Lý do: cả bảng này đã là hợp đồng CỦA MỘT NHÀ, nên tên khách lặp lại ở
+  mọi dòng không phân biệt được gì; thứ phân biệt là hợp đồng nào, mà mốc
+  nhận ra nó là ngày đặt.
+*/
+const COT = {
+  ngayDat: { ten: "Ngày đặt", chinh: true },
+  loai: { ten: "Loại" },
+  trangThai: { ten: "Trạng thái" },
+  tongTien: { ten: "Tổng tiền", phai: true },
+  conLai: { ten: "Còn lại", phai: true },
+} satisfies Record<string, CotBang>;
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -92,37 +107,32 @@ export default async function ChiTietKhachPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Ngày đặt</th>
-              <th className="px-4 py-2.5 font-medium">Loại</th>
-              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
-              <th className="px-4 py-2.5 text-right font-medium">Tổng tiền</th>
-              <th className="px-4 py-2.5 text-right font-medium">Còn lại</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {kh.hopDong.map((h) => (
-              <tr key={h.id} className="transition hover:bg-bg-soft">
-                <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">
-                  <Link href={`/quan-ly/hop-dong/${h.id}`} className="font-medium hover:text-accent">
-                    {ngayVN(h.ngayDat) || h.maHD}
-                  </Link>
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{h.loaiDV}</td>
-                <td className="px-4 py-2.5"><ChipTrangThai trangThai={h.trangThai} /></td>
-                <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">{tien(h.tongTien)}đ</td>
-                <td className={`px-4 py-2.5 text-right whitespace-nowrap tabular-nums ${h.conLai > 0 ? "font-medium text-amber-800" : "text-fg-faint"}`}>
-                  {h.conLai !== 0 ? `${tien(h.conLai)}đ` : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {kh.hopDong.length === 0 && <p className="px-4 py-6 text-center text-sm text-fg-muted">Khách này chưa có hợp đồng.</p>}
-      </div>
+      <Bang lop="mt-6" cot={Object.values(COT)} trong="Khách này chưa có hợp đồng.">
+        {kh.hopDong.map((h) => (
+          <Hang key={h.id} lop="transition hover:bg-bg-soft">
+            <O cot={COT.ngayDat} lop="whitespace-nowrap tabular-nums">
+              <Link href={`/quan-ly/hop-dong/${h.id}`} className="font-medium hover:text-accent">
+                {ngayVN(h.ngayDat) || h.maHD}
+              </Link>
+            </O>
+            <O cot={COT.loai} lop="whitespace-nowrap text-fg-muted">
+              {h.loaiDV}
+            </O>
+            <O cot={COT.trangThai}>
+              <ChipTrangThai trangThai={h.trangThai} />
+            </O>
+            <O cot={COT.tongTien} lop="whitespace-nowrap tabular-nums">
+              {tien(h.tongTien)}đ
+            </O>
+            <O
+              cot={COT.conLai}
+              lop={`whitespace-nowrap tabular-nums ${h.conLai > 0 ? "font-medium text-amber-800" : "text-fg-faint"}`}
+            >
+              {h.conLai !== 0 ? `${tien(h.conLai)}đ` : "—"}
+            </O>
+          </Hang>
+        ))}
+      </Bang>
     </div>
   );
 }
