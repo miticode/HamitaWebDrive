@@ -253,6 +253,11 @@ export default async function CongViecPage({ searchParams }: Props) {
                     <NutViec
                       id={v.id}
                       nguoiPhuTrachMaNV={v.nguoiPhuTrachMaNV}
+                      tenNguoiLam={
+                        v.nguoiPhuTrachMaNV
+                          ? (bangTen.get(v.nguoiPhuTrachMaNV.toLowerCase()) ?? null)
+                          : null
+                      }
                       trangThai={v.trangThai}
                       nhanVien={nhanVien}
                       quanTri={quanTri}

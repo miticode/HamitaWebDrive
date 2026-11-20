@@ -279,6 +279,7 @@ export function LuoiLich({
                                 <NutViec
                                   id={v.id}
                                   nguoiPhuTrachMaNV={v.nguoiPhuTrachMaNV}
+                                  tenNguoiLam={v.tenNguoiLam}
                                   trangThai={v.trangThai}
                                   nhanVien={nhanVien}
                                   quanTri={quanTri}

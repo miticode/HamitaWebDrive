@@ -156,6 +156,8 @@ export type ViecBuoi = {
    */
   tienCong: number | null;
   nguoiPhuTrachMaNV: string | null;
+  /** Tên người đang giữ việc — máy chủ tra sẵn, xem `NutViec`. */
+  tenNguoiLam: string | null;
   trangThai: string | null;
 };
 

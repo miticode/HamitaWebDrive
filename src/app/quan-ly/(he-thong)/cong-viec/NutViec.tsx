@@ -23,6 +23,7 @@ export function NutViec({
   nguoiPhuTrachMaNV,
   trangThai,
   nhanVien,
+  tenNguoiLam,
   quanTri,
   maToi,
 }: {
@@ -30,6 +31,15 @@ export function NutViec({
   nguoiPhuTrachMaNV: string | null;
   trangThai: string | null;
   nhanVien: NhanVienGon[];
+  /**
+   * Tên người đang giữ việc này — anh yêu cầu 20/11/2026 ("việc đã có người
+   * nhận thì hãy hiển thị tên người đó").
+   *
+   * Máy chủ tra sẵn rồi truyền xuống, thay vì gửi cả danh sách nhân viên cho
+   * người thường tự tra: cái cần ở đây là TÊN CỦA MỘT NGƯỜI trên một việc cụ
+   * thể, không phải danh bạ cả tiệm (nguyên tắc 55).
+   */
+  tenNguoiLam: string | null;
   quanTri: boolean;
   maToi: string | null;
 }) {
@@ -58,6 +68,7 @@ export function NutViec({
   */
   const cuaNguoiKhac =
     !quanTri && !!nguoiPhuTrachMaNV && nguoiPhuTrachMaNV.toLowerCase() !== (maToi ?? "").toLowerCase();
+  /* Việc chưa ai nhận: người thường nhận được về mình, nên hai ô vẫn mở. */
   const tt = trangThai && (TRANG_THAI_VIEC as readonly string[]).includes(trangThai) ? trangThai : "";
 
   return (
@@ -87,15 +98,22 @@ export function NutViec({
               cho họ vừa lộ mã vừa nhìn như lỗi, nên chỉ nói đã có người.
           */}
           {nguoiPhuTrachMaNV && !dsNguoi.some((n) => n.maNV === nguoiPhuTrachMaNV) && (
-            <option value={nguoiPhuTrachMaNV}>
-              {quanTri ? nguoiPhuTrachMaNV : "Đã có người nhận"}
-            </option>
+            <option value={nguoiPhuTrachMaNV}>{tenNguoiLam ?? nguoiPhuTrachMaNV}</option>
           )}
         </select>
 
+        {/*
+          KHOÁ TRẠNG THÁI việc của người khác — anh chốt 20/11/2026 ("không
+          được chỉnh sửa trạng thái công việc của người đó, còn việc của bản
+          thân mình thì được đổi").
+
+          Máy chủ vốn đã từ chối (`duocDung` trong actionsViec.ts); khoá ở đây
+          để không ai bấm rồi mới nhận lời từ chối, và để nhìn là biết dòng nào
+          của mình.
+        */}
         <select
           value={tt}
-          disabled={dangChay}
+          disabled={dangChay || cuaNguoiKhac}
           aria-label="Trạng thái việc"
           onChange={(e) => chay(() => doiTrangThaiViecAction(id, e.target.value))}
           className="input btn-gon w-auto min-w-28"

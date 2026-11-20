@@ -8,6 +8,7 @@ import { laViecHauKy } from "@/lib/viecLich";
 import { khoaCuaToi, khoaNguoi } from "@/lib/hopDongMayChu";
 import { LOP_NHOM, nhomCuaBuoi, type BuoiLich, type ViecBuoi } from "@/lib/lichChung";
 import { docMauTheoBuoi, mauTheoBuoi } from "@/lib/loaiBuoi";
+import { tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { LuoiLich } from "./LuoiLich";
 
@@ -86,7 +87,7 @@ export default async function LichPage({ searchParams }: Props) {
   const khoaToi = khoaCuaToi(nguoi);
   const quanTri = laQuanTri(nguoi);
 
-  const [ds, demLoai, choNgay, dsNhanVien, mauBuoi] = await Promise.all([
+  const [ds, demLoai, choNgay, dsNhanVien, mauBuoi, bangTen] = await Promise.all([
     prisma.lichChup.findMany({
       where,
       select: {
@@ -167,6 +168,11 @@ export default async function LichPage({ searchParams }: Props) {
       cho cả trang, dùng chung cho lưới, bảng danh sách và khu "Chờ xếp ngày".
     */
     docMauTheoBuoi(),
+    /*
+      Bảng tra mã người → tên, để đầu việc đã giao hiện TÊN chứ không phải mã
+      (anh yêu cầu 20/11/2026). `cache` của React nên cả trang chỉ hỏi một lần.
+    */
+    tenTheoMaNV(),
   ]);
 
   /** Màu của một buổi, gộp sẵn để ba chỗ vẽ không ai phải tự tra bảng. */
@@ -236,6 +242,14 @@ export default async function LichPage({ searchParams }: Props) {
     */
     tienCong: quanTri ? Math.round(v.donGia * v.soLuong) : null,
     nguoiPhuTrachMaNV: v.nguoiPhuTrachMaNV,
+    /*
+      Tên người giữ việc đi kèm từng dòng việc, thay cho việc gửi cả danh bạ
+      xuống để máy khách tự tra (nguyên tắc 55). Mã không tra ra tên — người
+      đã nghỉ, mã cũ bên AppSheet — thì để null và ô hiện lại chính cái mã.
+    */
+    tenNguoiLam: v.nguoiPhuTrachMaNV
+      ? (bangTen.get(v.nguoiPhuTrachMaNV.toLowerCase()) ?? null)
+      : null,
     trangThai: v.trangThai,
   });
 
