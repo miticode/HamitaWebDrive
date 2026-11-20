@@ -5,7 +5,7 @@ import { MUI_GIO, tien } from "@/lib/constants";
 import { batBuocDangNhap, batBuocQuyen, laQuanTri, lapHopDong, xemHopDong } from "@/lib/phienNhanVien";
 import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
-import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
+import { khoaCuaToi, khoaNguoi, tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { albumCuaHopDong } from "@/lib/noiAlbum";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
 import { NHOM, docDanhMuc } from "@/lib/danhMuc";
@@ -16,6 +16,7 @@ import { buocTiepTheo, docBuocDayDu, laBuocXong } from "@/lib/buocHopDong";
 import { ChipTrangThai } from "../ChipTrangThai";
 import { NutPhieuThu, NutXoaHopDong, ThemPhieuThu } from "./NutHopDong";
 import { KhoiLich } from "./KhoiLich";
+import { KhoiViec } from "./KhoiViec";
 import { KhoiTien } from "./KhoiTien";
 import { TieuDeKhoi } from "./TieuDeKhoi";
 
@@ -40,7 +41,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
   const { id } = await params;
   const prisma = getPrisma();
 
-  const [hd, bangTen, album, cacBuoc, loaiBuoi, boMa, dsLyDo] = await Promise.all([
+  const [hd, bangTen, album, cacBuoc, loaiBuoi, boMa, dsLyDo, dsNhanVien] = await Promise.all([
     prisma.hopDong.findUnique({
       where: { id },
       include: {
@@ -57,6 +58,26 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           where: { matBenAppSheet: null },
           orderBy: [{ ngay: { sort: "asc", nulls: "last" } }, { taoLuc: "asc" }],
         },
+        /*
+          ĐẦU VIỆC CỦA HỢP ĐỒNG — anh yêu cầu 20/11/2026 ("trong phần chi tiết
+          hợp đồng cũng hãy hiển thị đầu việc và người được chia việc, nhận
+          việc"). Trước đó muốn biết nhà này ai chụp phải sang trang Đầu việc
+          rồi lọc lại theo tên khách.
+        */
+        congViec: {
+          where: { matBenAppSheet: null },
+          orderBy: [{ loai: "asc" }, { taoLuc: "asc" }],
+          select: {
+            id: true,
+            loai: true,
+            soLuong: true,
+            donGia: true,
+            lichChupId: true,
+            nguoiPhuTrachMaNV: true,
+            trangThai: true,
+            ngayHoanThanh: true,
+          },
+        },
       },
     }),
     tenTheoMaNV(),
@@ -65,6 +86,16 @@ export default async function ChiTietHopDongPage({ params }: Props) {
     docLoaiBuoi(),
     docMaAlbum(),
     docDanhMuc(NHOM.lyDoTrongNgay),
+    /*
+      Nhân viên còn làm, cho ô chọn người của từng đầu việc. CẮT Ở MÁY CHỦ với
+      người không phải quản lý (nguyên tắc 55) — giống hệt trang Lịch và trang
+      Đầu việc, xem chú thích ở hai nơi đó.
+    */
+    prisma.nhanVien.findMany({
+      where: { dangLam: true },
+      orderBy: { ten: "asc" },
+      select: { maNV: true, tenDangNhap: true, ten: true },
+    }),
   ]);
   if (!hd) notFound();
 
@@ -369,6 +400,43 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           }))}
         />
       </section>
+
+      {/*
+        ĐẦU VIỆC đứng NGAY SAU LỊCH CHỤP, trước phiếu thu: nó gom theo buổi,
+        nên đọc liền mạch với khối lịch ngay trên. Để sau phiếu thu thì người
+        xem phải cuộn qua chuyện tiền nong mới tới chuyện chia người.
+      */}
+      {hd.congViec.length > 0 && (
+        <section className="mt-8">
+          <TieuDeKhoi ten="Đầu việc" so={hd.congViec.length} />
+          <KhoiViec
+            buoi={hd.lich.map((l) => ({
+              id: l.id,
+              ngay: l.ngay,
+              gio: l.gio,
+              loai: l.loai,
+            }))}
+            viec={hd.congViec.map((v) => ({
+              id: v.id,
+              loai: v.loai,
+              lichChupId: v.lichChupId,
+              /* Tiền công chỉ quản lý — studio chốt 15/09, xem lich/page.tsx. */
+              tienCong: quanTri ? Math.round(v.donGia * v.soLuong) : null,
+              nguoiPhuTrachMaNV: v.nguoiPhuTrachMaNV,
+              tenNguoiLam: v.nguoiPhuTrachMaNV
+                ? (bangTen.get(v.nguoiPhuTrachMaNV.toLowerCase()) ?? null)
+                : null,
+              trangThai: v.trangThai,
+              ngayHoanThanh: v.ngayHoanThanh,
+            }))}
+            nhanVien={dsNhanVien
+              .filter((n) => quanTri || khoaNguoi(n) === khoaCuaToi(nguoi))
+              .map((n) => ({ maNV: khoaNguoi(n), ten: n.ten }))}
+            quanTri={quanTri}
+            maToi={khoaCuaToi(nguoi)}
+          />
+        </section>
+      )}
 
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
