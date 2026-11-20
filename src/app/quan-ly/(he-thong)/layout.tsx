@@ -79,8 +79,19 @@ export default async function HeThongLayout({ children }: { children: React.Reac
       Trang này có tám tab: dịch vụ, trang phục, sản phẩm, loại buổi chụp,
       loại hợp đồng, trạng thái hợp đồng, hình thức thu, nội dung thu. Tách
       ra tám mục thì thanh bên đang 20 mục sẽ thành 27.
+
+      CHỈ QUẢN LÝ — anh chỉ ra 20/11/2026 ("đăng nhập bằng tài khoản nhân viên
+      thì vẫn thấy được phần quản lý dịch vụ, như vậy là không được").
+
+      Trước đó mục này hiện cho mọi người đăng nhập, với lý do "sale tra giá,
+      phòng Váy tra mẫu". Hai lý do đó không còn đứng được: đo 20/11 thì
+      KHÔNG AI mang vai trò sale, và 11/13 người đăng nhập được là nhân viên
+      thường — Media 8, Phòng Váy 1, Makeup 1, Marketing 1. Bảng giá bán kèm
+      cấu hình cả tiệm bày cho tám người Media xem không đổi lại được gì.
     */
-    { nhom: "Thông tin studio", ten: "Quản lý dịch vụ", href: "/quan-ly/dich-vu" },
+    ...(quanTri
+      ? [{ nhom: "Thông tin studio", ten: "Quản lý dịch vụ", href: "/quan-ly/dich-vu" }]
+      : []),
     // Có số tài khoản ngân hàng — chỉ quản lý (AppSheet cũ cũng chỉ Admin xem).
     ...(quanTri ? [{ nhom: "Thông tin studio", ten: "Thông tin studio", href: "/quan-ly/thong-tin" }] : []),
     // Sổ sự cố: CẢ TIỆM. Người thấy máy hỏng là người đang đứng ở đó, không

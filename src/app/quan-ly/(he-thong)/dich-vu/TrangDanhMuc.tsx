@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { laQuanTri, type NguoiDung } from "@/lib/phienNhanVien";
 import { LOAI_DICH_VU, TEN_LOAI, boDau } from "@/lib/dichVuChung";
@@ -32,8 +33,19 @@ export const TAB_DM = [
   { khoa: NHOM.lyDoTrongNgay, ten: CHU_NHOM[NHOM.lyDoTrongNgay].ten },
 ] as const;
 
-/** Thanh tab dùng chung cho cả hai nhánh của trang. */
-export function TabDanhMuc({ dangMo }: { dangMo: string | null }) {
+/**
+ * Thanh tab danh mục — CHỈ QUẢN LÝ (anh chỉ ra 20/11/2026).
+ *
+ * Bảy tab này là cấu hình của cả tiệm: loại buổi chụp, trạng thái hợp đồng,
+ * mã album, hình thức thu… Đổi một dòng ở đây là đổi ô chọn của mọi người
+ * đang lập hợp đồng. Trước 20/11 ai đăng nhập cũng thấy và xem được hết —
+ * server action vẫn chặn ghi, nhưng bày ra thì nhân viên tưởng mình có việc
+ * ở đó, và bấm vào chỉ nhận lời từ chối.
+ *
+ * Rỗng khi không phải quản lý: nơi gọi không phải nhớ bọc điều kiện.
+ */
+export function TabDanhMuc({ dangMo, quanLy }: { dangMo: string | null; quanLy: boolean }) {
+  if (!quanLy) return null;
   return (
     <>
       <span className="mx-2 self-center text-line-strong" aria-hidden>
@@ -88,7 +100,7 @@ function Khung({
             {TEN_LOAI[x]}
           </Link>
         ))}
-        <TabDanhMuc dangMo={dangMo} />
+        <TabDanhMuc dangMo={dangMo} quanLy />
       </nav>
 
       <div className="mt-5 max-w-4xl">
@@ -103,6 +115,12 @@ function Khung({
 
 export async function TrangDanhMuc({ nhom, nguoi }: { nhom: string; nguoi: NguoiDung }) {
   const quanLy = laQuanTri(nguoi);
+  /*
+    CHẶN Ở MÁY CHỦ, không chỉ giấu tab (nguyên tắc 3). Giấu tab mới là giấu
+    đường vào; gõ thẳng "?dm=buoc" lên thanh địa chỉ thì vẫn xem được toàn bộ
+    cấu hình của tiệm.
+  */
+  if (!quanLy) notFound();
   const prisma = getPrisma();
 
   /* ── Loại buổi chụp ───────────────────────────────────────────────── */

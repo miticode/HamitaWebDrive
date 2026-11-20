@@ -155,7 +155,14 @@ export default async function CongViecPage({ searchParams }: Props) {
       select: { maNV: true, tenDangNhap: true, ten: true },
     }),
   ]);
-  const nhanVien = dsNhanVien.map((n) => ({ maNV: khoaNguoi(n), ten: n.ten }));
+  /*
+    Cắt ở MÁY CHỦ — nguyên tắc 55, và cùng lý do với trang Lịch: `NutViec` lọc
+    danh sách trong trình duyệt, nên trước 20/11/2026 tên và mã của cả 15 nhân
+    viên vẫn đi xuống máy người thường trong nguồn trang.
+  */
+  const nhanVien = dsNhanVien
+    .filter((n) => quanTri || khoaNguoi(n) === khoaToi)
+    .map((n) => ({ maNV: khoaNguoi(n), ten: n.ten }));
   const hien = ds.slice(0, so);
 
   const link = (thay: Record<string, string>) => {

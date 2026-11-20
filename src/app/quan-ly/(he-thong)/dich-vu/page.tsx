@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { tien } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
@@ -22,11 +23,20 @@ const MOI_LUOT = 150;
 /**
  * Bảng dịch vụ & trang phục — trang "Dịch vụ" bên AppSheet cũ.
  *
- * Ai đăng nhập cũng xem được: sale tra giá, phòng Váy tra mẫu. Nút thêm, sửa
- * chỉ hiện cho người được sửa loại đang xem (loaiDuocSua trong dichVuChung.ts).
+ * CHỈ QUẢN LÝ, từ 20/11/2026 (anh chỉ ra: "đăng nhập bằng tài khoản nhân viên
+ * thì vẫn thấy được phần quản lý dịch vụ, như vậy là không được").
+ *
+ * Trang này không chỉ là bảng giá bán: bảy tab danh mục của nó là cấu hình
+ * dùng chung cả tiệm — loại buổi chụp, trạng thái hợp đồng, mã album, hình
+ * thức thu. Đổi một dòng ở đó là đổi ô chọn của mọi người đang lập hợp đồng.
+ *
+ * Trước đó ai đăng nhập cũng vào được, với lý do "sale tra giá, phòng Váy tra
+ * mẫu". Đo 20/11: không ai mang vai trò sale, và 11/13 người đăng nhập được
+ * là nhân viên thường. Xem thêm `loaiDuocSua` trong dichVuChung.ts.
  */
 export default async function DichVuPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
+  if (!laQuanTri(nguoi)) notFound();
   const sp = await searchParams;
 
   /*
@@ -120,7 +130,7 @@ export default async function DichVuPage({ searchParams }: Props) {
             {TEN_LOAI[x]} <span className="text-fg-faint tabular-nums">{soTheoLoai[x] ?? 0}</span>
           </Link>
         ))}
-        <TabDanhMuc dangMo={null} />
+        <TabDanhMuc dangMo={null} quanLy={laQuanTri(nguoi)} />
       </nav>
 
       {/* Lọc bằng đường link thường như mục Nhân viên: gửi link cho nhau cũng mở ra đúng bộ lọc. */}

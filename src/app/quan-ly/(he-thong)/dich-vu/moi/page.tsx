@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { batBuocDangNhap } from "@/lib/phienNhanVien";
+import { notFound } from "next/navigation";
+import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
 import { loaiDuocSua, type LoaiDichVu } from "@/lib/dichVuChung";
 import { nhomTheoLoai } from "@/lib/dichVuMayChu";
 import { FormDichVu } from "../FormDichVu";
@@ -10,19 +11,15 @@ type Props = { searchParams: Promise<{ loai?: string }> };
 
 export default async function ThemDichVuPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
+  /*
+    Chỉ quản lý — cùng lý do với trang bảng (xem dich-vu/page.tsx). Trả
+    `notFound` chứ không hiện câu "tài khoản này chỉ xem được": từ 20/11 nhân
+    viên không còn thấy mục này ở đâu cả, nên đến được đây nghĩa là gõ thẳng
+    đường dẫn, và câu trả lời đúng là trang không tồn tại.
+  */
+  if (!laQuanTri(nguoi)) notFound();
   const dsLoai = loaiDuocSua(nguoi);
   const { loai: l = "" } = await searchParams;
-
-  if (dsLoai.length === 0) {
-    return (
-      <div className="max-w-3xl">
-        <Link href="/quan-ly/dich-vu" className="eyebrow transition hover:text-accent">← Dịch vụ &amp; trang phục</Link>
-        <p className="mt-6 text-sm text-fg-muted">
-          Tài khoản này chỉ xem được bảng dịch vụ. Cần thêm mục mới thì nhờ quản lý hoặc sale giúp.
-        </p>
-      </div>
-    );
-  }
 
   const loai = (dsLoai as string[]).includes(l) ? (l as LoaiDichVu) : dsLoai[0];
 

@@ -18,6 +18,8 @@ type Props = { params: Promise<{ id: string }> };
  */
 export default async function ChiTietDichVuPage({ params }: Props) {
   const nguoi = await batBuocDangNhap();
+  /* Chỉ quản lý — cùng lý do với trang bảng, xem chú thích ở dich-vu/page.tsx. */
+  if (!laQuanTri(nguoi)) notFound();
   const { id } = await params;
   const prisma = getPrisma();
 

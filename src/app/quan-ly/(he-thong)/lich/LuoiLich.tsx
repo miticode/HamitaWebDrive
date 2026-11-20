@@ -270,7 +270,11 @@ export function LuoiLich({
                               className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-line pt-1.5 first:border-0 first:pt-0"
                             >
                               <span className="min-w-28 text-sm font-medium">{v.loai ?? "—"}</span>
-                              <span className="text-xs text-fg-muted tabular-nums">{tien(v.tienCong)}đ</span>
+                              {v.tienCong !== null && (
+                                <span className="text-xs text-fg-muted tabular-nums">
+                                  {tien(v.tienCong)}đ
+                                </span>
+                              )}
                               <span className="ml-auto flex flex-wrap items-center gap-2">
                                 <NutViec
                                   id={v.id}

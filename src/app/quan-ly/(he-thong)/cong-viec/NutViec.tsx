@@ -49,6 +49,15 @@ export function NutViec({
     });
 
   const dsNguoi = quanTri ? nhanVien : nhanVien.filter((n) => n.maNV === maToi);
+  /*
+    Việc đang của NGƯỜI KHÁC, với người thường.
+
+    Máy chủ đã chặn họ đụng vào (xem `duocDung` trong actionsViec.ts). Ở đây
+    khoá ô luôn, để không ai bấm rồi mới nhận lời từ chối — và để con mắt
+    nhận ra ngay việc nào còn nhận được.
+  */
+  const cuaNguoiKhac =
+    !quanTri && !!nguoiPhuTrachMaNV && nguoiPhuTrachMaNV.toLowerCase() !== (maToi ?? "").toLowerCase();
   const tt = trangThai && (TRANG_THAI_VIEC as readonly string[]).includes(trangThai) ? trangThai : "";
 
   return (
@@ -56,7 +65,7 @@ export function NutViec({
       <div className="flex flex-wrap items-center gap-1.5">
         <select
           value={nguoiPhuTrachMaNV ?? ""}
-          disabled={dangChay}
+          disabled={dangChay || cuaNguoiKhac}
           aria-label="Người làm"
           onChange={(e) => chay(() => giaoViecAction(id, e.target.value))}
           className="input btn-gon w-auto min-w-28"
@@ -68,11 +77,19 @@ export function NutViec({
             </option>
           ))}
           {/*
-            Mã lạ (người đã nghỉ, mã cũ bên AppSheet) vẫn phải hiện, không thì
-            ô nhảy về "chưa giao" và nhìn như việc không của ai.
+            Mã không có trong danh sách vẫn phải hiện, không thì ô nhảy về
+            "chưa giao" và nhìn như việc không của ai. Hai trường hợp khác nhau:
+
+            · Quản lý thấy mã trần — đó là người đã nghỉ hoặc mã cũ bên
+              AppSheet, và biết mã nào là việc của họ.
+            · Người thường thì MỌI mã đồng nghiệp đều "lạ", vì từ 20/11/2026
+              danh sách nhân viên cắt ở máy chủ (nguyên tắc 55). Hiện mã trần
+              cho họ vừa lộ mã vừa nhìn như lỗi, nên chỉ nói đã có người.
           */}
           {nguoiPhuTrachMaNV && !dsNguoi.some((n) => n.maNV === nguoiPhuTrachMaNV) && (
-            <option value={nguoiPhuTrachMaNV}>{nguoiPhuTrachMaNV}</option>
+            <option value={nguoiPhuTrachMaNV}>
+              {quanTri ? nguoiPhuTrachMaNV : "Đã có người nhận"}
+            </option>
           )}
         </select>
 

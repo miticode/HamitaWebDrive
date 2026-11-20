@@ -145,8 +145,16 @@ export const THU_TU_NHOM: readonly NhomLich[] = [
 export type ViecBuoi = {
   id: string;
   loai: string | null;
-  /** Đơn giá × số lượng, tức tiền người làm việc này nhận. */
-  tienCong: number;
+  /**
+   * Đơn giá × số lượng, tức tiền người làm việc này nhận.
+   *
+   * `null` = NGƯỜI ĐANG XEM KHÔNG ĐƯỢC BIẾT. Studio chốt 15/09/2026 chỉ quản
+   * lý xem lương mỗi người, và trang Đầu việc không hiện con số này ở đâu cả.
+   *
+   * Cắt từ MÁY CHỦ chứ không ẩn ở trình duyệt (nguyên tắc 3): dữ liệu gửi
+   * xuống nằm trong nguồn trang, ẩn bằng JSX thì xem nguồn vẫn đọc được.
+   */
+  tienCong: number | null;
   nguoiPhuTrachMaNV: string | null;
   trangThai: string | null;
 };

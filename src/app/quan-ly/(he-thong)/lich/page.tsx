@@ -225,7 +225,16 @@ export default async function LichPage({ searchParams }: Props) {
   const gon = (v: (typeof viecTho)[number]): ViecBuoi => ({
     id: v.id,
     loai: v.loai,
-    tienCong: Math.round(v.donGia * v.soLuong),
+    /*
+      TIỀN CÔNG CHỈ QUẢN LÝ THẤY — sửa 20/11/2026 khi rà lại quyền.
+
+      Bản 19/11 của em gửi con số này xuống cho mọi người đang xem lịch. Lịch
+      chụp thì cả tiệm mở được và nó hiện MỌI buổi, nên suốt từ hôm đó 11 nhân
+      viên thường nhìn được tiền công của nhau. Trang Đầu việc không hiện con
+      số này ở đâu, và studio đã chốt 15/09 chỉ quản lý xem lương mỗi người —
+      lỗi là ở chỗ em thêm cột tiền vào lịch mà không mang theo phép kiểm.
+    */
+    tienCong: quanTri ? Math.round(v.donGia * v.soLuong) : null,
     nguoiPhuTrachMaNV: v.nguoiPhuTrachMaNV,
     trangThai: v.trangThai,
   });
@@ -397,7 +406,15 @@ export default async function LichPage({ searchParams }: Props) {
           nay={nay}
           moHopDong={moHopDong}
           laQuanLy={quanTri}
-          nhanVien={dsNhanVien.map((n) => ({ maNV: khoaNguoi(n), ten: n.ten }))}
+          /*
+            Danh sách nhân viên CẮT Ở MÁY CHỦ (nguyên tắc 55: danh sách nhân
+            viên không cho nhân viên thường). Ô chọn người vốn đã lọc ở trình
+            duyệt, nhưng lọc kiểu đó thì cả danh sách vẫn nằm trong nguồn
+            trang — người thường chỉ cần tên của chính mình để nhận việc.
+          */
+          nhanVien={dsNhanVien
+            .filter((n) => quanTri || khoaNguoi(n) === khoaToi)
+            .map((n) => ({ maNV: khoaNguoi(n), ten: n.ten }))}
           quanTri={quanTri}
           maToi={khoaToi}
         />

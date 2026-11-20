@@ -34,19 +34,29 @@ export function loaiTuAppSheet(s: string | null): LoaiDichVu | null {
 }
 
 /**
- * Những loại người này được thêm, sửa. Rỗng = chỉ xem.
+ * Những loại người này được thêm, sửa. Rỗng = không được đụng vào gì.
  *
- * - Quản lý, Sale: mọi loại. Sale là người báo giá; giá sai là hợp đồng sai.
- * - Nhân viên phòng Váy: chỉ trang phục. Bên AppSheet, phòng Váy tự nhập trang
- *   phục (đo 15/09: 286/1.018 dòng do người phòng Váy tạo, phần lớn còn lại do
- *   phòng Tư Vấn). Không cho họ sửa bảng giá dịch vụ.
+ * CHỈ QUẢN LÝ, từ 20/11/2026 — anh chỉ ra "đăng nhập bằng tài khoản nhân viên
+ * thì vẫn thấy được phần quản lý dịch vụ, như vậy là không được", rồi chốt
+ * chặn hết, kể cả phòng Váy.
  *
- * Người dùng khác chỉ xem được — bảng giá là thứ cả tiệm cần tra.
+ * Bản cũ mở cho ba nhóm, và cả ba lý do đều không còn đứng được:
+ *
+ * - "Sale báo giá": đo 20/11 thì KHÔNG AI mang vai trò sale. Nhánh đó bỏ đi
+ *   không ảnh hưởng một tài khoản nào.
+ * - "Phòng Váy tự nhập trang phục": đúng bên AppSheet (286/1.018 dòng do họ
+ *   tạo), nhưng ở web anh chốt thu về quản lý. Mở lại thì sửa đúng hàm này
+ *   và bỏ chặn trong dich-vu/page.tsx — hai chỗ, không hơn.
+ * - "Bảng giá là thứ cả tiệm cần tra": trang ấy nay còn mang bảy tab cấu hình
+ *   dùng chung (loại buổi, trạng thái hợp đồng, mã album…), nên nó không còn
+ *   là một bảng giá nữa.
+ *
+ * Hàm này quyết CẢ nút trên trang lẫn phép chặn trong server action
+ * (`duocSuaDichVu`), nên sửa một chỗ là cả hai đi theo — không có đường nào
+ * ghi được mà bỏ qua nó.
  */
 export function loaiDuocSua(nguoi: { vaiTro: string; phongBan: string | null }): LoaiDichVu[] {
-  if (nguoi.vaiTro === "quan-tri" || nguoi.vaiTro === "sale") return [...LOAI_DICH_VU];
-  if (boDau(nguoi.phongBan ?? "") === "phong vay") return ["trang-phuc"];
-  return [];
+  return nguoi.vaiTro === "quan-tri" ? [...LOAI_DICH_VU] : [];
 }
 
 export function duocSuaDichVu(nguoi: { vaiTro: string; phongBan: string | null }, loai: string): boolean {

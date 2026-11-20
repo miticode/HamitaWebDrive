@@ -338,9 +338,10 @@ export default async function TongQuanPage() {
             ["Lương", "/quan-ly/luong"],
             ...(xemNhanVien(nguoi) ? [["Nhân viên", "/quan-ly/nhan-vien"]] : []),
             ["Nội quy", "/quan-ly/noi-quy"],
-            ["Dịch vụ & trang phục", "/quan-ly/dich-vu"],
             ...(quanTri
               ? [
+                  /* Quản lý dịch vụ chỉ quản lý — xem dich-vu/page.tsx (20/11/2026). */
+                  ["Quản lý dịch vụ", "/quan-ly/dich-vu"],
                   ["Thông tin studio", "/quan-ly/thong-tin"],
                   ["Quản lý album ảnh", "/admin"],
                 ]
