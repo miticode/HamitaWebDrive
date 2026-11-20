@@ -13,10 +13,10 @@ import { docMaAlbum } from "@/lib/docMaAlbum";
 import { coGiaoAnh } from "@/lib/thuMucHopDong";
 import { NutTaoThuMuc } from "./NutTaoThuMuc";
 import { buocTiepTheo, docBuocDayDu, laBuocXong } from "@/lib/buocHopDong";
-import { ChipTrangThai } from "../ChipTrangThai";
 import { NutPhieuThu, NutXoaHopDong, ThemPhieuThu } from "./NutHopDong";
 import { KhoiLich } from "./KhoiLich";
 import { KhoiViec } from "./KhoiViec";
+import { DaiTienDo } from "./DaiTienDo";
 import { KhoiTien } from "./KhoiTien";
 import { TieuDeKhoi } from "./TieuDeKhoi";
 import { Bang, Hang, O, type CotBang } from "../../_ui/Bang";
@@ -210,31 +210,24 @@ export default async function ChiTietHopDongPage({ params }: Props) {
       </div>
 
       {/*
-        DẢI TRẠNG THÁI RIÊNG — anh yêu cầu 18/11/2026.
+        DẢI TIẾN ĐỘ — anh yêu cầu 18/11/2026, dựng lại thành năm chặng 20/11.
 
         "Hợp đồng này đang ở bước nào, ai làm gì tiếp" là câu đầu tiên người
-        mở trang cần trả lời. Trước đó nó nép ở góc phải, chữ 12px, chen giữa
-        ba cái nút — thứ quan trọng nhất của trang lại là thứ mờ nhất.
+        mở trang cần trả lời. Bản 18/11 trả lời bằng một chip mang tên bước —
+        đúng, nhưng phải thuộc lòng cả mười tám bước mới biết còn bao xa tới
+        lúc giao hình. Nay năm chặng vẽ ra, nhìn một cái là thấy.
 
         Để ở đây, ngay dưới tên khách và chạy hết chiều ngang, vì nó nói về
         CẢ hợp đồng chứ không thuộc khối nào.
       */}
-      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md border border-line bg-bg-raised px-4 py-3">
-        <ChipTrangThai trangThai={hd.trangThai} />
-        {buocSau ? (
-          <span className="text-sm">
-            <span className="text-fg-muted">Tiếp theo </span>
-            <b className="font-medium">{buocSau.ten}</b>
-            {buocSau.trachNhiem && (
-              <span className="text-fg-muted"> — {buocSau.trachNhiem} lo</span>
-            )}
-          </span>
-        ) : (
-          xongNhanh && <span className="text-sm font-medium text-emerald-700">Đã xong nhánh này</span>
-        )}
-        {xongNhanh && buocSau && (
-          <span className="text-sm text-emerald-700">· đã xong nhánh này</span>
-        )}
+      <div className="mt-4">
+        <DaiTienDo
+          buoc={hd.buoc}
+          tenBuoc={hd.trangThai}
+          buocSau={buocSau?.ten ?? null}
+          aiLo={buocSau?.trachNhiem ?? null}
+          xongNhanh={xongNhanh && !!buocSau}
+        />
       </div>
 
       {hd.matBenAppSheet && (

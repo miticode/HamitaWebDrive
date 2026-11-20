@@ -133,7 +133,7 @@ bảng, đổi màu hàng tiêu đề, thêm dạng thẻ cho điện thoại: m
 
 | # | Vấn đề |
 |---|---|
-| **C1** | Dashboard là một lưới thẻ phẳng, không phân biệt "việc cần làm hôm nay" với "số liệu tham khảo" |
+| ~~**C1**~~ | ~~Dashboard là một lưới thẻ phẳng~~ — **SAI, em đọc sót**. Nó đã chia bốn tầng từ đợt 13/11: *Hôm nay · Chờ anh duyệt · Tiệm đang thế nào · Đi tới*. Không có việc gì để làm ở đây |
 | **C2** | Trang chi tiết hợp đồng xếp dọc 6 khối rời; mở ra phải cuộn mới thấy album và tiến độ |
 | **C3** | Không có breadcrumb; đang ở trang con chỉ có một link "← Hợp đồng" |
 | **C4** | Thanh bên 18 mục, không thu gọn được trên màn hình vừa |
