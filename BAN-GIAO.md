@@ -102,6 +102,15 @@ Phần này quan trọng nhất — đừng sửa những chỗ này mà không 
 - **`/api/download` bắt buộc kèm `?slug=`** — máy chủ tra ngược gallery, kiểm
   `allowDownload` và ảnh có thật sự thuộc album đó không. (Vá tháng 8/2026 —
   xem mục 6c, đây từng là lỗ hổng thật.)
+- **Mục giới thiệu phải gắn vào một ALBUM, không gắn thẳng thư mục Drive** —
+  bảng `AnhGioiThieu` khoá theo `(muc, galleryId, albumId)`, nên muốn đưa một
+  thư mục tư liệu của studio lên trang `/dich-vu` thì phải có một album trỏ tới
+  thư mục CHA của nó. Hiện có hai album kiểu đó, đứng lẫn trong lưới `/admin`
+  cùng album khách: `hamita-garden-aibvui` (bối cảnh phim trường) và
+  `vay-hamita-79aj6d` ("Váy Hamita" → hai mục Váy cưới, Áo dài, thêm 22/11/2026).
+  Cả hai đều KHÔNG có hạn giữ ảnh và KHÔNG có mã chọn ảnh — đừng tưởng là album
+  khách bị thiếu dữ liệu rồi đi "sửa" giúp.
+
 - **`/api/img` chặn nhúng từ web khác** (dựa `Sec-Fetch-Site`/`Referer`) nhưng
   **luôn cho qua khi thiếu cả hai header** — đó là cách hệ thống "dựng ảnh sẵn"
   (`warm.ts`) tự gọi từ máy chủ, và cách Facebook/Zalo xem trước link. Chặn
