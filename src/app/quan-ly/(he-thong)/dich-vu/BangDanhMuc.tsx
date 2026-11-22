@@ -8,6 +8,7 @@ import {
   themDanhMucAction,
   xoaDanhMucAction,
 } from "../../actionsDanhMuc";
+import { Bang, Hang, HangRong, O, type CotBang } from "../_ui/Bang";
 
 export type DongDanhMuc = {
   id: string;
@@ -27,6 +28,14 @@ export type DongDanhMuc = {
   Cùng hai ràng buộc anh chốt cho loại buổi chụp: đổi tên thì dữ liệu cũ đổi
   theo, xoá thì chặn khi còn dữ liệu dùng.
 */
+/* Cột "Việc" chỉ quản lý thấy, nên khai theo tên. */
+const COT = {
+  ten: { ten: "Giá trị", chinh: true },
+  dangDung: { ten: "Đang dùng", phai: true },
+  trangThai: { ten: "Trạng thái" },
+  viec: { ten: "Việc", phai: true, rong: true },
+} satisfies Record<string, CotBang>;
+
 export function BangDanhMuc({
   nhom,
   ds,
@@ -100,18 +109,13 @@ export function BangDanhMuc({
       {loi && <p className="mt-3 text-sm text-red-700">{loi}</p>}
       {nhac && !loi && <p className="mt-3 text-sm text-emerald-700">{nhac}</p>}
 
-      <div className="mt-4 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">{tenCot}</th>
-              <th className="px-4 py-2.5 text-right font-medium">Đang dùng</th>
-              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
-              {laQuanLy && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((d) =>
+      <Bang
+        lop="mt-4"
+        /* Tên cột đầu do nơi gọi đặt — "Loại hợp đồng", "Hình thức thu"… */
+        cot={[{ ...COT.ten, ten: tenCot }, COT.dangDung, COT.trangThai, ...(laQuanLy ? [COT.viec] : [])]}
+        trong="Chưa có giá trị nào. Web đang dùng bảng cứng sẵn có — bấm “Chép giá trị đang dùng” để quản lý được từ đây."
+      >
+        {ds.map((d) =>
               suaId === d.id ? (
                 <DongSua
                   key={d.id}
@@ -119,6 +123,7 @@ export function BangDanhMuc({
                   donVi={donVi}
                   dang={dang}
                   onThoi={() => setSuaId(null)}
+                  soCot={laQuanLy ? 4 : 3}
                   onLuu={(ten, dung) =>
                     batDau(async () => {
                       const kq = await suaDanhMucAction(d.id, { ten, dangDung: dung });
@@ -130,18 +135,22 @@ export function BangDanhMuc({
                   }
                 />
               ) : (
-                <tr key={d.id} className={`transition hover:bg-bg-soft ${d.dangDung ? "" : "opacity-60"}`}>
-                  <td className="px-4 py-2.5 font-medium">{d.ten}</td>
-                  <td className="px-4 py-2.5 text-right text-fg-muted tabular-nums">{d.soDung}</td>
-                  <td className="px-4 py-2.5 whitespace-nowrap">
+                <Hang key={d.id} lop={`transition hover:bg-bg-soft ${d.dangDung ? "" : "opacity-60"}`}>
+                  <O cot={COT.ten} lop="font-medium">
+                    {d.ten}
+                  </O>
+                  <O cot={COT.dangDung} lop="text-fg-muted tabular-nums">
+                    {d.soDung}
+                  </O>
+                  <O cot={COT.trangThai} lop="whitespace-nowrap">
                     {d.dangDung ? (
                       <span className="text-fg-muted">Đang dùng</span>
                     ) : (
                       <span className="text-fg-faint">Ngưng dùng</span>
                     )}
-                  </td>
+                  </O>
                   {laQuanLy && (
-                    <td className="px-4 py-2.5 text-right whitespace-nowrap">
+                    <O cot={COT.viec} lop="whitespace-nowrap">
                       <button type="button" className="btn px-3 py-1 text-xs" onClick={() => setSuaId(d.id)} disabled={dang}>
                         Sửa
                       </button>
@@ -176,20 +185,12 @@ export function BangDanhMuc({
                       >
                         {choXoa === d.id ? "Bấm lần nữa để xoá" : "Xoá"}
                       </button>
-                    </td>
+                    </O>
                   )}
-                </tr>
+                </Hang>
               ),
             )}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
-            Chưa có giá trị nào. Web đang dùng bảng cứng sẵn có — bấm “Chép giá trị đang dùng” để
-            quản lý được từ đây.
-          </p>
-        )}
-      </div>
+      </Bang>
     </div>
   );
 }
@@ -217,12 +218,15 @@ function DongSua({
   d,
   donVi,
   dang,
+  soCot,
   onLuu,
   onThoi,
 }: {
   d: DongDanhMuc;
   donVi: string;
   dang: boolean;
+  /** Số cột đang hiện — hàng form chiếm trọn bấy nhiêu. */
+  soCot: number;
   onLuu: (ten: string, dangDung: boolean) => void;
   onThoi: () => void;
 }) {
@@ -231,8 +235,7 @@ function DongSua({
   const doiTen = ten.trim() !== d.ten;
 
   return (
-    <tr className="bg-accent-soft/20">
-      <td colSpan={4} className="px-4 py-3">
+    <HangRong soCot={soCot} lop="bg-accent-soft/20">
         <div className="flex flex-wrap items-start gap-4">
           <label className="block min-w-56 flex-1">
             <span className="eyebrow block">Giá trị</span>
@@ -257,7 +260,6 @@ function DongSua({
             Thôi
           </button>
         </div>
-      </td>
-    </tr>
+    </HangRong>
   );
 }

@@ -4,12 +4,23 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MA_ALBUM } from "@/lib/maAlbum";
 import { LOP_NHOM, MAU_CHON, TEN_NHOM, mauMacDinh, laNhomLich } from "@/lib/lichChung";
+import { Bang, Hang, HangRong, O, type CotBang } from "../_ui/Bang";
 import {
   chepLoaiBuoiAction,
   suaLoaiBuoiAction,
   themLoaiBuoiAction,
   xoaLoaiBuoiAction,
 } from "../../actionsLoaiBuoi";
+
+/* Cột "Việc" chỉ quản lý thấy, nên khai theo tên. */
+const COT = {
+  loai: { ten: "Loại buổi", chinh: true },
+  maAlbum: { ten: "Mã album" },
+  mau: { ten: "Màu trên lịch" },
+  dangDung: { ten: "Đang dùng", phai: true },
+  trangThai: { ten: "Trạng thái" },
+  viec: { ten: "Việc", phai: true, rong: true },
+} satisfies Record<string, CotBang>;
 
 export type DongLoai = {
   id: string;
@@ -103,25 +114,25 @@ export function BangLoaiBuoi({ ds, laQuanLy }: { ds: DongLoai[]; laQuanLy: boole
       {loi && <p className="mt-3 text-sm text-red-700">{loi}</p>}
       {nhac && !loi && <p className="mt-3 text-sm text-emerald-700">{nhac}</p>}
 
-      <div className="mt-4 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Loại buổi</th>
-              <th className="px-4 py-2.5 font-medium">Mã album</th>
-              <th className="px-4 py-2.5 font-medium">Màu trên lịch</th>
-              <th className="px-4 py-2.5 text-right font-medium">Đang dùng</th>
-              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
-              {laQuanLy && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((d) =>
+      <Bang
+        lop="mt-4"
+        cot={[
+          COT.loai,
+          COT.maAlbum,
+          COT.mau,
+          COT.dangDung,
+          COT.trangThai,
+          ...(laQuanLy ? [COT.viec] : []),
+        ]}
+        trong="Chưa có loại nào. Web đang dùng bảng cứng sẵn có — bấm “Chép 15 loại đang dùng” để quản lý được từ đây."
+      >
+        {ds.map((d) =>
               suaId === d.id ? (
                 <DongSua
                   key={d.id}
                   d={d}
                   dang={dang}
+                  soCot={laQuanLy ? 6 : 5}
                   onThoi={() => setSuaId(null)}
                   onLuu={(ten, ma, dung, mau) =>
                     batDau(async () => {
@@ -134,9 +145,11 @@ export function BangLoaiBuoi({ ds, laQuanLy }: { ds: DongLoai[]; laQuanLy: boole
                   }
                 />
               ) : (
-                <tr key={d.id} className={`transition hover:bg-bg-soft ${d.dangDung ? "" : "opacity-60"}`}>
-                  <td className="px-4 py-2.5 font-medium">{d.ten}</td>
-                  <td className="px-4 py-2.5">
+                <Hang key={d.id} lop={`transition hover:bg-bg-soft ${d.dangDung ? "" : "opacity-60"}`}>
+                  <O cot={COT.loai} lop="font-medium">
+                    {d.ten}
+                  </O>
+                  <O cot={COT.maAlbum}>
                     {d.maAlbum ? (
                       <span className="rounded-full border border-accent/40 bg-accent-soft px-2.5 py-0.5 text-[11px] tracking-wide text-accent">
                         {d.maAlbum}
@@ -144,20 +157,22 @@ export function BangLoaiBuoi({ ds, laQuanLy }: { ds: DongLoai[]; laQuanLy: boole
                     ) : (
                       <span className="text-fg-faint">—</span>
                     )}
-                  </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap">
+                  </O>
+                  <O cot={COT.mau} lop="whitespace-nowrap">
                     <ChipMau mau={d.mau} ten={d.ten} />
-                  </td>
-                  <td className="px-4 py-2.5 text-right text-fg-muted tabular-nums">{d.soBuoi}</td>
-                  <td className="px-4 py-2.5 whitespace-nowrap">
+                  </O>
+                  <O cot={COT.dangDung} lop="text-fg-muted tabular-nums">
+                    {d.soBuoi}
+                  </O>
+                  <O cot={COT.trangThai} lop="whitespace-nowrap">
                     {d.dangDung ? (
                       <span className="text-fg-muted">Đang dùng</span>
                     ) : (
                       <span className="text-fg-faint">Ngưng dùng</span>
                     )}
-                  </td>
+                  </O>
                   {laQuanLy && (
-                    <td className="px-4 py-2.5 text-right whitespace-nowrap">
+                    <O cot={COT.viec} lop="whitespace-nowrap">
                       <button type="button" className="btn px-3 py-1 text-xs" onClick={() => setSuaId(d.id)} disabled={dang}>
                         Sửa
                       </button>
@@ -197,20 +212,12 @@ export function BangLoaiBuoi({ ds, laQuanLy }: { ds: DongLoai[]; laQuanLy: boole
                       >
                         {choXoa === d.id ? "Bấm lần nữa để xoá" : "Xoá"}
                       </button>
-                    </td>
+                    </O>
                   )}
-                </tr>
+                </Hang>
               ),
             )}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
-            Chưa có loại nào. Web đang dùng bảng cứng sẵn có — bấm “Chép 15 loại đang dùng” để quản lý
-            được từ đây.
-          </p>
-        )}
-      </div>
+      </Bang>
     </div>
   );
 }
@@ -317,11 +324,14 @@ function DongThem({ dang, onLuu }: { dang: boolean; onLuu: (ten: string, ma: str
 function DongSua({
   d,
   dang,
+  soCot,
   onLuu,
   onThoi,
 }: {
   d: DongLoai;
   dang: boolean;
+  /** Số cột đang hiện — hàng form chiếm trọn bấy nhiêu. */
+  soCot: number;
   onLuu: (ten: string, ma: string, dangDung: boolean, mau: string) => void;
   onThoi: () => void;
 }) {
@@ -332,8 +342,7 @@ function DongSua({
   const doiTen = ten.trim() !== d.ten;
 
   return (
-    <tr className="bg-accent-soft/20">
-      <td colSpan={6} className="px-4 py-3">
+    <HangRong soCot={soCot} lop="bg-accent-soft/20">
         <div className="flex flex-wrap items-start gap-4">
           <label className="block min-w-56 flex-1">
             <span className="eyebrow block">Tên loại buổi</span>
@@ -379,7 +388,6 @@ function DongSua({
             Thôi
           </button>
         </div>
-      </td>
-    </tr>
+    </HangRong>
   );
 }

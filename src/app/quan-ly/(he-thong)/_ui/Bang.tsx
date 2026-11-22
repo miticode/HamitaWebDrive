@@ -93,6 +93,38 @@ export function Hang({ children, lop }: { children: ReactNode; lop?: string }) {
 }
 
 /**
+ * Hàng CHIẾM TRỌN BỀ NGANG — dùng cho form sửa tại chỗ của các bảng danh mục.
+ *
+ * Bốn bảng danh mục (loại buổi, bước hợp đồng, mã album, danh mục chung) sửa
+ * ngay trong bảng: bấm "Sửa" là hàng đó biến thành một hàng form. Form ấy
+ * không chia theo cột nào cả, nên nó cần một `<td colSpan>`.
+ *
+ * `soCot` phải khớp số cột ĐANG HIỆN. Truyền thiếu thì trên máy tính form bị
+ * bó vào mấy cột đầu và phần còn lại của hàng trống trơn.
+ */
+export function HangRong({
+  soCot,
+  children,
+  lop,
+}: {
+  soCot: number;
+  children: ReactNode;
+  lop?: string;
+}) {
+  return (
+    <tr className={lop}>
+      {/*
+        `data-rong` để CSS bỏ nhãn và cho ô chiếm trọn hàng khi thành thẻ —
+        trên điện thoại hàng này vốn đã là cả một thẻ rồi.
+      */}
+      <td colSpan={soCot} data-rong="" className="px-4 py-3">
+        {children}
+      </td>
+    </tr>
+  );
+}
+
+/**
  * Một ô. `cot` là cột tương ứng trong `cot` của `Bang` — truyền để ô lấy nhãn
  * và các dấu `chinh`/`phai`/`rong` từ đó, khỏi khai hai lần hai nơi rồi lệch.
  */

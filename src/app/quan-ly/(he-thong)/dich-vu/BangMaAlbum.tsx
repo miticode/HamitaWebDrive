@@ -9,6 +9,21 @@ import {
   xoaMaAlbumAction,
 } from "../../actionsMaAlbum";
 
+import { Bang, Hang, HangRong, O, type CotBang } from "../_ui/Bang";
+
+/*
+  "Gắn sẵn" = bao nhiêu loại buổi chụp đang trỏ tới mã này. Khác cột Album:
+  album là cái đã có rồi, gắn sẵn là cái sẽ sinh ra tiếp. Cả hai đều chặn xoá.
+*/
+const COT = {
+  ma: { ten: "Mã", chinh: true },
+  nghia: { ten: "Nghĩa" },
+  album: { ten: "Album", phai: true },
+  ganSan: { ten: "Gắn sẵn", phai: true },
+  trangThai: { ten: "Trạng thái" },
+  viec: { ten: "Việc", phai: true, rong: true },
+} satisfies Record<string, CotBang>;
+
 export type DongMa = {
   id: string;
   ma: string;
@@ -90,25 +105,18 @@ export function BangMaAlbum({ ds, laQuanLy }: { ds: DongMa[]; laQuanLy: boolean 
       {loi && <p className="mt-3 text-sm text-red-700">{loi}</p>}
       {nhac && !loi && <p className="mt-3 text-sm text-emerald-700">{nhac}</p>}
 
-      <div className="mt-4 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Mã</th>
-              <th className="px-4 py-2.5 font-medium">Nghĩa</th>
-              <th className="px-4 py-2.5 text-right font-medium">Album</th>
-              <th className="px-4 py-2.5 text-right font-medium">Gắn sẵn</th>
-              <th className="px-4 py-2.5 font-medium">Trạng thái</th>
-              {laQuanLy && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((d) =>
+      <Bang
+        lop="mt-4"
+        cot={[COT.ma, COT.nghia, COT.album, COT.ganSan, COT.trangThai, ...(laQuanLy ? [COT.viec] : [])]}
+        trong="Chưa có mã nào. Web đang dùng bộ mã cứng sẵn có — bấm “Chép 12 mã đang dùng” để quản lý được từ đây."
+      >
+        {ds.map((d) =>
               suaId === d.id ? (
                 <DongSua
                   key={d.id}
                   d={d}
                   dang={dang}
+                  soCot={laQuanLy ? 6 : 5}
                   onThoi={() => setSuaId(null)}
                   onLuu={(ma, nghia, dung) =>
                     batDau(async () => {
@@ -117,31 +125,30 @@ export function BangMaAlbum({ ds, laQuanLy }: { ds: DongMa[]; laQuanLy: boolean 
                   }
                 />
               ) : (
-                <tr key={d.id} className={`transition hover:bg-bg-soft ${d.dangDung ? "" : "opacity-60"}`}>
-                  <td className="px-4 py-2.5">
+                <Hang key={d.id} lop={`transition hover:bg-bg-soft ${d.dangDung ? "" : "opacity-60"}`}>
+                  <O cot={COT.ma}>
                     <span className="rounded-full border border-accent/40 bg-accent-soft px-2.5 py-0.5 text-xs tracking-wide text-accent">
                       {d.ma}
                     </span>
-                  </td>
-                  <td className="px-4 py-2.5 text-fg-muted">{d.nghia ?? "—"}</td>
-                  <td className="px-4 py-2.5 text-right text-fg-muted tabular-nums">{d.soAlbum}</td>
-                  {/*
-                    "Gắn sẵn" = bao nhiêu loại buổi chụp đang trỏ tới mã này.
-                    Khác cột Album: album là cái đã có rồi, gắn sẵn là cái sẽ
-                    sinh ra tiếp. Cả hai đều chặn xoá.
-                  */}
-                  <td className="px-4 py-2.5 text-right text-fg-muted tabular-nums">
+                  </O>
+                  <O cot={COT.nghia} lop="text-fg-muted">
+                    {d.nghia ?? "—"}
+                  </O>
+                  <O cot={COT.album} lop="text-fg-muted tabular-nums">
+                    {d.soAlbum}
+                  </O>
+                  <O cot={COT.ganSan} lop="text-fg-muted tabular-nums">
                     {d.soLoaiBuoi === 0 ? "—" : d.soLoaiBuoi}
-                  </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap">
+                  </O>
+                  <O cot={COT.trangThai} lop="whitespace-nowrap">
                     {d.dangDung ? (
                       <span className="text-fg-muted">Đang dùng</span>
                     ) : (
                       <span className="text-fg-faint">Ngưng dùng</span>
                     )}
-                  </td>
+                  </O>
                   {laQuanLy && (
-                    <td className="px-4 py-2.5 text-right whitespace-nowrap">
+                    <O cot={COT.viec} lop="whitespace-nowrap">
                       <button type="button" className="btn px-3 py-1 text-xs" onClick={() => setSuaId(d.id)} disabled={dang}>
                         Sửa
                       </button>
@@ -172,20 +179,12 @@ export function BangMaAlbum({ ds, laQuanLy }: { ds: DongMa[]; laQuanLy: boolean 
                       >
                         {choXoa === d.id ? "Bấm lần nữa để xoá" : "Xoá"}
                       </button>
-                    </td>
+                    </O>
                   )}
-                </tr>
+                </Hang>
               ),
             )}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">
-            Chưa có mã nào. Web đang dùng bộ mã cứng sẵn có — bấm “Chép 12 mã đang dùng” để quản lý
-            được từ đây.
-          </p>
-        )}
-      </div>
+      </Bang>
     </div>
   );
 }
@@ -229,11 +228,14 @@ function DongThem({ dang, onLuu }: { dang: boolean; onLuu: (ma: string, nghia: s
 function DongSua({
   d,
   dang,
+  soCot,
   onLuu,
   onThoi,
 }: {
   d: DongMa;
   dang: boolean;
+  /** Số cột đang hiện — hàng form chiếm trọn bấy nhiêu. */
+  soCot: number;
   onLuu: (ma: string, nghia: string, dangDung: boolean) => void;
   onThoi: () => void;
 }) {
@@ -243,8 +245,7 @@ function DongSua({
   const khoaMa = d.soAlbum > 0;
 
   return (
-    <tr className="bg-accent-soft/20">
-      <td colSpan={6} className="px-4 py-3">
+    <HangRong soCot={soCot} lop="bg-accent-soft/20">
         <div className="flex flex-wrap items-start gap-3">
           <label className="block w-36">
             <span className="eyebrow block">Mã</span>
@@ -287,7 +288,6 @@ function DongSua({
             Thôi
           </button>
         </div>
-      </td>
-    </tr>
+    </HangRong>
   );
 }

@@ -4,6 +4,16 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { suaBuocAction, themBuocAction, xoaBuocAction } from "../../actionsDanhMuc";
 
+import { Bang, Hang, HangRong, O, type CotBang } from "../_ui/Bang";
+
+/* Cột "Việc" chỉ quản lý thấy, nên khai theo tên. */
+const COT = {
+  buoc: { ten: "Bước", chinh: true },
+  aiLo: { ten: "Ai lo" },
+  hopDong: { ten: "Hợp đồng", phai: true },
+  viec: { ten: "Việc", phai: true, rong: true },
+} satisfies Record<string, CotBang>;
+
 export type DongBuoc = {
   id: string;
   ten: string;
@@ -67,23 +77,18 @@ export function BangBuoc({ ds, laQuanLy }: { ds: DongBuoc[]; laQuanLy: boolean }
       {loi && <p className="mt-3 text-sm text-red-700">{loi}</p>}
       {nhac && !loi && <p className="mt-3 text-sm text-emerald-700">{nhac}</p>}
 
-      <div className="mt-4 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Bước</th>
-              <th className="px-4 py-2.5 font-medium">Ai lo</th>
-              <th className="px-4 py-2.5 text-right font-medium">Hợp đồng</th>
-              {laQuanLy && <th className="px-4 py-2.5 text-right font-medium">Việc</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((d) =>
+      <Bang
+        lop="mt-4"
+        cot={[COT.buoc, COT.aiLo, COT.hopDong, ...(laQuanLy ? [COT.viec] : [])]}
+        trong="Chưa có bước nào trong bảng."
+      >
+        {ds.map((d) =>
               suaId === d.id ? (
                 <DongSua
                   key={d.id}
                   d={d}
                   dang={dang}
+                  soCot={laQuanLy ? 4 : 3}
                   onThoi={() => setSuaId(null)}
                   onLuu={(ten, trach) =>
                     batDau(async () => {
@@ -96,12 +101,18 @@ export function BangBuoc({ ds, laQuanLy }: { ds: DongBuoc[]; laQuanLy: boolean }
                   }
                 />
               ) : (
-                <tr key={d.id} className="transition hover:bg-bg-soft">
-                  <td className="px-4 py-2.5 font-medium">{d.ten}</td>
-                  <td className="px-4 py-2.5 text-fg-muted">{d.trachNhiem ?? "—"}</td>
-                  <td className="px-4 py-2.5 text-right text-fg-muted tabular-nums">{d.soHopDong}</td>
+                <Hang key={d.id} lop="transition hover:bg-bg-soft">
+                  <O cot={COT.buoc} lop="font-medium">
+                    {d.ten}
+                  </O>
+                  <O cot={COT.aiLo} lop="text-fg-muted">
+                    {d.trachNhiem ?? "—"}
+                  </O>
+                  <O cot={COT.hopDong} lop="text-fg-muted tabular-nums">
+                    {d.soHopDong}
+                  </O>
                   {laQuanLy && (
-                    <td className="px-4 py-2.5 text-right whitespace-nowrap">
+                    <O cot={COT.viec} lop="whitespace-nowrap">
                       <button type="button" className="btn px-3 py-1 text-xs" onClick={() => setSuaId(d.id)} disabled={dang}>
                         Sửa
                       </button>
@@ -128,17 +139,12 @@ export function BangBuoc({ ds, laQuanLy }: { ds: DongBuoc[]; laQuanLy: boolean }
                       >
                         {choXoa === d.id ? "Bấm lần nữa để xoá" : "Xoá"}
                       </button>
-                    </td>
+                    </O>
                   )}
-                </tr>
+                </Hang>
               ),
             )}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">Chưa có bước nào trong bảng.</p>
-        )}
-      </div>
+      </Bang>
     </div>
   );
 }
@@ -184,11 +190,14 @@ function DongThem({ dang, onLuu }: { dang: boolean; onLuu: (ten: string, trach: 
 function DongSua({
   d,
   dang,
+  soCot,
   onLuu,
   onThoi,
 }: {
   d: DongBuoc;
   dang: boolean;
+  /** Số cột đang hiện — hàng form chiếm trọn bấy nhiêu. */
+  soCot: number;
   onLuu: (ten: string, trach: string) => void;
   onThoi: () => void;
 }) {
@@ -197,8 +206,7 @@ function DongSua({
   const doiTen = ten.trim() !== d.ten;
 
   return (
-    <tr className="bg-accent-soft/20">
-      <td colSpan={4} className="px-4 py-3">
+    <HangRong soCot={soCot} lop="bg-accent-soft/20">
         <div className="flex flex-wrap items-start gap-3">
           <label className="block min-w-64 flex-1">
             <span className="eyebrow block">Tên bước</span>
@@ -224,7 +232,6 @@ function DongSua({
             Thôi
           </button>
         </div>
-      </td>
-    </tr>
+    </HangRong>
   );
 }
