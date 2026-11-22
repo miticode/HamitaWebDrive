@@ -237,6 +237,17 @@ export function BangGiaHangMuc({
           Chưa khai việc nào. Hợp đồng chọn dịch vụ này sẽ không tự sinh đầu việc nào cả.
         </p>
       ) : (
+        /*
+          BẢNG NÀY CỐ Ý KHÔNG DÙNG `Bang` — 22/11/2026.
+
+          Hai mươi bảng còn lại của /quan-ly đã chuyển sang component chung,
+          riêng cái này thì không: nó KHÔNG CÓ HÀNG TIÊU ĐỀ. Chỗ của tiêu đề
+          là hàng nhóm buổi ("BUỔI 1 · NHÀ GÁI · 3 VIỆC"), chạy lại sau mỗi
+          nhóm. Ép vào `Bang` là sinh ra một `<thead>` rỗng nằm trên cùng.
+
+          Nó cũng không cần bản thẻ cho điện thoại: hai cột, cột sau là một con
+          số ngắn — đo 20/11 trên màn 375px thì không tràn.
+        */
         <div className="mt-3 overflow-x-auto rounded-md border border-line bg-bg-raised">
           <table className="w-full text-sm">
             <tbody className="divide-y divide-line">

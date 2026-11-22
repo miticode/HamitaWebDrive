@@ -5,6 +5,8 @@ import { batBuocDangNhap, batBuocQuyen, laQuanTri, xemNhanVien } from "@/lib/phi
 import { HangNhanVien, ThemNhanVien } from "./HangNhanVien";
 import { NutHienTrang } from "./NutHienTrang";
 import { NutDangXuatMoiMay } from "./NutDangXuatMoiMay";
+import { Bang, Hang, O } from "../_ui/Bang";
+import { COT_NV } from "./cot";
 
 export const dynamic = "force-dynamic";
 
@@ -124,31 +126,23 @@ export default async function NhanVienPage({ searchParams }: Props) {
         <Link href={link({ tt: "tat-ca" })} className={lopChip(tt === "tat-ca")}>Tất cả</Link>
       </div>
 
-      <div className="mt-5 overflow-x-auto rounded-md border border-line bg-bg-raised">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-bg-soft text-left text-xs text-fg-muted">
-              <th className="px-4 py-2.5 font-medium">Tên</th>
-              <th className="px-4 py-2.5 font-medium">Phòng ban</th>
-              <th className="px-4 py-2.5 font-medium">Chức vụ</th>
-              <th className="px-4 py-2.5 font-medium">Điện thoại</th>
-              {quanTri && (
-                <>
-                  <th className="px-4 py-2.5 font-medium">Tên đăng nhập</th>
-                  <th className="px-4 py-2.5 font-medium">Tài khoản</th>
-                  <th className="px-4 py-2.5 font-medium">Vào gần nhất</th>
-                  <th className="px-4 py-2.5 font-medium whitespace-nowrap" title="Hiện người này ở khu Đội ngũ trên trang giới thiệu">
-                    Trang giới thiệu
-                  </th>
-                  <th className="px-4 py-2.5" />
-                </>
-              )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {ds.map((n) => (
-              <tr key={n.id} className={n.dangLam ? "" : "text-fg-faint"}>
-                <td className="px-4 py-2.5">
+      <Bang
+        lop="mt-5"
+        /* Năm cột sau chỉ quản lý thấy — nguyên tắc 55. Cột khai ở HangNhanVien. */
+        cot={[
+          COT_NV.ten,
+          COT_NV.phongBan,
+          COT_NV.chucVu,
+          COT_NV.dienThoai,
+          ...(quanTri
+            ? [COT_NV.tenDangNhap, COT_NV.taiKhoan, COT_NV.vaoGanNhat, COT_NV.trangGioiThieu, COT_NV.viec]
+            : []),
+        ]}
+        trong="Không có nhân viên nào khớp bộ lọc."
+      >
+        {ds.map((n) => (
+          <Hang key={n.id} lop={n.dangLam ? "" : "text-fg-faint"}>
+                <O cot={COT_NV.ten}>
                   <span className="font-medium">{n.ten}</span>
                   {n.loaiNV === "Cộng tác viên" && (
                     <span className="ml-2 rounded border border-line px-1.5 py-0.5 text-[11px] text-fg-muted">CTV</span>
@@ -159,16 +153,22 @@ export default async function NhanVienPage({ searchParams }: Props) {
                   {n.vaiTro === "sale" && (
                     <span className="ml-2 rounded border border-line-strong px-1.5 py-0.5 text-[11px] text-fg-muted">Sale</span>
                   )}
-                </td>
-                <td className="px-4 py-2.5 whitespace-nowrap">{n.phongBan}</td>
-                <td className="px-4 py-2.5 whitespace-nowrap">{n.chucVu}</td>
-                <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">
+                </O>
+                <O cot={COT_NV.phongBan} lop="whitespace-nowrap">
+                  {n.phongBan}
+                </O>
+                <O cot={COT_NV.chucVu} lop="whitespace-nowrap">
+                  {n.chucVu}
+                </O>
+                <O cot={COT_NV.dienThoai} lop="whitespace-nowrap tabular-nums">
                   {n.soDienThoai ? (
-                    <a href={`tel:${n.soDienThoai}`} className="hover:text-accent">{n.soDienThoai}</a>
+                    <a href={`tel:${n.soDienThoai}`} className="hover:text-accent">
+                      {n.soDienThoai}
+                    </a>
                   ) : (
                     <span className="text-fg-faint">—</span>
                   )}
-                </td>
+                </O>
                 {quanTri && (
                   <HangNhanVien
                     nv={{
@@ -200,14 +200,9 @@ export default async function NhanVienPage({ searchParams }: Props) {
                     }
                   />
                 )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {ds.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-fg-muted">Không có nhân viên nào khớp bộ lọc.</p>
-        )}
-      </div>
+          </Hang>
+        ))}
+      </Bang>
     </div>
   );
 }

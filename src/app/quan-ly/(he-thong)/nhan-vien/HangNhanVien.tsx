@@ -9,6 +9,8 @@ import {
   themNhanVienAction,
   type DuLieuNhanVien,
 } from "../../actions";
+import { O } from "../_ui/Bang";
+import { COT_NV } from "./cot";
 
 type NhanVienHang = DuLieuNhanVien & {
   id: string;
@@ -75,13 +77,21 @@ export function HangNhanVien({
 
   return (
     <>
-      <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted">{nv.tenDangNhap}</td>
-      <td className="px-4 py-2.5 whitespace-nowrap">
-        <span className={`rounded-full border px-2 py-0.5 text-[11px] ${trangThai.lop}`}>{trangThai.chu}</span>
-      </td>
-      <td className="px-4 py-2.5 whitespace-nowrap text-fg-muted tabular-nums">{vaoGanNhat ?? "—"}</td>
-      <td className="px-4 py-2.5 whitespace-nowrap">{truocNutSua}</td>
-      <td className="px-4 py-2.5 text-right whitespace-nowrap">
+      <O cot={COT_NV.tenDangNhap} lop="whitespace-nowrap text-fg-muted">
+        {nv.tenDangNhap}
+      </O>
+      <O cot={COT_NV.taiKhoan} lop="whitespace-nowrap">
+        <span className={`rounded-full border px-2 py-0.5 text-[11px] ${trangThai.lop}`}>
+          {trangThai.chu}
+        </span>
+      </O>
+      <O cot={COT_NV.vaoGanNhat} lop="whitespace-nowrap text-fg-muted tabular-nums">
+        {vaoGanNhat ?? "—"}
+      </O>
+      <O cot={COT_NV.trangGioiThieu} lop="whitespace-nowrap">
+        {truocNutSua}
+      </O>
+      <O cot={COT_NV.viec} lop="whitespace-nowrap">
         <div className="flex justify-end gap-3 text-xs">
           {nv.dangLam && (
             <button
@@ -192,7 +202,7 @@ Tài khoản đăng nhập lại được ngay.`;
             />
           </HopNoi>
         )}
-      </td>
+      </O>
     </>
   );
 }
