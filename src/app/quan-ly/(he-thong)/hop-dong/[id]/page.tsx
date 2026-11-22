@@ -252,7 +252,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
         hai thứ mở hợp đồng ra để liếc, không phải thứ cuộn mãi mới tới.
       */}
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_21rem]">
-      <div className="order-first grid min-w-0 gap-6 lg:order-none lg:col-start-2">
+      <div className="order-first grid min-w-0 grid-cols-1 gap-6 lg:order-none lg:col-start-2">
         <section className="rounded-md border border-line bg-bg-raised p-4">
           <h2 className="eyebrow">Khách</h2>
           <dl className="mt-3 grid grid-cols-[7rem_1fr] gap-x-3 gap-y-1.5 text-sm">
@@ -363,7 +363,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
 
       </div>
 
-      <div className="grid min-w-0 gap-6 lg:col-start-1 lg:row-start-1">
+      <div className="grid min-w-0 grid-cols-1 gap-6 lg:col-start-1 lg:row-start-1">
       <section>
         <TieuDeKhoi ten="Dịch vụ, trang phục" so={hd.chiTiet.length} />
         <Bang lop="mt-3" cot={Object.values(COT_DV)} trong="Chưa có dòng nào.">
