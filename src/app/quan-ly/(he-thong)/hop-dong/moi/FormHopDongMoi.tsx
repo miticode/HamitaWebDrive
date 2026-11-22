@@ -22,6 +22,9 @@ import {
 } from "@/lib/hopDongChung";
 import { lapHopDongAction, timKhachAction, type KhachTim } from "../../../actionsHopDong";
 import { ChonDichVu, Hang, Khung, O, type DichVuGon, type GiaGon } from "../ChonDichVu";
+import { KhoiMaAlbum } from "./KhoiMaAlbum";
+import { KhoiDauViec } from "./KhoiDauViec";
+import { KhoiLichChup } from "./KhoiLichChup";
 
 /**
  * Form lập hợp đồng — một trang đi từ khách tới đầu việc, đúng thứ tự nhân
@@ -1041,317 +1044,39 @@ export function FormHopDongMoi({
 
       {/* ── Bước 3: lịch chụp, mã album, đầu việc ─────────────────────── */}
       <div className={buoc === 3 ? "grid gap-5" : "hidden"}>
-      <Khung
-        ten="Lịch chụp"
-        chu="Mỗi buổi quay/chụp một dòng. Chưa biết ngày thì cứ chọn loại buổi và để trống ngày — buổi vẫn được lưu."
-      >
-        {ngayChupChuaCoLich.length > 0 && (
-          <button
-            type="button"
-            className="btn mb-3"
-            onClick={() =>
-              setLich((ds) => [
-                ...ds,
-                ...ngayChupChuaCoLich.map((ngay) => ({ ngay, gio: "", loai: loaiDau, lyDoTrong: "", ghiChu: "", hienThi: "" })),
-              ])
-            }
-          >
-            Lấy {ngayChupChuaCoLich.length} ngày chụp ở trên vào lịch
-          </button>
-        )}
-
-        <div className="grid gap-3">
-          {lich.map((l, i) => (
-            <div
-              key={i}
-              className={`grid gap-3 rounded-lg ${
-                l.ngay ? "" : "border border-amber-300 bg-amber-50/60 p-3"
-              }`}
-            >
-            <div className="grid gap-3 sm:grid-cols-[9rem_6rem_11rem_1fr_auto]">
-              <O nhan="Ngày">
-                <input
-                  type="date"
-                  value={l.ngay}
-                  onChange={(e) => setLich((ds) => ds.map((x, j) => (i === j ? { ...x, ngay: e.target.value } : x)))}
-                  className="input"
-                />
-              </O>
-              <O nhan="Giờ">
-                <input
-                  type="time"
-                  value={l.gio}
-                  onChange={(e) => setLich((ds) => ds.map((x, j) => (i === j ? { ...x, gio: e.target.value } : x)))}
-                  className="input tabular-nums"
-                />
-              </O>
-              <O nhan="Loại">
-                <select
-                  value={l.loai}
-                  onChange={(e) => setLich((ds) => ds.map((x, j) => (i === j ? { ...x, loai: e.target.value } : x)))}
-                  className="input"
-                >
-                  {dsLoai.map(({ ten: x }) => (
-                    <option key={x} value={x}>
-                      {x}
-                    </option>
-                  ))}
-                </select>
-              </O>
-              <O nhan="Ghi chú">
-                <input
-                  value={l.ghiChu}
-                  onChange={(e) => setLich((ds) => ds.map((x, j) => (i === j ? { ...x, ghiChu: e.target.value } : x)))}
-                  className="input"
-                />
-              </O>
-              <div className="flex items-end">
-                <button type="button" className="btn btn-danger" onClick={() => setLich((ds) => ds.filter((_, j) => j !== i))}>
-                  Bỏ
-                </button>
-              </div>
-            </div>
-
-            {/*
-              Buổi ĐÃ CHỌN LOẠI mà chưa có ngày thì vẫn lưu (anh chốt
-              19/11/2026) — ba tình huống: gói prewedding đặt trước chưa chốt
-              ngày, trọn gói mà chưa chụp prewedding, và hoãn ngày cưới.
-
-              Ô lý do chỉ hiện khi ngày trống, vì nó chỉ có nghĩa lúc đó. Hai
-              lý do khác nhau ở việc phải làm: chưa chốt thì gọi nhắc, còn đã
-              hoãn thì phải báo lại ekip đã xếp người và váy.
-            */}
-            {!l.ngay && (
-              <div className="grid gap-3 sm:grid-cols-[1fr_15rem] sm:items-end">
-                <p className="text-xs text-amber-900">
-                  Buổi này sẽ lưu là <strong>chưa có ngày</strong>. Nó đứng ở khu “Chờ xếp ngày” của
-                  trang Lịch chụp cho tới khi ai đó điền ngày.
-                </p>
-                <O nhan="Vì sao chưa có ngày">
-                  <select
-                    value={l.lyDoTrong || dsLyDo[0]}
-                    onChange={(e) =>
-                      setLich((ds) => ds.map((x, j) => (i === j ? { ...x, lyDoTrong: e.target.value } : x)))
-                    }
-                    className="input"
-                  >
-                    {dsLyDo.map((x) => (
-                      <option key={x} value={x}>
-                        {x}
-                      </option>
-                    ))}
-                  </select>
-                </O>
-              </div>
-            )}
-            </div>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          className="btn mt-3"
-          onClick={() => setLich((ds) => [...ds, { ngay: "", gio: "", loai: loaiDau, lyDoTrong: "", ghiChu: "", hienThi: "" }])}
-        >
-          Thêm dòng lịch
-        </button>
-      </Khung>
+      <KhoiLichChup
+        lich={lich}
+        setLich={setLich}
+        dsLoai={dsLoai}
+        dsLyDo={dsLyDo}
+        loaiDau={loaiDau}
+        ngayChupChuaCoLich={ngayChupChuaCoLich}
+      />
 
       {/* ── Mã album ──────────────────────────────────────────────────── */}
-      <Khung
-        ten="Mã album"
-        chu="Album trên web sẽ mang mã này ở đầu tên. Thư mục trên Drive thì không — mã chỉ để lọc ở trang quản lý album."
-      >
-        <div className="flex flex-wrap gap-1.5">
-          {boMa.map((m) => {
-            const chon = maAlbum.includes(m.ma);
-            return (
-              <button
-                key={m.ma}
-                type="button"
-                onClick={() => doiMa(m.ma)}
-                title={m.nghia ? `${m.ma} — ${m.nghia}` : m.ma}
-                aria-pressed={chon}
-                className={`min-h-8 rounded-full border px-2.5 text-xs tracking-wide transition ${
-                  chon
-                    ? "border-transparent bg-fg text-bg"
-                    : "border-line-strong bg-bg-raised text-fg-muted hover:border-accent hover:text-fg"
-                }`}
-              >
-                {m.ma}
-              </button>
-            );
-          })}
-        </div>
-        {/*
-          Hiện luôn TÊN SẼ RA. Người lập không phải dịch "HIS + HER" trong
-          đầu thành cái tên thật, và nhìn một cái là biết mình bấm đúng chưa.
-        */}
-        <p className="mt-2 text-xs text-fg-muted">
-          Album sẽ tên: <b className="text-fg">{tenAlbumXem}</b>
-          {maTuGo === null && maGoiY.length > 0 && <span className="text-fg-faint"> · web tự đoán theo dịch vụ và lịch</span>}
-          {maTuGo !== null && (
-            <>
-              {" · "}
-              <button type="button" onClick={() => setMaTuGo(null)} className="underline underline-offset-2 hover:text-accent">
-                về như web đoán
-              </button>
-            </>
-          )}
-        </p>
-      </Khung>
+      <KhoiMaAlbum
+        boMa={boMa}
+        maAlbum={maAlbum}
+        maGoiY={maGoiY}
+        maTuGo={maTuGo}
+        tenAlbumXem={tenAlbumXem}
+        doiMa={doiMa}
+        veNhuWebDoan={() => setMaTuGo(null)}
+      />
 
       {/* ── Đầu việc ──────────────────────────────────────────────────── */}
-      <Khung
-        ten="Đầu việc"
-        chu="Việc tự sinh theo bảng giá hạng mục của từng dịch vụ, kèm tiền công người làm nhận. Ô bên phải không hỏi việc đó là việc gì — nó hỏi người làm phải có mặt ở buổi chụp nào, và quyết định việc hiện lên lịch ngày nào."
-      >
-        {viecGoiY.length === 0 ? (
-          <p className="text-sm text-fg-muted">
-            Những dịch vụ đã chọn chưa có bảng giá hạng mục nên chưa sinh đầu việc nào. Khai ở trang
-            Dịch vụ thì lần sau tự có — hoặc thêm tay ngay bên dưới.
-          </p>
-        ) : (
-          <div className="grid gap-1.5">
-            {viecGoiY.map((v) => {
-              const bo = boViec.has(v.khoa);
-              const b = buoiCua(v);
-              const han = (b !== null ? lich[b]?.ngay : "") || v.thoiHan;
-              return (
-                <div
-                  key={v.khoa}
-                  className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md border border-line px-3 py-2 text-sm ${bo ? "opacity-50" : ""}`}
-                >
-                  {/*
-                    Điện thoại: tên việc chiếm trọn một hàng, ô buổi xuống
-                    hàng dưới. Để cùng hàng thì ô chọn 11rem ăn mất chỗ và tên
-                    bị cắt còn "Makeu", "Photos" — đo 20/11 ở 375px.
-                  */}
-                  <label className="flex w-full min-w-0 items-center gap-3 sm:w-auto sm:flex-1">
-                    <input
-                      type="checkbox"
-                      checked={!bo}
-                      onChange={() =>
-                        setBoViec((cu) => {
-                          const m = new Set(cu);
-                          if (m.has(v.khoa)) m.delete(v.khoa);
-                          else m.add(v.khoa);
-                          return m;
-                        })
-                      }
-                      className="size-4 shrink-0"
-                    />
-                    <span className="font-medium">{v.loai}</span>
-                    <span className="truncate text-fg-faint">{v.tenDV}</span>
-                  </label>
-
-                  {/*
-                    Ô BUỔI chỉ hiện khi lịch có TỪ HAI DÒNG trở lên — anh chốt
-                    20/11/2026. Hợp đồng một buổi thì mọi việc đều thuộc buổi
-                    ấy, bày thêm một ô chọn chỉ tổ bắt người lập bấm vô ích.
-                  */}
-                  {lich.length >= 2 && (
-                    <select
-                      value={b === null ? "" : String(b)}
-                      onChange={(e) => setBuoiViec((cu) => new Map(cu).set(v.khoa, e.target.value))}
-                      disabled={bo}
-                      className="input w-full py-1 text-xs sm:w-auto sm:min-w-[11rem]"
-                      title="Người làm việc này có mặt ở buổi chụp nào — quyết định nó hiện lên lịch ngày nào"
-                    >
-                      <option value="">— Làm sau, không ra buổi —</option>
-                      {lich.map((_, i) => (
-                        <option key={i} value={i}>
-                          {nhanLich(i)}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-
-                  <span className="ml-auto shrink-0 tabular-nums text-fg-muted">
-                    {tien(Math.round(v.donGia * v.soLuong))}
-                    {han && <span className="ml-2 text-fg-faint">hạn {ngayVN(han)}</span>}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/*
-          THÊM VIỆC TAY — anh yêu cầu 20/11/2026.
-
-          Đứng ngay dưới danh sách tự sinh chứ không thành khối riêng: người
-          lập nhìn một lượt là thấy đủ việc của hợp đồng này, không phải nhớ
-          còn một chỗ nữa ở đâu đó.
-        */}
-        <div className="mt-4 border-t border-line pt-3">
-          {viecTay.length > 0 && (
-            <div className="grid gap-1.5">
-              {viecTay.map((v, i) => (
-                <div
-                  key={i}
-                  className="flex flex-wrap items-center gap-2 rounded-md border border-dashed border-line-strong px-3 py-2"
-                >
-                  <input
-                    value={v.loai}
-                    onChange={(e) =>
-                      setViecTay((ds) => ds.map((x, j) => (i === j ? { ...x, loai: e.target.value } : x)))
-                    }
-                    placeholder="Tên việc — Chụp nhà gái, Quay lễ tối…"
-                    className="input w-full py-1 text-sm sm:w-auto sm:min-w-[10rem] sm:flex-1"
-                  />
-                  <input
-                    value={v.donGia}
-                    onChange={(e) =>
-                      setViecTay((ds) => ds.map((x, j) => (i === j ? { ...x, donGia: e.target.value } : x)))
-                    }
-                    inputMode="numeric"
-                    placeholder="Tiền công"
-                    className="input w-28 py-1 text-right text-sm tabular-nums"
-                  />
-                  {lich.length >= 2 && (
-                    <select
-                      value={v.buoi}
-                      onChange={(e) =>
-                        setViecTay((ds) => ds.map((x, j) => (i === j ? { ...x, buoi: e.target.value } : x)))
-                      }
-                      className="input w-full py-1 text-xs sm:w-auto sm:min-w-[11rem]"
-                    >
-                      <option value="">— Làm sau, không ra buổi —</option>
-                      {lich.map((_, k) => (
-                        <option key={k} value={k}>
-                          {nhanLich(k)}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setViecTay((ds) => ds.filter((_, j) => j !== i))}
-                    className="grid size-8 shrink-0 place-items-center rounded-md border border-line text-fg-faint transition hover:border-red-300 hover:text-red-700"
-                    aria-label={`Bỏ việc thêm tay ${i + 1}`}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() =>
-              setViecTay((ds) => [
-                ...ds,
-                /* Gắn sẵn buổi đầu: việc thêm tay gần như luôn là việc hiện trường. */
-                { loai: "", donGia: "", buoi: lich.length > 0 ? "0" : "" },
-              ])
-            }
-            className="btn btn-gon mt-2"
-          >
-            + Thêm việc ngoài bảng giá
-          </button>
-        </div>
-      </Khung>
+      <KhoiDauViec
+        viecGoiY={viecGoiY}
+        boViec={boViec}
+        setBoViec={setBoViec}
+        setBuoiViec={setBuoiViec}
+        viecTay={viecTay}
+        setViecTay={setViecTay}
+        soBuoi={lich.length}
+        ngayBuoi={(i) => lich[i]?.ngay ?? ""}
+        buoiCua={buoiCua}
+        nhanLich={nhanLich}
+      />
 
       </div>
 
@@ -1366,7 +1091,15 @@ export function FormHopDongMoi({
         Nút Lập nằm ở đây chứ không nằm cuối bước 3, vì bước không phải cái
         khoá — hợp đồng một dòng dịch vụ thì lập xong ngay từ bước 2.
       */}
-      <div className="sticky bottom-0 -mx-1 border-t border-line bg-bg/95 px-1 py-3 backdrop-blur">
+      {/*
+        KHÔNG dùng lề âm ở đây — sửa 22/11/2026.
+
+        Bản cũ `-mx-1 px-1` để dải nền tràn ra hai mép. Nhưng lề âm làm thanh
+        rộng hơn khung cha đúng 8px, và trên màn 375px cả trang cuộn ngang theo.
+        Nền vẫn phủ hết chiều ngang khung mà không cần lề âm, vì nó là một khối
+        chiếm trọn hàng.
+      */}
+      <div className="sticky bottom-0 border-t border-line bg-bg/95 py-3 backdrop-blur">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           {/*
             Một dòng duy nhất: thanh này dính đáy, cao thêm một dòng là che
