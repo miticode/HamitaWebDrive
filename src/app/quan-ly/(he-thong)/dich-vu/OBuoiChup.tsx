@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { datBuoiDichVuAction } from "../../actionsDichVu";
 
@@ -39,8 +39,56 @@ export function OBuoiChup({
   const [loi, setLoi] = useState<string | null>(null);
   const [dang, batDau] = useTransition();
   const khung = useRef<HTMLDivElement>(null);
+  const nut = useRef<HTMLButtonElement>(null);
+  const [viTri, setViTri] = useState<{ top: number; left: number } | null>(null);
 
   useEffect(() => setChon(banDau), [banDau]);
+
+  /*
+    TOẠ ĐỘ CỦA BẢNG CHỌN, TÍNH BẰNG TAY — sửa 24/11/2026.
+
+    Trước đây nó là `absolute` trong ô bảng. Từ lúc bảng dịch vụ dùng chung
+    `Bang`, khung bảng mang `overflow-x: auto` (để bảng rộng cuộn ngang trên
+    màn hẹp), mà một phần tử có `overflow` thì CẮT mọi con `absolute` của nó —
+    và vì bảng chọn cao hơn hàng nên khung còn mọc thêm thanh cuộn dọc.
+
+    Đo được ở máy 24/11: bảng chọn cao 378px, đáy ở y=533, trong khi khung bảng
+    kết thúc ở y=246; `scrollHeight` 452 so với `clientHeight` 164.
+
+    `fixed` không bị `overflow` của tổ tiên cắt (chỉ `transform`, `filter`,
+    `perspective` hay `contain` mới tạo khung chứa mới — khung bảng không có
+    thứ nào), nên đổi sang `fixed` là thoát hẳn, đổi lại phải tự tính toạ độ.
+  */
+  const doViTri = useCallback(() => {
+    const n = nut.current;
+    if (!n) return;
+    const r = n.getBoundingClientRect();
+    const RONG = 288; /* w-72 */
+    const LE = 8;
+    /* Chiều cao thật nếu đã render, chưa thì ước chừng cho lần mở đầu. */
+    const cao = Math.min(khung.current?.querySelector("[data-bang-chon]")?.getBoundingClientRect().height ?? 320, window.innerHeight * 0.7);
+    /* Dưới nút không đủ chỗ thì lật lên trên; vẫn không đủ thì ghìm trong màn. */
+    const duoi = r.bottom + 4;
+    const top = duoi + cao <= window.innerHeight - LE ? duoi : Math.max(LE, Math.min(r.top - cao - 4, window.innerHeight - cao - LE));
+    const left = Math.min(Math.max(LE, r.left), window.innerWidth - RONG - LE);
+    setViTri({ top, left });
+  }, []);
+
+  useEffect(() => {
+    if (!mo) return;
+    doViTri();
+    /*
+      Trang cuộn hay đổi cỡ thì toạ độ cũ sai ngay. Nghe ở pha BẮT (`true`) để
+      nhận cả cú cuộn trong khung bảng, không chỉ cuộn cả trang.
+    */
+    const lai = () => doViTri();
+    window.addEventListener("scroll", lai, true);
+    window.addEventListener("resize", lai);
+    return () => {
+      window.removeEventListener("scroll", lai, true);
+      window.removeEventListener("resize", lai);
+    };
+  }, [mo, doViTri, chon.length]);
 
   useEffect(() => {
     if (!mo) return;
@@ -84,6 +132,7 @@ export function OBuoiChup({
   return (
     <div ref={khung} className="relative inline-block">
       <button
+        ref={nut}
         type="button"
         onClick={() => setMo((x) => !x)}
         disabled={dang}
@@ -101,7 +150,11 @@ export function OBuoiChup({
       </button>
 
       {mo && (
-        <div className="absolute top-full left-0 z-30 mt-1 w-72 rounded-md border border-line bg-bg-raised p-2.5 shadow-lift">
+        <div
+          data-bang-chon
+          style={viTri ?? { top: -9999, left: -9999 }}
+          className="fixed z-30 max-h-[70vh] w-72 overflow-y-auto rounded-md border border-line bg-bg-raised p-2.5 shadow-lift"
+        >
           <p className="eyebrow">Buổi chụp sẽ tự sinh</p>
           {chon.length === 0 ? (
             <p className="mt-1.5 text-xs text-fg-faint">Chưa chọn buổi nào.</p>
