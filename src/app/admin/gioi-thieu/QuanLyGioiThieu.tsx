@@ -10,13 +10,16 @@ import {
   docLaiCanhAction,
   docLaiMucAction,
   docThuMucAlbumAction,
+  docCayDriveAction,
   doiThuTuCanhAction,
   doiThuTuMucAction,
   suaMucAction,
   themAnhGioiThieuAction,
+  themTuDriveAction,
   themMucAction,
   xoaAnhGioiThieuAction,
   xoaMucAction,
+  type CayDrive,
   type ThuMucChon,
 } from "../actionsGioiThieu";
 import { DoiBiaThuMuc } from "./DoiBiaThuMuc";
@@ -502,6 +505,14 @@ function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: bool
   const [moOMoTa, setMoOMoTa] = useState(!!d.moTa);
   const [bao, setBao] = useState<string | null>(null);
 
+  /*
+    Dòng dán thẳng link Drive không thuộc album nào (anh yêu cầu 24/11/2026),
+    nên `tenAlbum` có thể trống. Ghép sẵn một lần ở đây để ba chỗ dưới không
+    nơi nào in ra chữ "null · Váy cưới".
+  */
+  const nhanDayDu = d.tenAlbum ? `${d.tenAlbum} · ${d.tenMuc}` : d.tenMuc;
+  const tenDuPhong = d.tenMuc || d.tenAlbum || "thư mục trên Drive";
+
   /* Chỉ gọi máy chủ khi thật sự có gì đổi — rời ô mà không sửa gì thì thôi. */
   const luuNeuDoi = () => {
     if (ten === (d.tenHien ?? "") && moTa === (d.moTa ?? "")) return;
@@ -592,7 +603,7 @@ function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: bool
           id={d.id}
           driveFolderId={d.driveFolderId}
           albumId={d.albumId}
-          ten={`${d.tenAlbum} · ${d.tenMuc}`}
+          ten={nhanDayDu}
           anhBia={d.anhBia}
           dong={() => setMoBia(false)}
         />
@@ -607,7 +618,7 @@ function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: bool
           value={ten}
           onChange={(e) => setTen(e.target.value)}
           onBlur={luuNeuDoi}
-          placeholder={d.tenMuc || d.tenAlbum}
+          placeholder={tenDuPhong}
           aria-label="Tên cảnh khách đọc"
           className="input text-sm"
         />
@@ -632,8 +643,8 @@ function TheDaChon({ d, dauDanh, cuoiDanh }: { d: ThuMucGioiThieu; dauDanh: bool
           </button>
         )}
 
-        <p className="mt-2 truncate text-xs text-fg-faint" title={`${d.tenAlbum} · ${d.tenMuc}`}>
-          {d.soAnh} ảnh · {d.tenMuc || d.tenAlbum}
+        <p className="mt-2 truncate text-xs text-fg-faint" title={nhanDayDu}>
+          {d.soAnh} ảnh · {tenDuPhong}
         </p>
         {bao && <p className="mt-1 text-xs text-accent">{bao}</p>}
       </div>
@@ -660,6 +671,16 @@ function OChon({
   const [chiTheoMa, setChiTheoMa] = useState(muc.ma.length > 0);
   const [albumMo, setAlbumMo] = useState<AlbumGon | null>(null);
   const [thuMuc, setThuMuc] = useState<ThuMucChon[] | null>(null);
+  /*
+    LỐI THỨ HAI: dán thẳng link thư mục Drive — anh yêu cầu 24/11/2026.
+
+    `cay` là thư mục đang mở, `duongDi` là các thư mục đã đi qua để quay lui
+    được. Hai lối dùng chung mọi thứ phía dưới (danh sách, tick, nút đưa lên)
+    nên hộp này không phình thêm một nửa.
+  */
+  const [linkDrive, setLinkDrive] = useState("");
+  const [cay, setCay] = useState<CayDrive | null>(null);
+  const [duongDi, setDuongDi] = useState<{ id: string; ten: string }[]>([]);
   const [loi, setLoi] = useState<string | null>(null);
   const [dangLam, start] = useTransition();
   const [vuaThem, setVuaThem] = useState<Set<string>>(new Set());
@@ -726,10 +747,44 @@ function OChon({
     moAlbum(hopTen[0]);
   }, [hopTen]);
 
-  const daCo = (albumId: string) =>
-    !!albumMo &&
-    (vuaThem.has(`${albumMo.id}/${albumId}`) ||
-      daChon.some((d) => d.galleryId === albumMo.id && d.albumId === albumId));
+  /** Mở một thư mục Drive. `lui` là lúc bấm quay lại trên đường dẫn. */
+  const moDrive = (id: string, them?: { id: string; ten: string }, lui?: number) => {
+    setLoi(null);
+    setThuMuc(null);
+    setDangTick(new Set());
+    start(async () => {
+      const kq = await docCayDriveAction(id);
+      if ("loi" in kq) {
+        setLoi(kq.loi);
+        return;
+      }
+      setCay(kq);
+      setThuMuc(kq.con);
+      setAlbumMo(null);
+      if (lui !== undefined) setDuongDi((d) => d.slice(0, lui));
+      else if (them) setDuongDi((d) => [...d, them]);
+      else setDuongDi([]);
+    });
+  };
+
+  /*
+    Đã đưa lên chưa — hỏi theo NGUỒN đang mở. Dòng chép từ album so theo id
+    album, dòng dán link so theo thư mục Drive; hai thứ không lẫn nhau được vì
+    mỗi lúc chỉ một trong hai đang mở.
+  */
+  const daCo = (albumId: string) => {
+    if (cay) {
+      return (
+        vuaThem.has(`${cay.id}/${albumId}`) ||
+        daChon.some((d) => d.driveFolderId === cay.id && d.albumId === albumId)
+      );
+    }
+    return (
+      !!albumMo &&
+      (vuaThem.has(`${albumMo.id}/${albumId}`) ||
+        daChon.some((d) => d.galleryId === albumMo.id && d.albumId === albumId))
+    );
+  };
 
   /*
     Thêm NHIỀU thư mục một lượt — anh yêu cầu 23/09/2026: chia Hamita Garden
@@ -741,16 +796,19 @@ function OChon({
     thêm được.
   */
   const themNhieu = (ds: ThuMucChon[]) => {
-    if (!albumMo || ds.length === 0) return;
+    const nguon = cay ? cay.id : albumMo?.id;
+    if (!nguon || ds.length === 0) return;
     setLoi(null);
     start(async () => {
       for (const t of ds) {
-        const kq = await themAnhGioiThieuAction(nhom.key, muc.key, albumMo.id, t.id);
+        const kq = cay
+          ? await themTuDriveAction(nhom.key, muc.key, nguon, t.id)
+          : await themAnhGioiThieuAction(nhom.key, muc.key, nguon, t.id);
         if (kq.loi) {
           setLoi(kq.loi);
           break;
         }
-        setVuaThem((s) => new Set(s).add(`${albumMo.id}/${t.id}`));
+        setVuaThem((s) => new Set(s).add(`${nguon}/${t.id}`));
       }
       setDangTick(new Set());
       router.refresh();
@@ -780,7 +838,47 @@ function OChon({
           >
             ✕
           </button>
-          {albumMo ? (
+          {cay ? (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setCay(null);
+                  setThuMuc(null);
+                  setDuongDi([]);
+                  setLoi(null);
+                }}
+                className="eyebrow transition hover:text-accent"
+              >
+                ← Chọn nguồn khác
+              </button>
+              <h2 className="mt-2 pr-10 font-display text-2xl">{cay.ten}</h2>
+              {/*
+                Đường đi để lui ra ngoài sau khi vào sâu — không có nó thì vào
+                một thư mục con rồi chỉ còn cách dán lại link từ đầu.
+              */}
+              {duongDi.length > 0 && (
+                <p className="mt-1 flex flex-wrap items-center gap-1 text-xs text-fg-muted">
+                  {duongDi.map((b, i) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      disabled={dangLam}
+                      onClick={() => moDrive(b.id, undefined, i)}
+                      className="underline underline-offset-2 transition hover:text-accent disabled:opacity-40"
+                    >
+                      {b.ten}
+                    </button>
+                  ))}
+                  <span>› {cay.ten}</span>
+                </p>
+              )}
+              <p className="mt-1 text-sm text-fg-muted">
+                Chọn thư mục đưa lên mục <strong className="font-medium text-fg">{muc.ten}</strong>, hoặc bấm{" "}
+                <span className="text-fg">Mở</span> để vào sâu hơn.
+              </p>
+            </>
+          ) : albumMo ? (
             <>
               <button type="button" onClick={() => setAlbumMo(null)} className="eyebrow transition hover:text-accent">
                 ← Chọn album khác
@@ -807,6 +905,40 @@ function OChon({
             <>
               <p className="eyebrow">Thêm vào mục</p>
               <h2 className="mt-1 pr-10 font-display text-2xl">{muc.ten}</h2>
+
+              {/*
+                LỐI DÁN LINK đứng TRƯỚC lưới album — anh yêu cầu 24/11/2026.
+
+                Trước đây muốn đưa một thư mục tư liệu của tiệm lên trang thì
+                phải tạo một album giả trỏ vào thư mục cha, rồi album ấy nằm
+                lẫn trong lưới /admin cùng gần hai trăm album của khách.
+              */}
+              <div className="mt-4 rounded-md border border-line bg-bg-soft p-3">
+                <p className="text-xs text-fg-muted">
+                  Lấy thẳng từ một thư mục trên Drive của studio — không cần tạo album.
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <input
+                    value={linkDrive}
+                    onChange={(e) => setLinkDrive(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && linkDrive.trim()) moDrive(linkDrive.trim());
+                    }}
+                    placeholder="Dán link thư mục Drive…"
+                    aria-label="Link thư mục Drive"
+                    className="input min-w-0 flex-1"
+                  />
+                  <button
+                    type="button"
+                    className="btn"
+                    disabled={dangLam || !linkDrive.trim()}
+                    onClick={() => moDrive(linkDrive.trim())}
+                  >
+                    {dangLam ? "Đang đọc…" : "Mở thư mục"}
+                  </button>
+                </div>
+              </div>
+
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <input
                   value={tuKhoa}
@@ -835,13 +967,44 @@ function OChon({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-5">
-          {albumMo ? (
+          {albumMo || cay ? (
             thuMuc === null ? (
               <p className="text-sm text-fg-muted">{dangLam ? "Đang đọc thư mục trên Drive…" : ""}</p>
-            ) : thuMuc.length === 0 ? (
-              <p className="text-sm text-fg-muted">Album này chưa có thư mục nào có ảnh.</p>
+            ) : thuMuc.length === 0 && !(cay && cay.anhTrongNo > 0) ? (
+              <p className="text-sm text-fg-muted">
+                {cay ? "Thư mục này không có ảnh, cũng không có thư mục con nào có ảnh." : "Album này chưa có thư mục nào có ảnh."}
+              </p>
             ) : (
               <ul className="divide-y divide-line">
+                {/*
+                  Ảnh nằm NGAY trong thư mục đang mở thì chính nó cũng đưa lên
+                  được — không phải lúc nào studio cũng chia thư mục con, và
+                  đây đúng là cảnh "Váy cưới" với "Áo dài" của anh.
+
+                  `albumId` rỗng là quy ước sẵn có: ảnh ở gốc cây.
+                */}
+                {cay && cay.anhTrongNo > 0 && (
+                  <li className="flex items-center justify-between gap-4 py-3">
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium">Chính thư mục “{cay.ten}”</span>
+                      <span className="text-xs text-fg-muted">{cay.anhTrongNo} ảnh nằm ngay trong đây</span>
+                    </span>
+                    {daCo("") ? (
+                      <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">
+                        ✓ Đã đưa lên
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={dangLam}
+                        onClick={() => themNhieu([{ id: "", ten: cay.ten, soAnh: cay.anhTrongNo }])}
+                        className="btn shrink-0"
+                      >
+                        Đưa lên
+                      </button>
+                    )}
+                  </li>
+                )}
                 {thuMuc.map((t) => {
                   const co = daCo(t.id);
                   return (
@@ -867,15 +1030,32 @@ function OChon({
                           <span className="text-xs text-fg-muted">{t.soAnh} ảnh</span>
                         </span>
                       </label>
-                      {co ? (
-                        <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">
-                          ✓ Đã đưa lên
-                        </span>
-                      ) : (
-                        <button type="button" disabled={dangLam} onClick={() => them(t)} className="btn shrink-0">
-                          Đưa lên
-                        </button>
-                      )}
+                      <span className="flex shrink-0 items-center gap-2">
+                        {/*
+                          Chỉ lối dán link mới có nút Mở: thư mục con của một
+                          album thì ảnh đã gom hết lên rồi, vào sâu nữa không
+                          ra thêm gì.
+                        */}
+                        {cay && (
+                          <button
+                            type="button"
+                            disabled={dangLam}
+                            onClick={() => moDrive(t.id, { id: cay.id, ten: cay.ten })}
+                            className="btn btn-gon px-2.5 py-1 text-xs"
+                          >
+                            Mở
+                          </button>
+                        )}
+                        {co ? (
+                          <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">
+                            ✓ Đã đưa lên
+                          </span>
+                        ) : (
+                          <button type="button" disabled={dangLam} onClick={() => them(t)} className="btn">
+                            Đưa lên
+                          </button>
+                        )}
+                      </span>
                     </li>
                   );
                 })}

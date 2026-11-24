@@ -9,9 +9,11 @@ import {
   doiBiaThuMucGioiThieu,
   doiThuTuThuMuc,
   themThuMucGioiThieu,
+  themThuMucTuDrive,
   xoaThuMucGioiThieu,
 } from "@/lib/anhGioiThieu";
 import { loadTree, loadTreeMoi } from "@/lib/gallery";
+import { parseFolderId } from "@/lib/drive";
 import { getPrisma } from "@/lib/db";
 import { doiThuTuMuc, suaMuc, themMuc, xoaMuc } from "@/lib/mucDichVu";
 
@@ -52,6 +54,74 @@ export async function docThuMucAlbumAction(
   } catch {
     return { loi: "Không đọc được Drive lúc này, anh chị thử lại sau ít phút." };
   }
+}
+
+/** Một thư mục Drive studio đang mở, cùng các thư mục con của nó. */
+export type CayDrive = {
+  id: string;
+  ten: string;
+  /** Ảnh nằm ngay trong thư mục này. 0 = nó chỉ chứa thư mục con. */
+  anhTrongNo: number;
+  con: ThuMucChon[];
+};
+
+/**
+ * Đọc một thư mục Drive theo LINK studio dán — anh yêu cầu 24/11/2026 ("lấy
+ * thẳng trên folder drive luôn mà không cần phải tạo album").
+ *
+ * Trả về chính thư mục đó và danh sách thư mục con, để ô chọn vừa thêm được
+ * cả thư mục đang mở, vừa đi sâu vào một thư mục con (gọi lại hàm này với id
+ * của nó). Nhờ vậy duyệt được nhiều cấp mà không cần dán link từng lần.
+ *
+ * LUÔN đọc mới, không dùng cache: studio dán link xong là muốn thấy ngay thứ
+ * mình vừa sắp trên Drive, và mỗi lượt dán chỉ xảy ra khi có người bấm.
+ */
+export async function docCayDriveAction(
+  linkHoacId: string,
+): Promise<{ loi: string } | CayDrive> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  const id = parseFolderId(linkHoacId);
+  if (!id) return { loi: "Chưa nhận ra link thư mục Drive. Anh chị chép nguyên đường dẫn trên trình duyệt giúp em." };
+
+  try {
+    const tree = await loadTreeMoi(id);
+    /*
+      Thư mục không có thư mục con nào thì `getGalleryTree` gộp ảnh vào một
+      mục mang id rỗng và lấy luôn tên thư mục; có thư mục con thì mục rỗng ấy
+      tên "Ảnh lẻ". Hai đường đều quy về `anhTrongNo` ở đây.
+    */
+    const goc = tree.albums.find((a) => a.id === "");
+    return {
+      id,
+      ten: tree.name,
+      anhTrongNo: goc?.photos.length ?? 0,
+      con: tree.albums
+        .filter((a) => a.id !== "" && a.photos.length > 0)
+        .map((a) => ({ id: a.id, ten: a.name, soAnh: a.photos.length })),
+    };
+  } catch {
+    return {
+      loi: "Không đọc được thư mục này. Kiểm giúp em link có đúng, và thư mục có nằm trong Drive của studio không.",
+    };
+  }
+}
+
+/** Thêm một thư mục Drive dán thẳng link, không qua album nào. */
+export async function themTuDriveAction(
+  nhom: string,
+  muc: string,
+  driveFolderId: string,
+  albumId: string,
+): Promise<{ loi?: string }> {
+  if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
+  try {
+    const kq = await themThuMucTuDrive(nhom, muc, driveFolderId, albumId);
+    if (kq.loi) return kq;
+  } catch {
+    return { loi: "Không đọc được Drive lúc này, anh chị thử lại sau ít phút." };
+  }
+  lamMoi();
+  return {};
 }
 
 export async function themAnhGioiThieuAction(

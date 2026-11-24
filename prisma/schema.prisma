@@ -1239,7 +1239,19 @@ model AnhGioiThieu {
   /// Key muc KHONG trung giua cac nhom nen unique van theo (muc, galleryId, albumId).
   nhom      String   @default("anh-cuoi")
   muc       String
-  galleryId String
+  /// Album khach ma thu muc nay nam trong. NULL khi studio DAN THANG link mot
+  /// thu muc Drive — anh yeu cau 24/11/2026 ("lay thang tren folder drive luon
+  /// ma khong can phai tao album").
+  ///
+  /// Giu lai chu khong bo han: 29 dong hien co deu tu album khach, va trang
+  /// quan ly can ten album de studio biet anh nay cua nha nao.
+  galleryId String?
+  /// THU MUC DRIVE GOC de doc cay, va la thu duy nhat moi cho doc anh can.
+  ///
+  /// Dong gan album thi chep tu `Gallery.driveFolderId`; dong dan link thi la
+  /// chinh thu muc da dan. Nho vay moi noi doc anh chi hoi mot cot, khong phai
+  /// re nhanh "co album hay khong".
+  driveFolderId String?
   /// Ma thu muc con. Chuoi rong = anh nam ngay thu muc goc.
   albumId   String
   /// Ten thu muc DOC TU DRIVE luc them. Giu nguyen de con doi chieu khi doc lai.
@@ -1258,9 +1270,18 @@ model AnhGioiThieu {
   soAnh     Int      @default(0)
   taoLuc    DateTime @default(now())
 
-  gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  gallery Gallery? @relation(fields: [galleryId], references: [id], onDelete: Cascade)
 
-  @@unique([muc, galleryId, albumId])
+  /*
+    KHOA KHONG TRUNG THEO THU MUC DRIVE, khong theo album nua — doi 24/11/2026
+    cung luc cho phep dan thang link thu muc.
+
+    Vi sao doi duoc ma khong mat gi: hai dong cung (muc, album, thu muc con)
+    thi cung (muc, driveFolderId, albumId), vi driveFolderId chep tu chinh
+    album do. Nguoc lai thi khoa moi con chat hon: hai album khac nhau tro
+    cung mot thu muc Drive gio khong them hai lan duoc.
+  */
+  @@unique([muc, driveFolderId, albumId])
   @@index([muc])
 }
 

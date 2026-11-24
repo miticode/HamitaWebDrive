@@ -3,15 +3,34 @@ import { loadTree, loadTreeMoi } from "./gallery";
 import { mucHopLe } from "./mucDichVu";
 import { tenKhongMa } from "./maAlbum";
 
+/**
+ * THƯ MỤC DRIVE GỐC của một dòng giới thiệu — nơi mọi lượt đọc ảnh bắt đầu.
+ *
+ * Cột `driveFolderId` là nguồn chính từ 24/11/2026, lúc anh cho dán thẳng link
+ * thư mục. Ngả về thư mục của album chỉ để phòng một dòng cũ chưa kịp lấp
+ * (xem `scripts/lap-drive-folder.mts`).
+ *
+ * Hết cả hai thì trả chuỗi rỗng, và `loadTree` tự từ chối vì id không hợp lệ —
+ * thà hỏng đúng một thẻ còn hơn lặng lẽ đọc cây của album khác.
+ */
+function thuMucGoc(d: {
+  driveFolderId: string | null;
+  gallery?: { driveFolderId: string } | null;
+}): string {
+  return d.driveFolderId ?? d.gallery?.driveFolderId ?? "";
+}
+
 /** Một thư mục đã đưa lên trang giới thiệu, đủ để trang quản lý hiện mà không gọi Drive. */
 export type ThuMucGioiThieu = {
   id: string;
   nhom: string;
   muc: string;
-  galleryId: string;
-  tenAlbum: string;
-  slug: string;
-  /** Thư mục gốc Drive của album — ô đổi bìa cần để liệt kê ảnh. */
+  /** null = studio dán thẳng link thư mục Drive, không qua album khách nào. */
+  galleryId: string | null;
+  /** Tên album khách — null với dòng dán thẳng link. */
+  tenAlbum: string | null;
+  slug: string | null;
+  /** Thư mục gốc Drive để đọc cây — ô đổi bìa cần để liệt kê ảnh. */
   driveFolderId: string;
   albumId: string;
   tenMuc: string;
@@ -36,9 +55,9 @@ export async function docThuMucGioiThieu(): Promise<ThuMucGioiThieu[]> {
     nhom: d.nhom,
     muc: d.muc,
     galleryId: d.galleryId,
-    tenAlbum: d.gallery.clientName ?? d.gallery.title,
-    slug: d.gallery.slug,
-    driveFolderId: d.gallery.driveFolderId,
+    tenAlbum: d.gallery ? (d.gallery.clientName ?? d.gallery.title) : null,
+    slug: d.gallery?.slug ?? null,
+    driveFolderId: thuMucGoc(d),
     albumId: d.albumId,
     tenMuc: d.tenMuc,
     tenHien: d.tenHien,
@@ -60,46 +79,75 @@ export async function mucDangCo(nhom: string): Promise<Set<string>> {
 }
 
 /**
- * Thêm một thư mục vào mục. Tên thư mục, tấm đầu và số ảnh đọc LẠI từ Drive ở
- * máy chủ, không tin số máy khách gửi lên — và đọc lại cũng là cách chắc chắn
- * thư mục đó còn tồn tại trong đúng album này.
+ * Lõi chung của hai cách thêm. Tên thư mục, tấm đầu và số ảnh đọc LẠI từ Drive
+ * ở máy chủ, không tin số máy khách gửi lên — và đọc lại cũng là cách chắc
+ * chắn thư mục đó còn tồn tại thật trong cây này.
  */
-export async function themThuMucGioiThieu(
+async function them(
   nhom: string,
   muc: string,
-  galleryId: string,
+  driveFolderId: string,
   albumId: string,
+  galleryId: string | null,
 ): Promise<{ loi?: string }> {
   if (!(await mucHopLe(nhom, muc))) return { loi: "Mục không hợp lệ." };
-  const prisma = getPrisma();
-  const g = await prisma.gallery.findUnique({
-    where: { id: galleryId },
-    select: { driveFolderId: true },
-  });
-  if (!g) return { loi: "Không tìm thấy album." };
 
   /*
     Không thấy thư mục trong bản chụp đang có thì đọc lại Drive một lần — studio
     hay vừa tạo thư mục trên Drive xong là vào web thêm ngay, lúc đó cache 5
     phút còn giữ bản chưa có thư mục ấy.
   */
-  let tree = await loadTree(g.driveFolderId);
+  let tree = await loadTree(driveFolderId);
   let thuMuc = tree.albums.find((a) => a.id === albumId);
   if (!thuMuc) {
-    tree = await loadTreeMoi(g.driveFolderId);
+    tree = await loadTreeMoi(driveFolderId);
     thuMuc = tree.albums.find((a) => a.id === albumId);
   }
   if (!thuMuc) return { loi: "Không tìm thấy thư mục này trên Drive nữa." };
   if (thuMuc.photos.length === 0) return { loi: "Thư mục này chưa có ảnh nào." };
 
-  const data = { nhom, tenMuc: thuMuc.name, soAnh: thuMuc.photos.length };
-  await prisma.anhGioiThieu.upsert({
-    where: { muc_galleryId_albumId: { muc, galleryId, albumId } },
-    create: { muc, galleryId, albumId, anhBia: thuMuc.photos[0].id, ...data },
+  const data = { nhom, galleryId, tenMuc: thuMuc.name, soAnh: thuMuc.photos.length };
+  await getPrisma().anhGioiThieu.upsert({
+    where: { muc_driveFolderId_albumId: { muc, driveFolderId, albumId } },
+    create: { muc, driveFolderId, albumId, anhBia: thuMuc.photos[0].id, ...data },
     // Thêm lại thư mục đã có thì KHÔNG đè ảnh bìa studio đã tự chọn.
     update: data,
   });
   return {};
+}
+
+/** Thêm một thư mục con của ALBUM KHÁCH vào mục. */
+export async function themThuMucGioiThieu(
+  nhom: string,
+  muc: string,
+  galleryId: string,
+  albumId: string,
+): Promise<{ loi?: string }> {
+  const g = await getPrisma().gallery.findUnique({
+    where: { id: galleryId },
+    select: { driveFolderId: true },
+  });
+  if (!g) return { loi: "Không tìm thấy album." };
+  return them(nhom, muc, g.driveFolderId, albumId, galleryId);
+}
+
+/**
+ * Thêm một thư mục DRIVE studio dán thẳng link — anh yêu cầu 24/11/2026.
+ *
+ * Không cần album nào cả. Trước đây muốn đưa thư mục tư liệu của tiệm lên
+ * trang giới thiệu thì phải tạo một album giả trỏ tới thư mục cha, rồi album
+ * ấy nằm lẫn trong lưới `/admin` cùng gần hai trăm album của khách.
+ *
+ * `albumId` rỗng nghĩa là lấy chính thư mục đã dán (ảnh nằm ngay trong nó);
+ * khác rỗng là một thư mục con của nó.
+ */
+export async function themThuMucTuDrive(
+  nhom: string,
+  muc: string,
+  driveFolderId: string,
+  albumId: string,
+): Promise<{ loi?: string }> {
+  return them(nhom, muc, driveFolderId, albumId, null);
 }
 
 /**
@@ -114,11 +162,10 @@ export async function doiBiaThuMucGioiThieu(id: string, fileId: string): Promise
     include: { gallery: { select: { driveFolderId: true } } },
   });
   if (!d) return { loi: "Thư mục này đã bị gỡ khỏi trang." };
+  const goc = thuMucGoc(d);
 
   const coAnh = async (docLai: boolean) => {
-    const tree = docLai
-      ? await loadTreeMoi(d.gallery.driveFolderId)
-      : await loadTree(d.gallery.driveFolderId);
+    const tree = docLai ? await loadTreeMoi(goc) : await loadTree(goc);
     return !!tree.albums.find((a) => a.id === d.albumId)?.photos.some((p) => p.id === fileId);
   };
 
@@ -172,7 +219,7 @@ export async function docThuMucCongKhai(nhom: string, muc: string) {
          tự chạy theo Drive: đổi tên thư mục rồi bấm "Đọc lại từ Drive" là xong.
       3. Ảnh nằm ngay thư mục gốc (tenMuc rỗng) thì mới lấy tên album.
     */
-    ten: d.tenHien?.trim() || d.tenMuc.trim() || tenKhongMa(d.gallery.clientName ?? d.gallery.title),
+    ten: d.tenHien?.trim() || d.tenMuc.trim() || tenKhongMa(d.gallery?.clientName ?? d.gallery?.title ?? ""),
     moTa: d.moTa?.trim() || null,
     anhBia: d.anhBia,
     soAnh: d.soAnh,
@@ -190,7 +237,7 @@ export async function docAnhThuMuc(nhom: string, id: string) {
     include: { gallery: { select: { title: true, clientName: true, driveFolderId: true } } },
   });
   if (!d) return null;
-  const tree = await loadTree(d.gallery.driveFolderId);
+  const tree = await loadTree(thuMucGoc(d));
   const anh: AnhCongKhai[] = (tree.albums.find((a) => a.id === d.albumId)?.photos ?? []).map((p) => ({
     id: p.id,
     width: p.width,
@@ -200,7 +247,7 @@ export async function docAnhThuMuc(nhom: string, id: string) {
     muc: d.muc,
     // Cùng thứ tự ưu tiên với lưới ngoài: tên studio đặt → tên thư mục Drive →
     // tên album (xem chú thích ở `docThuMucCongKhai`).
-    ten: d.tenHien?.trim() || d.tenMuc.trim() || tenKhongMa(d.gallery.clientName ?? d.gallery.title),
+    ten: d.tenHien?.trim() || d.tenMuc.trim() || tenKhongMa(d.gallery?.clientName ?? d.gallery?.title ?? ""),
     anh,
   };
 }
@@ -219,7 +266,7 @@ export async function docAnhNhom(nhom: string) {
   const phan = await Promise.all(
     dong.map(async (d) => {
       try {
-        const tree = await loadTree(d.gallery.driveFolderId);
+        const tree = await loadTree(thuMucGoc(d));
         return tree.albums.find((a) => a.id === d.albumId)?.photos ?? [];
       } catch {
         return [];
@@ -303,7 +350,7 @@ export async function docLaiThuMucGioiThieu(id: string): Promise<{ loi?: string;
     vừa up ảnh xong bấm vào vẫn ra con số cũ suốt năm phút, đúng thứ nút này
     định chữa.
   */
-  const tree = await loadTreeMoi(d.gallery.driveFolderId);
+  const tree = await loadTreeMoi(thuMucGoc(d));
   const thuMuc = tree.albums.find((a) => a.id === d.albumId);
   if (!thuMuc) return { loi: "Không tìm thấy thư mục này trên Drive nữa." };
   if (thuMuc.photos.length === 0) return { loi: "Thư mục này giờ không còn ảnh nào." };
@@ -340,17 +387,22 @@ export async function docLaiCaMuc(
   const prisma = getPrisma();
   const dong = await prisma.anhGioiThieu.findMany({
     where: { nhom, muc },
-    include: { gallery: { select: { id: true, driveFolderId: true } } },
+    include: { gallery: { select: { driveFolderId: true } } },
   });
   if (dong.length === 0) return { capNhat: 0, soMoi: 0 };
 
-  const album = new Map(dong.map((d) => [d.gallery.id, d.gallery.driveFolderId]));
+  /*
+    Gom theo THƯ MỤC GỐC, không theo album nữa: từ 24/11/2026 một dòng có thể
+    không thuộc album nào, mà hai dòng cùng thư mục gốc thì vẫn chỉ cần đọc
+    Drive một lượt — đúng điều đoạn chú thích trên nói tới.
+  */
+  const goc = new Set(dong.map(thuMucGoc).filter(Boolean));
   let capNhat = 0;
   let soMoi = 0;
 
-  for (const [galleryId, driveFolderId] of album) {
+  for (const driveFolderId of goc) {
     const tree = await loadTreeMoi(driveFolderId);
-    const cua = dong.filter((d) => d.galleryId === galleryId);
+    const cua = dong.filter((d) => thuMucGoc(d) === driveFolderId);
     const daCo = new Set(cua.map((d) => d.albumId));
     soMoi += tree.albums.filter((a) => a.photos.length > 0 && !daCo.has(a.id)).length;
 
