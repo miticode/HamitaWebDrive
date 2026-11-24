@@ -58,8 +58,6 @@ function doiThang(t: string, buoc: number): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
-const THU = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-
 /**
  * Lịch chụp — trang "Lịch" bên AppSheet, chép về khi quản lý bấm Đồng bộ.
  *

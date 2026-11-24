@@ -517,20 +517,41 @@ export function SelectionProvider({
     cung va khoi cuoi trang (XacNhanXong) — de moi noi tu gac mot cua la som
     muon hai noi lech nhau.
   */
-  const baoDaXong = useCallback(
+  /*
+    Phan sau cua ma: chi con cua thu hai. Tach rieng de viec hoan lai goi
+    THANG vao day — sua 24/11/2026.
+
+    Ban cu viet `dangCho.current = () => baoDaXong(loai)`, tuc viec hoan lai
+    goi lai CHINH NO. Ham hoan lai duoc chay trong `onUnlocked`, ma cho do
+    `setUnlocked(true)` roi goi `cho?.()` ngay trong cung mot luot — state
+    chua kip doi, nen closure cu van thay `unlocked === false`. No lai roi
+    vao nhanh dau, lai `setAsking(true)`: khach vua nhap xong ma thi hop
+    nhap ma hien ra lan nua.
+
+    Hai cho con lai (`toggle`, `guiGhiChu`) von da goi ham THAT chu khong goi
+    lai chinh minh, nen khong dinh. Cho nay gio theo cung mot kieu.
+  */
+  const baoDaXongDaMoKhoa = useCallback(
     (loai: LoaiBaoXong | null) => {
-      if (!unlocked) {
-        dangCho.current = () => baoDaXong(loai);
-        setAsking(true);
-        return;
-      }
       if (loai === "xong" && hoiHanLay && !hanLay) {
         setHoiNgay(true);
         return;
       }
       baoDaXongThat(loai);
     },
-    [unlocked, hoiHanLay, hanLay, baoDaXongThat]
+    [hoiHanLay, hanLay, baoDaXongThat]
+  );
+
+  const baoDaXong = useCallback(
+    (loai: LoaiBaoXong | null) => {
+      if (!unlocked) {
+        dangCho.current = () => baoDaXongDaMoKhoa(loai);
+        setAsking(true);
+        return;
+      }
+      baoDaXongDaMoKhoa(loai);
+    },
+    [unlocked, baoDaXongDaMoKhoa]
   );
 
   const chotNgayLay = useCallback(

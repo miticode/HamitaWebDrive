@@ -61,7 +61,8 @@ console.log(`Thu muc cha:   ${cha ?? "(khong thay — co the la o chia se)"}\n`)
 let dat = 0, truot = 0;
 const kiem = (ten: string, ok: boolean, them = "") => {
   console.log(`  ${ok ? "OK " : "XX "} ${ten}${them ? ` — ${them}` : ""}`);
-  ok ? dat++ : truot++;
+  if (ok) dat++;
+  else truot++;
 };
 
 /* ── Thử 1: tạo thư mục con trong đúng thư mục cha đó ─────────────────── */

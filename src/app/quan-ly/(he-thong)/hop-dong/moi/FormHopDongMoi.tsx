@@ -230,7 +230,13 @@ export function FormHopDongMoi({
       ...lich.map((l) => maTheoLoai.get((l.loai ?? "").trim().toLowerCase()) ?? null),
     ].filter((m): m is string => !!m);
     return [...new Set(tu)];
-  }, [dong, lich, dichVu, maTheoLoai]);
+    /*
+      Chỉ `lich` và `maTheoLoai`. `dong` với `dichVu` là vết của bản cũ, hồi
+      mã album còn đoán từ dòng dịch vụ; từ khi đoán theo loại buổi thì giữ
+      chúng ở đây chỉ làm phép tính chạy lại mỗi lần người lập gõ một chữ vào
+      dòng dịch vụ.
+    */
+  }, [lich, maTheoLoai]);
   const [maTuGo, setMaTuGo] = useState<string[] | null>(null);
   const maAlbum = maTuGo ?? maGoiY;
   const tenAlbumXem = maAlbum.length > 0 ? ganNhieuMa(tenKhach || "tên khách", maAlbum, boMa) : tenKhach || "tên khách";

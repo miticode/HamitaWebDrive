@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ngayVN } from "@/lib/hopDongChung";
 import { LOP_NHOM, TEN_NHOM, THU_TU_NHOM, nhomCuaBuoi, type BuoiLich } from "@/lib/lichChung";
 import { NutSuaViecLich, NutThemViecLich } from "./NutViecLich";
@@ -63,10 +63,20 @@ export function LuoiLich({
   */
   const [ngayChon, setNgayChon] = useState<string | null>(() => (nay.startsWith(thang) ? nay : null));
 
-  /* Đổi tháng thì chọn lại — `thang` là prop, không tự reset theo state. */
-  useEffect(() => {
+  /*
+    Đổi tháng thì chọn lại — `thang` là prop, không tự reset theo state.
+
+    Chỉnh NGAY TRONG RENDER theo mẫu "chỉnh state khi prop đổi" của React chứ
+    không qua `useEffect`: effect thì lưới vẽ xong một lượt với ngày của tháng
+    cũ rồi mới vẽ lại đúng, người dùng thấy một nhịp nháy. Mốc so là một chuỗi
+    ghép nên so theo GIÁ TRỊ, không lo mỗi render một tham chiếu mới.
+  */
+  const moc = `${thang}|${nay}`;
+  const [mocTruoc, setMocTruoc] = useState(moc);
+  if (moc !== mocTruoc) {
+    setMocTruoc(moc);
     setNgayChon(nay.startsWith(thang) ? nay : null);
-  }, [thang, nay]);
+  }
 
   const theoNgay = useMemo(() => {
     const m = new Map<string, BuoiLich[]>();

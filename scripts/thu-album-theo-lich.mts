@@ -33,7 +33,8 @@ let dat = 0,
   truot = 0;
 const kiem = (ten: string, ok: boolean, them = "") => {
   console.log(`  ${ok ? "OK " : "XX "} ${ten}${them ? ` — ${them}` : ""}`);
-  ok ? dat++ : truot++;
+  if (ok) dat++;
+  else truot++;
 };
 
 const docDrive = async (token: string, id: string) => {

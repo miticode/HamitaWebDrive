@@ -29,7 +29,8 @@ const NGUOI = { id: "", ten: `${DAU.tienTo} quan ly`, maNV: DAU.maNV, tenDangNha
 let dat = 0, truot = 0;
 const kiem = (ten: string, ok: boolean, them = "") => {
   console.log(`  ${ok ? "OK " : "XX "} ${ten}${them ? ` — ${them}` : ""}`);
-  ok ? dat++ : truot++;
+  if (ok) dat++;
+  else truot++;
 };
 
 /* ── Phép lọc loại ─────────────────────────────────────────────────────── */

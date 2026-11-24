@@ -157,7 +157,12 @@ async function taiAnh(req: Request, env: Env): Promise<Response> {
   return new Response(req.method === "HEAD" ? null : sach, { headers: h });
 }
 
-export default {
+/*
+  Đặt tên rồi mới xuất, thay vì xuất thẳng một vật vô danh: Cloudflare chỉ cần
+  vật có `fetch`, nhưng vật vô danh thì vết lỗi và trình gỡ rối không gọi được
+  nó là gì — lint cũng nhắc đúng chỗ đó.
+*/
+const worker = {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     if (req.method !== "GET" && req.method !== "HEAD") {
       return new Response("Chỉ nhận GET", { status: 405 });
@@ -179,3 +184,5 @@ export default {
     return new Response("Không có gì ở đây.", { status: 404 });
   },
 };
+
+export default worker;

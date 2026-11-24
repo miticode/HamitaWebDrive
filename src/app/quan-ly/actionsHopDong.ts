@@ -10,7 +10,6 @@ import { ghiNhatKy } from "@/lib/nhatKy";
 import { docCacBuoc } from "@/lib/buocHopDong";
 import { demLuotDung } from "@/lib/dichVuHayDung";
 import { coGiaoAnh, taoThuMucVaAlbum } from "@/lib/thuMucHopDong";
-import { MA_ALBUM } from "@/lib/maAlbum";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
 import { docBaDanhMuc } from "@/lib/danhMuc";
 import { docMaAlbum } from "@/lib/docMaAlbum";

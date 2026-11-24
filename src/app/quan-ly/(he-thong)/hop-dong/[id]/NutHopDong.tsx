@@ -258,9 +258,19 @@ export function NutXoaHopDong({ id, maHD, tenKhach }: { id: string; maHD: string
     return () => clearTimeout(h);
   }, [conLai]);
 
-  useEffect(() => {
+  /*
+    Hộp đóng thì đồng hồ về 0, để lần mở sau nút lại là "Xoá hợp đồng" chứ
+    không phải đang đếm dở.
+
+    Chỉnh ngay trong render theo mẫu "chỉnh state khi thứ khác đổi" của React.
+    Đặt ở đây chứ không rải `setConLai(0)` vào từng chỗ đóng hộp — có bốn chỗ
+    (phím Esc, nút Thôi, bấm ra ngoài, xoá xong), rải ra là sớm muộn sót một.
+  */
+  const [moTruoc, setMoTruoc] = useState(mo);
+  if (mo !== moTruoc) {
+    setMoTruoc(mo);
     if (!mo) setConLai(0);
-  }, [mo]);
+  }
 
   const xoa = () =>
     start(async () => {

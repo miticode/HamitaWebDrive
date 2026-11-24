@@ -1,6 +1,6 @@
 import { quyenAlbumNguyHiem } from "@/lib/quyenAlbum";
 import { databaseIsConfigured } from "@/lib/db";
-import { docMoc, ghiMoc } from "@/lib/moc";
+import { ghiMoc } from "@/lib/moc";
 import { taoBanSaoLuu } from "@/lib/saoLuu";
 import { LoiSaoLuuDrive, luuLenDrive } from "@/lib/saoLuuDrive";
 

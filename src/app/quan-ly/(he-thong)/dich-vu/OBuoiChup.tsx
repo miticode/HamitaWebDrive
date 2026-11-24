@@ -42,7 +42,23 @@ export function OBuoiChup({
   const nut = useRef<HTMLButtonElement>(null);
   const [viTri, setViTri] = useState<{ top: number; left: number } | null>(null);
 
-  useEffect(() => setChon(banDau), [banDau]);
+  /*
+    Đồng bộ lại theo prop khi trang vừa làm mới: `router.refresh()` sau lúc
+    lưu trả về danh sách mới.
+
+    Làm NGAY TRONG RENDER theo mẫu "chỉnh state khi prop đổi" của React, không
+    qua `useEffect` — effect thì React phải vẽ xong một lượt với danh sách cũ
+    rồi mới vẽ lại, còn cách này React bỏ luôn lượt vẽ thừa đó. Đây cũng là
+    chỗ `react-hooks/set-state-in-effect` nhắc.
+
+    So theo THAM CHIẾU chứ không so nội dung, y như mảng phụ thuộc cũ: cha
+    dựng `banDau` mới mỗi lần render, nên hành vi giữ nguyên hệt bản trước.
+  */
+  const [banDauTruoc, setBanDauTruoc] = useState(banDau);
+  if (banDau !== banDauTruoc) {
+    setBanDauTruoc(banDau);
+    setChon(banDau);
+  }
 
   /*
     TOẠ ĐỘ CỦA BẢNG CHỌN, TÍNH BẰNG TAY — sửa 24/11/2026.
