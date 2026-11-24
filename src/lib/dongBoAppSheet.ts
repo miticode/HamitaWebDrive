@@ -6,6 +6,7 @@ import { loaiTuAppSheet } from "@/lib/dichVuChung";
 import { tachTrangThai } from "@/lib/hopDongChung";
 import { docMoc, ghiMoc } from "@/lib/moc";
 import { ghiNhatKy } from "@/lib/nhatKy";
+import { sinhDauViecKhiDongBo, type SoSinhViec } from "@/lib/sinhDauViec";
 
 /**
  * Chép khách hàng, hợp đồng, chi tiết hợp đồng, phiếu thu từ AppSheet sang web.
@@ -53,6 +54,8 @@ export type KetQuaDongBo = {
     taiLieu: SoDongBo;
     suCo: SoDongBo;
   };
+  /** Đầu việc web tự sinh từ bảng giá, và số dòng tự dọn khi AppSheet có việc thật. */
+  viecTuSinh: SoSinhViec;
   giay: number;
 };
 
@@ -163,9 +166,17 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
   const lucSua = await lucSuaFileAppSheet();
   const lanTruoc = await docMoc("dongBoAppSheet");
   if (lucSua && lanTruoc && lucSua <= lanTruoc) {
+    /*
+      VẪN SINH ĐẦU VIỆC dù tệp AppSheet không đổi — đây đúng là cảnh hay gặp:
+      anh vừa khai xong bảng đầu việc cho một gói rồi bấm "Đồng bộ ngay". Bỏ
+      qua ở nhánh này thì bảng vừa khai không sinh được gì, nhìn như hỏng.
+
+      Rẻ: không có gì để làm thì chỉ tốn hai câu hỏi database.
+    */
     return {
       khongDoi: true,
       dichVuThem: 0,
+      viecTuSinh: await sinhDauViecKhiDongBo(),
       bang: { khachHang: KHONG, hopDong: KHONG, chiTiet: KHONG, phieuThu: KHONG, lich: KHONG, congViec: KHONG, chi: KHONG, chamCong: KHONG, donTu: KHONG, danhGia: KHONG, kyLuong: KHONG, luongNV: KHONG, tiemNang: KHONG, buoc: KHONG, taiLieu: KHONG, suCo: KHONG },
       giay: Math.round((Date.now() - batDau) / 1000),
     };
@@ -754,9 +765,18 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
     suCoBoQua,
   );
 
+  /*
+    SINH ĐẦU VIỆC NGAY SAU KHI CHÉP XONG — anh chốt 24/11/2026.
+
+    Đặt ở đây chứ không sớm hơn: nó cần cả hợp đồng, cả dòng chi tiết, cả lịch
+    của lần chép này đã nằm trong database rồi mới tính đúng buổi được.
+  */
+  const viecTuSinh = await sinhDauViecKhiDongBo();
+
   const kq: KetQuaDongBo = {
     khongDoi: false,
     dichVuThem: dvMoi.length,
+    viecTuSinh,
     bang: { khachHang: kh, hopDong: hd, chiTiet: ct, phieuThu: thu, lich, congViec, chi, chamCong, donTu, danhGia, kyLuong, luongNV, tiemNang, buoc, taiLieu, suCo },
     giay: Math.round((Date.now() - batDau) / 1000),
   };
@@ -766,6 +786,8 @@ export async function dongBoAppSheet(nguoiTen = "Đồng bộ tự động"): Pr
   // Nhật ký chỉ ghi khi CÓ đổi — đêm nào cũng một dòng "không đổi gì" thì nhật ký ngập.
   const so: Record<string, number> = {};
   if (kq.dichVuThem) so["dịch vụ mới"] = kq.dichVuThem;
+  if (viecTuSinh.them) so["đầu việc web tự sinh"] = viecTuSinh.them;
+  if (viecTuSinh.don) so["đầu việc web tự dọn"] = viecTuSinh.don;
   const CHU = {
     khachHang: "khách",
     hopDong: "hợp đồng",
