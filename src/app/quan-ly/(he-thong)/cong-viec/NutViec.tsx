@@ -71,12 +71,30 @@ export function NutViec({
   /* Việc chưa ai nhận: người thường nhận được về mình, nên hai ô vẫn mở. */
   const tt = trangThai && (TRANG_THAI_VIEC as readonly string[]).includes(trangThai) ? trangThai : "";
 
+  /*
+    ĐÁNH DẤU XONG RỒI THÌ KHOÁ — anh chốt 24/11/2026.
+
+    Vì tiền: ngày hoàn thành ghi lúc tick chính là thứ quyết định việc đó rơi
+    vào lương tháng nào. Máy chủ đã từ chối (`daDanhDauXong` trong
+    actionsViec.ts), khoá ở đây để không ai bấm rồi mới nhận lời từ chối.
+
+    Quản lý không bị khoá — tick nhầm thì phải có người mở lại được.
+  */
+  const daXong = !quanTri && tt === "Đã làm";
+  const khoa = dangChay || cuaNguoiKhac || daXong;
+  const viSao = daXong
+    ? "Đã đánh dấu xong — nhờ quản lý mở lại nếu cần sửa."
+    : cuaNguoiKhac
+      ? "Việc của người khác."
+      : undefined;
+
   return (
     <div className="grid gap-1.5">
       <div className="flex flex-wrap items-center gap-1.5">
         <select
           value={nguoiPhuTrachMaNV ?? ""}
-          disabled={dangChay || cuaNguoiKhac}
+          disabled={khoa}
+          title={viSao}
           aria-label="Người làm"
           onChange={(e) => chay(() => giaoViecAction(id, e.target.value))}
           className="input btn-gon w-auto min-w-28"
@@ -113,7 +131,8 @@ export function NutViec({
         */}
         <select
           value={tt}
-          disabled={dangChay || cuaNguoiKhac}
+          disabled={khoa}
+          title={viSao}
           aria-label="Trạng thái việc"
           onChange={(e) => chay(() => doiTrangThaiViecAction(id, e.target.value))}
           className="input btn-gon w-auto min-w-28"

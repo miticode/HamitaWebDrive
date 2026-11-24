@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { MUI_GIO, tien } from "@/lib/constants";
 import { batBuocDangNhap, laQuanTri } from "@/lib/phienNhanVien";
-import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
+import { khoaCuaToi, tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { maKy } from "@/lib/luong";
 import { NutChotKy, NutTinhLuong, SuaTien } from "./NutLuong";
 import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
@@ -65,8 +65,25 @@ export default async function LuongPage({ searchParams }: Props) {
   const { nam, thang } = m ? { nam: Number(m[1]), thang: Number(m[2]) } : kyNay();
   const ky = maKy(nam, thang);
 
+  /*
+    TIỀN CÔNG THÁNG NÀY CỦA CHÍNH NGƯỜI ĐANG XEM — anh yêu cầu 24/11/2026.
+
+    Phiếu lương bên dưới chỉ có khi quản lý đã bấm tính kỳ; trước lúc đó người
+    làm xong cả tháng vẫn không biết mình được bao nhiêu. Khối này đọc thẳng
+    từ đầu việc đã đánh dấu xong nên có ngay sau mỗi lần tick.
+
+    Cùng phép lọc với `tinhThuKyLuong` (ngày hoàn thành trong tháng, gom theo
+    người phụ trách), nên hai con số khớp nhau — khác chăng là phiếu đã chốt
+    giữ con số của lúc chốt, còn khối này luôn là hiện tại.
+
+    Chỉ hỏi ĐÚNG MÌNH người đang đăng nhập: một phép đếm gọn, không kéo bảng
+    việc cả tiệm về rồi lọc ở đây (nguyên tắc 53, và nguyên tắc 3).
+  */
+  const khoaToi = khoaCuaToi(nguoi);
+  const thangLoc = `${nam}-${String(thang).padStart(2, "0")}`;
+
   const prisma = getPrisma();
-  const [kyLuong, dong, bangTen] = await Promise.all([
+  const [kyLuong, dong, bangTen, viecCuaToi] = await Promise.all([
     prisma.kyLuong.findFirst({ where: { maAppSheet: ky } }),
     prisma.luongNhanVien.findMany({
       where: {
@@ -83,6 +100,17 @@ export default async function LuongPage({ searchParams }: Props) {
       orderBy: { tongLuong: "desc" },
     }),
     tenTheoMaNV(),
+    khoaToi
+      ? prisma.congViec.aggregate({
+          where: {
+            ngayHoanThanh: { startsWith: thangLoc },
+            matBenAppSheet: null,
+            nguoiPhuTrachMaNV: { equals: khoaToi, mode: "insensitive" as const },
+          },
+          _count: { _all: true },
+          _sum: { thanhTien: true },
+        })
+      : null,
   ]);
 
   const daChot = !!kyLuong?.daChot;
@@ -118,6 +146,30 @@ export default async function LuongPage({ searchParams }: Props) {
           </>
         )}
       </div>
+
+      {viecCuaToi && (
+        <div className="mt-5 rounded-md border border-line bg-bg-raised p-4">
+          <p className="eyebrow">Tiền công tháng này của tôi</p>
+          <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span className="font-display text-2xl tabular-nums">
+              {tien(viecCuaToi._sum.thanhTien ?? 0)}đ
+            </span>
+            <span className="text-sm text-fg-muted tabular-nums">
+              {viecCuaToi._count._all} đầu việc đã xong
+            </span>
+          </p>
+          {/*
+            Nói thẳng đây là con số tạm: người làm cần biết mình đang được bao
+            nhiêu, nhưng cũng cần biết nó chưa phải thứ được trả — còn ngày
+            công, thưởng phạt và tạm ứng nữa.
+          */}
+          <p className="mt-2 text-xs leading-relaxed text-fg-faint">
+            {viecCuaToi._count._all === 0
+              ? "Tháng này chưa có đầu việc nào đánh dấu xong. Tick xong việc là con số hiện lên ngay."
+              : "Tạm tính theo đầu việc đã đánh dấu xong, cập nhật ngay sau mỗi lần tick. Chưa gồm ngày công, thưởng phạt hay tạm ứng — lương thật là phiếu bên dưới, sau khi quản lý chốt kỳ."}
+          </p>
+        </div>
+      )}
 
       {quanTri && dong.length > 0 && (
         <div className="mt-5 grid gap-3 sm:grid-cols-4">

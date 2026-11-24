@@ -54,6 +54,27 @@ function duocDung(
   return !!khoa && viec.nguoiPhuTrachMaNV.toLowerCase() === khoa.toLowerCase();
 }
 
+/**
+ * ĐÃ ĐÁNH DẤU XONG THÌ NGƯỜI THƯỜNG KHÔNG ĐỤNG VÀO NỮA — anh chốt 24/11/2026.
+ *
+ * Lý do là TIỀN, không phải kỷ luật. Đánh dấu "Đã làm" là lúc web ghi ngày
+ * hoàn thành, mà lương sản phẩm chính là tổng tiền công những việc có ngày
+ * hoàn thành trong tháng (xem `tinhThuKyLuong`). Mở lại việc thì ngày ấy bị
+ * xoá, tức tiền rút khỏi lương tháng đó — và đổi qua đổi lại vài lần thì
+ * không còn ai biết con số nào là con số thật.
+ *
+ * Quản lý vẫn mở lại được: tick nhầm là chuyện có thật, chặn cứng cả hai phía
+ * thì lối thoát duy nhất là xoá đầu việc rồi tạo lại, tệ hơn nhiều. Mọi lượt
+ * mở lại đều vào nhật ký như trước.
+ */
+function daDanhDauXong(trangThai: string | null): boolean {
+  return trangThai === "Đã làm";
+}
+
+/** Câu từ chối dùng chung cho cả hai action, để hai nơi không nói hai kiểu. */
+const LOI_DA_XONG =
+  "Việc này đã đánh dấu xong rồi nên không tự sửa lại được — nhờ quản lý mở giúp.";
+
 export async function giaoViecAction(
   id: string,
   /** Mã nhân viên, hoặc tên đăng nhập với người chưa có mã. Rỗng = gỡ người. */
@@ -73,6 +94,7 @@ export async function giaoViecAction(
   if (!duocDung(viec, khoaToi, quanTri)) {
     return { loi: "Việc này đang của người khác — nhờ quản lý chuyển giúp." };
   }
+  if (!quanTri && daDanhDauXong(viec.trangThai)) return { loi: LOI_DA_XONG };
 
   const ma = khoaNhan.trim();
   // Người thường chỉ được nhận về mình, không được đẩy sang người khác.
@@ -132,12 +154,14 @@ export async function doiTrangThaiViecAction(
   const prisma = getPrisma();
   const viec = await prisma.congViec.findUnique({
     where: { id },
-    select: { nguoiPhuTrachMaNV: true, loai: true, ngayHoanThanh: true },
+    select: { nguoiPhuTrachMaNV: true, loai: true, ngayHoanThanh: true, trangThai: true },
   });
   if (!viec) return { loi: "Đầu việc này không còn." };
-  if (!duocDung(viec, khoaCuaToi(nguoi), laQuanTri(nguoi))) {
+  const quanTri = laQuanTri(nguoi);
+  if (!duocDung(viec, khoaCuaToi(nguoi), quanTri)) {
     return { loi: "Việc này đang của người khác — nhờ quản lý đổi giúp." };
   }
+  if (!quanTri && daDanhDauXong(viec.trangThai)) return { loi: LOI_DA_XONG };
 
   await prisma.congViec.update({
     where: { id },
