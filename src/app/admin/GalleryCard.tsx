@@ -92,17 +92,45 @@ function trangThaiTin(
   baoTinLuc: string | null,
   ngayTao: string,
   soMay: number,
-): { chu: string; giaiThich: string; mau: "xong" | "chua" } | null {
+): { chu: string; giaiThich: string; mau: "xong" | "chua" | "tat" } | null {
   if (baoTinLuc) {
     return {
       chu: `Đã báo tin ${lucGon(baoTinLuc)}`,
       giaiThich:
-        "Lần gần nhất bấm nút gửi cho album này, tính theo giờ Việt Nam. Chỉ ghi khi thật sự có máy nhận được.",
+        "Lần gần nhất bấm nút gửi cho album này, tính theo giờ Việt Nam. Chỉ ghi khi thật sự có máy nhận được." +
+        /*
+          Khách từng bật rồi tắt, hoặc đổi máy. Hai album đang ở cảnh này (đo
+          25/11/2026) — hiếm, nên nói trong lời giải thích chứ không thêm một
+          nhãn thứ hai chen vào góc ảnh.
+        */
+        (soMay === 0 ? " Giờ không còn máy nào chờ tin — lần sau muốn nhắc phải nhắn tay." : ""),
       mau: "xong",
     };
   }
 
-  if (soMay === 0) return null;
+  /*
+    KHÁCH CHƯA BẬT THÔNG BÁO — anh yêu cầu 25/11/2026.
+
+    Trước đây chỗ này trả null, tức thẻ không nói gì cả. Nhưng "không nói gì"
+    và "khách bật rồi mà chưa ai gửi" trông y hệt nhau trên lưới, trong khi
+    hai cảnh ấy đòi hai cách làm khác hẳn: một bên bấm nút là xong, một bên
+    phải nhắn Zalo tay.
+
+    Đo 25/11 trên 200 album: 59 album rơi vào đây, trong đó 58 chưa gắn hợp
+    đồng và 1 đã gắn. Gần một phần ba số thẻ, nên đáng có nhãn riêng.
+
+    Chấm XÁM chứ không vàng: vàng dành cho việc studio phải làm. Khách chưa
+    bật thì studio không làm gì được — chỉ là điều cần biết trước khi tưởng
+    rằng bấm nút là khách nhận được tin.
+  */
+  if (soMay === 0) {
+    return {
+      chu: "Khách chưa bật thông báo",
+      giaiThich:
+        "Chưa máy nào của nhà khách đăng ký nhận tin cho album này, nên nút gửi thông báo không tới được ai. Muốn nhắc thì nhắn Zalo, rồi bấm “Đã gửi file gốc” để hợp đồng sang bước kế tiếp.",
+      mau: "tat",
+    };
+  }
 
   if (new Date(ngayTao) >= MOC_GHI_LAN_BAO) {
     return {
@@ -259,7 +287,10 @@ export function GalleryCard({
               className={`size-1.5 shrink-0 rounded-full ${
                 trangThaiBaoTin.mau === "xong"
                   ? "bg-emerald-400"
-                  : "bg-amber-400"
+                  : trangThaiBaoTin.mau === "tat"
+                    ? /* Xám: không phải việc studio làm được — xem `trangThaiTin`. */
+                      "bg-white/55"
+                    : "bg-amber-400"
               }`}
             />
             {trangThaiBaoTin.chu}
