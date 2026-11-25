@@ -181,7 +181,9 @@ export async function doiTrangThaiViecAction(
     việc của mình mà buổi vẫn nằm ở "Chưa làm", vì không ai nghĩ tới chuyện
     phải đổi thêm một ô nữa. Chỉ nâng, không hạ — xem `trangThaiBuoi.ts`.
   */
-  const buoiMoi = viec.lichChupId ? await capNhatTrangThaiBuoi(viec.lichChupId) : null;
+  const buoiMoi = viec.lichChupId
+    ? await capNhatTrangThaiBuoi(viec.lichChupId, { id: nguoi.id, ten: nguoi.ten })
+    : null;
 
   await ghiNhatKy({
     nguoi: { id: nguoi.id, ten: nguoi.ten },

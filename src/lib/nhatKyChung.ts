@@ -95,6 +95,12 @@ export type HanhDong =
   */
   | "doi-buoc-khach-chon"
   /*
+    MOI BUOI CHUP cua hop dong deu xong → buoc 1/2 sang 3, hoac 10/11 sang 12
+    (anh bao 25/11/2026). Ghi rieng khoi hai cai tren vi NGUON khac: day la
+    tho bam xong dau viec cua minh, khong ai dong toi trang hop dong ca.
+  */
+  | "doi-buoc-da-chup"
+  /*
     Media dan link Drive da gui cho xuong in roi chuyen buoc (anh yeu cau
     19/11/2026). Ghi rieng vi day la viec CO TRACH NHIEM: hinh in sai thi phai
     truy duoc ai da gui cai gi.
@@ -164,5 +170,6 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "gui-thong-bao": "Gửi thông báo cho khách",
   "doi-buoc-anh-goc": "Đổi bước: đã gửi ảnh gốc",
   "doi-buoc-khach-chon": "Đổi bước: khách đã chọn xong",
+  "doi-buoc-da-chup": "Đổi bước: đã chụp xong",
   "gui-in": "Gửi in cho xưởng",
 };

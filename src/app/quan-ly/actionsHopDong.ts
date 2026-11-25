@@ -9,6 +9,7 @@ import { layNguoiDung, lapHopDong } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { docCacBuoc } from "@/lib/buocHopDong";
 import { demLuotDung } from "@/lib/dichVuHayDung";
+import { capNhatBuocDaChup } from "@/lib/trangThaiBuoi";
 import { coGiaoAnh, taoThuMucVaAlbum } from "@/lib/thuMucHopDong";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
 import { docBaDanhMuc } from "@/lib/danhMuc";
@@ -476,8 +477,17 @@ export async function luuLichAction(
     doiTuongId: hopDongId,
     chiTiet: { ten: hd.tenKhach, soBuoi: sach.length },
   });
+
+  /*
+    Người tự tay đánh dấu buổi cuối là "Hoàn thành" thì hợp đồng cũng phải
+    sang chặng Chụp, y như khi thợ bấm xong đầu việc — không thì cùng một
+    việc mà làm bằng hai đường lại ra hai kết quả.
+  */
+  await capNhatBuocDaChup(hopDongId, { id: nguoi.id || null, ten: nguoi.ten });
+
   revalidatePath(`/quan-ly/hop-dong/${hopDongId}`);
   revalidatePath("/quan-ly/lich");
+  revalidatePath("/quan-ly/hop-dong");
   return { ok: true };
 }
 
