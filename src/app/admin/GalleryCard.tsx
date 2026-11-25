@@ -481,6 +481,7 @@ export function GalleryCard({
                 soMay={soMayChoTin}
                 slug={gallery.slug}
                 lop="muc-menu"
+                buocHopDong={buocHopDong}
               />
 
               {/*

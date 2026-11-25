@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { guiThongBaoAction } from "./actions";
 import { daGuiAnhGocAction } from "./actionsHopDong";
 import type { KetQuaDoiBuoc } from "@/lib/doiBuocAlbum";
+import { buocSauKhiGuiAnhGoc } from "@/lib/buocAnhGoc";
 
 /**
  * Một câu nói kết quả việc ĐỔI BƯỚC HỢP ĐỒNG — anh yêu cầu 19/11/2026.
@@ -40,6 +41,7 @@ export function NutGuiThongBao({
   soMay,
   slug,
   lop,
+  buocHopDong,
 }: {
   galleryId: string;
   /** Số máy khách đang chờ nhận tin của album này. */
@@ -51,6 +53,13 @@ export function NutGuiThongBao({
   slug?: string;
   /** Lớp CSS cho nút — thẻ album gọi nó trong bảng "…" nên hình dạng khác. */
   lop?: string;
+  /**
+   * Bước hợp đồng của album này — null khi chưa gắn hoặc chưa gõ bước.
+   *
+   * Chỉ dùng cho nhánh "Đã gửi file gốc": anh hỏi 25/11/2026 sao thợ bấm gửi
+   * rồi mà nút vẫn còn đó.
+   */
+  buocHopDong?: number | null;
 }) {
   const [hoi, setHoi] = useState(false);
   const [ketQua, setKetQua] = useState<string | null>(null);
@@ -83,6 +92,28 @@ export function NutGuiThongBao({
     bước thì sửa lại được ở trang hợp đồng. Hộp hỏi lại chỉ dành cho thứ không
     rút lại được.
   */
+  /*
+    ĐÃ QUA KHÂU GỬI ẢNH GỐC THÌ THÔI KHÔNG BÀY NÚT NỮA — anh hỏi 25/11/2026:
+    "tại sao thợ đã ấn gửi file gốc rồi mà giờ vẫn còn hiện nút gửi".
+
+    Bấm lại vốn không hại gì — máy chủ trả "giữ nguyên" vì `buocSauKhiGuiAnhGoc`
+    từ chối mọi bước từ 4 trở đi. Nhưng một nút đứng đó sau khi việc đã xong thì
+    người sau mở ra không biết đã bấm hay chưa, rồi bấm cho chắc.
+
+    Hỏi CHÍNH hàm tính bước chứ không chép lại danh sách bước: một nguồn sự
+    thật, đổi quy tắc ở đó là nút theo ngay. `null` nghĩa là "đừng đổi" — tức
+    đúng lúc không còn gì để bấm.
+
+    CHỈ ẨN KHI BIẾT RÕ BƯỚC. Album chưa gắn hợp đồng cũng làm hàm kia trả null,
+    nhưng đó là "không biết" chứ không phải "đã xong" — và đo 25/11 thì 59/200
+    album đang ở cảnh ấy. Ẩn cả chúng là lặng lẽ đổi một thứ anh không hỏi tới,
+    nên để nguyên như cũ: bấm vào thì máy chủ nhắc chưa gắn hợp đồng, kèm liên
+    kết sang chỗ ghép.
+  */
+  if (soMay === 0 && typeof buocHopDong === "number" && buocSauKhiGuiAnhGoc(buocHopDong) === null) {
+    return null;
+  }
+
   if (soMay === 0) {
     const danhDau = () =>
       start(async () => {
