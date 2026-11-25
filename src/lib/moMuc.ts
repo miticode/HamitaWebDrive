@@ -69,7 +69,27 @@ export const HAN_XEM_THU_GIAY = 4 * 60 * 60;
  */
 export type ViecStudio = { hanhDong: string; nguoiTen: string; luc: Date; chiTiet: unknown };
 
-export async function docViecStudio(galleryId: string): Promise<ViecStudio[]> {
+/**
+ * Việc ghi dưới HỢP ĐỒNG nhưng thật ra là việc của album — xem chú thích
+ * trong `docViecStudio`.
+ *
+ * Cả năm đều bắt nguồn từ trang album hoặc từ chính khách: bấm "Đã gửi file
+ * gốc", khách báo chọn xong, thợ bấm xong đầu việc cuối, dán link gửi in, và
+ * lúc album được dựng ra từ hợp đồng. Không có việc nào dính tới tiền.
+ */
+const TU_HOP_DONG = [
+  "doi-buoc-anh-goc",
+  "doi-buoc-khach-chon",
+  "doi-buoc-da-chup",
+  "gui-in",
+  "tao-album-tu-hop-dong",
+] as const;
+
+export async function docViecStudio(
+  galleryId: string,
+  /** Hợp đồng của album — null thì bỏ qua nhóm thứ ba. */
+  hopDongId?: string | null,
+): Promise<ViecStudio[]> {
   if (!databaseIsConfigured()) return [];
   const ds = await getPrisma().nhatKy.findMany({
     /*
@@ -81,7 +101,35 @@ export async function docViecStudio(galleryId: string): Promise<ViecStudio[]> {
       435 dòng đó quay lại, mà khung này chỉ lấy 30 dòng gần nhất: có album
       từng có 47 dòng làm mới, đủ lấp kín không còn chỗ cho việc nào khác.
     */
-    where: { doiTuong: "album", doiTuongId: galleryId, hanhDong: { not: "lam-moi-album" } },
+    /*
+      BA NGUỒN, KHÔNG PHẢI MỘT — anh báo 25/11/2026: "trong đây a không thấy
+      log ghi lại nhân viên đã ấn gửi file gốc".
+
+      Đúng vậy, và thiếu nhiều hơn thế. Cùng một album nhưng nhật ký ghi dưới
+      ba dạng khác nhau, vì ba đợt làm khác nhau không ai gióng lại:
+
+        doiTuong "album"    tạo, xoá, sửa album, gửi thông báo  — 804 dòng
+        doiTuong "Gallery"  gắn hợp đồng, gửi in                —   9 dòng
+        doiTuong "HopDong"  mọi lần ĐỔI BƯỚC bắt nguồn từ album
+
+      Nhóm thứ ba là chỗ anh tìm: nút "Đã gửi file gốc" ghi dưới
+      `doi-buoc-anh-goc` và gắn vào HỢP ĐỒNG, nên khung này không bao giờ thấy.
+      Đo trên album Huỳnh Tiên: năm dòng liên quan, khung chỉ hiện một.
+
+      Nhóm ba lọc theo DANH SÁCH TRẮNG chứ không lấy hết nhật ký hợp đồng. Hai
+      lẽ: nhật ký hợp đồng còn có lập, xoá, sửa lịch — việc của hợp đồng chứ
+      không phải của album này; và khung này mở với quyền `quyenAlbum`, tức cả
+      phòng Media, nên không được kéo theo những gì họ không có quyền xem.
+    */
+    where: {
+      hanhDong: { not: "lam-moi-album" },
+      OR: [
+        { doiTuong: { in: ["album", "Gallery"] }, doiTuongId: galleryId },
+        ...(hopDongId
+          ? [{ doiTuong: "HopDong", doiTuongId: hopDongId, hanhDong: { in: [...TU_HOP_DONG] } }]
+          : []),
+      ],
+    },
     orderBy: { luc: "desc" },
     take: 30,
     select: { hanhDong: true, nguoiTen: true, luc: true, chiTiet: true },

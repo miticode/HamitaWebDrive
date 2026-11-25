@@ -13,6 +13,7 @@ import { quyenAlbum, quyenAlbumNguyHiem, quyenXoaAlbum } from "@/lib/quyenAlbum"
 import { layNguoiDung, xoaPhienHienTai } from "@/lib/phienNhanVien";
 import { ghiNhatKy, type HanhDong } from "@/lib/nhatKy";
 import { docLog, docViecStudio } from "@/lib/moMuc";
+import { getPrisma } from "@/lib/db";
 import { disconnect } from "@/lib/googleAuth";
 import { MA_MAC_DINH, sinhMa } from "@/lib/access";
 import { chiCoMa, ghepMaVoiTenThuMuc } from "@/lib/maAlbum";
@@ -658,7 +659,20 @@ export async function regenerateCodeAction(galleryId: string) {
 }
 
 export type DongLogGon = { albumId: string; tenMuc: string; luc: string };
-export type ViecStudioGon = { hanhDong: string; nguoiTen: string; luc: string; daGui?: number };
+/**
+ * Một dòng "studio đã làm" gửi xuống cửa sổ Logs.
+ *
+ * `doi` là thứ đã sửa ("ảnh bìa", "mã chọn ảnh", "hạn giữ ảnh"…) — thêm
+ * 25/11/2026: mười ba việc khác nhau cùng ghi dưới một chữ "Sửa album ảnh",
+ * nên đọc lại không biết lần đó đụng vào cái gì.
+ */
+export type ViecStudioGon = {
+  hanhDong: string;
+  nguoiTen: string;
+  luc: string;
+  daGui?: number;
+  doi?: string;
+};
 
 /**
  * Log "khách đã mở thư mục nào" của một album (anh yêu cầu 28/09/2026).
@@ -672,16 +686,33 @@ export async function docLogAction(
 ): Promise<{ loi?: string; ds?: DongLogGon[]; viec?: ViecStudioGon[] }> {
   if (!(await quyenAlbum())) return { loi: "Phiên đăng nhập đã hết, anh chị đăng nhập lại giúp." };
   try {
-    const [ds, viec] = await Promise.all([docLog(galleryId), docViecStudio(galleryId)]);
+    /*
+      Hỏi hợp đồng của album trước: những lần đổi bước ghi dưới hợp đồng chứ
+      không dưới album (xem `docViecStudio`). Một cột, một lượt đọc.
+    */
+    const g = await getPrisma().gallery.findUnique({
+      where: { id: galleryId },
+      select: { hopDongId: true },
+    });
+    const [ds, viec] = await Promise.all([
+      docLog(galleryId),
+      docViecStudio(galleryId, g?.hopDongId ?? null),
+    ]);
     return {
       ds: ds.map((d) => ({ albumId: d.albumId, tenMuc: d.tenMuc, luc: d.luc.toISOString() })),
       viec: viec.map((v) => {
-        const ct = v.chiTiet as { daGui?: number } | null;
+        const ct = v.chiTiet as { daGui?: number; doi?: unknown } | null;
         return {
           hanhDong: v.hanhDong,
           nguoiTen: v.nguoiTen,
           luc: v.luc.toISOString(),
           daGui: typeof ct?.daGui === "number" ? ct.daGui : undefined,
+          /*
+            Chỉ nhận `doi` khi nó là CHUỖI. Vài chỗ ghi nó dạng bảng
+            {truoc, sau} cho trang Nhật ký vẽ hai cột — bày thẳng vật ấy ra
+            đây thì ra "[object Object]".
+          */
+          doi: typeof ct?.doi === "string" ? ct.doi : undefined,
         };
       }),
     };

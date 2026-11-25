@@ -123,6 +123,7 @@ export function LogKhach({
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium">
                       {CHU_HANH_DONG[v.hanhDong as HanhDong] ?? v.hanhDong}
+                      {v.doi && <span className="font-normal text-fg-muted"> · {v.doi}</span>}
                       {v.daGui !== undefined && (
                         <span className="ml-1.5 font-normal text-fg-muted">
                           · {v.daGui > 0 ? `tới ${v.daGui} máy` : "không máy nào nhận"}
