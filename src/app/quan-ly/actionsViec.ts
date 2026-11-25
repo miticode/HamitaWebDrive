@@ -7,6 +7,7 @@ import { ghiNhatKy } from "@/lib/nhatKy";
 import { khoaCuaToi } from "@/lib/hopDongMayChu";
 import { MUI_GIO } from "@/lib/constants";
 import { TRANG_THAI_VIEC } from "@/lib/hopDongChung";
+import { capNhatTrangThaiBuoi } from "@/lib/trangThaiBuoi";
 
 /**
  * Giao đầu việc cho người, và đổi trạng thái việc — anh chốt 23/09/2026.
@@ -154,7 +155,7 @@ export async function doiTrangThaiViecAction(
   const prisma = getPrisma();
   const viec = await prisma.congViec.findUnique({
     where: { id },
-    select: { nguoiPhuTrachMaNV: true, loai: true, ngayHoanThanh: true, trangThai: true },
+    select: { nguoiPhuTrachMaNV: true, loai: true, ngayHoanThanh: true, trangThai: true, lichChupId: true },
   });
   if (!viec) return { loi: "Đầu việc này không còn." };
   const quanTri = laQuanTri(nguoi);
@@ -175,13 +176,25 @@ export async function doiTrangThaiViecAction(
     },
   });
 
+  /*
+    Kéo trạng thái BUỔI CHỤP theo — anh báo 25/11/2026: bốn thợ đều bấm xong
+    việc của mình mà buổi vẫn nằm ở "Chưa làm", vì không ai nghĩ tới chuyện
+    phải đổi thêm một ô nữa. Chỉ nâng, không hạ — xem `trangThaiBuoi.ts`.
+  */
+  const buoiMoi = viec.lichChupId ? await capNhatTrangThaiBuoi(viec.lichChupId) : null;
+
   await ghiNhatKy({
     nguoi: { id: nguoi.id, ten: nguoi.ten },
     hanhDong: "doi-trang-thai-viec",
     doiTuong: "CongViec",
     doiTuongId: id,
-    chiTiet: { viec: viec.loai ?? "", trangThai },
+    /* Ghi cả chữ buổi vừa nhảy sang, để sau này lần ra ai làm nó đổi. */
+    chiTiet: { viec: viec.loai ?? "", trangThai, ...(buoiMoi ? { buoiChup: buoiMoi } : {}) },
   });
   revalidatePath("/quan-ly/cong-viec");
+  if (buoiMoi) {
+    revalidatePath("/quan-ly/lich");
+    revalidatePath("/quan-ly/hop-dong", "layout");
+  }
   return { ok: true };
 }
