@@ -141,8 +141,22 @@ export function KhoiLich({
             d.ngay ? "border-line bg-bg-raised" : "border-amber-300 bg-amber-50/60"
           }`}
         >
-          <div className="grid gap-2 sm:grid-cols-[9rem_6rem_10rem_9rem_1fr_auto]">
-          <label className="block">
+          {/*
+            ĐO THEO KHUNG CHỨA, KHÔNG THEO CỬA SỔ — sửa 25/11/2026.
+
+            Bản cũ dùng `sm:grid-cols-[9rem_6rem_10rem_9rem_1fr_auto]`. Mà `sm:`
+            hỏi bề rộng CỬA SỔ, trong khi khối này nằm ở cột trái của trang hợp
+            đồng — cột ấy chỉ rộng chừng 650px khi cửa sổ 1280. Sáu cột với 34rem
+            bề ngang cứng cộng nút Bỏ cần 687px, nên ô ghi chú bị bóp còn 32px và
+            cả hàng tràn khỏi thẻ (đo 25/11 trên đúng ba bề rộng).
+
+            `@container` hỏi khung chứa nên nó thấy đúng 650px ấy. Ngưỡng `@3xl`
+            là 48rem = 768px, tức chỉ bày đủ sáu cột khi thật sự đủ chỗ; hẹp hơn
+            thì ba cột và các ô tự chảy xuống hàng dưới.
+          */}
+          <div className="@container">
+          <div className="grid gap-2 @md:grid-cols-6 @3xl:grid-cols-[9rem_6rem_10rem_9rem_minmax(7rem,1fr)_auto]">
+          <label className="block @md:col-span-2 @3xl:col-span-1">
             <span className="eyebrow block">Ngày</span>
             <input
               type="date"
@@ -155,7 +169,7 @@ export function KhoiLich({
             Giờ đứng NGAY SAU ngày, vì hai thứ đó đi liền nhau trong đầu người
             nhập. Để trống được: 1.454 buổi cũ không buổi nào có giờ.
           */}
-          <label className="block">
+          <label className="block @md:col-span-1">
             <span className="eyebrow block">Giờ</span>
             <input
               type="time"
@@ -164,7 +178,7 @@ export function KhoiLich({
               className="input mt-1.5 tabular-nums"
             />
           </label>
-          <label className="block">
+          <label className="block @md:col-span-3 @3xl:col-span-1">
             <span className="eyebrow block">Loại buổi</span>
             <select value={d.loai} onChange={(e) => doi(i, { loai: e.target.value })} className="input mt-1.5">
               {/*
@@ -181,7 +195,7 @@ export function KhoiLich({
               ))}
             </select>
           </label>
-          <label className="block">
+          <label className="block @md:col-span-2 @3xl:col-span-1">
             <span className="eyebrow block">Tình trạng</span>
             <select
               value={d.trangThai}
@@ -195,11 +209,11 @@ export function KhoiLich({
               ))}
             </select>
           </label>
-          <label className="block">
+          <label className="block @md:col-span-3 @3xl:col-span-1">
             <span className="eyebrow block">Ghi chú</span>
             <input value={d.ghiChu} onChange={(e) => doi(i, { ghiChu: e.target.value })} className="input mt-1.5" />
           </label>
-          <div className="flex items-end">
+          <div className="flex items-end @md:col-span-1">
             <button
               type="button"
               className="btn btn-danger"
@@ -207,6 +221,7 @@ export function KhoiLich({
             >
               Bỏ
             </button>
+          </div>
           </div>
           </div>
 
