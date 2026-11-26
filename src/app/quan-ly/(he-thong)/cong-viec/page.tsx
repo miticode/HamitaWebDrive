@@ -33,7 +33,15 @@ const COT = {
 } satisfies Record<string, CotBang>;
 
 type Props = {
-  searchParams: Promise<{ nguoi?: string; tt?: string; so?: string; q?: string; nhom?: string }>;
+  searchParams: Promise<{
+    nguoi?: string;
+    tt?: string;
+    so?: string;
+    q?: string;
+    nhom?: string;
+    /** "1" = mở bảng đầu việc. Thiếu thì trang dừng ở màn chọn. */
+    viec?: string;
+  }>;
 };
 
 const MOI_LUOT = 150;
@@ -76,6 +84,7 @@ export default async function CongViecPage({ searchParams }: Props) {
     Người chưa có mã nhân viên bên AppSheet (`maNV` trống) thì chỉ còn thấy
     việc chưa giao — không ghép được dòng nào với họ.
   */
+  const prismaChon = getPrisma();
   /* Mã nhân viên, hoặc tên đăng nhập với học viên chưa có mã — xem `khoaNguoi`. */
   const khoaToi = khoaCuaToi(nguoi);
   const chuaGiao: Prisma.CongViecWhereInput[] = [
@@ -85,6 +94,93 @@ export default async function CongViecPage({ searchParams }: Props) {
   const theoNguoi: Prisma.CongViecWhereInput = quanTri
     ? {}
     : { OR: [...(khoaToi ? [{ nguoiPhuTrachMaNV: khoaToi }] : []), ...chuaGiao] };
+  /*
+    MÀN CHỌN ĐỨNG TRƯỚC BẢNG — anh yêu cầu 26/11/2026: "khi ấn vào phần đầu
+    việc, hãy bỏ hiển thị tất cả, chỉ để lại phần số 5 và số 14, khi ấn vào
+    mục đó thì mới hiển thị phần hợp đồng và thanh search".
+
+    Vì sao đáng đổi: bảng đầu việc mở ra là 560 dòng, phần lớn quá hạn từ
+    2025 và chưa giao cho ai — mở trang ra gặp ngay đống đó thì việc cần làm
+    hôm nay chìm mất. Màn chọn hỏi trước một câu: anh chị đang muốn làm gì.
+
+    Bảng CŨ KHÔNG MẤT, chỉ lùi sau một cú bấm (`?viec=1`). Đó là nơi thợ tick
+    việc của mình và quản lý giao việc, bỏ hẳn thì cả hai việc ấy mất chỗ.
+    Mọi địa chỉ cũ có kèm bộ lọc (`?tt=qua-han`, `?q=…`) vẫn mở thẳng ra bảng
+    như trước, nên link ai đã lưu hay gửi nhau không chết.
+  */
+  const moBang =
+    sp.viec === "1" || !!(sp.tt || sp.q || sp.nguoi || sp.nhom || sp.so);
+
+  if (!moBang) {
+    const [demChoHauKy, soChuaXong] = await Promise.all([
+      prismaChon.hopDong.groupBy({
+        by: ["buoc"],
+        where: { matBenAppSheet: null, buoc: { in: [...BUOC_HAU_KY] } },
+        _count: { _all: true },
+      }),
+      prismaChon.congViec.count({
+        where: { matBenAppSheet: null, trangThai: { not: "Đã làm" }, ...theoNguoi },
+      }),
+    ]);
+
+    return (
+      <div>
+        <p className="eyebrow">Hằng ngày</p>
+        <h1 className="mt-2 font-display text-3xl font-light">Đầu việc</h1>
+        <BangDongBo quanTri={quanTri} />
+
+        <p className="mt-6 eyebrow">Hợp đồng chờ chỉnh ảnh</p>
+        {/*
+          HAI THẺ TO, không phải hai chip: đây là thứ duy nhất trên màn này,
+          mà một chip cao hai mươi tư pixel giữa màn trắng thì trông như còn
+          sót lại chứ không như thứ mời người ta bấm vào.
+        */}
+        <div className="mt-2 grid gap-3 sm:max-w-2xl sm:grid-cols-2">
+          {BUOC_HAU_KY.map((b) => {
+            const so = demChoHauKy.find((d) => d.buoc === b)?._count._all ?? 0;
+            return (
+              <Link
+                key={b}
+                href={`/quan-ly/cong-viec/hau-ky?buoc=${b}`}
+                className="card group flex items-center justify-between gap-3 p-4 transition hover:border-accent hover:shadow-[var(--shadow-lift)]"
+              >
+                <span>
+                  <span className="block text-xs text-fg-faint tabular-nums">Bước {b}</span>
+                  <span className="mt-0.5 block font-display text-xl font-light">
+                    {tenBuocHauKy(b)}
+                  </span>
+                  <span className="mt-1 block text-sm text-fg-muted tabular-nums">
+                    {so} hợp đồng
+                  </span>
+                </span>
+                <span
+                  className="text-xl text-fg-faint transition group-hover:translate-x-0.5 group-hover:text-accent"
+                  aria-hidden
+                >
+                  →
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/*
+          Lối vào bảng để DƯỚI và nhỏ — nó vẫn cần tồn tại (chỗ tick việc và
+          giao việc), nhưng không còn là thứ đập vào mắt đầu tiên.
+        */}
+        <p className="mt-6 text-sm">
+          <Link
+            href="/quan-ly/cong-viec?viec=1"
+            className="text-fg-muted underline underline-offset-2 hover:text-accent"
+          >
+            Xem toàn bộ đầu việc
+          </Link>{" "}
+          <span className="text-fg-faint tabular-nums">{soChuaXong} việc chưa xong</span>
+        </p>
+      </div>
+    );
+  }
+
   const tt = ["qua-han", "hom-nay", "sap-toi", "da-lam", "tat-ca"].includes(sp.tt ?? "")
     ? sp.tt!
     : "chua-xong";
@@ -153,7 +249,7 @@ export default async function CongViecPage({ searchParams }: Props) {
   };
 
   const prisma = getPrisma();
-  const [ds, demNguoi, soQuaHan, soHomNay, soSapToi, soHauKy, demChoHauKy, bangTen, dsNhanVien] =
+  const [ds, demNguoi, soQuaHan, soHomNay, soSapToi, soHauKy, bangTen, dsNhanVien] =
     await Promise.all([
     prisma.congViec.findMany({
       where,
@@ -204,19 +300,6 @@ export default async function CongViecPage({ searchParams }: Props) {
     prisma.congViec.count({
       where: { matBenAppSheet: null, ...theoTrangThai, AND: [theoNguoi, locHauKy()] },
     }),
-    /*
-      Đếm HỢP ĐỒNG đang chờ hậu kỳ, không phải đầu việc — hai con số khác
-      nhau hẳn: một nhà cưới có tới năm dòng Photoshop. Lối vào phải nói số
-      NHÀ, vì đó là thứ người ta đếm trong đầu ("còn hai chục nhà chờ chỉnh").
-
-      Không lọc theo người: hàng chờ là việc của cả tiệm, mà màn hình đích
-      cũng mở cho mọi người (xem chú thích quyền ở trang hậu kỳ).
-    */
-    prisma.hopDong.groupBy({
-      by: ["buoc"],
-      where: { matBenAppSheet: null, buoc: { in: [...BUOC_HAU_KY] } },
-      _count: { _all: true },
-    }),
     tenTheoMaNV(),
     /*
       Danh sách người để giao việc: chỉ người CÒN LÀM và có mã nhân viên —
@@ -259,7 +342,12 @@ export default async function CongViecPage({ searchParams }: Props) {
   const hien = ketQua.slice(0, so);
 
   const link = (thay: Record<string, string>) => {
-    const p = new URLSearchParams({ nguoi: loc, tt, q, nhom, ...thay });
+    /*
+      `viec=1` đi theo MỌI đường trong bảng: bỏ nó ra thì bấm "Chưa xong" —
+      vốn xoá luôn tham số `tt` vì nó là mặc định — sẽ rơi về màn chọn, tức
+      một cú bấm lọc lại hoá ra cú bấm thoát.
+    */
+    const p = new URLSearchParams({ nguoi: loc, tt, q, nhom, viec: "1", ...thay });
     for (const [k, v] of [...p.entries()]) if (!v || (k === "tt" && v === "chua-xong")) p.delete(k);
     return `/quan-ly/cong-viec?${p}`;
   };
@@ -270,51 +358,19 @@ export default async function CongViecPage({ searchParams }: Props) {
 
   return (
     <div>
-      <p className="eyebrow">Hằng ngày</p>
+      <p className="eyebrow">
+        <Link href="/quan-ly/cong-viec" className="hover:text-accent">
+          ← Đầu việc
+        </Link>
+      </p>
       <h1 className="mt-2 font-display text-3xl font-light">
-        Đầu việc <span className="text-fg-faint tabular-nums">{ketQua.length}</span>
+        Toàn bộ đầu việc <span className="text-fg-faint tabular-nums">{ketQua.length}</span>
       </h1>
       <BangDongBo quanTri={quanTri} />
       {!quanTri && (
         <p className="mt-3 text-sm text-fg-muted">
           Đang hiện việc ghi tên anh chị và những việc chưa giao cho ai.
         </p>
-      )}
-
-      {/*
-        LỐI VÀO HÀNG CHỜ HẬU KỲ — anh yêu cầu 26/11/2026: "hiện lên cho a phần
-        trạng thái số 5 và số 14".
-
-        Đứng TRÊN ô tìm và tách hẳn khỏi hàng chip, vì nó không phải một bộ
-        lọc của bảng bên dưới: bảng này liệt kê ĐẦU VIỆC, còn bấm vào đây là
-        sang một màn khác liệt kê HỢP ĐỒNG. Trộn vào hàng chip thì bấm xong
-        thấy cả trang đổi khác, không ai đoán được.
-
-        Ẩn hẳn khi cả hai bước đều rỗng — một lối vào dẫn tới màn hình trống
-        chỉ tổ làm người ta bấm thử rồi quay ra.
-      */}
-      {demChoHauKy.length > 0 && (
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="eyebrow mr-1">Hợp đồng chờ chỉnh</span>
-          {BUOC_HAU_KY.map((b) => {
-            const so = demChoHauKy.find((d) => d.buoc === b)?._count._all ?? 0;
-            if (so === 0) return null;
-            return (
-              <Link
-                key={b}
-                href={`/quan-ly/cong-viec/hau-ky?buoc=${b}`}
-                className="group flex items-center gap-2 rounded-md border border-line px-3 py-1.5 text-sm transition hover:border-accent hover:bg-accent-soft"
-              >
-                <span className="tabular-nums text-fg-faint">{b}.</span>
-                <span>{tenBuocHauKy(b)}</span>
-                <span className="font-medium tabular-nums">{so}</span>
-                <span className="text-fg-faint transition group-hover:text-accent" aria-hidden>
-                  →
-                </span>
-              </Link>
-            );
-          })}
-        </div>
       )}
 
       {/*
@@ -327,6 +383,7 @@ export default async function CongViecPage({ searchParams }: Props) {
         kéo người ta về "mọi người, chưa xong".
       */}
       <form action="/quan-ly/cong-viec" className="mt-5 flex flex-wrap items-center gap-2">
+        <input type="hidden" name="viec" value="1" />
         {tt !== "chua-xong" && <input type="hidden" name="tt" value={tt} />}
         {loc && <input type="hidden" name="nguoi" value={loc} />}
         {nhom && <input type="hidden" name="nhom" value={nhom} />}

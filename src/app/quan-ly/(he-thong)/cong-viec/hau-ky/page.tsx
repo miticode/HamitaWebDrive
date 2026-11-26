@@ -3,6 +3,7 @@ import { getPrisma } from "@/lib/db";
 import { homNayStudio, tien } from "@/lib/constants";
 import { batBuocDangNhap, xemHopDong } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
+import { boDau } from "@/lib/dichVuChung";
 import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { locHauKy } from "@/lib/nhomViec";
 import {
@@ -46,7 +47,7 @@ export const dynamic = "force-dynamic";
   đồng; đó mới là phần nhạy cảm, không phải chuyện nhà nào đang chờ chỉnh.
 */
 
-type Props = { searchParams: Promise<{ buoc?: string }> };
+type Props = { searchParams: Promise<{ buoc?: string; q?: string }> };
 
 export default async function HangChoHauKyPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
@@ -56,10 +57,11 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
   const buocLoc: BuocHauKy | null = BUOC_HAU_KY.includes(soNhap as BuocHauKy)
     ? (soNhap as BuocHauKy)
     : null;
+  const q = (sp.q ?? "").trim();
   const nay = homNayStudio();
 
   const prisma = getPrisma();
-  const [ds, bangTen] = await Promise.all([
+  const [ds, demBuoc, bangTen] = await Promise.all([
     prisma.hopDong.findMany({
       where: {
         matBenAppSheet: null,
@@ -89,11 +91,23 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
         },
       },
     }),
+    /*
+      Đếm RIÊNG, không đếm trong `ds` — `ds` đã bị lọc theo bước đang chọn,
+      nên đếm trong đó thì chip của nhánh kia luôn hiện 0 và người đọc tưởng
+      nhánh ấy hết nhà. Đo 26/11: lọc bước 5 xong, chip bước 14 nói "0" trong
+      khi vẫn còn hai hợp đồng.
+    */
+    prisma.hopDong.groupBy({
+      by: ["buoc"],
+      where: { matBenAppSheet: null, buoc: { in: [...BUOC_HAU_KY] } },
+      _count: { _all: true },
+    }),
     tenTheoMaNV(),
   ]);
 
-  const soTheoBuoc = new Map<number, number>();
-  for (const h of ds) soTheoBuoc.set(h.buoc ?? 0, (soTheoBuoc.get(h.buoc ?? 0) ?? 0) + 1);
+  const soTheoBuoc = new Map<number, number>(
+    demBuoc.map((d) => [d.buoc ?? 0, d._count._all]),
+  );
 
   /* Dựng sẵn mọi thứ cần vẽ, để phần JSX bên dưới chỉ còn việc bày ra. */
   const hang = ds.map((h) => {
@@ -112,9 +126,21 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
     };
   });
 
+  /*
+    Ô TÌM lọc ở máy chủ web bằng `boDau`, không ở database — người gõ "chau
+    chi" không dấu, mà Postgres `contains` thì không bỏ dấu hộ. Cùng cách với
+    trang Đầu việc và trang Hợp đồng.
+
+    Lọc SAU khi đã dựng xong `hang`: con số trên chip từng bước vẫn đếm toàn
+    bộ hàng chờ, nên gõ một cái tên không làm "18" tụt xuống "1" rồi người ta
+    tưởng mất việc.
+  */
+  const tim = boDau(q);
+  const ketQua = q ? hang.filter((h) => boDau(h.tenKhach).includes(tim)) : hang;
+
   /* Gom theo loại dịch vụ, y như AppSheet. Nhóm đông đứng trước. */
   const gom = new Map<string, typeof hang>();
-  for (const h of hang) {
+  for (const h of ketQua) {
     const k = h.loaiDV?.trim() || "Chưa ghi loại";
     if (!gom.has(k)) gom.set(k, []);
     gom.get(k)!.push(h);
@@ -127,6 +153,13 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
     }))
     .sort((a, b) => b.ds.length - a.ds.length);
 
+  const duongDan = (buoc: BuocHauKy | null, chu: string) => {
+    const p = new URLSearchParams();
+    if (buoc !== null) p.set("buoc", String(buoc));
+    if (chu) p.set("q", chu);
+    const s = p.toString();
+    return s ? `/quan-ly/cong-viec/hau-ky?${s}` : "/quan-ly/cong-viec/hau-ky";
+  };
   const lopChip = (bat: boolean) =>
     `rounded-full border px-3 py-1 text-xs transition whitespace-nowrap ${
       bat ? "border-accent bg-accent-soft text-accent" : "border-line text-fg-muted hover:border-line-strong"
@@ -140,30 +173,57 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
         </Link>
       </p>
       <h1 className="mt-2 font-display text-3xl font-light">
-        Hàng chờ hậu kỳ <span className="text-fg-faint tabular-nums">{hang.length}</span>
+        Hàng chờ hậu kỳ <span className="text-fg-faint tabular-nums">{ketQua.length}</span>
       </h1>
       <p className="mt-2 text-sm text-fg-muted">
         Hợp đồng đã chụp xong, ảnh đang chờ chỉnh. Nhà chờ lâu nhất đứng đầu mỗi nhóm.
       </p>
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
-        <Link href="/quan-ly/cong-viec/hau-ky" className={lopChip(buocLoc === null)}>
+        {/* Chip giữ nguyên chữ đang tìm: đổi nhánh không phải lý do để xoá ô tìm. */}
+        <Link href={duongDan(null, q)} className={lopChip(buocLoc === null)}>
           Cả hai nhánh
         </Link>
         {BUOC_HAU_KY.map((b) => (
-          <Link key={b} href={`/quan-ly/cong-viec/hau-ky?buoc=${b}`} className={lopChip(buocLoc === b)}>
+          <Link key={b} href={duongDan(b, q)} className={lopChip(buocLoc === b)}>
             {b}. {tenBuocHauKy(b)}{" "}
             <span className="tabular-nums opacity-70">{soTheoBuoc.get(b) ?? 0}</span>
           </Link>
         ))}
       </div>
 
-      {hang.length === 0 && (
+      <form action="/quan-ly/cong-viec/hau-ky" className="mt-3 flex flex-wrap items-center gap-2">
+        {buocLoc !== null && <input type="hidden" name="buoc" value={buocLoc} />}
+        <input
+          id="tim-hau-ky"
+          name="q"
+          type="search"
+          autoComplete="off"
+          defaultValue={q}
+          placeholder="Tìm theo tên hợp đồng…"
+          className="input w-64"
+        />
+        <button type="submit" className="btn">Tìm</button>
+        {q && (
+          <Link
+            href={duongDan(buocLoc, "")}
+            className="text-xs text-fg-muted underline underline-offset-2 hover:text-accent"
+          >
+            Bỏ tìm
+          </Link>
+        )}
+      </form>
+
+      {ketQua.length === 0 && (
         <p className="mt-8 text-sm text-fg-muted">
-          Không có hợp đồng nào đang chờ hậu kỳ.{" "}
-          {buocLoc !== null && (
+          {q ? (
+            <>Không có nhà nào tên khớp “{q}”.</>
+          ) : (
+            <>Không có hợp đồng nào đang chờ hậu kỳ.</>
+          )}{" "}
+          {(buocLoc !== null || q) && (
             <Link href="/quan-ly/cong-viec/hau-ky" className="text-accent underline underline-offset-2">
-              Xem cả hai nhánh
+              Xem cả hàng chờ
             </Link>
           )}
         </p>
