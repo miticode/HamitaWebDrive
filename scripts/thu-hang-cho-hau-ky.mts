@@ -9,7 +9,15 @@
  *
  * Không chạm database — chỉ gọi hàm thuần, nên chạy được cả khi Neon ngủ.
  */
-import { BUOC_HAU_KY, CHO_LAU, mocDaQua, soNgayCho, tenBuocHauKy } from "../src/lib/hangChoHauKy";
+import {
+  BUOC_HAU_KY,
+  CHO_LAU,
+  gapTruoc,
+  mocDaQua,
+  soNgayCho,
+  tenBuocHauKy,
+  type MucGap,
+} from "../src/lib/hangChoHauKy";
 
 let truot = 0;
 const kiem = (ten: string, duoc: unknown, mong: unknown) => {
@@ -62,6 +70,67 @@ console.log("\n— Hai bước của hàng chờ —");
 kiem("đúng hai bước", [...BUOC_HAU_KY], [5, 14]);
 kiem("tên bước 5", tenBuocHauKy(5), "Đang Retouch");
 kiem("tên bước 14", tenBuocHauKy(14), "Chỉnh sửa tiệc");
+
+console.log("\n— Thứ tự GẤP TRƯỚC —");
+const nha = (ten: string, hanLay: string | null, cho: number | null) => ({ ten, hanLay, cho });
+const xep = (ds: ReturnType<typeof nha>[]) => [...ds].sort(gapTruoc).map((x) => x.ten);
+
+kiem(
+  "có hạn luôn đứng trước không hạn",
+  xep([nha("khong-han-cho-48", null, 48), nha("han-xa", "2027-06-01", 1)]),
+  ["han-xa", "khong-han-cho-48"],
+);
+kiem(
+  "giữa hai nhà có hạn, hạn SỚM hơn lên đầu",
+  xep([nha("han-20-12", "2026-12-20", 5), nha("han-27-11", "2026-11-27", 40)]),
+  ["han-27-11", "han-20-12"],
+);
+kiem(
+  "hạn ĐÃ TRỄ là gấp nhất, không phải hết gấp",
+  xep([nha("han-mai", "2026-11-27", 1), nha("tre-tu-hom-qua", "2026-11-25", 1)]),
+  ["tre-tu-hom-qua", "han-mai"],
+);
+kiem(
+  "không nhà nào có hạn thì chờ lâu nhất trước",
+  xep([nha("cho-3", null, 3), nha("cho-48", null, 48), nha("cho-19", null, 19)]),
+  ["cho-48", "cho-19", "cho-3"],
+);
+kiem(
+  "nhà chưa có buổi chụp nào đã qua xuống cuối",
+  xep([nha("chua-chup", null, null), nha("cho-3", null, 3)]),
+  ["cho-3", "chua-chup"],
+);
+kiem(
+  "ba nhà thật trên web, xếp đúng thứ tự",
+  xep([
+    nha("Trúc Hà · hạn 20/12", "2026-12-20", 14),
+    nha("Huỳnh Như · chờ 48 ngày, không hạn", null, 48),
+    nha("tùnghamita · hạn 27/11", "2026-11-27", 0),
+    nha("Thúy hằng · hạn 10/12", "2026-12-10", 3),
+  ]),
+  [
+    "tùnghamita · hạn 27/11",
+    "Thúy hằng · hạn 10/12",
+    "Trúc Hà · hạn 20/12",
+    "Huỳnh Như · chờ 48 ngày, không hạn",
+  ],
+);
+
+/* Phép so phải ĐỐI XỨNG, không thì Array.sort cho ra thứ tự khác nhau tuỳ dữ liệu vào. */
+const mau: MucGap[] = [
+  { hanLay: "2026-11-27", cho: 0 },
+  { hanLay: null, cho: 48 },
+  { hanLay: "2026-12-20", cho: 14 },
+  { hanLay: null, cho: null },
+  { hanLay: "2026-11-27", cho: 9 },
+];
+let lech = 0;
+for (const a of mau) {
+  for (const b of mau) {
+    if (Math.sign(gapTruoc(a, b)) !== -Math.sign(gapTruoc(b, a))) lech++;
+  }
+}
+kiem("phép so đối xứng với mọi cặp", lech, 0);
 
 console.log(truot === 0 ? "\nTẤT CẢ ĐỀU ĐÚNG" : `\nCÓ ${truot} PHÉP TRƯỢT`);
 process.exit(truot === 0 ? 0 : 1);

@@ -288,7 +288,19 @@ export function laMucHoiHanLay(tenMuc: string): boolean {
  * theo mot mui gio chi dinh, khong phai ghep tay tung phan.
  */
 export function homNayStudio(): string {
-  return new Date().toLocaleDateString("sv-SE", { timeZone: MUI_GIO });
+  return ngayStudio(new Date());
+}
+
+/**
+ * Mot moc thoi gian -> NGAY TRAN theo gio studio, dang "yyyy-mm-dd".
+ *
+ * Can rieng khoi `homNayStudio` vi `hanLay` trong bang MucXong luu dang
+ * DateTime: doi bang gio may chu thi lech: Vercel chay gio UTC, ma 00:00
+ * ngay 20 gio Viet Nam la 17:00 ngay 19 UTC, nen han khach hen bi lui mot
+ * ngay (nguyen tac 35).
+ */
+export function ngayStudio(d: Date): string {
+  return d.toLocaleDateString("sv-SE", { timeZone: MUI_GIO });
 }
 
 /**

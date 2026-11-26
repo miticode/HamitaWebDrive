@@ -58,3 +58,30 @@ export function soNgayCho(ngay: string, nay: string): number {
 
 /** Chờ từng này ngày trở lên thì tô vàng. Hai tuần: quá một nhịp hẹn khách. */
 export const CHO_LAU = 14;
+
+/** Thứ tự gấp trước cần đúng hai con số này của mỗi nhà. */
+export type MucGap = {
+  /** Ngày khách hẹn lấy hình, "yyyy-mm-dd" — null khi khách chưa hẹn. */
+  hanLay: string | null;
+  /** Số ngày đã chờ từ buổi chụp cuối đã qua — null khi chưa buổi nào qua. */
+  cho: number | null;
+};
+
+/**
+ * So hai nhà xem nhà nào GẤP HƠN — anh yêu cầu 26/11/2026: "hãy sắp xếp theo
+ * thứ tự gấp trước".
+ *
+ * Nhà CÓ HẠN khách hẹn đứng trước tất cả, hạn sớm nhất lên đầu, kể cả hạn đã
+ * trễ: trễ là gấp nhất chứ không phải hết gấp. Nhà không có hạn xuống sau,
+ * giữ lối cũ là chờ lâu nhất trước.
+ *
+ * Vì sao hạn thắng số ngày chờ: hạn là LỜI HẸN VỚI KHÁCH, còn số ngày chờ chỉ
+ * là studio tự ước. Một nhà chờ 48 ngày mà khách chưa hẹn gì vẫn đỡ gấp hơn
+ * nhà chờ 3 ngày nhưng khách cần hình ngày mai.
+ */
+export function gapTruoc(a: MucGap, b: MucGap): number {
+  if (a.hanLay && b.hanLay) return a.hanLay.localeCompare(b.hanLay);
+  if (a.hanLay) return -1;
+  if (b.hanLay) return 1;
+  return (b.cho ?? -1) - (a.cho ?? -1);
+}

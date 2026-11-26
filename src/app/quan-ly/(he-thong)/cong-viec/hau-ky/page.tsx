@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
-import { homNayStudio, tien } from "@/lib/constants";
+import {
+  chuConLai,
+  homNayStudio,
+  ngayStudio,
+  ngayVietTat,
+  soNgayToiHan,
+  tien,
+} from "@/lib/constants";
 import { batBuocDangNhap, xemHopDong } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
 import { boDau } from "@/lib/dichVuChung";
@@ -9,6 +16,7 @@ import { locHauKy } from "@/lib/nhomViec";
 import {
   BUOC_HAU_KY,
   CHO_LAU,
+  gapTruoc,
   mocDaQua,
   soNgayCho,
   tenBuocHauKy,
@@ -78,7 +86,17 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
         conLai: true,
         nguoiLapMaNV: true,
         lich: { select: { ngay: true } },
-        album: { select: { id: true } },
+        /*
+          HẠN KHÁCH CẦN LẤY HÌNH — anh yêu cầu 26/11/2026: "ở phần khi khách
+          chọn xong hình có phần hỏi khách khi nào cần có hình thì em hãy lấy
+          phần đó đem vô đây hiển thị lên luôn".
+
+          Ngày ấy do CHÍNH KHÁCH gõ khi bấm "đã chọn xong" ở thư mục file gốc
+          hình cổng / album (nguyên tắc 66), ghi vào `MucXong.hanLay`. Nó là
+          thứ gấp thật: mọi mốc khác trên thẻ này là studio tự ước, còn đây là
+          lời hẹn với khách.
+        */
+        album: { select: { id: true, mucXong: { select: { hanLay: true } } } },
         /*
           CHỈ việc hậu kỳ, lọc ngay ở database. Lấy hết rồi lọc ở đây thì một
           hợp đồng cưới kéo theo hai chục dòng makeup, hoa, stylist chỉ để
@@ -113,11 +131,24 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
   const hang = ds.map((h) => {
     const moc = mocDaQua(h.lich.map((l) => l.ngay), nay);
 
+    /*
+      Một hợp đồng có thể có nhiều album, mỗi album nhiều thư mục được hỏi
+      ngày — lấy hạn SỚM NHẤT. Nhà hẹn hai mốc thì mốc gần hơn mới là mốc
+      phải chạy theo; bày mốc xa hơn ra là tự ru ngủ.
+    */
+    const hans = h.album
+      .flatMap((a) => a.mucXong)
+      .map((m) => m.hanLay)
+      .filter((d): d is Date => !!d)
+      .map(ngayStudio)
+      .sort();
+
     const dangCam = h.congViec.filter((v) => v.nguoiPhuTrachMaNV?.trim());
     return {
       ...h,
       moc,
       cho: moc ? soNgayCho(moc, nay) : null,
+      hanLay: hans.length ? hans[0] : null,
       /* Người lập = sale của nhà này, để biết hỏi ai khi hợp đồng có chỗ chưa rõ. */
       tenNguoiLap: h.nguoiLapMaNV ? tenNV(bangTen, h.nguoiLapMaNV) : null,
       /* Tên người chứ không phải mã: "PTTM81" không nói lên ai cả. */
@@ -138,7 +169,7 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
   const tim = boDau(q);
   const ketQua = q ? hang.filter((h) => boDau(h.tenKhach).includes(tim)) : hang;
 
-  /* Gom theo loại dịch vụ, y như AppSheet. Nhóm đông đứng trước. */
+  /* Gom theo loại dịch vụ, y như AppSheet. */
   const gom = new Map<string, typeof hang>();
   for (const h of ketQua) {
     const k = h.loaiDV?.trim() || "Chưa ghi loại";
@@ -146,12 +177,13 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
     gom.get(k)!.push(h);
   }
   const dsNhom = [...gom.entries()]
-    .map(([ten, ds]) => ({
-      ten,
-      /* Chờ lâu nhất lên đầu; nhà chưa có buổi chụp nào đã qua xuống cuối. */
-      ds: [...ds].sort((a, b) => (b.cho ?? -1) - (a.cho ?? -1)),
-    }))
-    .sort((a, b) => b.ds.length - a.ds.length);
+    .map(([ten, ds]) => ({ ten, ds: [...ds].sort(gapTruoc) }))
+    /*
+      Thứ tự NHÓM cũng theo nhà gấp nhất của nhóm, không theo số lượng nữa:
+      sắp gấp trước mà để nhóm đông đứng đầu thì nhà gấp nhất vẫn có thể nằm
+      ở nhóm thứ ba, phải cuộn mới thấy — tức là không sắp gì cả.
+    */
+    .sort((a, b) => gapTruoc(a.ds[0], b.ds[0]));
 
   const duongDan = (buoc: BuocHauKy | null, chu: string) => {
     const p = new URLSearchParams();
@@ -280,6 +312,29 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
                     */}
                     {h.tenNguoiLap && <span className="text-fg-faint"> · {h.tenNguoiLap} lập</span>}
                   </p>
+
+                  {/*
+                    HẠN KHÁCH HẸN đứng RIÊNG MỘT DÒNG, trên cả khối "Hậu kỳ /
+                    Album / Tiền" — nó là thứ quyết thứ tự cả trang, để lẫn
+                    vào khối kia thì ngang hàng với "chưa dựng album".
+
+                    Trễ hạn tô ĐỎ, còn dưới ba ngày tô vàng. Đây là chỗ duy
+                    nhất trên trang dùng màu đỏ: mọi cảnh báo khác là studio
+                    tự nhắc mình, còn đây là đã lỡ hẹn với khách.
+                  */}
+                  {h.hanLay && (
+                    <p
+                      className={`mt-2 rounded-md px-2.5 py-1.5 text-xs tabular-nums ${
+                        soNgayToiHan(h.hanLay) < 0
+                          ? "bg-red-50 font-medium text-red-800"
+                          : soNgayToiHan(h.hanLay) <= 3
+                            ? "bg-amber-50 font-medium text-amber-800"
+                            : "bg-bg-soft text-fg-muted"
+                      }`}
+                    >
+                      Khách cần hình {ngayVietTat(h.hanLay)} · {chuConLai(h.hanLay)}
+                    </p>
+                  )}
 
                   <dl className="mt-3 space-y-1.5 border-t border-line pt-3 text-xs">
                     <div className="flex gap-2">
