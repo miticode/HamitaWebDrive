@@ -7,6 +7,7 @@ import { ngayVN } from "@/lib/hopDongChung";
 import { khoaCuaToi, khoaNguoi, tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { boDau } from "@/lib/dichVuChung";
 import { locHauKy } from "@/lib/nhomViec";
+import { BUOC_HAU_KY, tenBuocHauKy } from "@/lib/hangChoHauKy";
 import { BangDongBo } from "../hop-dong/BangDongBo";
 import { NutViec } from "./NutViec";
 import { Bang, Hang, O, type CotBang } from "../_ui/Bang";
@@ -152,7 +153,7 @@ export default async function CongViecPage({ searchParams }: Props) {
   };
 
   const prisma = getPrisma();
-  const [ds, demNguoi, soQuaHan, soHomNay, soSapToi, soHauKy, bangTen, dsNhanVien] =
+  const [ds, demNguoi, soQuaHan, soHomNay, soSapToi, soHauKy, demChoHauKy, bangTen, dsNhanVien] =
     await Promise.all([
     prisma.congViec.findMany({
       where,
@@ -202,6 +203,19 @@ export default async function CongViecPage({ searchParams }: Props) {
     */
     prisma.congViec.count({
       where: { matBenAppSheet: null, ...theoTrangThai, AND: [theoNguoi, locHauKy()] },
+    }),
+    /*
+      Đếm HỢP ĐỒNG đang chờ hậu kỳ, không phải đầu việc — hai con số khác
+      nhau hẳn: một nhà cưới có tới năm dòng Photoshop. Lối vào phải nói số
+      NHÀ, vì đó là thứ người ta đếm trong đầu ("còn hai chục nhà chờ chỉnh").
+
+      Không lọc theo người: hàng chờ là việc của cả tiệm, mà màn hình đích
+      cũng mở cho mọi người (xem chú thích quyền ở trang hậu kỳ).
+    */
+    prisma.hopDong.groupBy({
+      by: ["buoc"],
+      where: { matBenAppSheet: null, buoc: { in: [...BUOC_HAU_KY] } },
+      _count: { _all: true },
     }),
     tenTheoMaNV(),
     /*
@@ -268,6 +282,42 @@ export default async function CongViecPage({ searchParams }: Props) {
       )}
 
       {/*
+        LỐI VÀO HÀNG CHỜ HẬU KỲ — anh yêu cầu 26/11/2026: "hiện lên cho a phần
+        trạng thái số 5 và số 14".
+
+        Đứng TRÊN ô tìm và tách hẳn khỏi hàng chip, vì nó không phải một bộ
+        lọc của bảng bên dưới: bảng này liệt kê ĐẦU VIỆC, còn bấm vào đây là
+        sang một màn khác liệt kê HỢP ĐỒNG. Trộn vào hàng chip thì bấm xong
+        thấy cả trang đổi khác, không ai đoán được.
+
+        Ẩn hẳn khi cả hai bước đều rỗng — một lối vào dẫn tới màn hình trống
+        chỉ tổ làm người ta bấm thử rồi quay ra.
+      */}
+      {demChoHauKy.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="eyebrow mr-1">Hợp đồng chờ chỉnh</span>
+          {BUOC_HAU_KY.map((b) => {
+            const so = demChoHauKy.find((d) => d.buoc === b)?._count._all ?? 0;
+            if (so === 0) return null;
+            return (
+              <Link
+                key={b}
+                href={`/quan-ly/cong-viec/hau-ky?buoc=${b}`}
+                className="group flex items-center gap-2 rounded-md border border-line px-3 py-1.5 text-sm transition hover:border-accent hover:bg-accent-soft"
+              >
+                <span className="tabular-nums text-fg-faint">{b}.</span>
+                <span>{tenBuocHauKy(b)}</span>
+                <span className="font-medium tabular-nums">{so}</span>
+                <span className="text-fg-faint transition group-hover:text-accent" aria-hidden>
+                  →
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      {/*
         Ô tìm là FORM GET, không phải ô lọc trong trình duyệt — anh yêu cầu
         26/11/2026. Trang chỉ tải 150 việc mỗi lượt trong khi việc chưa xong
         có hàng trăm, nên lọc tại chỗ sẽ chỉ tìm trong phần đang nhìn thấy và
@@ -322,7 +372,13 @@ export default async function CongViecPage({ searchParams }: Props) {
         */}
         <span className="mx-1 h-4 w-px bg-line" aria-hidden />
         <Link href={link({ nhom: nhom === "hau-ky" ? "" : "hau-ky" })} className={lopChip(nhom === "hau-ky")}>
-          Hậu kỳ <span className="tabular-nums opacity-70">{soHauKy}</span>
+          {/*
+            "VIỆC hậu kỳ", không phải "Hậu kỳ" trần — ngay phía trên có khối
+            "Hợp đồng chờ chỉnh" cũng mang chữ hậu kỳ mà đếm thứ khác hẳn:
+            180 đầu việc so với 20 hợp đồng. Hai con số chênh nhau chín lần
+            dưới cùng một chữ thì người đọc phải dừng lại đoán.
+          */}
+          Việc hậu kỳ <span className="tabular-nums opacity-70">{soHauKy}</span>
         </Link>
 
         {quanTri && <span className="mx-1 h-4 w-px bg-line" aria-hidden />}
