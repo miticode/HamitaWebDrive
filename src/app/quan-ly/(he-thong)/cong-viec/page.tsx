@@ -103,25 +103,27 @@ export default async function CongViecPage({ searchParams }: Props) {
     2025 và chưa giao cho ai — mở trang ra gặp ngay đống đó thì việc cần làm
     hôm nay chìm mất. Màn chọn hỏi trước một câu: anh chị đang muốn làm gì.
 
-    Bảng CŨ KHÔNG MẤT, chỉ lùi sau một cú bấm (`?viec=1`). Đó là nơi thợ tick
-    việc của mình và quản lý giao việc, bỏ hẳn thì cả hai việc ấy mất chỗ.
-    Mọi địa chỉ cũ có kèm bộ lọc (`?tt=qua-han`, `?q=…`) vẫn mở thẳng ra bảng
-    như trước, nên link ai đã lưu hay gửi nhau không chết.
+    MÀN CHỌN KHÔNG CÓ LỐI SANG BẢNG — anh chốt 26/11 sau khi xem bản đầu:
+    "gỡ luôn dòng xem toàn bộ đầu việc đi em". Bản đầu để một dòng nhỏ ở dưới
+    dẫn sang bảng; anh không muốn.
+
+    Bảng vẫn còn và vẫn chạy, chỉ không ai bấm tới từ đây nữa: mọi địa chỉ cũ
+    có kèm bộ lọc (`?tt=qua-han`, `?q=…`, `?viec=1`) vẫn mở thẳng ra nó, nên
+    link ai đã lưu hay gửi nhau không chết.
+
+    Việc TICK ĐẦU VIỆC không mất theo: cùng một `NutViec` còn nằm ở lưới Lịch
+    chụp (`lich/LuoiLich.tsx`) và ở khối việc trong chi tiết hợp đồng
+    (`hop-dong/[id]/KhoiViec.tsx`) — đã kiểm trước khi gỡ.
   */
   const moBang =
     sp.viec === "1" || !!(sp.tt || sp.q || sp.nguoi || sp.nhom || sp.so);
 
   if (!moBang) {
-    const [demChoHauKy, soChuaXong] = await Promise.all([
-      prismaChon.hopDong.groupBy({
-        by: ["buoc"],
-        where: { matBenAppSheet: null, buoc: { in: [...BUOC_HAU_KY] } },
-        _count: { _all: true },
-      }),
-      prismaChon.congViec.count({
-        where: { matBenAppSheet: null, trangThai: { not: "Đã làm" }, ...theoNguoi },
-      }),
-    ]);
+    const demChoHauKy = await prismaChon.hopDong.groupBy({
+      by: ["buoc"],
+      where: { matBenAppSheet: null, buoc: { in: [...BUOC_HAU_KY] } },
+      _count: { _all: true },
+    });
 
     return (
       <div>
@@ -164,19 +166,6 @@ export default async function CongViecPage({ searchParams }: Props) {
           })}
         </div>
 
-        {/*
-          Lối vào bảng để DƯỚI và nhỏ — nó vẫn cần tồn tại (chỗ tick việc và
-          giao việc), nhưng không còn là thứ đập vào mắt đầu tiên.
-        */}
-        <p className="mt-6 text-sm">
-          <Link
-            href="/quan-ly/cong-viec?viec=1"
-            className="text-fg-muted underline underline-offset-2 hover:text-accent"
-          >
-            Xem toàn bộ đầu việc
-          </Link>{" "}
-          <span className="text-fg-faint tabular-nums">{soChuaXong} việc chưa xong</span>
-        </p>
       </div>
     );
   }
