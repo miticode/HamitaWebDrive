@@ -73,12 +73,14 @@ export type ViecStudio = { hanhDong: string; nguoiTen: string; luc: Date; chiTie
  * Việc ghi dưới HỢP ĐỒNG nhưng thật ra là việc của album — xem chú thích
  * trong `docViecStudio`.
  *
- * Cả năm đều bắt nguồn từ trang album hoặc từ chính khách: bấm "Đã gửi file
- * gốc", khách báo chọn xong, thợ bấm xong đầu việc cuối, dán link gửi in, và
- * lúc album được dựng ra từ hợp đồng. Không có việc nào dính tới tiền.
+ * Cả sáu đều bắt nguồn từ trang album hoặc từ chính khách: bấm "Đã gửi file
+ * gốc", bấm "Đã gửi ảnh hoàn thiện", khách báo chọn xong, thợ bấm xong đầu việc
+ * cuối, dán link gửi in, và lúc album được dựng ra từ hợp đồng. Không có việc
+ * nào dính tới tiền.
  */
 const TU_HOP_DONG = [
   "doi-buoc-anh-goc",
+  "doi-buoc-hoan-thien",
   "doi-buoc-khach-chon",
   "doi-buoc-da-chup",
   "gui-in",

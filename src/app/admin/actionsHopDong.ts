@@ -6,7 +6,11 @@ import { quyenAlbum } from "@/lib/quyenAlbum";
 import { layNguoiDung } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { timHopDong, type HopDongGon } from "@/lib/noiAlbum";
-import { buocSauKhiGuiAnhGoc, buocSauKhiGuiIn } from "@/lib/buocAnhGoc";
+import {
+  buocSauKhiGuiIn,
+  buocSauKhiStudioGuiAnh,
+  laLuotGuiHoanThien,
+} from "@/lib/buocAnhGoc";
 import { tachLink } from "@/lib/guiIn";
 import { doiBuocAlbum, type KetQuaDoiBuoc } from "@/lib/doiBuocAlbum";
 
@@ -70,11 +74,15 @@ export async function ganHopDongAction(
 /* ── Gửi ảnh gốc → đổi bước hợp đồng (anh yêu cầu 19/11/2026) ─────────── */
 
 /**
- * Nút "Đã gửi file gốc" — dành cho album khách CHƯA BẬT thông báo.
+ * Nút "Đã gửi file gốc" / "Đã gửi ảnh hoàn thiện" — dành cho album khách CHƯA
+ * BẬT thông báo.
  *
  * Anh yêu cầu 19/11/2026. Đo cùng ngày: 59/182 album không ai bật thông báo,
  * nên nếu việc đổi bước chỉ đi kèm nút gửi tin thì một phần ba album không
  * bao giờ được đổi — đúng cái bệnh quên đổi bước mà anh muốn chữa.
+ *
+ * MỘT ACTION cho cả hai lượt gửi (ảnh gốc và ảnh hoàn thiện) từ 26/11/2026 —
+ * bước hiện tại của hợp đồng quyết lượt nào, xem `buocSauKhiStudioGuiAnh`.
  *
  * KHÔNG gửi gì cho khách, chỉ đánh dấu việc studio đã làm.
  */
@@ -94,8 +102,13 @@ export async function daGuiAnhGocAction(galleryId: string): Promise<{ loi?: stri
 export async function doiBuocSauKhiGuiTin(galleryId: string): Promise<KetQuaDoiBuoc> {
   const kq = await doiBuocAlbum(
     galleryId,
-    buocSauKhiGuiAnhGoc,
-    "doi-buoc-anh-goc",
+    buocSauKhiStudioGuiAnh,
+    /*
+      Tên hành động theo BƯỚC CŨ, không viết cứng (anh báo 26/11/2026). Cùng
+      một nút nhưng hai việc khác hẳn: ở bước 2/3 là gửi ảnh gốc, ở bước 5 là
+      gửi ảnh hoàn thiện cho khách duyệt. Ghi chung một tên thì nhật ký nói sai.
+    */
+    (buocCu) => (laLuotGuiHoanThien(buocCu) ? "doi-buoc-hoan-thien" : "doi-buoc-anh-goc"),
     await layNguoiDung(),
   );
   for (const d of kq.veLai ?? []) revalidatePath(d);

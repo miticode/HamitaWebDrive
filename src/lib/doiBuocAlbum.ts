@@ -68,7 +68,15 @@ export type KetQuaDoiBuoc = {
 export async function doiBuocAlbum(
   galleryId: string,
   tinhBuoc: (buoc: number | null) => number | null,
-  hanhDong: HanhDong,
+  /**
+   * Tên hành động ghi vào nhật ký — hoặc một hàm tính nó theo bước CŨ.
+   *
+   * Nhận cả hàm vì một nút có thể làm hai việc khác tên: nút gửi tin ở bước 2
+   * là "đã gửi ảnh gốc", cùng nút ấy ở bước 5 là "đã gửi ảnh hoàn thiện" (anh
+   * báo 26/11/2026). Ghi chung một tên thì người đọc nhật ký thấy "đã gửi ảnh
+   * gốc" ở một hợp đồng đã qua khâu gốc từ lâu — sai sự thật.
+   */
+  hanhDong: HanhDong | ((buocCu: number | null) => HanhDong),
   nguoi: Pick<NguoiDung, "id" | "ten"> | null,
 ): Promise<KetQuaDoiBuoc> {
   try {
@@ -107,7 +115,7 @@ export async function doiBuocAlbum(
     */
     await ghiNhatKy({
       nguoi,
-      hanhDong,
+      hanhDong: typeof hanhDong === "function" ? hanhDong(hd.buoc) : hanhDong,
       doiTuong: "HopDong",
       doiTuongId: hd.id,
       chiTiet: { ten: `${hd.tenKhach} (${hd.maHD})`, doi: { "trạng thái": { truoc: cu, sau: ten } } },

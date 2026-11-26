@@ -100,6 +100,64 @@ export function buocSauKhiKhachChonXong(buoc: number | null | undefined): number
   return null;
 }
 
+/** Bước 6 — nhánh chụp studio: "Chờ Khách duyệt". */
+const DUYET_NHANH_CHUP = 6;
+/** Bước 15 — nhánh tiệc: "Chờ Khách duyệt". */
+const DUYET_NHANH_TIEC = 15;
+
+/**
+ * Bước đích khi Media gửi ẢNH HOÀN THIỆN cho khách duyệt — anh báo 26/11/2026:
+ * "thợ media đã làm xong file hoàn thiện và đã up lên drive nhưng không có
+ * hành động nào trên album ảnh để thợ làm để đổi trạng thái hợp đồng sang số 6".
+ *
+ *   5  "Đang Retouch"                        → 6  "Chờ Khách duyệt"
+ *   14 "Đang chỉnh sửa hình , clip tiệc"     → 15 "Chờ Khách duyệt"
+ *
+ * Đây là mắt xích thứ tư, và là mắt xích CÒN THIẾU của cả chuỗi. Đo 26/11:
+ * 20 hợp đồng đang đứng ở bước 5 hoặc 14, còn nhật ký `gui-in` thì **bằng
+ * không** — nút "Đã gửi in" chỉ hiện ở bước 6/15 (`GUI_IN_HIEN_O`), nên khâu
+ * đứt ở đây làm chết luôn khâu phía sau. Không phải thợ quên bấm: không có gì
+ * để bấm.
+ *
+ * Hẹp y như hai hàm trên — chỉ đúng hai bước, chỉ tiến một nhịp. Bước 4 hoặc
+ * 13 (chờ khách chọn file gốc) KHÔNG nhảy thẳng sang duyệt: khách chưa chọn
+ * thì chưa có gì để retouch, mà bỏ qua bước 5 là xoá dấu vết của cả khâu
+ * retouch khỏi hợp đồng.
+ */
+export function buocSauKhiGuiAnhHoanThien(buoc: number | null | undefined): number | null {
+  if (buoc === SAU_CHON_NHANH_CHUP) return DUYET_NHANH_CHUP;
+  if (buoc === SAU_CHON_NHANH_TIEC) return DUYET_NHANH_TIEC;
+  return null;
+}
+
+/**
+ * Bước đích cho MỘT LƯỢT STUDIO GỬI ẢNH, bất kể gốc hay hoàn thiện.
+ *
+ * Thẻ album chỉ có MỘT nút cho việc này (gửi thông báo, hoặc đánh dấu đã gửi
+ * khi khách chưa bật thông báo), nên nó cần một phép tính duy nhất. Gốc trước,
+ * hoàn thiện sau — hai dải bước rời hẳn nhau (2,3,10,11,12 với 5,14) nên không
+ * có bước nào rơi vào cả hai, thứ tự chỉ để đọc cho xuôi.
+ *
+ * Vì sao gộp chứ không bày hai nút: thẻ album rộng 325px, mà hai nút ấy loại
+ * trừ nhau theo bước — ở bước 5 thì "đã gửi file gốc" vô nghĩa, ở bước 2 thì
+ * "đã gửi ảnh hoàn thiện" vô nghĩa. Một nút đổi chữ theo bước nói đúng việc
+ * đang làm mà không tốn thêm chỗ.
+ */
+export function buocSauKhiStudioGuiAnh(buoc: number | null | undefined): number | null {
+  return buocSauKhiGuiAnhGoc(buoc) ?? buocSauKhiGuiAnhHoanThien(buoc);
+}
+
+/**
+ * Lượt gửi này là ẢNH HOÀN THIỆN hay ảnh gốc — quyết chữ trên nút và tên hành
+ * động ghi vào nhật ký.
+ *
+ * Hỏi chính hàm tính bước chứ không chép lại danh sách [5, 14]: đổi quy tắc ở
+ * một chỗ là nút, nhật ký và máy chủ theo ngay.
+ */
+export function laLuotGuiHoanThien(buoc: number | null | undefined): boolean {
+  return buocSauKhiGuiAnhHoanThien(buoc) !== null;
+}
+
 /** Bước 7 — nhánh chụp studio: "Gửi in". */
 const SAU_GUI_IN_NHANH_CHUP = 7;
 /** Bước 16 — nhánh tiệc: "Gửi in tiệc". */

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { guiThongBaoAction } from "./actions";
 import { daGuiAnhGocAction } from "./actionsHopDong";
 import type { KetQuaDoiBuoc } from "@/lib/doiBuocAlbum";
-import { buocSauKhiGuiAnhGoc } from "@/lib/buocAnhGoc";
+import { buocSauKhiStudioGuiAnh, laLuotGuiHoanThien } from "@/lib/buocAnhGoc";
 
 /**
  * Một câu nói kết quả việc ĐỔI BƯỚC HỢP ĐỒNG — anh yêu cầu 19/11/2026.
@@ -96,9 +96,9 @@ export function NutGuiThongBao({
     ĐÃ QUA KHÂU GỬI ẢNH GỐC THÌ THÔI KHÔNG BÀY NÚT NỮA — anh hỏi 25/11/2026:
     "tại sao thợ đã ấn gửi file gốc rồi mà giờ vẫn còn hiện nút gửi".
 
-    Bấm lại vốn không hại gì — máy chủ trả "giữ nguyên" vì `buocSauKhiGuiAnhGoc`
-    từ chối mọi bước từ 4 trở đi. Nhưng một nút đứng đó sau khi việc đã xong thì
-    người sau mở ra không biết đã bấm hay chưa, rồi bấm cho chắc.
+    Bấm lại vốn không hại gì — máy chủ trả "giữ nguyên" khi bước hiện tại không
+    phải chỗ đáng đổi. Nhưng một nút đứng đó sau khi việc đã xong thì người sau
+    mở ra không biết đã bấm hay chưa, rồi bấm cho chắc.
 
     Hỏi CHÍNH hàm tính bước chứ không chép lại danh sách bước: một nguồn sự
     thật, đổi quy tắc ở đó là nút theo ngay. `null` nghĩa là "đừng đổi" — tức
@@ -110,7 +110,13 @@ export function NutGuiThongBao({
     nên để nguyên như cũ: bấm vào thì máy chủ nhắc chưa gắn hợp đồng, kèm liên
     kết sang chỗ ghép.
   */
-  if (soMay === 0 && typeof buocHopDong === "number" && buocSauKhiGuiAnhGoc(buocHopDong) === null) {
+  const guiHoanThien = laLuotGuiHoanThien(buocHopDong);
+
+  if (
+    soMay === 0 &&
+    typeof buocHopDong === "number" &&
+    buocSauKhiStudioGuiAnh(buocHopDong) === null
+  ) {
     return null;
   }
 
@@ -129,9 +135,13 @@ export function NutGuiThongBao({
           onClick={danhDau}
           disabled={dangGui}
           className={lop ?? "btn"}
-          title="Chưa ai bật thông báo trong app nên không gửi tin được. Bấm đây để ghi nhận studio đã gửi file gốc cho khách — hợp đồng sẽ chuyển sang bước “đã gửi ảnh gốc”."
+          title={
+            guiHoanThien
+              ? "Chưa ai bật thông báo trong app nên không gửi tin được. Bấm đây để ghi nhận studio đã gửi ảnh hoàn thiện cho khách xem — hợp đồng sẽ chuyển sang bước “Chờ Khách duyệt”."
+              : "Chưa ai bật thông báo trong app nên không gửi tin được. Bấm đây để ghi nhận studio đã gửi file gốc cho khách — hợp đồng sẽ chuyển sang bước “đã gửi ảnh gốc”."
+          }
         >
-          {dangGui ? "Đang ghi…" : "Đã gửi file gốc"}
+          {dangGui ? "Đang ghi…" : guiHoanThien ? "Đã gửi ảnh hoàn thiện" : "Đã gửi file gốc"}
         </button>
         {ketQua && (
           <span className="self-center text-xs text-fg-muted">
@@ -237,8 +247,8 @@ export function NutGuiThongBao({
               Anh chị vào xem ảnh mới nhé ạ.
             </p>
             <p className="mt-3 text-xs leading-relaxed text-fg-faint">
-              Gửi rồi thì không thu hồi được. Hợp đồng của album này cũng chuyển sang bước “đã gửi
-              ảnh gốc” nếu đang ở bước trước đó.
+              Gửi rồi thì không thu hồi được. Hợp đồng của album này cũng chuyển sang bước{" "}
+              {guiHoanThien ? "“Chờ Khách duyệt”" : "“đã gửi ảnh gốc”"} nếu đang ở bước trước đó.
             </p>
 
             <div className="mt-5 flex gap-2">
