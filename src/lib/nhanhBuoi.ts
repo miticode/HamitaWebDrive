@@ -66,3 +66,20 @@ export function nhanhCuaBuoc(buoc: number | null | undefined): Nhanh | null {
   if (typeof buoc !== "number") return null;
   return buoc >= 10 ? "tiec" : "chup";
 }
+
+/**
+ * Nhánh của một THƯ MỤC trong album — "file gốc nhà gái" thuộc nhánh tiệc,
+ * "file gốc hình cổng" thuộc nhánh chụp.
+ *
+ * Dùng chung đúng bộ dấu hiệu với buổi chụp, và đó là chủ ý: studio đặt tên
+ * thư mục theo đúng tên buổi ("file gốc nhà gái" cho buổi "nhà gái"), nên hai
+ * bảng dấu hiệu riêng là sớm muộn hai nơi phân loại khác nhau cho cùng một
+ * đám cưới.
+ *
+ * Để riêng một hàm chứ không gọi thẳng `nhanhCuaBuoi` ở nơi dùng: tên hàm
+ * phải nói đúng thứ nó nhận, không thì người đọc sau tưởng chỗ ấy đang xét
+ * một buổi chụp.
+ */
+export function nhanhCuaMuc(tenMuc: string): Nhanh {
+  return nhanhCuaBuoi(tenMuc);
+}

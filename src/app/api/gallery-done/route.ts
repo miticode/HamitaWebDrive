@@ -2,10 +2,12 @@ import { NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { daMoKhoa } from "@/lib/access";
-import { getGalleryBySlug, setMucXong } from "@/lib/store";
+import { getGalleryBySlug, getMucXong, setMucXong } from "@/lib/store";
 import { buocSauKhiKhachChonXong } from "@/lib/buocAnhGoc";
 import { NGUOI_KHACH, doiBuocAlbum } from "@/lib/doiBuocAlbum";
 import { laMucHoanThien } from "@/lib/constants";
+import { nhanhCuaMuc } from "@/lib/nhanhBuoi";
+import { mucGocConThieu } from "@/lib/mucGocDaChon";
 
 export const runtime = "nodejs";
 
@@ -116,9 +118,33 @@ export async function POST(req: NextRequest) {
     Truyền null thì nhật ký ghi "(không rõ)" — đo 19/11 và thấy chữ đó nói
     sai, nhân viên đọc sẽ tưởng dữ liệu lỗi.
   */
+  /*
+    VÀ CHỈ KHI MỌI THƯ MỤC FILE GỐC CÙNG NHÁNH ĐÃ XONG — anh hỏi 26/11/2026:
+    "còn nếu khách đã chọn xong hình nhà gái và ấn báo nhưng nhà trai thì chưa
+    chọn xong thì sao? trạng thái hợp đồng sẽ như thế nào".
+
+    Trước hôm nay: nhảy thẳng sang 14 "Đang chỉnh sửa hình , clip tiệc" trong
+    khi nhà trai chưa ai chọn. Cùng một lỗ hổng với phía studio gửi ảnh gốc,
+    chỉ khác cửa vào — ở đó là buổi chụp, ở đây là thư mục trong album.
+
+    Đo 26/11: 49/201 album có từ hai thư mục file gốc, 17 cái đang ở cảnh
+    "✓ nhà gái · chưa nhà trai".
+
+    Đếm ở ĐÂY chứ không nhét vào `buocSauKhiKhachChonXong`: hàm ấy là phép
+    tính thuần trên MỘT con số bước, dùng chung với mấy nơi khác, mà đây là
+    phép đếm cần đọc thư mục của album. Trộn vào là hàm thuần hoá thành hàm
+    đọc database.
+  */
   if (loai === "xong" && !laMucHoanThien(body.tenMuc)) {
-    const kq = await doiBuocAlbum(gallery.id, buocSauKhiKhachChonXong, "doi-buoc-khach-chon", NGUOI_KHACH);
-    for (const d of kq.veLai ?? []) revalidatePath(d);
+    const nhanh = nhanhCuaMuc(body.tenMuc);
+    const daXong = new Set(
+      (await getMucXong(gallery.id)).filter((m) => m.loai === "xong").map((m) => m.tenMuc),
+    );
+    const conThieu = mucGocConThieu(gallery.subfolders, daXong, nhanh);
+    if (conThieu.length === 0) {
+      const kq = await doiBuocAlbum(gallery.id, buocSauKhiKhachChonXong, "doi-buoc-khach-chon", NGUOI_KHACH);
+      for (const d of kq.veLai ?? []) revalidatePath(d);
+    }
   }
 
   return Response.json({ ok: true });
