@@ -8,11 +8,12 @@ import {
   soNgayToiHan,
   tien,
 } from "@/lib/constants";
-import { batBuocDangNhap, xemHopDong } from "@/lib/phienNhanVien";
+import { batBuocDangNhap, laQuanTri, xemHopDong } from "@/lib/phienNhanVien";
 import { ngayVN } from "@/lib/hopDongChung";
 import { boDau } from "@/lib/dichVuChung";
-import { tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
+import { khoaCuaToi, khoaNguoi, tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { locHauKy } from "@/lib/nhomViec";
+import { NutViec } from "../NutViec";
 import {
   BUOC_HAU_KY,
   CHO_LAU,
@@ -60,6 +61,8 @@ type Props = { searchParams: Promise<{ buoc?: string; q?: string }> };
 export default async function HangChoHauKyPage({ searchParams }: Props) {
   const nguoi = await batBuocDangNhap();
   const xemTien = xemHopDong(nguoi);
+  const quanTri = laQuanTri(nguoi);
+  const khoaToi = khoaCuaToi(nguoi);
   const sp = await searchParams;
   const soNhap = Number(sp.buoc);
   const buocLoc: BuocHauKy | null = BUOC_HAU_KY.includes(soNhap as BuocHauKy)
@@ -69,7 +72,7 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
   const nay = homNayStudio();
 
   const prisma = getPrisma();
-  const [ds, demBuoc, bangTen] = await Promise.all([
+  const [ds, demBuoc, bangTen, dsNhanVien] = await Promise.all([
     prisma.hopDong.findMany({
       where: {
         matBenAppSheet: null,
@@ -105,7 +108,8 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
         */
         congViec: {
           where: { matBenAppSheet: null, ...locHauKy() },
-          select: { id: true, nguoiPhuTrachMaNV: true, trangThai: true },
+          select: { id: true, loai: true, nguoiPhuTrachMaNV: true, trangThai: true },
+          orderBy: { taoLuc: "asc" },
         },
       },
     }),
@@ -121,7 +125,26 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
       _count: { _all: true },
     }),
     tenTheoMaNV(),
+    /*
+      Danh sách người để giao việc — y hệt trang Đầu việc: mọi người CÒN LÀM,
+      kể cả người chưa có mã nhân viên (học viên), khoá ghép là mã NẾU CÓ,
+      không thì tên đăng nhập.
+    */
+    prisma.nhanVien.findMany({
+      where: { dangLam: true },
+      orderBy: { ten: "asc" },
+      select: { maNV: true, tenDangNhap: true, ten: true },
+    }),
   ]);
+
+  /*
+    CẮT Ở MÁY CHỦ (nguyên tắc 55): người thường chỉ nhận về danh sách gồm
+    đúng mình. `NutViec` lọc trong trình duyệt, nên gửi cả danh sách xuống là
+    tên và mã của cả tiệm nằm trong nguồn trang.
+  */
+  const nhanVien = dsNhanVien
+    .filter((x) => quanTri || khoaNguoi(x) === khoaToi)
+    .map((x) => ({ maNV: khoaNguoi(x), ten: x.ten }));
 
   const soTheoBuoc = new Map<number, number>(
     demBuoc.map((d) => [d.buoc ?? 0, d._count._all]),
@@ -143,7 +166,6 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
       .map(ngayStudio)
       .sort();
 
-    const dangCam = h.congViec.filter((v) => v.nguoiPhuTrachMaNV?.trim());
     return {
       ...h,
       moc,
@@ -151,9 +173,6 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
       hanLay: hans.length ? hans[0] : null,
       /* Người lập = sale của nhà này, để biết hỏi ai khi hợp đồng có chỗ chưa rõ. */
       tenNguoiLap: h.nguoiLapMaNV ? tenNV(bangTen, h.nguoiLapMaNV) : null,
-      /* Tên người chứ không phải mã: "PTTM81" không nói lên ai cả. */
-      nguoiCam: [...new Set(dangCam.map((v) => tenNV(bangTen, v.nguoiPhuTrachMaNV)))],
-      soXong: h.congViec.filter((v) => v.trangThai === "Đã làm").length,
     };
   });
 
@@ -269,21 +288,37 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
           </h2>
 
           {/*
-            LƯỚI THẺ, không phải bảng — xem chú thích đầu tệp. Ba cột ở màn
-            rộng là vừa: hẹp hơn nữa thì tên khách ("Quỳnh Như & Nam Khánh
-            23-24/1/2027") xuống ba dòng và thẻ nào cũng cao khác nhau.
+            LƯỚI THẺ, không phải bảng — xem chú thích đầu tệp.
+
+            Chia cột MUỘN HƠN từ 26/11/2026, khi thẻ mang thêm ô nhận việc:
+            đo ở 640px chia hai cột thì mỗi thẻ còn 300px, hai ô chọn (mỗi ô
+            tối thiểu 7rem) không nằm vừa một dòng nên vỡ xuống hai dòng,
+            thẻ cao gấp rưỡi mà chẳng được gì. Một cột tới 1024px thì thẻ đủ
+            rộng để ô người và ô trạng thái đứng cạnh nhau.
           */}
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+          <div className="mt-3 grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">
             {n.ds.map((h) => {
-              const chuaGiao = h.nguoiCam.length === 0;
               return (
-                <Link
+                /*
+                  THẺ KHÔNG CÒN LÀ MỘT LINK BỌC HẾT — anh yêu cầu 26/11/2026
+                  cho thợ media tích chọn việc ngay trên đây. Ô chọn nằm
+                  trong thẻ, mà `<select>` bên trong `<a>` thì cú bấm bị link
+                  nuốt mất: mở sang trang hợp đồng thay vì bung danh sách.
+
+                  Nên chỉ TÊN KHÁCH là link. Bù lại thẻ không còn bấm được cả
+                  mảng, nhưng đổi lại được việc mà anh cần làm ngay ở đây.
+                */
+                <div
                   key={h.id}
-                  href={`/quan-ly/hop-dong/${h.id}`}
-                  className="card block p-4 transition hover:border-line-strong hover:shadow-[var(--shadow-lift)]"
+                  className="card p-4 transition hover:border-line-strong hover:shadow-[var(--shadow-lift)]"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-medium leading-snug">{h.tenKhach}</span>
+                    <Link
+                      href={`/quan-ly/hop-dong/${h.id}`}
+                      className="font-medium leading-snug hover:text-accent"
+                    >
+                      {h.tenKhach}
+                    </Link>
                     {/* Số bước chỉ hiện khi xem CẢ HAI nhánh — lọc rồi thì nó lặp lại chính mình. */}
                     {buocLoc === null && (
                       <span className="shrink-0 rounded-full border border-line px-2 py-0.5 text-[11px] text-fg-muted tabular-nums">
@@ -337,23 +372,66 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
                   )}
 
                   <dl className="mt-3 space-y-1.5 border-t border-line pt-3 text-xs">
+                    {/*
+                      TỪNG ĐẦU VIỆC MỘT, có ô nhận việc — anh yêu cầu
+                      26/11/2026: "hãy hiển thị ra phần cho nhân viên media
+                      tích chọn việc".
+
+                      Dùng lại `NutViec` của trang Đầu việc chứ không dựng ô
+                      mới: nó đã mang sẵn mọi phép khoá đã chốt từ trước —
+                      việc của người khác thì khoá, việc đã đánh dấu xong thì
+                      người thường không sửa được nữa. Dựng ô mới là sớm muộn
+                      hai nơi khoá hai kiểu.
+
+                      Việc anh hỏi — "đã có người chọn rồi thì người khác
+                      không thể chọn nữa" — chặn thật ở `duocDung` trong
+                      actionsViec.ts, không phải ở ô khoá này (nguyên tắc 3).
+                    */}
                     <div className="flex gap-2">
-                      <dt className="w-14 shrink-0 text-fg-faint">Hậu kỳ</dt>
-                      {/*
-                        "Chưa giao cho ai" tô VÀNG — cùng màu với việc quá hạn
-                        ở trang Đầu việc, vì cùng một nghĩa: studio phải ra
-                        tay. Không tô đỏ, đây chưa phải chuyện hỏng.
-                      */}
-                      <dd className={chuaGiao ? "font-medium text-amber-800" : ""}>
-                        {h.congViec.length === 0
-                          ? "chưa có đầu việc hậu kỳ"
-                          : chuaGiao
-                            ? "chưa giao cho ai"
-                            : h.nguoiCam.join(", ")}
-                        {h.congViec.length > 0 && (
-                          <span className="ml-1 font-normal text-fg-faint tabular-nums">
-                            · {h.soXong}/{h.congViec.length} xong
+                      <dt className="w-14 shrink-0 pt-1 text-fg-faint">Hậu kỳ</dt>
+                      <dd className="min-w-0 flex-1">
+                        {h.congViec.length === 0 ? (
+                          <span className="font-medium text-amber-800">
+                            chưa có đầu việc hậu kỳ
                           </span>
+                        ) : (
+                          <div className="grid gap-2">
+                            {h.congViec.map((v) => (
+                              <div key={v.id}>
+                                <div className="flex items-baseline justify-between gap-2">
+                                  {/*
+                                    Tô vàng theo TỪNG VIỆC, không theo cả hợp
+                                    đồng: một nhà có thể đã giao Photoshop mà
+                                    chưa giao edit clip, tô cả cụm thì hai
+                                    cảnh ấy nhìn như một.
+                                  */}
+                                  <span
+                                    className={v.nguoiPhuTrachMaNV?.trim() ? "" : "text-amber-800"}
+                                  >
+                                    {v.loai ?? "(chưa đặt tên)"}
+                                  </span>
+                                  {v.trangThai === "Đã làm" && (
+                                    <span className="shrink-0 text-[11px] text-fg-faint">xong</span>
+                                  )}
+                                </div>
+                                <div className="mt-1">
+                                  <NutViec
+                                    id={v.id}
+                                    nguoiPhuTrachMaNV={v.nguoiPhuTrachMaNV}
+                                    tenNguoiLam={
+                                      v.nguoiPhuTrachMaNV
+                                        ? (bangTen.get(v.nguoiPhuTrachMaNV.toLowerCase()) ?? null)
+                                        : null
+                                    }
+                                    trangThai={v.trangThai}
+                                    nhanVien={nhanVien}
+                                    quanTri={quanTri}
+                                    maToi={nguoi.maNV}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </dd>
                     </div>
@@ -387,7 +465,7 @@ export default async function HangChoHauKyPage({ searchParams }: Props) {
                       {h.ghiChu}
                     </p>
                   )}
-                </Link>
+                </div>
               );
             })}
           </div>
