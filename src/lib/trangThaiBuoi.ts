@@ -2,6 +2,7 @@ import { getPrisma } from "@/lib/db";
 import { homNayStudio } from "@/lib/constants";
 import { docCacBuoc } from "@/lib/buocHopDong";
 import { tenBuocTheoSo } from "@/lib/buocAnhGoc";
+import { nhanhCuaBuoc, nhanhCuaBuoi } from "@/lib/nhanhBuoi";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import type { NguoiDung } from "@/lib/phienNhanVien";
 
@@ -170,6 +171,120 @@ export async function capNhatBuocDaChup(
   await ghiNhatKy({
     nguoi,
     hanhDong: "doi-buoc-da-chup",
+    doiTuong: "HopDong",
+    doiTuongId: hopDongId,
+    chiTiet: {
+      ten: `${hd.tenKhach} (${hd.maHD})`,
+      doi: { "trạng thái": { truoc: cu, sau: ten } },
+    },
+  });
+  return ten;
+}
+
+/* ── Bước tính từ DẤU TRÊN TỪNG BUỔI — anh yêu cầu 26/11/2026 ─────────── */
+
+/**
+ * Một buổi, rút gọn còn đúng những gì phép tính bước cần.
+ */
+export type DauBuoi = {
+  loai: string | null;
+  daGiaoVay: Date | null;
+  daGuiAnhGoc: Date | null;
+};
+
+/** Bước 11 — "Đã giao váy tiệc". */
+const DA_GIAO_VAY = 11;
+/** Bước 13 — "Đã gửi ảnh gốc tiệc, chờ Khách chọn". */
+const DA_GUI_GOC_TIEC = 13;
+/** Bước 4 — "Đã gửi ảnh gốc, chờ Khách chọn" (nhánh chụp). */
+const DA_GUI_GOC_CHUP = 4;
+
+/**
+ * Bước đích tính từ dấu trên từng buổi — null nghĩa là ĐỪNG ĐỔI.
+ *
+ * Anh báo 26/11/2026: "nếu hợp đồng có dịch vụ ngày cưới bao gồm 2 ngày cưới
+ * thì giả sử thợ đã gửi ảnh gốc tiệc nhà gái rồi thì ấn đã gửi hợp đồng
+ * chuyển sang trạng thái số 13 nhưng file gốc nhà trai chưa chụp hoặc đã chụp
+ * rồi nhưng chưa gửi file gốc thì sao".
+ *
+ * Đúng vậy, và đang sai thật. Đo 26/11: hợp đồng "PHƯỚC VINH - QUỲNH HƯƠNG"
+ * đứng ở bước 13 trong khi buổi nhà trai 29/11 chưa tới ngày; 18 hợp đồng
+ * khác cùng cảnh ấy.
+ *
+ * Nên bước KHÔNG còn đổi theo một cú bấm, mà TÍNH RA từ dấu của từng buổi:
+ * chỉ lên khi MỌI buổi cùng nhánh đã đánh dấu. Một nhà hai ngày tiệc thì nhà
+ * gái gửi xong vẫn chưa đủ.
+ *
+ * XÉT RIÊNG TỪNG NHÁNH (xem `nhanhBuoi.ts`): gộp cả buổi tiệc chưa tới ngày
+ * vào phép tính của nhánh chụp thì hợp đồng không bao giờ lên nổi bước 4, kẹt
+ * ở khâu ảnh cổng cho tới sau đám cưới.
+ *
+ * CHỈ NÂNG, KHÔNG HẠ — cùng một lẽ với `trangThaiTuViec`: ai đó gỡ nhầm một
+ * dấu tick không được phép kéo cả hợp đồng lùi mấy bước.
+ *
+ * Không có buổi nào thuộc nhánh ấy thì trả null: không có cơ sở để kết luận
+ * gì, mà đoán ở đây là đổi tiến độ của cả một nhà khách.
+ */
+export function buocTuDauBuoi(buoc: number | null | undefined, buoi: readonly DauBuoi[]): number | null {
+  const nhanh = nhanhCuaBuoc(buoc);
+  if (nhanh === null || typeof buoc !== "number") return null;
+
+  const cungNhanh = buoi.filter((b) => nhanhCuaBuoi(b.loai) === nhanh);
+  if (cungNhanh.length === 0) return null;
+
+  const moiBuoiDaGui = cungNhanh.every((b) => b.daGuiAnhGoc !== null);
+
+  if (nhanh === "tiec") {
+    /* Gửi ảnh gốc xét trước: nó ở xa hơn trên cùng một đường. */
+    if (moiBuoiDaGui && buoc < DA_GUI_GOC_TIEC) return DA_GUI_GOC_TIEC;
+    /*
+      Giao váy CHỈ kéo bước ở nhánh tiệc, vì chỉ nhánh ấy có bước mang nghĩa
+      đó. Nhánh chụp vẫn tick được "đã giao váy" — studio có giao váy cho buổi
+      chụp ảnh cổng — nhưng dấu ấy chỉ để tra lại, không đụng tới bước.
+    */
+    if (cungNhanh.every((b) => b.daGiaoVay !== null) && buoc < DA_GIAO_VAY) return DA_GIAO_VAY;
+    return null;
+  }
+
+  if (moiBuoiDaGui && buoc < DA_GUI_GOC_CHUP) return DA_GUI_GOC_CHUP;
+  return null;
+}
+
+/**
+ * Đọc hợp đồng, tính lại bước từ dấu của từng buổi, ghi nếu đổi.
+ *
+ * Trả về tên bước mới, hoặc null khi không đổi gì. Cùng khuôn với
+ * `capNhatBuocDaChup` ngay trên.
+ */
+export async function capNhatBuocTuDauBuoi(
+  hopDongId: string,
+  nguoi: Pick<NguoiDung, "id" | "ten"> | null = null,
+): Promise<string | null> {
+  const prisma = getPrisma();
+  const hd = await prisma.hopDong.findUnique({
+    where: { id: hopDongId },
+    select: {
+      maHD: true,
+      tenKhach: true,
+      buoc: true,
+      trangThai: true,
+      lich: { select: { loai: true, daGiaoVay: true, daGuiAnhGoc: true } },
+    },
+  });
+  if (!hd) return null;
+
+  const dich = buocTuDauBuoi(hd.buoc, hd.lich);
+  if (dich === null) return null;
+
+  const ten = tenBuocTheoSo(await docCacBuoc(), dich);
+  if (!ten) return null;
+
+  const cu = hd.trangThai ?? "chưa gõ bước";
+  await prisma.hopDong.update({ where: { id: hopDongId }, data: { trangThai: ten, buoc: dich } });
+
+  await ghiNhatKy({
+    nguoi,
+    hanhDong: dich === DA_GIAO_VAY ? "doi-buoc-giao-vay" : "doi-buoc-anh-goc",
     doiTuong: "HopDong",
     doiTuongId: hopDongId,
     chiTiet: {

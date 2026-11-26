@@ -15,6 +15,14 @@ import { buocSauKhiStudioGuiAnh, laLuotGuiHoanThien } from "@/lib/buocAnhGoc";
 function chuBuoc(kq: KetQuaDoiBuoc): string | null {
   if (kq.doiBuoc) return `Hợp đồng ${kq.doiBuoc.tenKhach}: chuyển sang “${kq.doiBuoc.den}”`;
   if (kq.chuaGan) return "Album chưa gắn hợp đồng nên không đổi được trạng thái";
+  /*
+    CÒN NHIỀU BUỔI CHƯA ĐÁNH DẤU — anh yêu cầu 26/11/2026. Nút này không biết
+    nó đang nói về buổi nào (album gắn HỢP ĐỒNG, không gắn buổi), nên nhà hai
+    ngày cưới thì nói thẳng còn mấy buổi thay vì đoán bừa một buổi.
+  */
+  if (kq.canTickBuoi) {
+    return `Nhà ${kq.canTickBuoi.tenKhach} còn ${kq.canTickBuoi.soBuoi} buổi chưa đánh dấu gửi ảnh gốc — tick từng buổi ở trang hợp đồng`;
+  }
   if (kq.giuBuoc) return `Hợp đồng ${kq.giuBuoc.tenKhach} đang ở “${kq.giuBuoc.buoc}” — giữ nguyên`;
   return null;
 }
@@ -64,6 +72,8 @@ export function NutGuiThongBao({
   const [hoi, setHoi] = useState(false);
   const [ketQua, setKetQua] = useState<string | null>(null);
   const [chuaGan, setChuaGan] = useState(false);
+  /** Hợp đồng cần vào tick từng buổi — chỉ để dựng liên kết dưới câu báo. */
+  const [hopDongCanTick, setHopDongCanTick] = useState<string | null>(null);
   const [dangGui, start] = useTransition();
 
   /*
@@ -125,6 +135,7 @@ export function NutGuiThongBao({
       start(async () => {
         const kq = await daGuiAnhGocAction(galleryId);
         setChuaGan(!!kq.chuaGan);
+        setHopDongCanTick(kq.canTickBuoi?.hopDongId ?? null);
         setKetQua(kq.loi ?? chuBuoc(kq) ?? "Chưa có gì đổi");
       });
 
@@ -154,6 +165,17 @@ export function NutGuiThongBao({
                 </a>
               </>
             )}
+            {hopDongCanTick && (
+              <>
+                {" "}
+                <a
+                  href={`/quan-ly/hop-dong/${hopDongCanTick}`}
+                  className="underline hover:text-accent"
+                >
+                  mở hợp đồng
+                </a>
+              </>
+            )}
           </span>
         )}
       </>
@@ -165,6 +187,7 @@ export function NutGuiThongBao({
       const kq = await guiThongBaoAction(galleryId);
       setHoi(false);
       setChuaGan(!!kq.chuaGan);
+      setHopDongCanTick(kq.canTickBuoi?.hopDongId ?? null);
       if (kq.error) {
         setKetQua(kq.error);
         return;
@@ -216,6 +239,17 @@ export function NutGuiThongBao({
               {" "}
               <a href={`/admin/${slug}`} className="underline hover:text-accent">
                 gắn hợp đồng
+              </a>
+            </>
+          )}
+          {hopDongCanTick && (
+            <>
+              {" "}
+              <a
+                href={`/quan-ly/hop-dong/${hopDongCanTick}`}
+                className="underline hover:text-accent"
+              >
+                mở hợp đồng
               </a>
             </>
           )}

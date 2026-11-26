@@ -95,6 +95,12 @@ export type HanhDong =
   */
   | "doi-buoc-hoan-thien"
   /*
+    MOI BUOI cung nhanh da danh dau "da giao vay" → buoc 10 sang 11 (anh yeu
+    cau 26/11/2026). Ghi rieng vi day la viec cua SALE / kho trang phuc, khong
+    phai cua media nhu may hanh dong doi buoc khac.
+  */
+  | "doi-buoc-giao-vay"
+  /*
     KHACH tu bam "da chon xong" → buoc 4 sang 5, hoac 13 sang 14 (anh yeu cau
     19/11/2026). Ghi rieng khoi "doi-buoc-anh-goc" vi NGUOI BAM khac han: dong
     nay luon co `nguoi = null`, va do la su that dang ghi chu khong phai thieu
@@ -177,6 +183,7 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "gui-thong-bao": "Gửi thông báo cho khách",
   "doi-buoc-anh-goc": "Đổi bước: đã gửi ảnh gốc",
   "doi-buoc-hoan-thien": "Đổi bước: đã gửi ảnh hoàn thiện",
+  "doi-buoc-giao-vay": "Đổi bước: đã giao váy mọi buổi",
   "doi-buoc-khach-chon": "Đổi bước: khách đã chọn xong",
   "doi-buoc-da-chup": "Đổi bước: đã chụp xong",
   "gui-in": "Gửi in cho xưởng",

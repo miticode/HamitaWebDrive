@@ -1140,6 +1140,30 @@ model LichChup {
   tuThem         Boolean   @default(false)
   /// "Hoàn thành" | "Đang làm" | "Chưa làm"
   trangThai      String?
+
+  /// DA GIAO VAY cho buoi nay — anh yeu cau 26/11/2026.
+  ///
+  /// Mot dam cuoi hai ngay la HAI DONG VIEC SONG SONG: nha gai va nha trai,
+  /// moi ben giao vay mot ngay khac nhau. Truoc 26/11 buoc hop dong la MOT
+  /// con so cho ca hop dong, nen giao vay nha gai xong la buoc nhay sang
+  /// "11. Da giao vay tiec" trong khi nha trai chua nhan gi.
+  ///
+  /// Do 26/11: 322 hop dong nhanh tiec co tu 2 buoi tro len (nha gai 340 buoi,
+  /// nha trai 305) — day la mo hinh chuan cua tiem, khong phai ca hiem.
+  ///
+  /// Luu MOC THOI GIAN chu khong phai Boolean: "da giao luc nao" tra loi duoc
+  /// ca cau "da giao chua", con nguoc lai thi khong.
+  daGiaoVay      DateTime?
+
+  /// DA GUI ANH GOC cua buoi nay cho khach — anh yeu cau 26/11/2026.
+  ///
+  /// Cung mot le voi `daGiaoVay`. Ca that dang xay ra luc do: hop dong
+  /// "PHUOC VINH - QUYNH HUONG" dang o buoc 13 "da gui anh goc tiec, cho
+  /// khach chon", ma buoi nha trai 29/11 CHUA TOI NGAY.
+  ///
+  /// Buoc hop dong gio TINH RA tu cot nay chu khong doi thang: chi len 13 khi
+  /// MOI buoi cung nhanh da danh dau gui. Xem `buocTuDauBuoi`.
+  daGuiAnhGoc    DateTime?
   /// Cot "Hiển thị": mot dong chu gon AppSheet dung de ve len lich.
   hienThi        String?
   nguoiTaoMaNV   String?

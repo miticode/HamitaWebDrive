@@ -9,7 +9,7 @@ import { layNguoiDung, lapHopDong } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { docCacBuoc } from "@/lib/buocHopDong";
 import { demLuotDung } from "@/lib/dichVuHayDung";
-import { capNhatBuocDaChup } from "@/lib/trangThaiBuoi";
+import { capNhatBuocDaChup, capNhatBuocTuDauBuoi } from "@/lib/trangThaiBuoi";
 import { coGiaoAnh, taoThuMucVaAlbum } from "@/lib/thuMucHopDong";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
 import { docBaDanhMuc } from "@/lib/danhMuc";
@@ -398,6 +398,13 @@ export type DongLichSua = {
   lyDoTrong: string;
   ghiChu: string;
   trangThai: string;
+  /*
+    HAI DẤU CỦA RIÊNG BUỔI NÀY — anh yêu cầu 26/11/2026. Boolean ở đây, còn
+    database lưu MỐC THỜI GIAN: form chỉ cần biết tick hay không, nhưng "đã
+    giao lúc nào" trả lời được cả câu "đã giao chưa", còn ngược lại thì không.
+  */
+  daGiaoVay: boolean;
+  daGuiAnhGoc: boolean;
 };
 
 /**
@@ -441,6 +448,8 @@ export async function luuLichAction(
       lyDoTrong: ngay ? "" : String(d.lyDoTrong ?? "").trim() || LY_DO_TRONG_NGAY[0],
       ghiChu: String(d.ghiChu ?? "").trim(),
       trangThai: String(d.trangThai ?? "").trim() || "Chưa làm",
+      daGiaoVay: !!d.daGiaoVay,
+      daGuiAnhGoc: !!d.daGuiAnhGoc,
       // Dòng chữ vẽ lên lịch, ghép như lúc lập hợp đồng.
       hienThi: [hd.tenKhach, ngay ? ngayVN(ngay) : "chưa có ngày", hd.khachHang?.soDienThoai]
         .filter(Boolean)
@@ -450,12 +459,23 @@ export async function luuLichAction(
 
   const maNV = maNguoiLap(nguoi);
   await prisma.$transaction(async (tx) => {
-    const cu = await tx.lichChup.findMany({ where: { hopDongId }, select: { id: true } });
+    /*
+      Đọc cả hai mốc cũ để KHÔNG GHI ĐÈ THỜI GIAN. Tick vẫn bật mà mỗi lần
+      lưu lịch lại đặt `new Date()` thì "đã gửi ảnh gốc 20/11" biến thành
+      "26/11" chỉ vì ai đó sửa ghi chú của buổi — mất luôn mốc thật.
+    */
+    const cu = await tx.lichChup.findMany({
+      where: { hopDongId },
+      select: { id: true, daGiaoVay: true, daGuiAnhGoc: true },
+    });
+    const mocCu = new Map(cu.map((c) => [c.id, c]));
     const giuLai = new Set(sach.map((d) => d.id).filter(Boolean) as string[]);
     const boDi = cu.filter((c) => !giuLai.has(c.id)).map((c) => c.id);
     if (boDi.length) await tx.lichChup.deleteMany({ where: { id: { in: boDi } } });
 
+    const bayGio = new Date();
     for (const d of sach) {
+      const truoc = d.id ? mocCu.get(d.id) : undefined;
       const data = {
         ngay: d.ngay || null,
         gio: d.gio || null,
@@ -464,6 +484,8 @@ export async function luuLichAction(
         ghiChu: d.ghiChu || null,
         trangThai: d.trangThai,
         hienThi: d.hienThi,
+        daGiaoVay: d.daGiaoVay ? (truoc?.daGiaoVay ?? bayGio) : null,
+        daGuiAnhGoc: d.daGuiAnhGoc ? (truoc?.daGuiAnhGoc ?? bayGio) : null,
       };
       if (d.id) await tx.lichChup.update({ where: { id: d.id }, data });
       else await tx.lichChup.create({ data: { ...data, hopDongId, nguoiTaoMaNV: maNV } });
@@ -484,6 +506,15 @@ export async function luuLichAction(
     việc mà làm bằng hai đường lại ra hai kết quả.
   */
   await capNhatBuocDaChup(hopDongId, { id: nguoi.id || null, ten: nguoi.ten });
+
+  /*
+    Rồi tính lại bước từ DẤU TRÊN TỪNG BUỔI — anh yêu cầu 26/11/2026.
+
+    Chạy SAU `capNhatBuocDaChup` chứ không trước: cái kia nâng lên 3/12, cái
+    này nâng tiếp lên 4/13. Cả hai đều chỉ nâng nên không giẫm chân nhau,
+    nhưng chạy ngược thứ tự thì phải lưu hai lần mới tới đích.
+  */
+  await capNhatBuocTuDauBuoi(hopDongId, { id: nguoi.id || null, ten: nguoi.ten });
 
   revalidatePath(`/quan-ly/hop-dong/${hopDongId}`);
   revalidatePath("/quan-ly/lich");

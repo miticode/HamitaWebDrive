@@ -11,6 +11,9 @@ import {
   buocSauKhiStudioGuiAnh,
   laLuotGuiHoanThien,
 } from "@/lib/buocAnhGoc";
+import { nhanhCuaBuoc, nhanhCuaBuoi } from "@/lib/nhanhBuoi";
+import { capNhatBuocTuDauBuoi } from "@/lib/trangThaiBuoi";
+import { ngayVN } from "@/lib/hopDongChung";
 import { tachLink } from "@/lib/guiIn";
 import { doiBuocAlbum, type KetQuaDoiBuoc } from "@/lib/doiBuocAlbum";
 
@@ -100,6 +103,25 @@ export async function daGuiAnhGocAction(galleryId: string): Promise<{ loi?: stri
  * sai thì sửa lại ở trang hợp đồng, không mất dữ liệu của ai.
  */
 export async function doiBuocSauKhiGuiTin(galleryId: string): Promise<KetQuaDoiBuoc> {
+  const nguoi = await layNguoiDung();
+
+  /*
+    LƯỢT GỬI ẢNH GỐC GIỜ ĐI QUA DẤU TRÊN TỪNG BUỔI — anh yêu cầu 26/11/2026.
+
+    Trước đó nút này đổi bước thẳng, nên một nhà hai ngày cưới mới gửi ảnh gốc
+    nhà gái là hợp đồng đã nhảy sang "13. Đã gửi ảnh gốc tiệc, chờ Khách chọn"
+    trong khi nhà trai chưa chụp. Vá ở trang hợp đồng mà để nút này nguyên thì
+    mâu thuẫn vẫn còn, chỉ là đi cửa khác.
+
+    Lượt gửi ẢNH HOÀN THIỆN (bước 5 → 6) KHÔNG đi đường này: ảnh hoàn thiện
+    không thuộc buổi nào cả, nó là sản phẩm của cả hợp đồng sau khi khách chọn.
+  */
+  const theoBuoi = await danhDauGuiAnhGocTheoBuoi(galleryId, nguoi);
+  if (theoBuoi) {
+    for (const d of theoBuoi.veLai ?? []) revalidatePath(d);
+    return theoBuoi;
+  }
+
   const kq = await doiBuocAlbum(
     galleryId,
     buocSauKhiStudioGuiAnh,
@@ -109,10 +131,94 @@ export async function doiBuocSauKhiGuiTin(galleryId: string): Promise<KetQuaDoiB
       gửi ảnh hoàn thiện cho khách duyệt. Ghi chung một tên thì nhật ký nói sai.
     */
     (buocCu) => (laLuotGuiHoanThien(buocCu) ? "doi-buoc-hoan-thien" : "doi-buoc-anh-goc"),
-    await layNguoiDung(),
+    nguoi,
   );
   for (const d of kq.veLai ?? []) revalidatePath(d);
   return kq;
+}
+
+/**
+ * Đánh dấu "đã gửi ảnh gốc" cho buổi của album này — anh yêu cầu 26/11/2026.
+ *
+ * Trả `null` khi KHÔNG phải việc của hàm này (album chưa gắn hợp đồng, hợp
+ * đồng chưa gõ bước, hoặc đang ở lượt gửi ảnh hoàn thiện); lúc đó nơi gọi đi
+ * tiếp đường cũ.
+ *
+ * BA CẢNH, ba cách xử khác hẳn nhau:
+ *
+ *   · còn đúng MỘT buổi cùng nhánh chưa đánh dấu → tick luôn buổi ấy. Không
+ *     mơ hồ gì: album này gắn hợp đồng này, hợp đồng chỉ còn một buổi chờ.
+ *   · còn NHIỀU buổi → không đoán. Nhà hai ngày cưới mà tick bừa thì một nửa
+ *     khả năng là gắn nhà gái vào nhà trai, rồi hợp đồng lên bước 13 sai y
+ *     như trước. Nói rõ còn mấy buổi và chỉ đường sang trang hợp đồng.
+ *   · KHÔNG còn buổi nào → mọi buổi đã đánh dấu rồi; trả về `giuBuoc` để nút
+ *     nói "giữ nguyên" thay vì im lặng.
+ */
+async function danhDauGuiAnhGocTheoBuoi(
+  galleryId: string,
+  nguoi: Awaited<ReturnType<typeof layNguoiDung>>,
+): Promise<KetQuaDoiBuoc | null> {
+  const prisma = getPrisma();
+  const album = await prisma.gallery.findUnique({
+    where: { id: galleryId },
+    select: {
+      slug: true,
+      hopDong: {
+        select: {
+          id: true,
+          tenKhach: true,
+          maHD: true,
+          buoc: true,
+          trangThai: true,
+          lich: { select: { id: true, loai: true, ngay: true, daGuiAnhGoc: true } },
+        },
+      },
+    },
+  });
+  const hd = album?.hopDong;
+  if (!album || !hd) return null;
+
+  const nhanh = nhanhCuaBuoc(hd.buoc);
+  /* Chưa gõ bước, hoặc đang ở lượt ảnh hoàn thiện — để đường cũ lo. */
+  if (nhanh === null || laLuotGuiHoanThien(hd.buoc)) return null;
+
+  const cungNhanh = hd.lich.filter((l) => nhanhCuaBuoi(l.loai) === nhanh);
+  /* Hợp đồng không có buổi nào thuộc nhánh này thì không có gì để tick. */
+  if (cungNhanh.length === 0) return null;
+
+  const chuaDanhDau = cungNhanh.filter((l) => l.daGuiAnhGoc === null);
+  const veLai = [`/admin/${album.slug}`, "/quan-ly/hop-dong", `/quan-ly/hop-dong/${hd.id}`];
+
+  if (chuaDanhDau.length === 0) {
+    return { giuBuoc: { tenKhach: hd.tenKhach, buoc: hd.trangThai ?? "chưa gõ bước" } };
+  }
+  if (chuaDanhDau.length > 1) {
+    return { canTickBuoi: { tenKhach: hd.tenKhach, soBuoi: chuaDanhDau.length, hopDongId: hd.id } };
+  }
+
+  const buoi = chuaDanhDau[0];
+  await prisma.lichChup.update({ where: { id: buoi.id }, data: { daGuiAnhGoc: new Date() } });
+  await ghiNhatKy({
+    nguoi,
+    hanhDong: "doi-buoc-anh-goc",
+    doiTuong: "HopDong",
+    doiTuongId: hd.id,
+    chiTiet: {
+      ten: `${hd.tenKhach} (${hd.maHD})`,
+      doi: {
+        "đã gửi ảnh gốc": {
+          truoc: "chưa",
+          sau: `${buoi.loai ?? "buổi"}${buoi.ngay ? ` ${ngayVN(buoi.ngay)}` : ""}`,
+        },
+      },
+    },
+  });
+
+  const cu = hd.trangThai ?? "chưa gõ bước";
+  const ten = await capNhatBuocTuDauBuoi(hd.id, nguoi);
+  return ten
+    ? { doiBuoc: { tenKhach: hd.tenKhach, tu: cu, den: ten }, veLai }
+    : { giuBuoc: { tenKhach: hd.tenKhach, buoc: cu }, veLai };
 }
 
 /* ── Gửi in: dán link rồi chuyển bước (anh yêu cầu 19/11/2026) ─────────── */

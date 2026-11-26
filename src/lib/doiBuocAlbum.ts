@@ -41,6 +41,17 @@ export type KetQuaDoiBuoc = {
   /** Có hợp đồng nhưng bước hiện tại không phải chỗ đáng đổi. */
   giuBuoc?: { tenKhach: string; buoc: string };
   /**
+   * CÒN NHIỀU BUỔI CHƯA ĐÁNH DẤU GỬI ẢNH GỐC — anh yêu cầu 26/11/2026.
+   *
+   * Nút trên thẻ album không biết nó đang nói về buổi nào: album gắn với HỢP
+   * ĐỒNG, không gắn buổi. Nhà một buổi thì không mơ hồ, tick luôn; nhà hai
+   * ngày cưới thì đoán là có một nửa khả năng gắn nhầm nhà gái vào nhà trai.
+   *
+   * Nên nói thẳng còn mấy buổi và chỉ đường sang trang hợp đồng, thay vì
+   * đoán hoặc im lặng không làm gì.
+   */
+  canTickBuoi?: { tenKhach: string; soBuoi: number; hopDongId: string };
+  /**
    * Những trang cần vẽ lại, chỉ có khi bước đổi thật.
    *
    * Trả về đây chứ không tự gọi `revalidatePath`: hàm này còn được gọi từ

@@ -226,6 +226,45 @@ export function KhoiLich({
           </div>
 
           {/*
+            HAI DẤU CỦA RIÊNG BUỔI NÀY — anh yêu cầu 26/11/2026.
+
+            Vì sao cần: bước hợp đồng là MỘT con số, mà một đám cưới hai ngày
+            là HAI dòng việc song song. Trước 26/11, gửi ảnh gốc nhà gái xong
+            là hợp đồng nhảy sang "13. Đã gửi ảnh gốc tiệc, chờ Khách chọn"
+            trong khi nhà trai còn chưa chụp. Đo cùng ngày: 322 hợp đồng nhánh
+            tiệc có từ hai buổi, 18 cái đang nói sai như vậy.
+
+            Nay bước TÍNH RA từ hai dấu này: chỉ lên 13 khi MỌI buổi cùng
+            nhánh đã đánh dấu gửi (xem `buocTuDauBuoi`).
+
+            Là ô TICK chứ không phải số bước. Bước 11 "đã giao váy" và 13 "đã
+            gửi ảnh gốc" là hai việc khác nhau, không phải một thang tăng dần:
+            một buổi có thể đã giao váy mà chưa gửi ảnh gốc, và ngược lại. Gán
+            số bước cho buổi thì thợ nhìn thấy hai con số — một của buổi, một
+            của hợp đồng — và không biết con nào là thật.
+          */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={d.daGiaoVay}
+                onChange={(e) => doi(i, { daGiaoVay: e.target.checked })}
+                className="size-4 accent-[var(--accent)]"
+              />
+              <span>Đã giao váy</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={d.daGuiAnhGoc}
+                onChange={(e) => doi(i, { daGuiAnhGoc: e.target.checked })}
+                className="size-4 accent-[var(--accent)]"
+              />
+              <span>Đã gửi ảnh gốc</span>
+            </label>
+          </div>
+
+          {/*
             Ô lý do chỉ hiện khi ngày trống — nó chỉ có nghĩa lúc đó, và server
             cũng xoá lý do ngay khi dòng có ngày trở lại.
 
@@ -266,7 +305,16 @@ export function KhoiLich({
           onClick={() =>
             setDong((ds) => [
               ...ds,
-              { ngay: "", gio: "", loai: loaiDau, lyDoTrong: "", ghiChu: "", trangThai: "Chưa làm" },
+              {
+                ngay: "",
+                gio: "",
+                loai: loaiDau,
+                lyDoTrong: "",
+                ghiChu: "",
+                trangThai: "Chưa làm",
+                daGiaoVay: false,
+                daGuiAnhGoc: false,
+              },
             ])
           }
         >

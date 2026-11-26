@@ -426,6 +426,9 @@ export default async function ChiTietHopDongPage({ params }: Props) {
             lyDoTrong: l.lyDoTrong ?? "",
             ghiChu: l.ghiChu ?? "",
             trangThai: l.trangThai ?? "Chưa làm",
+            /* Database giữ MỐC, form chỉ cần biết có hay không — xem `DongLichSua`. */
+            daGiaoVay: l.daGiaoVay !== null,
+            daGuiAnhGoc: l.daGuiAnhGoc !== null,
           }))}
         />
       </section>
