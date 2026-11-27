@@ -129,3 +129,47 @@ export async function themHopDongVaoAlbum(
     update: { thuMuc: gop },
   });
 }
+
+/** Album sẵn có của khách, hoặc lý do không dùng được. */
+export type AlbumSanCo =
+  | { album: { id: string; slug: string; title: string; driveFolderId: string } }
+  | { khong: "khach-moi" | "chua-co-album" | "nhieu-album" };
+
+/**
+ * Khách của hợp đồng này đã có album chưa — để lần chụp sau dùng chung.
+ *
+ * Anh chốt 27/11/2026: mọi ảnh của một khách nằm chung một album, vì mỗi album
+ * sinh một app riêng trên máy khách và "bắt khách cài app thêm lần nữa thì bất
+ * tiện".
+ *
+ * CHỈ GỘP KHI KHÁCH CÓ ĐÚNG MỘT ALBUM. Nhiều hơn thì không đoán: chọn nhầm là
+ * ảnh cưới của nhà này rơi vào app chứa ảnh bé của nhà khác, mà người lập hợp
+ * đồng không thấy gì bất thường để mà sửa. Lúc ấy web tạo album mới như cũ —
+ * dở hơn một chút, nhưng không sai.
+ *
+ * Hợp đồng chưa gắn khách (`khachHangId` trống) cũng không gộp: không có gì
+ * nối hai lần chụp với nhau ngoài cái tên, mà tên khách trùng nhau là chuyện
+ * có thật trong kho.
+ */
+export async function albumSanCoCuaKhach(hopDongId: string): Promise<AlbumSanCo> {
+  const prisma = getPrisma();
+  const hd = await prisma.hopDong.findUnique({
+    where: { id: hopDongId },
+    select: { khachHangId: true },
+  });
+  if (!hd?.khachHangId) return { khong: "khach-moi" };
+
+  /*
+    Mọi album của MỌI hợp đồng thuộc khách này, trừ chính hợp đồng đang xét.
+    Đọc qua `Gallery.hopDongId` — cột ấy vẫn là hợp đồng đầu tiên của album,
+    nên mỗi album xuất hiện đúng một lần.
+  */
+  const ds = await prisma.gallery.findMany({
+    where: { hopDong: { khachHangId: hd.khachHangId, id: { not: hopDongId } } },
+    select: { id: true, slug: true, title: true, driveFolderId: true },
+    orderBy: { createdAt: "asc" },
+  });
+  if (ds.length === 0) return { khong: "chua-co-album" };
+  if (ds.length > 1) return { khong: "nhieu-album" };
+  return { album: ds[0] };
+}

@@ -1,6 +1,7 @@
 import { duQuyenDrive, getUserAccessToken, type KetNoi } from "@/lib/googleAuth";
 import { emailChiaSe, noiChuaAlbum } from "@/lib/noiChuaAlbum";
 import { getPrisma } from "@/lib/db";
+import { albumSanCoCuaKhach, themHopDongVaoAlbum } from "@/lib/albumChung";
 import { createGallery, setAccess } from "@/lib/store";
 import { MA_MAC_DINH } from "@/lib/access";
 import { MUI_GIO } from "@/lib/constants";
@@ -67,6 +68,40 @@ export const LOAI_HD_KHONG_ANH: readonly string[] = ["Khách lẻ", "Mâm quả"
 export function coGiaoAnh(loaiDV: string | null | undefined): boolean {
   const l = (loaiDV ?? "").trim();
   return l !== "" && !LOAI_HD_KHONG_ANH.includes(l);
+}
+
+/**
+ * Đặt một LỐI TẮT trong thư mục album cũ, trỏ sang thư mục vừa tạo.
+ *
+ * Anh chốt 27/11/2026 (cách B). Kho Drive xếp theo năm/tháng lập hợp đồng,
+ * nên ảnh chụp bé 2028 rơi vào `2028/03/` còn album cưới ở `2026/11/` — hai
+ * chỗ khác nhau, mà một album chỉ đọc được MỘT thư mục gốc. Lối tắt gỡ đúng
+ * chỗ đó: thư mục thật giữ nếp kho, album cũ vẫn thấy.
+ *
+ * Google bỏ tính năng "một thư mục nằm hai chỗ" từ 2020 và thay bằng chính
+ * lối tắt, nên đây là đường duy nhất Drive còn cho. Đã thử thật trên kho của
+ * tiệm 27/11 trước khi viết: tạo được, đọc được, rồi xoá sạch.
+ *
+ * TÊN LỐI TẮT mang mã album ("Baby - Ngọc Thuỳ"), khác tên thư mục thật trên
+ * Drive: khách mở app thấy đúng chữ này làm tên mục, nên nó phải nói được
+ * lần chụp nào.
+ */
+async function datLoiTat(
+  token: string,
+  thuMucAlbumCu: string,
+  thuMucMoi: string,
+  tenLoiTat: string,
+): Promise<void> {
+  await goi(token, "https://www.googleapis.com/drive/v3/files?fields=id&supportsAllDrives=true", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: tenLoiTat,
+      mimeType: "application/vnd.google-apps.shortcut",
+      parents: [thuMucAlbumCu],
+      shortcutDetails: { targetId: thuMucMoi },
+    }),
+  });
 }
 
 /* ── Nói chuyện với Drive ─────────────────────────────────────────────── */
@@ -222,6 +257,14 @@ export type KetQuaTaoThuMuc =
        * nên trang khách sẽ không đọc nổi ảnh cho tới khi có người chia sẻ tay.
        */
       canChiaSe: string | null;
+      /**
+       * Khác null = KHÔNG tạo album mới, mà đặt một LỐI TẮT vào album sẵn có
+       * của khách (anh chốt 27/11/2026).
+       *
+       * Thư mục Drive vẫn tạo mới đúng nếp năm/tháng; chỉ album web là dùng
+       * lại, để khách không phải cài app lần nữa.
+       */
+      gopVaoAlbumCu: { tenAlbumCu: string; tenLoiTat: string } | null;
     }
   | { ok: false; loi: string };
 
@@ -449,6 +492,53 @@ export async function taoThuMucVaAlbum(
     })) as { id: string; name: string };
 
     /*
+      KHÁCH ĐÃ CÓ ALBUM THÌ DÙNG CHUNG, KHÔNG TẠO CÁI THỨ HAI — anh chốt
+      27/11/2026.
+
+      Lý do là CÁI APP: mỗi album sinh một manifest riêng với `start_url` trỏ
+      đúng album đó, nên hai album là khách phải cài hai app. Anh nói: "nếu
+      bắt khách cài app thêm lần nữa thì bất tiện… và có lí do để khách luôn
+      nhớ tới Hamita vì lúc nào cũng còn app trên máy".
+
+      Thư mục Drive VẪN TẠO MỚI ở trên, đúng nếp năm/tháng — chỉ album web là
+      dùng lại. Nối hai thứ bằng một lối tắt đặt trong thư mục album cũ.
+
+      Lỗi ở khúc này KHÔNG được làm hỏng cả việc tạo: thư mục Drive đã có
+      thật rồi. Hỏng thì rơi về đường cũ — tạo album mới — vẫn dùng được, chỉ
+      là khách phải cài thêm app.
+    */
+    const sanCo = await albumSanCoCuaKhach(hd.id);
+    if ("album" in sanCo) {
+      try {
+        await datLoiTat(token, sanCo.album.driveFolderId, tao.id, tenAlbum);
+        await themHopDongVaoAlbum(sanCo.album.id, hd.id, [tenAlbum]);
+
+        let canChiaSeGop: string | null = null;
+        if (noi.ketNoi === "kho") {
+          try {
+            await chiaSeChoDriveChinh(token, tao.id);
+          } catch {
+            canChiaSeGop = emailChiaSe();
+          }
+        }
+
+        return {
+          ok: true,
+          galleryId: sanCo.album.id,
+          slug: sanCo.album.slug,
+          thuMucDrive: tao.id,
+          tenThuMuc: tao.name,
+          tenAlbum,
+          ketNoi: noi.ketNoi,
+          canChiaSe: canChiaSeGop,
+          gopVaoAlbumCu: { tenAlbumCu: sanCo.album.title, tenLoiTat: tenAlbum },
+        };
+      } catch {
+        /* Rơi xuống đường cũ: tạo album mới. */
+      }
+    }
+
+    /*
       Album web: tạo rồi gắn hợp đồng ngay trong cùng một lượt.
 
       `allowDownload: true` — anh chốt 14/11/2026 là cho tải ngay. Quyền này
@@ -480,6 +570,12 @@ export async function taoThuMucVaAlbum(
 
     await setAccess(album.id, MA_MAC_DINH);
     await prisma.gallery.update({ where: { id: album.id }, data: { hopDongId: hd.id } });
+    /*
+      Ghi vào bảng nối NGAY TỪ ALBUM ĐẦU TIÊN, dù lúc này nó chỉ có một hợp
+      đồng: lần chụp sau tra bảng là thấy đủ cả hai, không phải nhớ rằng cái
+      đầu nằm ở cột `Gallery.hopDongId` còn mấy cái sau ở bảng nối.
+    */
+    await themHopDongVaoAlbum(album.id, hd.id, [tenAlbum]);
 
     return {
       ok: true,
@@ -490,6 +586,7 @@ export async function taoThuMucVaAlbum(
       tenAlbum,
       ketNoi: noi.ketNoi,
       canChiaSe,
+      gopVaoAlbumCu: null,
     };
   } catch (e) {
     return { ok: false, loi: e instanceof Error ? e.message : String(e) };

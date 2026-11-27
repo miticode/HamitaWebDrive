@@ -54,12 +54,15 @@ export function NutTaoThuMuc({
     Giờ bấm lần đầu là máy chủ kể ra album đang có, muốn tạo tiếp thì bấm lại.
   */
   const [daCo, setDaCo] = useState<string[] | null>(null);
+  /** Câu báo khi web gộp vào album sẵn có thay vì tạo album mới. */
+  const [gop, setGop] = useState<string | null>(null);
   const [dang, batDau] = useTransition();
 
   const tao = () =>
     batDau(async () => {
       setLoi(null);
       /* Lần bấm thứ hai (đã thấy danh sách) mới gửi kèm cái gật đầu. */
+      setGop(null);
       const kq = await taoThuMucAlbumAction(hopDongId, ten, daCo !== null);
       if ("daCo" in kq) {
         setDaCo(kq.daCo);
@@ -82,6 +85,21 @@ export function NutTaoThuMuc({
         router.refresh();
         return;
       }
+      /*
+        ĐÃ GỘP VÀO ALBUM SẴN CÓ thì phải nói ra — anh chốt 27/11/2026.
+
+        Người bấm nút đang chờ một album MỚI hiện ra; im lặng thì họ quay lại
+        trang, thấy vẫn một album như cũ, rồi bấm nút lần nữa. Câu này nói rõ
+        ảnh đi đâu, và vì sao lại thế.
+      */
+      if (kq.gopVaoAlbumCu) {
+        setGop(
+          `Khách này đã có album “${kq.gopVaoAlbumCu.tenAlbumCu}”, nên ảnh lần chụp này ` +
+            `vào chung album ấy dưới mục “${kq.gopVaoAlbumCu.tenLoiTat}” — khách không phải cài app lần nữa.`,
+        );
+        router.refresh();
+        return;
+      }
       setMo(false);
       setDaCo(null);
       router.refresh();
@@ -89,9 +107,16 @@ export function NutTaoThuMuc({
 
   if (!mo) {
     return (
-      <button type="button" onClick={() => setMo(true)} className="btn mt-3">
-        Tạo thư mục Drive &amp; album
-      </button>
+      <>
+        <button type="button" onClick={() => setMo(true)} className="btn mt-3">
+          Tạo thư mục Drive &amp; album
+        </button>
+        {gop && (
+          <p className="mt-2 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm leading-relaxed text-emerald-800">
+            {gop}
+          </p>
+        )}
+      </>
     );
   }
 

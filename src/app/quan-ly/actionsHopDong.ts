@@ -208,6 +208,9 @@ export async function lapHopDongAction(
               thuMucDrive: album.thuMucDrive,
               o: album.ketNoi,
               ...(album.canChiaSe ? { chuaChiaSeVoi: album.canChiaSe } : {}),
+              ...(album.gopVaoAlbumCu
+                ? { gopVaoAlbumCu: album.gopVaoAlbumCu.tenAlbumCu }
+                : {}),
             }
           : { maHD: kq.maHD, loi: album.loi },
       }).catch(() => {});
@@ -248,7 +251,14 @@ export async function taoThuMucAlbumAction(
   | { loi: string }
   | { daCo: string[] }
   /** `canChiaSe` khác null = thư mục đã tạo nhưng chưa chia sẻ được, ảnh sẽ không hiện. */
-  | { ok: true; slug: string; tenAlbum: string; canChiaSe: string | null }
+  | {
+      ok: true;
+      slug: string;
+      tenAlbum: string;
+      canChiaSe: string | null;
+      /** Khác null = không tạo album mới mà gộp vào album sẵn có của khách. */
+      gopVaoAlbumCu: { tenAlbumCu: string; tenLoiTat: string } | null;
+    }
 > {
   const nguoi = await nguoiDuocLap();
   if (!nguoi) return { loi: "Tài khoản này chưa được lập hợp đồng, hoặc phiên đăng nhập đã hết." };
@@ -282,12 +292,25 @@ export async function taoThuMucAlbumAction(
       o: kq.ketNoi,
       bangTay: true,
       ...(kq.canChiaSe ? { chuaChiaSeVoi: kq.canChiaSe } : {}),
+      /*
+        Ghi rõ đã gộp vào album nào — đây là chỗ web quyết KHÔNG tạo album
+        mới, mà người bấm nút thì đang chờ một album mới hiện ra. Không ghi
+        lại thì sau này không ai tra được vì sao nhà này chỉ có một album
+        trong khi có ba hợp đồng.
+      */
+      ...(kq.gopVaoAlbumCu ? { gopVaoAlbumCu: kq.gopVaoAlbumCu.tenAlbumCu } : {}),
     },
   });
 
   revalidatePath(`/quan-ly/hop-dong/${hopDongId}`);
   revalidatePath("/admin");
-  return { ok: true, slug: kq.slug, tenAlbum: kq.tenAlbum, canChiaSe: kq.canChiaSe };
+  return {
+    ok: true,
+    slug: kq.slug,
+    tenAlbum: kq.tenAlbum,
+    canChiaSe: kq.canChiaSe,
+    gopVaoAlbumCu: kq.gopVaoAlbumCu,
+  };
 }
 
 /* ── Sửa hợp đồng, phiếu thu (anh chốt 23/09/2026) ─────────────────────── */
