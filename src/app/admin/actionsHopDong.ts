@@ -12,6 +12,7 @@ import {
   laLuotGuiHoanThien,
 } from "@/lib/buocAnhGoc";
 import { nhanhCuaBuoc, nhanhCuaBuoi } from "@/lib/nhanhBuoi";
+import { hopDongChoThaoTac } from "@/lib/albumChung";
 import { capNhatBuocTuDauBuoi } from "@/lib/trangThaiBuoi";
 import { ngayVN } from "@/lib/hopDongChung";
 import { tachLink } from "@/lib/guiIn";
@@ -161,22 +162,32 @@ async function danhDauGuiAnhGocTheoBuoi(
   const prisma = getPrisma();
   const album = await prisma.gallery.findUnique({
     where: { id: galleryId },
+    select: { slug: true },
+  });
+  if (!album) return null;
+
+  /*
+    MỘT CỬA DUY NHẤT, không đọc thẳng `Gallery.hopDongId` — anh chốt
+    27/11/2026 cho album dùng chung. Nút này nói về CẢ ALBUM chứ không về một
+    thư mục nào, nên khi album mang nhiều hợp đồng thì nó không đủ thông tin
+    và phải nói ra thay vì đoán.
+  */
+  const chon = await hopDongChoThaoTac(galleryId);
+  if ("lyDo" in chon) {
+    return chon.lyDo === "chua-gan" ? null : { khongRoHopDong: chon.lyDo };
+  }
+  const hd = await prisma.hopDong.findUnique({
+    where: { id: chon.hopDongId },
     select: {
-      slug: true,
-      hopDong: {
-        select: {
-          id: true,
-          tenKhach: true,
-          maHD: true,
-          buoc: true,
-          trangThai: true,
-          lich: { select: { id: true, loai: true, ngay: true, daGuiAnhGoc: true } },
-        },
-      },
+      id: true,
+      tenKhach: true,
+      maHD: true,
+      buoc: true,
+      trangThai: true,
+      lich: { select: { id: true, loai: true, ngay: true, daGuiAnhGoc: true } },
     },
   });
-  const hd = album?.hopDong;
-  if (!album || !hd) return null;
+  if (!hd) return null;
 
   const nhanh = nhanhCuaBuoc(hd.buoc);
   /* Chưa gõ bước, hoặc đang ở lượt ảnh hoàn thiện — để đường cũ lo. */
@@ -259,18 +270,37 @@ export async function guiInAction(
 
   const album = await prisma.gallery.findUnique({
     where: { id: galleryId },
-    select: { id: true, hopDong: { select: { buoc: true } } },
+    select: { id: true },
   });
   if (!album) return { loi: "Không tìm thấy album." };
+
+  /*
+    Hợp đồng nào — hỏi một cửa duy nhất (anh chốt 27/11/2026). Ô "Đợt nào"
+    trong popup là chữ tự do ("nhà gái", "photobook"), không phải tên thư mục,
+    nên không dùng nó để tra được; album nhiều hợp đồng thì nói ra.
+  */
+  const chonIn = await hopDongChoThaoTac(galleryId);
+  if ("lyDo" in chonIn) {
+    return {
+      loi:
+        chonIn.lyDo === "chua-gan"
+          ? "Album chưa gắn hợp đồng."
+          : "Album này dùng chung cho nhiều hợp đồng — vào trang hợp đồng gắn thư mục rồi gửi in.",
+    };
+  }
+  const hdIn = await prisma.hopDong.findUnique({
+    where: { id: chonIn.hopDongId },
+    select: { buoc: true },
+  });
 
   /*
     Kiểm bước Ở ĐÂY nữa, không chỉ dựa vào việc trang đã giấu nút (nguyên tắc
     3). Server action là một đường mạng công khai, mà đây là việc đổi tiến độ
     của cả một nhà khách.
   */
-  if (buocSauKhiGuiIn(album.hopDong?.buoc) === null) {
+  if (buocSauKhiGuiIn(hdIn?.buoc) === null) {
     return {
-      loi: album.hopDong
+      loi: hdIn
         ? "Hợp đồng không ở bước “Chờ Khách duyệt” nên chưa gửi in được."
         : "Album chưa gắn hợp đồng.",
     };

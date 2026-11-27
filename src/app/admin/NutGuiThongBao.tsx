@@ -23,6 +23,16 @@ function chuBuoc(kq: KetQuaDoiBuoc): string | null {
   if (kq.canTickBuoi) {
     return `Nhà ${kq.canTickBuoi.tenKhach} còn ${kq.canTickBuoi.soBuoi} buổi chưa đánh dấu gửi ảnh gốc — tick từng buổi ở trang hợp đồng`;
   }
+  /*
+    ALBUM DÙNG CHUNG NHIỀU HỢP ĐỒNG — anh chốt 27/11/2026. Nút này nói về cả
+    album, mà album chung chứa thư mục của mấy hợp đồng, nên nó không đủ thông
+    tin. Nói ra và chỉ đường, thay vì đoán rồi đẩy nhầm tiến độ nhà khác.
+  */
+  if (kq.khongRoHopDong) {
+    return kq.khongRoHopDong === "nhieu-hop-dong"
+      ? "Album này dùng chung cho nhiều hợp đồng — vào trang hợp đồng đánh dấu giúp em"
+      : "Chưa rõ thư mục này thuộc hợp đồng nào — vào trang hợp đồng gắn giúp em";
+  }
   if (kq.giuBuoc) return `Hợp đồng ${kq.giuBuoc.tenKhach} đang ở “${kq.giuBuoc.buoc}” — giữ nguyên`;
   return null;
 }

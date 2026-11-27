@@ -4,6 +4,7 @@ import type { HanhDong } from "@/lib/nhatKyChung";
 import { docCacBuoc } from "@/lib/buocHopDong";
 import { tenBuocTheoSo } from "@/lib/buocAnhGoc";
 import type { NguoiDung } from "@/lib/phienNhanVien";
+import { hopDongChoThaoTac, type LyDoKhongRo } from "@/lib/albumChung";
 
 /*
   ĐỔI BƯỚC HỢP ĐỒNG TỪ PHÍA ALBUM — gom lõi vào một chỗ, 19/11/2026.
@@ -38,6 +39,13 @@ export type KetQuaDoiBuoc = {
   doiBuoc?: { tenKhach: string; tu: string; den: string };
   /** Album chưa gắn hợp đồng nên không có gì để đổi. */
   chuaGan?: true;
+  /**
+   * Album dùng chung nhiều hợp đồng mà không biết thao tác này nói về cái nào.
+   *
+   * Nơi gọi PHẢI nói ra chứ đừng im lặng: người bấm cần biết vì sao bước
+   * không đổi, và việc cần làm là gắn thư mục cho đúng hợp đồng.
+   */
+  khongRoHopDong?: LyDoKhongRo;
   /** Có hợp đồng nhưng bước hiện tại không phải chỗ đáng đổi. */
   giuBuoc?: { tenKhach: string; buoc: string };
   /**
@@ -89,6 +97,18 @@ export async function doiBuocAlbum(
    */
   hanhDong: HanhDong | ((buocCu: number | null) => HanhDong),
   nguoi: Pick<NguoiDung, "id" | "ten"> | null,
+  /**
+   * Thư mục khách vừa thao tác — chỉ cần khi album DÙNG CHUNG nhiều hợp đồng.
+   *
+   * Anh chốt 27/11/2026 cho khách book lần sau dùng chung album cũ. Từ lúc ấy
+   * một album có thể chứa thư mục của mấy hợp đồng, nên "album này" không còn
+   * đủ để biết đang nói về hợp đồng nào: khách bấm "đã chọn xong" ở mục ảnh bé
+   * mà web đẩy bước hợp đồng cưới là sai hẳn.
+   *
+   * Bỏ trống thì chỉ trả lời được khi album có đúng một hợp đồng — xem
+   * `hopDongChoThaoTac`.
+   */
+  tenMuc?: string | null,
 ): Promise<KetQuaDoiBuoc> {
   try {
     /* Chạy ở máy bằng kho JSON thì không có bảng hợp đồng — im lặng bỏ qua. */
@@ -97,14 +117,25 @@ export async function doiBuocAlbum(
     const prisma = getPrisma();
     const album = await prisma.gallery.findUnique({
       where: { id: galleryId },
-      select: {
-        slug: true,
-        hopDong: { select: { id: true, tenKhach: true, maHD: true, trangThai: true, buoc: true } },
-      },
+      select: { slug: true },
     });
-    if (!album?.hopDong) return { chuaGan: true };
+    if (!album) return { chuaGan: true };
 
-    const hd = album.hopDong;
+    /*
+      HỎI MỘT CỬA DUY NHẤT xem thao tác này nói về hợp đồng nào — không đọc
+      thẳng `Gallery.hopDongId` nữa. Album dùng chung có thể mang thư mục của
+      mấy hợp đồng, và cột ấy chỉ trỏ tới cái ĐẦU TIÊN.
+    */
+    const chon = await hopDongChoThaoTac(galleryId, tenMuc);
+    if ("lyDo" in chon) {
+      return chon.lyDo === "chua-gan" ? { chuaGan: true } : { khongRoHopDong: chon.lyDo };
+    }
+
+    const hd = await prisma.hopDong.findUnique({
+      where: { id: chon.hopDongId },
+      select: { id: true, tenKhach: true, maHD: true, trangThai: true, buoc: true },
+    });
+    if (!hd) return { chuaGan: true };
     const cu = hd.trangThai ?? "chưa gõ bước";
     const so = tinhBuoc(hd.buoc);
     if (so === null) return { giuBuoc: { tenKhach: hd.tenKhach, buoc: cu } };

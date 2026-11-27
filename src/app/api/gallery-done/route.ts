@@ -142,7 +142,18 @@ export async function POST(req: NextRequest) {
     );
     const conThieu = mucGocConThieu(gallery.subfolders, daXong, nhanh);
     if (conThieu.length === 0) {
-      const kq = await doiBuocAlbum(gallery.id, buocSauKhiKhachChonXong, "doi-buoc-khach-chon", NGUOI_KHACH);
+      /*
+        TRUYỀN TÊN THƯ MỤC — anh chốt 27/11/2026 cho album dùng chung. Khách
+        bấm ở mục nào thì hợp đồng của mục ấy nhảy bước; thiếu nó thì một
+        album chứa cả ảnh cưới lẫn ảnh bé sẽ đẩy nhầm hợp đồng.
+      */
+      const kq = await doiBuocAlbum(
+        gallery.id,
+        buocSauKhiKhachChonXong,
+        "doi-buoc-khach-chon",
+        NGUOI_KHACH,
+        body.tenMuc,
+      );
       for (const d of kq.veLai ?? []) revalidatePath(d);
     }
   }

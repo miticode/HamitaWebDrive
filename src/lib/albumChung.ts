@@ -173,3 +173,33 @@ export async function albumSanCoCuaKhach(hopDongId: string): Promise<AlbumSanCo>
   if (ds.length > 1) return { khong: "nhieu-album" };
   return { album: ds[0] };
 }
+
+/**
+ * Thao tác trên album này đang nói về HỢP ĐỒNG NÀO.
+ *
+ * Một cửa duy nhất cho mọi chỗ đổi bước từ phía album — khách báo chọn xong,
+ * studio bấm đã gửi ảnh gốc, media dán link gửi in. Trước 27/11/2026 mọi chỗ
+ * ấy đọc thẳng `Gallery.hopDongId`, đúng khi album chỉ có một hợp đồng và SAI
+ * HOÀN TOÀN khi album dùng chung: khách bấm "đã chọn xong" ở mục ảnh bé sẽ
+ * đẩy bước của hợp đồng cưới.
+ *
+ * `tenMuc` là thứ quyết định:
+ *
+ *   · CÓ tên thư mục (khách bấm ở một mục cụ thể) → tra bảng nối, biết chắc.
+ *   · KHÔNG có (nút trên thẻ album nói về cả album) → chỉ trả lời được khi
+ *     album có đúng một hợp đồng. Nhiều hơn thì nút ấy không đủ thông tin, và
+ *     đoán là đẩy nhầm tiến độ của một nhà khác.
+ *
+ * Trả `{ lyDo }` thì nơi gọi PHẢI nói ra, không được bỏ qua im lặng: người
+ * bấm cần biết vì sao bước không đổi.
+ */
+export async function hopDongChoThaoTac(
+  galleryId: string,
+  tenMuc?: string | null,
+): Promise<{ hopDongId: string } | { lyDo: LyDoKhongRo }> {
+  const ds = await hopDongCuaAlbum(galleryId);
+  if (ds.length === 0) return { lyDo: "chua-gan" };
+  if (ds.length === 1) return { hopDongId: ds[0].hopDongId };
+  if (!tenMuc) return { lyDo: "nhieu-hop-dong" };
+  return hopDongCuaMuc(ds, tenMuc);
+}
