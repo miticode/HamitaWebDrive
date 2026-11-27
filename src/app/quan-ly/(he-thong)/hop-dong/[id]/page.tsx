@@ -5,6 +5,7 @@ import { MUI_GIO, tien } from "@/lib/constants";
 import { batBuocDangNhap, batBuocQuyen, laQuanTri, lapHopDong, xemHopDong } from "@/lib/phienNhanVien";
 import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
+import { buoiConSauKhiXong } from "@/lib/trangThaiBuoi";
 import { khoaCuaToi, khoaNguoi, tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { albumCuaHopDong } from "@/lib/noiAlbum";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
@@ -130,6 +131,8 @@ export default async function ChiTietHopDongPage({ params }: Props) {
     Hiện ở ĐÂY chứ không ở danh sách: danh sách đã có chip mang số bước, thêm
     một dòng nữa cho 100 dòng bảng là làm bảng khó đọc hơn chứ không dễ hơn.
   */
+  /* Buổi còn sót sau khi hợp đồng đã đi hết nhánh — xem `buoiConSauKhiXong`. */
+  const buoiCon = buoiConSauKhiXong(hd.buoc, hd.lich);
   const buocSau = buocTiepTheo(cacBuoc, hd.trangThai);
   const xongNhanh = laBuocXong(cacBuoc, hd.trangThai);
 
@@ -239,6 +242,29 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           nhầm — chặn thật nằm trong `xacNhanKhauCuoiAction` (nguyên tắc 3).
         */}
         {duocSua && <NutKhauCuoi hopDongId={hd.id} buoc={hd.buoc} />}
+
+        {/*
+          NHẮC KHI HỢP ĐỒNG ĐÃ XONG MÀ LỊCH CÒN BUỔI — anh yêu cầu 27/11/2026.
+
+          Khách quay lại book thêm thì có người thêm thẳng buổi mới vào hợp
+          đồng cũ. Hợp đồng ấy đã ở bước 9 hoặc 18 nên bước đứng nguyên — đúng
+          theo phép chỉ-nâng, nhưng buổi mới không có bước nào theo dõi: nhà
+          đang chụp mà hợp đồng nói "hoàn thành".
+
+          CHỈ NÓI RA, không tự xử. Hai cách giải quyết đều hợp lệ tuỳ nhà, mà
+          web đoán hộ là chọn thay người đang ngồi với khách.
+        */}
+        {buoiCon.length > 0 && (
+          <p className="mt-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">
+            Hợp đồng đã ở bước cuối, nhưng lịch còn{" "}
+            <b>
+              {buoiCon.length} buổi chưa chụp xong
+            </b>
+            : {buoiCon.map((b) => `${b.loai ?? "buổi"}${b.ngay ? ` ${ngayVN(b.ngay)}` : ""}`).join(" · ")}.{" "}
+            Khách book thêm thì nên <b>lập hợp đồng riêng</b> cho lần sau — buổi thêm vào đây
+            không có bước nào theo dõi, và tiền cũng gộp chung vào hợp đồng cũ.
+          </p>
+        )}
       </div>
 
       {hd.matBenAppSheet && (

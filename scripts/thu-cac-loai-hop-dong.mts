@@ -18,8 +18,13 @@ import { config as loadEnv } from "dotenv";
 loadEnv({ path: ".env.local", quiet: true });
 
 const { getPrisma } = await import("../src/lib/db");
-const { capNhatChuyenNhanh, capNhatBuocTheoNgay, capNhatBuocDaChup, capNhatBuocTuDauBuoi } =
-  await import("../src/lib/trangThaiBuoi");
+const {
+  capNhatChuyenNhanh,
+  capNhatBuocTheoNgay,
+  capNhatBuocDaChup,
+  capNhatBuocTuDauBuoi,
+  buoiConSauKhiXong,
+} = await import("../src/lib/trangThaiBuoi");
 const { nhanhCuaBuoi } = await import("../src/lib/nhanhBuoi");
 const p = getPrisma();
 
@@ -80,6 +85,15 @@ async function dung(ten: string, loaiDV: string, buocDau: number, buoi: Buoi[], 
     },
   });
   return hd;
+}
+
+/** Web sẽ nhắc những buổi nào — xem `buoiConSauKhiXong`. */
+async function nhacGi(id: string) {
+  const hd = await p.hopDong.findUnique({
+    where: { id },
+    select: { buoc: true, lich: { select: { loai: true, ngay: true, trangThai: true } } },
+  });
+  return buoiConSauKhiXong(hd?.buoc, hd?.lich ?? []);
 }
 
 const docBuoc = async (id: string) =>
@@ -244,6 +258,67 @@ try {
   kiem("hợp đồng mới cho lần book thêm: điền ngày → bước 2", await luuLich(q2.id), 2);
   await xongVaGui(q2.id, () => true);
   kiem("hợp đồng mới: chụp xong + gửi gốc → bước 4", await luuLich(q2.id), 4);
+  /* ══ NHÓM 5 — book prewedding, chụp xong, rồi book tiếp ngày cưới ══ */
+  console.log("\n══ NHÓM 5: hợp đồng PreWedding đã chụp xong, khách book tiếp cưới ══\n");
+  /*
+    Anh hỏi 27/11/2026: "nếu khách đó chỉ book prewedding và đã chụp xong (hợp
+    đồng đang mang loại prewedding), mấy ngày sau… book tiếp ngày cưới thì lúc
+    này phải xử lí như thế nào và loại hợp đồng".
+
+    Ba cách làm đều chạy được, nhưng hệ quả KHÁC HẴN NHAU. Kịch bản này đo cả
+    ba để anh chọn, không chọn thay anh.
+  */
+
+  /* CÁCH A — sửa chính hợp đồng cũ: thêm buổi tiệc, đổi loại DV sang CƯỚI. */
+  const a = await dung("Cách A: sửa HĐ cũ", "PreWedding", 9, [
+    { loai: "Ngày chụp", ngay: "2026-09-17" },
+  ], ["file gốc"]);
+  await xongVaGui(a.id, () => true);
+  kiem("A: xong prewedding → bước 9", await luuLich(a.id), 9);
+  await p.lichChup.createMany({
+    data: [
+      { hopDongId: a.id, loai: "nhà gái", ngay: "2027-04-10", trangThai: "Chưa làm" },
+      { hopDongId: a.id, loai: "nhà trai", ngay: "2027-04-11", trangThai: "Chưa làm" },
+    ],
+  });
+  kiem("A: thêm hai buổi tiệc → TỰ sang bước 10", await luuLich(a.id), 10);
+  const aTruoc = await p.hopDong.findUnique({ where: { id: a.id }, select: { loaiDV: true } });
+  kiem("A: loại DV vẫn là PreWedding, web KHÔNG tự đổi", aTruoc?.loaiDV, "PreWedding");
+  await p.hopDong.update({ where: { id: a.id }, data: { loaiDV: "CƯỚI" } });
+  kiem("A: người sửa đổi sang CƯỚI thì bước không đổi theo", await luuLich(a.id), 10);
+  await xongVaGui(a.id, (l) => l !== "Ngày chụp");
+  kiem("A: xong cả hai buổi tiệc → bước 13", await luuLich(a.id), 13);
+  kiem("A: vẫn CHỈ MỘT album, ảnh cưới dồn chung với prewedding",
+    await p.gallery.count({ where: { hopDongId: a.id } }), 1);
+
+  /* CÁCH B — lập hợp đồng MỚI loại CƯỚI, hợp đồng prewedding để nguyên. */
+  const b1 = await dung("Cách B: HĐ prewedding cũ", "PreWedding", 9, [
+    { loai: "Ngày chụp", ngay: "2026-09-17" },
+  ], ["file gốc"]);
+  await xongVaGui(b1.id, () => true);
+  kiem("B: hợp đồng prewedding đứng yên ở 9", await luuLich(b1.id), 9);
+  const b2 = await dung("Cách B: HĐ cưới mới", "CƯỚI", 10, [
+    { loai: "nhà gái", ngay: "2027-04-10" },
+    { loai: "nhà trai", ngay: "2027-04-11" },
+  ], ["file gốc nhà gái", "file gốc nhà trai"]);
+  await xongVaGui(b2.id, () => true);
+  kiem("B: hợp đồng cưới mới chạy nhánh tiệc → bước 13", await luuLich(b2.id), 13);
+  kiem("B: prewedding vẫn ở 9, không bị kéo theo", await docBuoc(b1.id), 9);
+  kiem("B: hai album riêng — ảnh prewedding và ảnh cưới không lẫn",
+    (await p.gallery.count({ where: { hopDongId: b1.id } })) +
+      (await p.gallery.count({ where: { hopDongId: b2.id } })), 2);
+
+  /* CÁCH C — thêm buổi CHỤP (không phải tiệc) vào hợp đồng đã xong: phải nhắc. */
+  const c = await dung("Cách C: thêm buổi chụp vào HĐ đã xong", "Baby", 9, [
+    { loai: "chụp bé", ngay: "2026-09-17" },
+  ], ["file gốc"]);
+  await xongVaGui(c.id, () => true);
+  kiem("C: xong → bước 9, chưa có gì phải nhắc", (await nhacGi(c.id)).length, 0);
+  await p.lichChup.create({
+    data: { hopDongId: c.id, loai: "chụp bé", ngay: "2027-05-01", trangThai: "Chưa làm" },
+  });
+  kiem("C: thêm buổi chụp mới → bước vẫn 9", await luuLich(c.id), 9);
+  kiem("C: và web NHẮC đúng một buổi", (await nhacGi(c.id)).length, 1);
 } finally {
   console.log("\n— Dọn —");
   const con = await donSach();

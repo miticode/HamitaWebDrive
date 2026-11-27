@@ -473,3 +473,41 @@ export async function capNhatChuyenNhanh(
   });
   return ten;
 }
+
+/* ── Nhắc khi hợp đồng đã xong mà lịch còn buổi (anh yêu cầu 27/11/2026) ─ */
+
+/**
+ * Hợp đồng đã đi hết nhánh mà lịch CÒN BUỔI CHƯA CHỤP XONG — trả về những
+ * buổi ấy, rỗng nghĩa là không có gì phải nhắc.
+ *
+ * Anh yêu cầu sau bản rà soát: khách quay lại book thêm thì có người thêm
+ * thẳng buổi mới vào hợp đồng cũ. Nếu hợp đồng ấy đã ở bước 9 hoặc 18, bước
+ * đứng nguyên — đúng theo phép chỉ-nâng, nhưng buổi mới KHÔNG CÓ BƯỚC NÀO
+ * THEO DÕI: nhà đang chụp mà hợp đồng nói "hoàn thành".
+ *
+ * Khác hẳn ca bước 9 có buổi tiệc mới: cái đó `buocChuyenNhanh` lo được, vì
+ * còn nguyên nhánh tiệc phía trước để đi. Bước 18 thì hết đường, và bước 9
+ * với một buổi CHỤP mới thêm cũng vậy — nhánh chụp đã đi hết rồi.
+ *
+ * WEB KHÔNG TỰ XỬ, CHỈ NÓI RA. Hai cách giải quyết đều hợp lệ tuỳ nhà — lập
+ * hợp đồng riêng cho lần book sau (tiền tính riêng, đúng nghiệp vụ), hoặc gỡ
+ * buổi thừa nếu nhập nhầm. Web đoán hộ là chọn thay người đang ngồi với khách.
+ *
+ * Chỉ tính buổi CHƯA chụp xong: buổi cũ đã "Hoàn thành" thì nằm lại trên lịch
+ * là chuyện bình thường, đó là lịch sử của nhà ấy.
+ */
+export function buoiConSauKhiXong(
+  buoc: number | null | undefined,
+  lich: readonly { loai: string | null; ngay: string | null; trangThai: string | null }[],
+): { loai: string | null; ngay: string | null }[] {
+  if (buoc !== XONG_NHANH_CHUP && buoc !== 18) return [];
+  /*
+    Bước 9 mà buổi còn lại thuộc nhánh TIỆC thì KHÔNG nhắc: `buocChuyenNhanh`
+    sẽ đưa hợp đồng sang bước 10 ngay lượt lưu tới, nên nhắc ở đây là báo động
+    một thứ web đang tự lo.
+  */
+  const nhanh = buoc === XONG_NHANH_CHUP ? "chup" : "tiec";
+  return lich
+    .filter((l) => nhanhCuaBuoi(l.loai) === nhanh && l.trangThai !== XONG)
+    .map((l) => ({ loai: l.loai, ngay: l.ngay }));
+}
