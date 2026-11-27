@@ -207,6 +207,36 @@ try {
       "buổi mới không có bước nào theo dõi. Đáng lập hợp đồng RIÊNG.",
   );
 
+  /*
+    4c. KHÁCH BOOK PREWEDDING TRƯỚC, SAU ĐÓ BOOK TRỌN GÓI CƯỚI.
+
+    Anh kể 27/11/2026: hồi dùng AppSheet, khách chỉ book prewedding mà chưa
+    làm trọn gói ngày cưới thì anh để loại DV là "PreWedding" để biết — nên
+    loại DV bây giờ không còn nói lên điều đó nữa.
+
+    Đây là luồng THẬT và hay gặp: nhà đã chụp xong prewedding, hợp đồng đứng ở
+    bước 9 "Hoàn thành" (đúng nghĩa: xong phần chụp). Rồi khách quay lại đặt
+    luôn hai ngày tiệc, sale thêm buổi vào lịch — lúc đó hợp đồng phải tự sang
+    nhánh tiệc chứ không được đứng mãi ở "Hoàn thành".
+  */
+  const q3 = await dung("Book prewedding rồi book cưới", "PreWedding", 9, [
+    { loai: "Ngày chụp", ngay: "2026-09-17" },
+  ], ["file gốc"]);
+  await xongVaGui(q3.id, () => true);
+  kiem("xong prewedding, chưa có buổi tiệc → đứng ở 9", await luuLich(q3.id), 9);
+
+  await p.lichChup.createMany({
+    data: [
+      { hopDongId: q3.id, loai: "nhà gái", ngay: "2027-03-20", trangThai: "Chưa làm" },
+      { hopDongId: q3.id, loai: "nhà trai", ngay: "2027-03-21", trangThai: "Chưa làm" },
+    ],
+  });
+  kiem("khách book thêm hai ngày tiệc → TỰ sang bước 10", await luuLich(q3.id), 10);
+  await xongVaGui(q3.id, (l) => l === "nhà gái");
+  kiem("mới xong nhà gái → giữ 10", await luuLich(q3.id), 10);
+  await xongVaGui(q3.id, (l) => l === "nhà trai");
+  kiem("xong cả hai buổi tiệc → bước 13", await luuLich(q3.id), 13);
+
   /* 4b. Lập hợp đồng MỚI cho lần book thêm — cách đúng. */
   const q2 = await dung("Book thêm bằng hợp đồng mới", "Baby", 1, [{ loai: "chụp bé", ngay: "2027-01-20" }], [
     "file gốc",
