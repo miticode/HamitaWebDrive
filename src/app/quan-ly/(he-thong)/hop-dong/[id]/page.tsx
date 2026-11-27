@@ -6,6 +6,7 @@ import { batBuocDangNhap, batBuocQuyen, laQuanTri, lapHopDong, xemHopDong } from
 import { TEN_LOAI, laLoaiDichVu } from "@/lib/dichVuChung";
 import { ngayVN } from "@/lib/hopDongChung";
 import { buoiConSauKhiXong } from "@/lib/trangThaiBuoi";
+import { albumDungChung } from "@/lib/albumChung";
 import { khoaCuaToi, khoaNguoi, tenNV, tenTheoMaNV } from "@/lib/hopDongMayChu";
 import { albumCuaHopDong } from "@/lib/noiAlbum";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
@@ -131,6 +132,16 @@ export default async function ChiTietHopDongPage({ params }: Props) {
     Hiện ở ĐÂY chứ không ở danh sách: danh sách đã có chip mang số bước, thêm
     một dòng nữa cho 100 dòng bảng là làm bảng khó đọc hơn chứ không dễ hơn.
   */
+  /*
+    ALBUM DÙNG CHUNG với hợp đồng khác — anh chốt 27/11/2026.
+
+    Khối album dưới đây vốn chỉ đọc `HopDong.album`, tức qua cột
+    `Gallery.hopDongId`. Hợp đồng thứ hai của một khách dùng lại album cũ thì
+    cột ấy không trỏ về nó, nên trang báo "Chưa có album nào" trong khi ảnh
+    của nhà ấy đang nằm trong album cũ.
+  */
+  const dungChung = await albumDungChung(hd.id);
+
   /* Buổi còn sót sau khi hợp đồng đã đi hết nhánh — xem `buoiConSauKhiXong`. */
   const buoiCon = buoiConSauKhiXong(hd.buoc, hd.lich);
   const buocSau = buocTiepTheo(cacBuoc, hd.trangThai);
@@ -336,7 +347,7 @@ export default async function ChiTietHopDongPage({ params }: Props) {
         />
 
       <section>
-        <TieuDeKhoi ten="Album ảnh" so={album.length} />
+        <TieuDeKhoi ten="Album ảnh" so={album.length + dungChung.length} />
         {nhacChuyenBuoc && (
           <p className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
             Khách đã báo chọn xong ảnh ngày {NGAY.format(daChonXong!.xongLuc!)} mà hợp đồng còn ở bước{" "}
@@ -352,14 +363,30 @@ export default async function ChiTietHopDongPage({ params }: Props) {
         )}
         {album.length === 0 ? (
           <div className="mt-2">
-            <p className="text-sm text-fg-muted">
-              Chưa có album nào.{" "}
-              {coGiaoAnh(hd.loaiDV)
-                ? "Hợp đồng vừa lập thì web đang tự tạo thư mục — tải lại trang sau vài giây. Lâu quá thì bấm nút dưới."
-                : `Loại “${hd.loaiDV ?? "—"}” thường không giao ảnh, nên web không tự tạo thư mục.`}{" "}
-              Album đã có sẵn trên Drive thì mở trang quản lý album rồi bấm “Gắn hợp đồng”.
-            </p>
-            {duocSua && <NutTaoThuMuc hopDongId={hd.id} tenKhach={hd.tenKhach} boMa={boMa} />}
+            {/*
+              ĐÃ CÓ ALBUM DÙNG CHUNG thì đừng giục tạo album — anh chốt
+              27/11/2026. Câu "web đang tự tạo thư mục, tải lại sau vài giây"
+              nói sai hẳn ở cảnh này: web đã gộp xong vào album lần chụp
+              trước, không tạo gì nữa. Để nguyên là mời người ta bấm nút tạo
+              thêm một album thứ hai, đúng thứ vừa tránh được.
+            */}
+            {dungChung.length > 0 ? (
+              <p className="text-sm text-fg-muted">
+                Hợp đồng này không có album riêng — ảnh của nó nằm trong album dùng chung
+                ngay dưới, để khách không phải cài app lần nữa.
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-fg-muted">
+                  Chưa có album nào.{" "}
+                  {coGiaoAnh(hd.loaiDV)
+                    ? "Hợp đồng vừa lập thì web đang tự tạo thư mục — tải lại trang sau vài giây. Lâu quá thì bấm nút dưới."
+                    : `Loại “${hd.loaiDV ?? "—"}” thường không giao ảnh, nên web không tự tạo thư mục.`}{" "}
+                  Album đã có sẵn trên Drive thì mở trang quản lý album rồi bấm “Gắn hợp đồng”.
+                </p>
+                {duocSua && <NutTaoThuMuc hopDongId={hd.id} tenKhach={hd.tenKhach} boMa={boMa} />}
+              </>
+            )}
           </div>
         ) : (
           <ul className="mt-3 divide-y divide-line rounded-md border border-line bg-bg-raised text-sm">
@@ -389,6 +416,38 @@ export default async function ChiTietHopDongPage({ params }: Props) {
             ))}
           </ul>
         )}
+        {/*
+          ALBUM DÙNG CHUNG đứng riêng một khối, không trộn vào danh sách trên:
+          album trên là của RIÊNG hợp đồng này, còn đây là album của lần chụp
+          trước mà nay ảnh nhà này gửi nhờ vào — khác nhau ở chỗ bấm "Bỏ gắn"
+          hay xoá album sẽ đụng tới ai.
+
+          Kèm tên thư mục vì trong một album chung, chỉ mấy thư mục ấy mới là
+          phần ảnh của hợp đồng này.
+        */}
+        {dungChung.length > 0 && (
+          <div className="mt-3 rounded-md border border-line bg-bg-raised px-4 py-3 text-sm">
+            <p className="eyebrow">Dùng chung album của lần chụp trước</p>
+            <ul className="mt-2 grid gap-2">
+              {dungChung.map((a) => (
+                <li key={a.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <Link href={`/admin/${a.slug}`} className="font-medium hover:text-accent">
+                    {a.title}
+                  </Link>
+                  <span className="text-xs text-fg-faint">
+                    {a.thuMuc.length
+                      ? `ảnh nhà này ở: ${a.thuMuc.join(" · ")}`
+                      : "chưa gắn thư mục nào — khách báo chọn xong sẽ không đổi được bước"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs leading-relaxed text-fg-muted">
+              Khách không phải cài app lần nữa: ảnh lần này nằm chung app cũ.
+            </p>
+          </div>
+        )}
+
         {/*
           Nút tạo hiện CẢ KHI đã có album — anh yêu cầu 15/11/2026. Gói cưới
           hai ngày cần hai album (HER nhà gái, HIS nhà trai), và 2.400 hợp

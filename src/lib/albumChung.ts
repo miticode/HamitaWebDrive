@@ -40,7 +40,13 @@ export type PhanHopDong = {
  * hàng chục chỗ trong mã nguồn đọc nó. Bảng nối chỉ bổ sung, nên hàm này gom
  * cả hai nguồn và bỏ trùng.
  */
-export async function hopDongCuaAlbum(galleryId: string): Promise<PhanHopDong[]> {
+export async function moiHopDongCuaAlbum(galleryId: string): Promise<PhanHopDong[]> {
+  /*
+    TÊN PHẢI KHÁC `hopDongCuaAlbum` trong noiAlbum.ts, dù hai hàm cùng nhận
+    một `galleryId`: cái kia trả về MỘT hợp đồng (cái gắn ở `Gallery.hopDongId`)
+    còn cái này trả về MỌI hợp đồng dùng chung album. Trùng tên mà khác nghĩa
+    là người đọc sau nhập nhầm file rồi tưởng mình đang cầm cả danh sách.
+  */
   const prisma = getPrisma();
   const [album, noi] = await Promise.all([
     prisma.gallery.findUnique({ where: { id: galleryId }, select: { hopDongId: true } }),
@@ -197,9 +203,33 @@ export async function hopDongChoThaoTac(
   galleryId: string,
   tenMuc?: string | null,
 ): Promise<{ hopDongId: string } | { lyDo: LyDoKhongRo }> {
-  const ds = await hopDongCuaAlbum(galleryId);
+  const ds = await moiHopDongCuaAlbum(galleryId);
   if (ds.length === 0) return { lyDo: "chua-gan" };
   if (ds.length === 1) return { hopDongId: ds[0].hopDongId };
   if (!tenMuc) return { lyDo: "nhieu-hop-dong" };
   return hopDongCuaMuc(ds, tenMuc);
+}
+
+/**
+ * Album mà hợp đồng này DÙNG CHUNG với hợp đồng khác — không phải album của
+ * riêng nó.
+ *
+ * Trang hợp đồng liệt kê album qua `HopDong.album`, tức qua cột
+ * `Gallery.hopDongId`. Hợp đồng thứ hai dùng lại album cũ thì cột ấy không
+ * trỏ về nó, nên trang sẽ báo "Chưa có album nào" — sai hẳn, vì ảnh của nhà
+ * ấy đang nằm trong album cũ.
+ *
+ * Trả về kèm những thư mục thuộc hợp đồng này, vì đó mới là phần ảnh của nó
+ * trong một album chứa ảnh của mấy lần chụp.
+ */
+export async function albumDungChung(hopDongId: string): Promise<
+  { id: string; slug: string; title: string; thuMuc: string[] }[]
+> {
+  const prisma = getPrisma();
+  const noi = await prisma.albumHopDong.findMany({
+    where: { hopDongId, gallery: { hopDongId: { not: hopDongId } } },
+    select: { thuMuc: true, gallery: { select: { id: true, slug: true, title: true } } },
+    orderBy: { taoLuc: "asc" },
+  });
+  return noi.map((n) => ({ ...n.gallery, thuMuc: n.thuMuc }));
 }

@@ -13,7 +13,7 @@ import { config as loadEnv } from "dotenv";
 loadEnv({ path: ".env.local", quiet: true });
 
 const { getPrisma } = await import("../src/lib/db");
-const { albumSanCoCuaKhach, hopDongCuaAlbum, hopDongCuaMuc, themHopDongVaoAlbum } = await import(
+const { albumSanCoCuaKhach, moiHopDongCuaAlbum, hopDongCuaMuc, themHopDongVaoAlbum } = await import(
   "../src/lib/albumChung"
 );
 const p = getPrisma();
@@ -73,7 +73,7 @@ try {
   const cuoi = await hopDong("Cuoi", "CƯỚI", true, ["file gốc nhà gái", "file gốc nhà trai"]);
   kiem(
     "bảng nối ghi ngay từ album đầu tiên",
-    (await hopDongCuaAlbum(cuoi.galleryId!)).map((x) => x.hopDongId),
+    (await moiHopDongCuaAlbum(cuoi.galleryId!)).map((x) => x.hopDongId),
     [cuoi.hopDongId],
   );
 
@@ -85,7 +85,7 @@ try {
 
   /* Đúng việc `taoThuMucVaAlbum` làm sau khi đặt lối tắt. */
   await themHopDongVaoAlbum(cuoi.galleryId!, baby.hopDongId, ["Baby - Nhà thử"]);
-  const ds = await hopDongCuaAlbum(cuoi.galleryId!);
+  const ds = await moiHopDongCuaAlbum(cuoi.galleryId!);
   kiem("album giờ mang HAI hợp đồng", ds.length, 2);
   kiem(
     "và đúng hai cái ấy",
@@ -101,7 +101,7 @@ try {
 
   console.log("\n— Gọi lại `themHopDongVaoAlbum` thì CỘNG THÊM, không ghi đè —");
   await themHopDongVaoAlbum(cuoi.galleryId!, cuoi.hopDongId, ["file hoàn thiện"]);
-  const ds2 = await hopDongCuaAlbum(cuoi.galleryId!);
+  const ds2 = await moiHopDongCuaAlbum(cuoi.galleryId!);
   const cuaCuoi = ds2.find((x) => x.hopDongId === cuoi.hopDongId)!;
   kiem("hợp đồng cưới giữ đủ ba thư mục", cuaCuoi.thuMuc.length, 3);
   kiem("thư mục cũ không mất", cuaCuoi.thuMuc.includes("file gốc nhà gái"), true);

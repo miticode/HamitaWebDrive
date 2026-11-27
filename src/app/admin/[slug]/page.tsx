@@ -12,6 +12,9 @@ import {
 import { maSoFile } from "@/lib/anhIn";
 import { chuConLai, lucGon, ngayVietTat, soNgayToiHan } from "@/lib/constants";
 import { goiYHopDong, hopDongCuaAlbum } from "@/lib/noiAlbum";
+import { moiHopDongCuaAlbum } from "@/lib/albumChung";
+import { tachTrangThai } from "@/lib/hopDongChung";
+import { getPrisma } from "@/lib/db";
 import { NutDoiTong } from "../NutDoiTong";
 import { ExportButton, NutChep } from "./ExportButton";
 import { LuoiAnhChon } from "./LuoiAnhChon";
@@ -88,6 +91,23 @@ export default async function ResultsPage({ params }: Props) {
   */
   const goiY = hopDong ? [] : await goiYHopDong(gallery.clientName ?? gallery.title);
 
+  /*
+    Mọi hợp đồng dùng chung album, trừ cái đã hiện ở khối gắn ngay trên.
+    Đọc tên và bước bằng MỘT lượt, không mỗi hợp đồng một lượt.
+  */
+  const phan = await moiHopDongCuaAlbum(gallery.id);
+  const khacId = phan.map((x) => x.hopDongId).filter((id) => id !== hopDong?.id);
+  const chiTiet = khacId.length
+    ? await getPrisma().hopDong.findMany({
+        where: { id: { in: khacId } },
+        select: { id: true, tenKhach: true, loaiDV: true, trangThai: true },
+      })
+    : [];
+  const hopDongKhac = chiTiet.map((h) => ({
+    ...h,
+    thuMuc: phan.find((x) => x.hopDongId === h.id)?.thuMuc ?? [],
+  }));
+
   // Cung mot cookie voi layout — doc lai de nut hien dung bieu tuong ngay luot dau.
   const tongToi = (await cookies()).get("admin-tong")?.value === "toi";
 
@@ -129,6 +149,46 @@ export default async function ResultsPage({ params }: Props) {
       </div>
 
       <GanHopDong galleryId={gallery.id} dangGan={hopDong} goiY={goiY} />
+
+      {/*
+        CÁC HỢP ĐỒNG KHÁC DÙNG CHUNG ALBUM NÀY — anh chốt 27/11/2026.
+
+        Từ khi khách book lần sau dùng lại album cũ (để khỏi cài app lần nữa),
+        một album có thể mang ảnh của mấy lần chụp cách nhau hàng năm. Khối
+        trên chỉ hiện hợp đồng ĐẦU TIÊN; không bày phần còn lại thì người mở
+        album ra thấy mục "Baby - Ngọc Thuỳ" mà không biết nó thuộc hợp đồng
+        nào, và vì sao nó nằm ở đây.
+
+        Kèm luôn TÊN THƯ MỤC của từng hợp đồng: đó chính là thứ web dùng để
+        biết khách bấm "đã chọn xong" ở mục nào thì hợp đồng nào nhảy bước
+        (xem `hopDongChoThaoTac`). Bày ra thì gắn sai còn nhìn thấy mà sửa.
+      */}
+      {hopDongKhac.length > 0 && (
+        <div className="mt-3 rounded-md border border-line bg-bg-raised px-4 py-3 text-sm">
+          <p className="eyebrow">Còn dùng chung với</p>
+          <ul className="mt-2 grid gap-2">
+            {hopDongKhac.map((h) => {
+              const { buoc, ten } = tachTrangThai(h.trangThai);
+              return (
+                <li key={h.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <Link
+                    href={`/quan-ly/hop-dong/${h.id}`}
+                    className="font-medium hover:text-accent"
+                  >
+                    {h.tenKhach}
+                  </Link>
+                  <span className="text-xs text-fg-muted">
+                    {[h.loaiDV, buoc ? `bước ${buoc}. ${ten}` : ten].filter(Boolean).join(" · ")}
+                  </span>
+                  <span className="text-xs text-fg-faint">
+                    {h.thuMuc.length ? h.thuMuc.join(" · ") : "chưa gắn thư mục nào"}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
       {selections.length === 0 && (
         <p className="mt-10 text-sm text-fg-muted">Khách chưa chọn ảnh nào.</p>
