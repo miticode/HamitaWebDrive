@@ -140,7 +140,52 @@ type DriveEntry = {
   size?: string;
   createdTime: string;
   imageMediaMetadata?: { width?: number; height?: number; time?: string };
+  /** Chi co voi LOI TAT — xem `thuMucDich`. */
+  shortcutDetails?: { targetId?: string; targetMimeType?: string };
 };
+
+/** Mime cua mot LOI TAT Drive. */
+const SHORTCUT_MIME = "application/vnd.google-apps.shortcut";
+
+/*
+  LOI TAT (shortcut) DUOC COI NHU THU MUC THAT — anh chot 27/11/2026.
+
+  Anh muon moi anh cua mot khach nam chung MOT album, ke ca anh chup cach nhau
+  may nam, vi moi album sinh mot app rieng tren may khach: "neu bat khach cai
+  app them lan nua thi bat tien".
+
+  Cai vuong: kho Drive xep theo NAM/THANG lap hop dong, nen anh chup be nam
+  2028 roi vao `2028/03/`, con album cuoi nam o `2026/11/` — hai cho khac
+  nhau, ma mot album chi doc duoc MOT thu muc goc.
+
+  Loi tat go dung cho do: thu muc that van nam dung nep nam/thang, con trong
+  thu muc album cu dat mot loi tat tro sang no. Google bo tinh nang "mot thu
+  muc nam hai cho" tu 2020 va thay bang chinh loi tat, nen day la duong duy
+  nhat Drive con cho.
+
+  Da thu that tren Drive cua tiem 27/11 truoc khi viet doan nay: tao duoc loi
+  tat voi dung quyen web dang co, `shortcutDetails.targetId` doc ra dung dich,
+  va di theo no liet ke duoc noi dung — roi xoa sach, do lai xac nhan khong
+  con gi.
+
+  CHI NHAN LOI TAT TRO TOI THU MUC. Loi tat tro toi mot TAM ANH thi bo qua:
+  chua gap trong kho, ma nhan bua thi mot tam anh co the dem hai lan neu no
+  vua nam trong thu muc vua co loi tat o cho khac.
+*/
+function thuMucDich(f: DriveEntry): { id: string; name: string } | null {
+  if (f.mimeType === FOLDER_MIME) return { id: f.id, name: f.name };
+  if (
+    f.mimeType === SHORTCUT_MIME &&
+    f.shortcutDetails?.targetMimeType === FOLDER_MIME &&
+    f.shortcutDetails.targetId
+  ) {
+    /* Ten lay tu LOI TAT chu khong tu dich: studio dat ten loi tat de noi ro
+       day la anh lan chup nao ("Anh chup be 2028"), con thu muc that mang ten
+       theo nep kho. */
+    return { id: f.shortcutDetails.targetId, name: f.name };
+  }
+  return null;
+}
 
 /** Liet ke truc tiep con cua mot thu muc (ca thu muc con lan file). */
 async function listChildren(folderId: string): Promise<DriveEntry[]> {
@@ -151,7 +196,8 @@ async function listChildren(folderId: string): Promise<DriveEntry[]> {
     const res = await driveFetch("/files", {
       q: `'${folderId}' in parents and trashed = false`,
       fields:
-        "nextPageToken, files(id,name,mimeType,size,createdTime,imageMediaMetadata(width,height,time))",
+        "nextPageToken, files(id,name,mimeType,size,createdTime," +
+        "imageMediaMetadata(width,height,time),shortcutDetails(targetId,targetMimeType))",
       orderBy: "folder,name_natural",
       pageSize: "1000",
       supportsAllDrives: "true",
@@ -330,10 +376,11 @@ export async function getGalleryTree(rootId: string): Promise<GalleryTree> {
   ]);
 
   const rootPhotos: DrivePhoto[] = [];
-  const subfolders: DriveEntry[] = [];
+  const subfolders: { id: string; name: string }[] = [];
 
   for (const f of entries) {
-    if (f.mimeType === FOLDER_MIME) subfolders.push(f);
+    const muc = thuMucDich(f);
+    if (muc) subfolders.push(muc);
     else if (f.mimeType.startsWith("image/")) rootPhotos.push(toPhoto(f, null));
   }
 
@@ -376,10 +423,11 @@ async function collectPhotos(
 
   const entries = await listChildren(folderId);
   const photos: DrivePhoto[] = [];
-  const subfolders: DriveEntry[] = [];
+  const subfolders: { id: string; name: string }[] = [];
 
   for (const f of entries) {
-    if (f.mimeType === FOLDER_MIME) subfolders.push(f);
+    const muc = thuMucDich(f);
+    if (muc) subfolders.push(muc);
     else if (f.mimeType.startsWith("image/")) photos.push(toPhoto(f, section));
   }
 
