@@ -13,6 +13,7 @@ import {
   capNhatBuocDaChup,
   capNhatBuocTheoNgay,
   capNhatBuocTuDauBuoi,
+  capNhatChuyenNhanh,
 } from "@/lib/trangThaiBuoi";
 import { buocSauKhiGiaoKhach, buocSauKhiNhanHinhIn, tenBuocTheoSo } from "@/lib/buocAnhGoc";
 import { coGiaoAnh, taoThuMucVaAlbum } from "@/lib/thuMucHopDong";
@@ -164,6 +165,7 @@ export async function lapHopDongAction(
     Chỉnh ở đây thì hợp đồng không bao giờ sinh ra đã sai; chờ tới lần sửa
     lịch đầu tiên mới chỉnh thì những nhà không ai đụng vào lịch sẽ sai mãi.
   */
+  await capNhatChuyenNhanh(kq.id, { id: nguoi.id || null, ten: nguoi.ten });
   await capNhatBuocTheoNgay(kq.id, { id: nguoi.id || null, ten: nguoi.ten });
 
   /*
@@ -520,17 +522,23 @@ export async function luuLichAction(
   const nguoiGon = { id: nguoi.id || null, ten: nguoi.ten };
 
   /*
-    BA PHÉP ĐỔI BƯỚC, chạy theo đúng thứ tự từ nấc THẤP lên nấc CAO, để một
-    lượt lưu đẩy được tới đích thay vì phải lưu mấy lần:
+    BỐN PHÉP ĐỔI BƯỚC, chạy theo đúng thứ tự để một lượt lưu đẩy được tới đích
+    thay vì phải lưu mấy lần:
 
-      1 ↔ 2   lịch có ngày hay chưa          (anh yêu cầu 27/11/2026)
+      → 10    chuyển sang nhánh tiệc         (anh yêu cầu 27/11/2026)
+      1 ↔ 2   lịch có ngày hay chưa
       → 3/12  mọi buổi đã chụp xong
       → 4/13  mọi buổi đã đánh dấu gửi ảnh gốc
 
-    Cả ba đều tự từ chối khi bước hiện tại không phải chỗ của mình, nên gọi
-    thừa không hại gì — nhưng gọi NGƯỢC thứ tự thì hại: sửa lịch một lần chỉ
-    nhích được một nấc.
+    CHUYỂN NHÁNH ĐỨNG ĐẦU, không phải 1 ↔ 2: nhà chỉ có buổi tiệc mà đứng ở
+    bước 1 thì phải sang 10, chứ để phép 1 ↔ 2 chạy trước là đẩy nó sâu thêm
+    một nấc vào nhánh sai rồi mắc kẹt ở đó — đúng cảnh hai hợp đồng đo được
+    sáng 27/11.
+
+    Cả bốn đều tự từ chối khi bước hiện tại không phải chỗ của mình, nên gọi
+    thừa không hại gì — nhưng gọi NGƯỢC thứ tự thì hại.
   */
+  await capNhatChuyenNhanh(hopDongId, nguoiGon);
   await capNhatBuocTheoNgay(hopDongId, nguoiGon);
 
   /*

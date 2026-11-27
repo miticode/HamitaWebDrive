@@ -378,3 +378,98 @@ export async function capNhatBuocTheoNgay(
   });
   return ten;
 }
+
+/* ── Chuyển từ nhánh CHỤP sang nhánh TIỆC (anh yêu cầu 27/11/2026) ────── */
+
+/** Bước 9 — "Hoàn thành" của nhánh chụp. */
+const XONG_NHANH_CHUP = 9;
+/** Bước 10 — "Chờ ngày tiệc", cửa vào nhánh tiệc. */
+const CHO_NGAY_TIEC = 10;
+
+/**
+ * Bước đích khi hợp đồng cần CHUYỂN SANG NHÁNH TIỆC — null nghĩa là đừng đổi.
+ *
+ * Anh dặn 27/11/2026 test bốn nhóm hợp đồng thật, và hai nhóm lòi ra cùng một
+ * lỗ hổng: KHÔNG CÓ MỐI NỐI NÀO đi từ nhánh chụp (1–9) sang nhánh tiệc (10–18).
+ *
+ * Hai cảnh gặp phải, đo cùng ngày:
+ *
+ *   · Hợp đồng CHỈ CÓ BUỔI TIỆC mà người lập chọn nhầm bước nhánh chụp — 2
+ *     hợp đồng ("Văn Thương & Thúy Vy", "Kim ngân - Tuấn thuận"). Chúng đứng
+ *     ở bước 2 và không gì đẩy nổi: `buocDaChup` đòi buổi đã qua ngày (tiệc
+ *     còn ở tháng 1/2027), `buocTuDauBuoi` thì tìm buổi CÙNG NHÁNH với bước —
+ *     mà bước ở nhánh chụp còn buổi thì toàn nhánh tiệc, nên không thấy gì.
+ *
+ *   · Hợp đồng có CẢ chụp trước lẫn tiệc, xong nhánh chụp rồi đứng ở bước 9
+ *     "Hoàn thành" trong khi tiệc chưa diễn ra. Chưa hợp đồng nào chạm tới,
+ *     nhưng 28 hợp đồng đang chạy có cả hai nhánh và 7 cái đã ở bước 7–8, tức
+ *     sắp tới.
+ *
+ * ĐÂY KHÔNG PHẢI LÙI BƯỚC dù nhìn qua giống: 10 lớn hơn 9, và bước 9 "Hoàn
+ * thành" với một nhà còn nguyên hai ngày tiệc phía trước là NÓI SAI chứ không
+ * phải một thành tựu bị xoá. Chuyển nhánh là đi tiếp, không phải đi lùi.
+ *
+ * Hai điều kiện, phải đủ cả hai:
+ *   1. hợp đồng CÓ buổi thuộc nhánh tiệc — không thì chẳng có gì ở nhánh ấy;
+ *   2. nhánh chụp KHÔNG CÒN VIỆC — hoặc vì không có buổi chụp nào, hoặc vì đã
+ *      đi hết tới bước 9.
+ *
+ * Mốc 9 chứ không phải 8: bước 8 là "đã nhận hình in", hình còn ở tiệm chưa
+ * giao khách — kéo sang nhánh tiệc lúc đó là bỏ quên một việc đang dở.
+ */
+export function buocChuyenNhanh(
+  buoc: number | null | undefined,
+  lich: readonly { loai: string | null }[],
+): number | null {
+  if (typeof buoc !== "number" || buoc > XONG_NHANH_CHUP) return null;
+
+  const coTiec = lich.some((l) => nhanhCuaBuoi(l.loai) === "tiec");
+  if (!coTiec) return null;
+
+  const coChup = lich.some((l) => nhanhCuaBuoi(l.loai) === "chup");
+  /* Không buổi chụp nào: nhánh chụp vô nghĩa với nhà này, sang thẳng. */
+  if (!coChup) return CHO_NGAY_TIEC;
+  /* Có buổi chụp và đã đi hết nhánh ấy. */
+  if (buoc === XONG_NHANH_CHUP) return CHO_NGAY_TIEC;
+  return null;
+}
+
+/**
+ * Đọc hợp đồng, chuyển sang nhánh tiệc nếu cần, ghi nếu đổi.
+ *
+ * Gọi TRƯỚC `capNhatBuocTheoNgay`: nhà chỉ có buổi tiệc mà đứng ở bước 1 thì
+ * phải sang 10 chứ không phải sang 2 — để phép kia chạy trước là đẩy nó sâu
+ * thêm một nấc vào nhánh sai.
+ */
+export async function capNhatChuyenNhanh(
+  hopDongId: string,
+  nguoi: Pick<NguoiDung, "id" | "ten"> | null = null,
+): Promise<string | null> {
+  const prisma = getPrisma();
+  const hd = await prisma.hopDong.findUnique({
+    where: { id: hopDongId },
+    select: { maHD: true, tenKhach: true, buoc: true, trangThai: true, lich: { select: { loai: true } } },
+  });
+  if (!hd) return null;
+
+  const dich = buocChuyenNhanh(hd.buoc, hd.lich);
+  if (dich === null) return null;
+
+  const ten = tenBuocTheoSo(await docCacBuoc(), dich);
+  if (!ten) return null;
+
+  const cu = hd.trangThai ?? "chưa gõ bước";
+  await prisma.hopDong.update({ where: { id: hopDongId }, data: { trangThai: ten, buoc: dich } });
+
+  await ghiNhatKy({
+    nguoi,
+    hanhDong: "doi-buoc-sang-tiec",
+    doiTuong: "HopDong",
+    doiTuongId: hopDongId,
+    chiTiet: {
+      ten: `${hd.tenKhach} (${hd.maHD})`,
+      doi: { "trạng thái": { truoc: cu, sau: ten } },
+    },
+  });
+  return ten;
+}

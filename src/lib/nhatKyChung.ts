@@ -113,6 +113,13 @@ export type HanhDong =
     khach toi tiem nhan hinh. Khong dau nao trong database suy ra duoc, nen
     nhat ky la noi duy nhat tra lai duoc ai da xac nhan va luc nao.
   */
+  /*
+    CHUYEN TU NHANH CHUP SANG NHANH TIEC — buoc 1-9 sang 10 (anh yeu cau
+    27/11/2026). Ghi rieng vi doc nhat ky thay buoc nhay tu 9 sang 10 trong
+    khi "9. Hoan thanh" nghe nhu da xong han, phai tra duoc ra day la nha con
+    nguyen hai ngay tiec phia truoc chu khong phai ai go nham.
+  */
+  | "doi-buoc-sang-tiec"
   | "doi-buoc-nhan-hinh"
   | "doi-buoc-giao-khach"
   /*
@@ -200,6 +207,7 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "doi-buoc-hoan-thien": "Đổi bước: đã gửi ảnh hoàn thiện",
   "doi-buoc-giao-vay": "Đổi bước: đã giao váy mọi buổi",
   "doi-buoc-ngay-chup": "Đổi bước: theo ngày chụp trên lịch",
+  "doi-buoc-sang-tiec": "Đổi bước: chuyển sang nhánh tiệc",
   "doi-buoc-nhan-hinh": "Đổi bước: đã nhận hình in về tiệm",
   "doi-buoc-giao-khach": "Đổi bước: đã giao hình cho khách",
   "doi-buoc-khach-chon": "Đổi bước: khách đã chọn xong",
