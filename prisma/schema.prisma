@@ -162,6 +162,8 @@ model Gallery {
   /// bo dong bo dem khong bao gio dung toi cot nay.
   hopDongId String?
   hopDong   HopDong? @relation(fields: [hopDongId], references: [id], onDelete: SetNull)
+  /// Moi hop dong dung chung album nay — xem model `AlbumHopDong`.
+  hopDongKhac AlbumHopDong[]
 
   lists        SelectionList[]
   pushSubs     PushSub[]
@@ -248,6 +250,49 @@ model MucXong {
 
   @@unique([galleryId, albumId])
   @@index([galleryId])
+}
+
+/// MOT HOP DONG DUNG CHUNG MOT ALBUM — anh chot 27/11/2026.
+///
+/// Vi sao can: anh muon MOI ANH CUA MOT KHACH nam chung mot album, ke ca anh
+/// chup cach nhau may nam. Ly do khong phai gon gang ma la CAI APP: moi album
+/// sinh mot manifest rieng (`/g/[slug]/manifest.webmanifest`) voi `start_url`
+/// tro dung album do, nen hai album la khach phai cai hai app. Anh noi: "neu
+/// bat khach cai app them lan nua thi bat tien… va co li do de khach luon nho
+/// toi Hamita vi luc nao cung con app tren may".
+///
+/// Do 27/11: 243/2.153 khach co tu 2 hop dong (11%), co khach 12 cai. Vi du
+/// that: "NGOC THUY" co HOI 2023 + Khach le 2024 + Baby 2026 + NHA SU 2026.
+///
+/// VI SAO KHONG GOP VAO MOT HOP DONG: hop dong chi di 18 buoc MOT LAN. Khach
+/// chup be ba nam sau thi hop dong da o buoc 18, khong con buoc nao theo doi
+/// lan chup moi — chua ke tien va cong no cua 2023 lan voi 2026.
+///
+/// VI SAO KHONG DOI `Gallery.hopDongId` THANH NHIEU: cot ay la mot-mot va ca
+/// chuc cho trong ma nguon doc no de doi buoc. Doi kieu cot la sua het. Bang
+/// noi nay dung BEN CANH: `hopDongId` van la hop dong DAU TIEN dung album,
+/// con day la moi hop dong dung chung, ke ca cai dau.
+model AlbumHopDong {
+  id        String   @id @default(cuid())
+  galleryId String
+  hopDongId String
+  /// Thu muc con trong album thuoc ve hop dong nay — ten dung nhu tren Drive.
+  ///
+  /// Can vi mot album chung chua thu muc cua nhieu hop dong: khach bam "da
+  /// chon xong" o "file goc baby" thi web phai biet do la hop dong Baby chu
+  /// khong phai hop dong CUOI nam cung album. Do 27/11: 80 khach co tu 2 hop
+  /// dong CUNG DANG CHAY, nen doan theo "hop dong nao chua xong" la sai.
+  ///
+  /// Mang rong = chua ai gan thu muc nao; luc do web khong doi buoc tu thu
+  /// muc cua album chung, va noi ro thay vi doan.
+  thuMuc    String[] @default([])
+  taoLuc    DateTime @default(now())
+
+  gallery Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  hopDong HopDong @relation(fields: [hopDongId], references: [id], onDelete: Cascade)
+
+  @@unique([galleryId, hopDongId])
+  @@index([hopDongId])
 }
 
 /// MOT DOT GUI IN — anh yeu cau 19/11/2026.
@@ -962,6 +1007,8 @@ model HopDong {
   chiTiet   ChiTietHopDong[]
   phieuThu  PhieuThu[]
   album     Gallery[]
+  /// Album dung chung voi hop dong khac — xem model `AlbumHopDong`.
+  albumChung AlbumHopDong[]
   lich      LichChup[]
   congViec  CongViec[]
 
