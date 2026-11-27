@@ -294,3 +294,87 @@ export async function capNhatBuocTuDauBuoi(
   });
   return ten;
 }
+
+/* ── Bước 1 ↔ 2: có ngày chụp hay chưa (anh yêu cầu 27/11/2026) ──────── */
+
+/** Bước 1 — "Chưa có ngày chụp". */
+const CHUA_CO_NGAY = 1;
+/** Bước 2 — "Đã có ngày chụp". */
+const DA_CO_NGAY = 2;
+
+/**
+ * Bước đích theo việc lịch ĐÃ CÓ NGÀY hay chưa — null nghĩa là đừng đổi.
+ *
+ * Anh yêu cầu 27/11/2026 sau bản rà soát: trong mười bốn mối nối của hệ mười
+ * tám bước, 1 → 2 là mối DUY NHẤT không có đường nào đẩy. Đo cùng ngày và nó
+ * sai cả hai chiều:
+ *
+ *     4 hợp đồng ghi "Chưa có ngày chụp" mà lịch ĐÃ CÓ ngày
+ *     5 hợp đồng ghi "Đã có ngày chụp"  mà KHÔNG buổi nào có ngày
+ *
+ * ĐÂY LÀ MỐI NỐI HAI CHIỀU DUY NHẤT, và cố ý khác mọi phép đổi bước khác
+ * (`trangThaiTuViec`, `buocTuDauBuoi`, `buocDaChup` đều chỉ nâng).
+ *
+ * Lý do: mười sáu bước kia nói về VIỆC ĐÃ LÀM — đã chụp, đã gửi, đã in —
+ * những thứ xảy ra rồi thì không thể chưa xảy ra, nên kéo lùi là nói dối.
+ * Còn 1 và 2 chỉ nói MỘT SỰ THẬT KIỂM CHỨNG ĐƯỢC NGAY: lịch có ngày hay
+ * không. Khách hoãn cưới, người sửa xoá ngày đi, thì "Đã có ngày chụp" thành
+ * sai ngay lúc đó — giữ nguyên mới là nói dối.
+ *
+ * CHỈ CHẠM ĐÚNG HAI BƯỚC ẤY. Hợp đồng ở bước 5 mà khách dời ngày thì không
+ * được kéo về 1: ảnh đã chụp, đã gửi, đã chỉnh — mất ngày không xoá được
+ * những việc đó.
+ *
+ * Buổi "đã có ngày" tính cả ngày Ở TƯƠNG LAI: bước 2 là "đã có ngày chụp",
+ * không phải "đã tới ngày chụp".
+ */
+export function buocTheoNgayChup(
+  buoc: number | null | undefined,
+  lich: readonly { ngay: string | null }[],
+): number | null {
+  if (buoc !== CHUA_CO_NGAY && buoc !== DA_CO_NGAY) return null;
+  const coNgay = lich.some((l) => !!l.ngay);
+  if (buoc === CHUA_CO_NGAY && coNgay) return DA_CO_NGAY;
+  if (buoc === DA_CO_NGAY && !coNgay) return CHUA_CO_NGAY;
+  return null;
+}
+
+/**
+ * Đọc hợp đồng, chỉnh bước 1 ↔ 2 cho khớp lịch, ghi nếu đổi.
+ *
+ * Gọi TRƯỚC `capNhatBuocDaChup` và `capNhatBuocTuDauBuoi`: nó ở nấc thấp nhất,
+ * nên 1 → 2 xong thì hai hàm kia còn đẩy tiếp được lên 3 hoặc 4 trong cùng
+ * một lượt lưu. Chạy ngược thứ tự thì phải lưu hai lần mới tới đích.
+ */
+export async function capNhatBuocTheoNgay(
+  hopDongId: string,
+  nguoi: Pick<NguoiDung, "id" | "ten"> | null = null,
+): Promise<string | null> {
+  const prisma = getPrisma();
+  const hd = await prisma.hopDong.findUnique({
+    where: { id: hopDongId },
+    select: { maHD: true, tenKhach: true, buoc: true, trangThai: true, lich: { select: { ngay: true } } },
+  });
+  if (!hd) return null;
+
+  const dich = buocTheoNgayChup(hd.buoc, hd.lich);
+  if (dich === null) return null;
+
+  const ten = tenBuocTheoSo(await docCacBuoc(), dich);
+  if (!ten) return null;
+
+  const cu = hd.trangThai ?? "chưa gõ bước";
+  await prisma.hopDong.update({ where: { id: hopDongId }, data: { trangThai: ten, buoc: dich } });
+
+  await ghiNhatKy({
+    nguoi,
+    hanhDong: "doi-buoc-ngay-chup",
+    doiTuong: "HopDong",
+    doiTuongId: hopDongId,
+    chiTiet: {
+      ten: `${hd.tenKhach} (${hd.maHD})`,
+      doi: { "trạng thái": { truoc: cu, sau: ten } },
+    },
+  });
+  return ten;
+}

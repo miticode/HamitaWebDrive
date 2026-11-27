@@ -101,6 +101,21 @@ export type HanhDong =
   */
   | "doi-buoc-giao-vay"
   /*
+    LICH CO NGAY hay chua → buoc 1 doi 2, hoac 2 ve lai 1 (anh yeu cau
+    27/11/2026). La moi noi HAI CHIEU duy nhat, nen ghi rieng: doc nhat ky
+    thay mot hop dong lui buoc thi phai biet ngay do la vi khach hoan ngay,
+    khong phai vi ai go nham.
+  */
+  | "doi-buoc-ngay-chup"
+  /*
+    HAI KHAU CUOI, bam tay o trang hop dong (anh yeu cau 27/11/2026). Ghi
+    rieng vi day la hai viec NGOAI WEB: thung hang xuong giao toi tiem, va
+    khach toi tiem nhan hinh. Khong dau nao trong database suy ra duoc, nen
+    nhat ky la noi duy nhat tra lai duoc ai da xac nhan va luc nao.
+  */
+  | "doi-buoc-nhan-hinh"
+  | "doi-buoc-giao-khach"
+  /*
     KHACH tu bam "da chon xong" → buoc 4 sang 5, hoac 13 sang 14 (anh yeu cau
     19/11/2026). Ghi rieng khoi "doi-buoc-anh-goc" vi NGUOI BAM khac han: dong
     nay luon co `nguoi = null`, va do la su that dang ghi chu khong phai thieu
@@ -184,6 +199,9 @@ export const CHU_HANH_DONG: Record<HanhDong, string> = {
   "doi-buoc-anh-goc": "Đổi bước: đã gửi ảnh gốc",
   "doi-buoc-hoan-thien": "Đổi bước: đã gửi ảnh hoàn thiện",
   "doi-buoc-giao-vay": "Đổi bước: đã giao váy mọi buổi",
+  "doi-buoc-ngay-chup": "Đổi bước: theo ngày chụp trên lịch",
+  "doi-buoc-nhan-hinh": "Đổi bước: đã nhận hình in về tiệm",
+  "doi-buoc-giao-khach": "Đổi bước: đã giao hình cho khách",
   "doi-buoc-khach-chon": "Đổi bước: khách đã chọn xong",
   "doi-buoc-da-chup": "Đổi bước: đã chụp xong",
   "gui-in": "Gửi in cho xưởng",

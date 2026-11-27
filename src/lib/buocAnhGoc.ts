@@ -192,3 +192,59 @@ export function buocSauKhiGuiIn(buoc: number | null | undefined): number | null 
  * hiện ra mà bấm vào không đổi gì là tệ hơn không có nút.
  */
 export const GUI_IN_HIEN_O = [6, 15] as const;
+
+/* ── Hai khâu cuối: nhận hình in, giao khách (anh yêu cầu 27/11/2026) ─── */
+
+/**
+ * Bước đích khi HÌNH IN VỀ TỚI TIỆM — null nghĩa là đừng đổi.
+ *
+ *    7  "Gửi in"       →  8  "Đã nhận hình in"
+ *   16  "Gửi in tiệc"  → 17  "Đã nhận hình in tiệc"
+ */
+export function buocSauKhiNhanHinhIn(buoc: number | null | undefined): number | null {
+  if (buoc === 7) return 8;
+  if (buoc === 16) return 17;
+  return null;
+}
+
+/**
+ * Bước đích khi ĐÃ GIAO HÌNH CHO KHÁCH — null nghĩa là đừng đổi.
+ *
+ *    8  "Đã nhận hình in"       →  9  "Hoàn thành"
+ *   17  "Đã nhận hình in tiệc"  → 18  "Hoàn thành ngày tiệc"
+ */
+export function buocSauKhiGiaoKhach(buoc: number | null | undefined): number | null {
+  if (buoc === 8) return 9;
+  if (buoc === 17) return 18;
+  return null;
+}
+
+/*
+  BỐN MỐI NỐI CUỐI, và vì sao chúng phải BẤM TAY chứ không tự nhảy.
+
+  Bản rà soát 27/11/2026 chỉ ra: trong mười bốn mối nối của hệ mười tám bước,
+  năm cái không có đường nào đẩy — 1 → 2 (đã nối bằng `buocTheoNgayChup`) và
+  bốn cái ở đây. Hậu quả đo được: 21 hợp đồng đứng ở bước 8 và 7 cái ở bước
+  17, tức hình in đã về tiệm mà hệ thống không có cách nào nói là đã giao
+  khách chưa.
+
+  Khác mọi mối nối khác, bốn cái này KHÔNG suy ra được từ dữ liệu nào cả:
+
+    · "hình in về tới tiệm" là một thùng hàng xưởng giao, web không thấy.
+    · "đã giao hình cho khách" là lúc khách tới tiệm nhận, web cũng không thấy.
+
+  Mọi mối nối tự động trước đây đều dựa trên một DẤU CÓ THẬT trong database —
+  buổi đã tick, thư mục khách đã báo, link đã dán. Hai việc này không có dấu
+  nào, nên tự động hoá chúng chỉ còn cách đoán theo thời gian ("gửi in mười
+  ngày rồi thì chắc đã về"), mà đoán sai ở đây là báo hợp đồng đã hoàn thành
+  trong khi khách còn chưa cầm hình.
+
+  Nên web làm đúng một việc: BÀY SẴN NÚT ở trang hợp đồng, để người biết sự
+  thật bấm một cái là xong, thay vì phải nhớ hợp đồng đang ở bước mấy rồi mở ô
+  trạng thái tìm đúng dòng.
+*/
+
+/** Mấy bước có nút "Đã nhận hình in". */
+export const NHAN_HINH_HIEN_O = [7, 16] as const;
+/** Mấy bước có nút "Đã giao khách". */
+export const GIAO_KHACH_HIEN_O = [8, 17] as const;

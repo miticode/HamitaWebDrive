@@ -17,6 +17,7 @@ import { NutPhieuThu, NutXoaHopDong, ThemPhieuThu } from "./NutHopDong";
 import { KhoiLich } from "./KhoiLich";
 import { KhoiViec } from "./KhoiViec";
 import { DaiTienDo } from "./DaiTienDo";
+import { NutKhauCuoi } from "./NutKhauCuoi";
 import { KhoiTien } from "./KhoiTien";
 import { TieuDeKhoi } from "./TieuDeKhoi";
 import { Bang, Hang, O, type CotBang } from "../../_ui/Bang";
@@ -228,6 +229,16 @@ export default async function ChiTietHopDongPage({ params }: Props) {
           aiLo={buocSau?.trachNhiem ?? null}
           xongNhanh={xongNhanh && !!buocSau}
         />
+        {/*
+          Nút của hai khâu cuối nằm NGAY DƯỚI dải, không nằm trong dải: dải cố
+          ý không phải nút bấm (xem chú thích đầu `DaiTienDo`), còn đây là chỗ
+          duy nhất đẩy được bốn mối nối cuối mà trước 27/11/2026 không có
+          đường nào đi.
+
+          Chỉ người được sửa hợp đồng mới thấy nút. Giấu nút CHỈ để đỡ bấm
+          nhầm — chặn thật nằm trong `xacNhanKhauCuoiAction` (nguyên tắc 3).
+        */}
+        {duocSua && <NutKhauCuoi hopDongId={hd.id} buoc={hd.buoc} />}
       </div>
 
       {hd.matBenAppSheet && (

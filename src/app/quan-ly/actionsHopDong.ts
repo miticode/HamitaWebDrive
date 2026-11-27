@@ -9,7 +9,12 @@ import { layNguoiDung, lapHopDong } from "@/lib/phienNhanVien";
 import { ghiNhatKy } from "@/lib/nhatKy";
 import { docCacBuoc } from "@/lib/buocHopDong";
 import { demLuotDung } from "@/lib/dichVuHayDung";
-import { capNhatBuocDaChup, capNhatBuocTuDauBuoi } from "@/lib/trangThaiBuoi";
+import {
+  capNhatBuocDaChup,
+  capNhatBuocTheoNgay,
+  capNhatBuocTuDauBuoi,
+} from "@/lib/trangThaiBuoi";
+import { buocSauKhiGiaoKhach, buocSauKhiNhanHinhIn, tenBuocTheoSo } from "@/lib/buocAnhGoc";
 import { coGiaoAnh, taoThuMucVaAlbum } from "@/lib/thuMucHopDong";
 import { docLoaiBuoi } from "@/lib/loaiBuoi";
 import { docBaDanhMuc } from "@/lib/danhMuc";
@@ -148,6 +153,18 @@ export async function lapHopDongAction(
     // Nhật ký ghi mã và tên khách, KHÔNG ghi số điện thoại.
     chiTiet: { ten: `${kq.maHD} — ${du.tenKhach}`, nguoiLap: maNguoiLap(nguoi) },
   });
+
+  /*
+    CHỈNH BƯỚC 1 ↔ 2 NGAY LÚC LẬP — anh yêu cầu 27/11/2026.
+
+    Bước lúc lập do người lập CHỌN trong form, nên họ có thể chọn "1. Chưa có
+    ngày chụp" rồi điền ngày vào lịch ngay bên dưới, hoặc chọn "2. Đã có ngày
+    chụp" mà để lịch trống. Đo 27/11: 4 hợp đồng ở cảnh đầu, 5 ở cảnh sau.
+
+    Chỉnh ở đây thì hợp đồng không bao giờ sinh ra đã sai; chờ tới lần sửa
+    lịch đầu tiên mới chỉnh thì những nhà không ai đụng vào lịch sẽ sai mãi.
+  */
+  await capNhatBuocTheoNgay(kq.id, { id: nguoi.id || null, ten: nguoi.ten });
 
   /*
     THƯ MỤC DRIVE + ALBUM, CHẠY NỀN (anh chốt 14/11/2026).
@@ -500,12 +517,28 @@ export async function luuLichAction(
     chiTiet: { ten: hd.tenKhach, soBuoi: sach.length },
   });
 
+  const nguoiGon = { id: nguoi.id || null, ten: nguoi.ten };
+
+  /*
+    BA PHÉP ĐỔI BƯỚC, chạy theo đúng thứ tự từ nấc THẤP lên nấc CAO, để một
+    lượt lưu đẩy được tới đích thay vì phải lưu mấy lần:
+
+      1 ↔ 2   lịch có ngày hay chưa          (anh yêu cầu 27/11/2026)
+      → 3/12  mọi buổi đã chụp xong
+      → 4/13  mọi buổi đã đánh dấu gửi ảnh gốc
+
+    Cả ba đều tự từ chối khi bước hiện tại không phải chỗ của mình, nên gọi
+    thừa không hại gì — nhưng gọi NGƯỢC thứ tự thì hại: sửa lịch một lần chỉ
+    nhích được một nấc.
+  */
+  await capNhatBuocTheoNgay(hopDongId, nguoiGon);
+
   /*
     Người tự tay đánh dấu buổi cuối là "Hoàn thành" thì hợp đồng cũng phải
     sang chặng Chụp, y như khi thợ bấm xong đầu việc — không thì cùng một
     việc mà làm bằng hai đường lại ra hai kết quả.
   */
-  await capNhatBuocDaChup(hopDongId, { id: nguoi.id || null, ten: nguoi.ten });
+  await capNhatBuocDaChup(hopDongId, nguoiGon);
 
   /*
     Rồi tính lại bước từ DẤU TRÊN TỪNG BUỔI — anh yêu cầu 26/11/2026.
@@ -514,7 +547,7 @@ export async function luuLichAction(
     này nâng tiếp lên 4/13. Cả hai đều chỉ nâng nên không giẫm chân nhau,
     nhưng chạy ngược thứ tự thì phải lưu hai lần mới tới đích.
   */
-  await capNhatBuocTuDauBuoi(hopDongId, { id: nguoi.id || null, ten: nguoi.ten });
+  await capNhatBuocTuDauBuoi(hopDongId, nguoiGon);
 
   revalidatePath(`/quan-ly/hop-dong/${hopDongId}`);
   revalidatePath("/quan-ly/lich");
@@ -612,4 +645,65 @@ export async function duLieuFormHopDongAction(): Promise<{ loi: string } | DuLie
     laQuanLy: nguoi.laQuanLy,
     tenNguoiLap: nguoi.ten,
   };
+}
+
+/* ── Hai khâu cuối: nhận hình in, giao khách (anh yêu cầu 27/11/2026) ─── */
+
+/**
+ * Xác nhận HÌNH IN ĐÃ VỀ TIỆM, hoặc ĐÃ GIAO CHO KHÁCH.
+ *
+ * Một action cho cả hai việc, vì chúng y hệt nhau về phần máy móc: tra bước,
+ * tính bước đích, đổi, ghi nhật ký. Thứ duy nhất khác là phép tính bước và
+ * tên hành động — truyền vào bằng `viec`.
+ *
+ * KIỂM BƯỚC Ở MÁY CHỦ, không chỉ dựa vào việc trang đã giấu nút (nguyên tắc
+ * 3): server action là một đường mạng công khai, mà đây là đổi tiến độ của cả
+ * một nhà khách, lại đúng vào hai bước cuối — bấm nhầm là hợp đồng báo "hoàn
+ * thành" trong khi khách chưa cầm hình.
+ */
+export async function xacNhanKhauCuoiAction(
+  hopDongId: string,
+  viec: "nhan-hinh" | "giao-khach",
+): Promise<{ loi: string } | { ok: true; den: string }> {
+  const nguoi = await nguoiDuocLap();
+  if (!nguoi) return { loi: "Tài khoản này chưa được sửa hợp đồng, hoặc phiên đăng nhập đã hết." };
+
+  const prisma = getPrisma();
+  const hd = await prisma.hopDong.findUnique({
+    where: { id: hopDongId },
+    select: { maHD: true, tenKhach: true, buoc: true, trangThai: true },
+  });
+  if (!hd) return { loi: "Hợp đồng này không còn." };
+
+  const tinh = viec === "nhan-hinh" ? buocSauKhiNhanHinhIn : buocSauKhiGiaoKhach;
+  const dich = tinh(hd.buoc);
+  if (dich === null) {
+    return {
+      loi:
+        viec === "nhan-hinh"
+          ? "Hợp đồng không ở bước “Gửi in” nên chưa xác nhận nhận hình được."
+          : "Hợp đồng không ở bước “Đã nhận hình in” nên chưa xác nhận giao khách được.",
+    };
+  }
+
+  const ten = tenBuocTheoSo(await docCacBuoc(), dich);
+  if (!ten) return { loi: "Bảng bước không có bước này — nhờ anh chị kiểm lại ở Quản lý dịch vụ." };
+
+  const cu = hd.trangThai ?? "chưa gõ bước";
+  await prisma.hopDong.update({ where: { id: hopDongId }, data: { trangThai: ten, buoc: dich } });
+
+  await ghiNhatKy({
+    nguoi: { id: nguoi.id || null, ten: nguoi.ten },
+    hanhDong: viec === "nhan-hinh" ? "doi-buoc-nhan-hinh" : "doi-buoc-giao-khach",
+    doiTuong: "HopDong",
+    doiTuongId: hopDongId,
+    chiTiet: {
+      ten: `${hd.tenKhach} (${hd.maHD})`,
+      doi: { "trạng thái": { truoc: cu, sau: ten } },
+    },
+  });
+
+  revalidatePath(`/quan-ly/hop-dong/${hopDongId}`);
+  revalidatePath("/quan-ly/hop-dong");
+  return { ok: true, den: ten };
 }
